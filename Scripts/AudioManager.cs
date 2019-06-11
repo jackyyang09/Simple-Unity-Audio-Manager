@@ -5,6 +5,9 @@ using UnityEngine.SceneManagement;
 
 /// <summary>
 /// AudioManager singleton that manages all audio in the game
+///
+/// Made by Jacky Yang, 
+/// 
 /// </summary>
 public class AudioManager : MonoBehaviour {
 
