@@ -9,8 +9,6 @@ using UnityEngine.SceneManagement;
 public class AudioManager : MonoBehaviour {
 
     public enum Sound {
-        Drilling,
-        DrillSwitch,
         Count
     }
 
@@ -107,11 +105,11 @@ public class AudioManager : MonoBehaviour {
 
     [SerializeField]
     [Range(0, 1)]
-    float soundVolume;
+    float soundVolume = 1;
 
     [SerializeField]
     [Range(0, 1)]
-    float musicVolume;
+    float musicVolume = 1;
 
     [SerializeField]
     bool spatialSound = true;
