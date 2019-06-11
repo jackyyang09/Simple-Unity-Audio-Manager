@@ -50,8 +50,8 @@ MonoBehaviour:
   loopingSources: []
   sourcePositions: []
   exclusiveList: 
-  soundVolume: 0
-  musicVolume: 0
+  soundVolume: 1
+  musicVolume: 1
   spatialSound: 1
   currentTrack: 0
   listener: {fileID: 0}
