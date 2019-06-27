@@ -14,6 +14,7 @@ public class AudioManager : MonoBehaviour
 
     public enum Sound
     {
+        None,
         Count
     }
 
