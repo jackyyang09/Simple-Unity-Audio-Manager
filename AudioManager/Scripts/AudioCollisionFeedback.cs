@@ -12,6 +12,6 @@ public class AudioCollisionFeedback : BaseAudioFeedback
 
     private void OnCollisionEnter(Collision collision)
     {
-        am.PlaySoundOnce(sound, transform, priority, AudioManager.UsePitch(pitch));
+        am.PlaySoundOnce(sound, transform, priority, AudioManager.UsePitch(pitchShift));
     }
 }

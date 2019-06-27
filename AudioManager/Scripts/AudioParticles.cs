@@ -11,13 +11,16 @@ using UnityEngine.Events;
 [RequireComponent(typeof(ParticleSystem))]
 public class AudioParticles : BaseAudioFeedback
 {
+    enum PlayCondition
+    {
+        ParticleEmitted,
+        ParticleDeath
+    }
+
     [Header("Sounds")]
 
     [SerializeField]
-    AudioManager.Sound playOnParticleEmit;
-
-    [SerializeField]
-    AudioManager.Sound playOnParticleDeath;
+    PlayCondition playSoundOn = PlayCondition.ParticleEmitted;
 
     ParticleSystem particles;
 
@@ -32,14 +35,22 @@ public class AudioParticles : BaseAudioFeedback
     // Update is called once per frame
     void Update()
     {
-        if (particles.particleCount > prevParticleCount)
+        switch (playSoundOn)
         {
-            am.PlaySoundOnce(playOnParticleEmit, sTransform, priority, AudioManager.UsePitch(pitch));
+            case PlayCondition.ParticleEmitted:
+                if (particles.particleCount > prevParticleCount)
+                {
+                    am.PlaySoundOnce(sound, sTransform, priority, AudioManager.UsePitch(pitchShift));
+                }
+                break;
+            case PlayCondition.ParticleDeath:
+                if (particles.particleCount < prevParticleCount)
+                {
+                    am.PlaySoundOnce(sound, sTransform, priority, AudioManager.UsePitch(pitchShift));
+                }
+                break;
         }
-        else if (particles.particleCount < prevParticleCount)
-        {
-            am.PlaySoundOnce(playOnParticleDeath, sTransform, priority, AudioManager.UsePitch(pitch));
-        }
+        
         prevParticleCount = particles.particleCount;
     }
 }

@@ -12,10 +12,10 @@ public class BaseAudioFeedback : MonoBehaviour
     protected AudioManager.Priority priority = AudioManager.Priority.Default;
 
     [SerializeField]
-    protected AudioManager.Pitch pitch = AudioManager.Pitch.VeryLow;
+    protected AudioManager.Pitch pitchShift = AudioManager.Pitch.VeryLow;
 
     [SerializeField]
-    protected bool spatialSound;
+    protected bool spatialSound = true;
     protected Transform sTransform;
 
     protected AudioManager am;

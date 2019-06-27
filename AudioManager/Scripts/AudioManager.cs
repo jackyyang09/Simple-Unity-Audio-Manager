@@ -1,25 +1,23 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
 /// AudioManager singleton that manages all audio in the game
-///
-/// Made by Jacky Yang, 
-/// 
 /// </summary>
-public class AudioManager : MonoBehaviour
-{
+public class AudioManager : MonoBehaviour {
 
-    public enum Sound
-    {
+    public enum Sound {
         None,
+        Drilling,
+        DrillSwitch,
+        Switch,
+        Sparks,
         Count
     }
 
-    public enum Music
-    {
+    public enum Music {
         None,
         Count
     }
@@ -30,9 +28,9 @@ public class AudioManager : MonoBehaviour
     public enum Priority
     {
         Music = 0,
-        High = 64,
+        Low = 64,
         Default = 128,
-        Low = 192,
+        High = 192,
         Spam = 256
     }
 
@@ -103,7 +101,6 @@ public class AudioManager : MonoBehaviour
     [Tooltip("Limits the number of each sounds being played. If at 0 or no value, assume infinite")]
     int[] exclusiveList;
 
-    [SerializeField]
     AudioSource[] sources;
 
     /// <summary>
@@ -113,11 +110,11 @@ public class AudioManager : MonoBehaviour
 
     [SerializeField]
     [Range(0, 1)]
-    float soundVolume = 1;
+    float soundVolume;
 
     [SerializeField]
     [Range(0, 1)]
-    float musicVolume = 1;
+    float musicVolume;
 
     [SerializeField]
     bool spatialSound = true;
@@ -145,8 +142,7 @@ public class AudioManager : MonoBehaviour
     bool doneLoading;
 
     // Use this for initialization
-    void Awake()
-    {
+    void Awake () {
         if (Singleton == null)
         {
             Singleton = this;
@@ -186,6 +182,8 @@ public class AudioManager : MonoBehaviour
         FindNewListener();
 
         PlayMusic(currentTrack);
+
+        AddOffsetToArrays();
 
         doneLoading = true;
     }
@@ -264,7 +262,7 @@ public class AudioManager : MonoBehaviour
             if (!musicSource.isPlaying) //Returns true the moment the intro ends
             {
                 //Swap to the main loop
-                musicSource.clip = tracks[(int)currentTrack - 1];
+                musicSource.clip = tracks[(int)currentTrack];
                 musicSource.loop = true;
                 musicSource.Play();
                 queueIntro = false;
@@ -315,7 +313,7 @@ public class AudioManager : MonoBehaviour
                 a.spatialBlend = 0;
             }
         }
-
+        
         //This is the base unchanged pitch
         if (pitchShift > Pitches.None)
         {
@@ -389,18 +387,10 @@ public class AudioManager : MonoBehaviour
         if (trans != null)
         {
             sourcePositions[Array.IndexOf(sources, a)] = trans;
-            if (spatialSound)
-            {
-                a.spatialBlend = 1;
-            }
         }
         else
         {
             sourcePositions[Array.IndexOf(sources, a)] = listener.transform;
-            if (spatialSound)
-            {
-                a.spatialBlend = 0;
-            }
         }
         loopingSources[loopingSources.Count - 1].priority = (int)p;
         loopingSources[loopingSources.Count - 1].clip = clips[(int)s];
@@ -422,18 +412,10 @@ public class AudioManager : MonoBehaviour
         if (trans != null)
         {
             sourcePositions[Array.IndexOf(sources, a)] = trans;
-            if (spatialSound)
-            {
-                a.spatialBlend = 1;
-            }
         }
         else
         {
             sourcePositions[Array.IndexOf(sources, a)] = listener.transform;
-            if (spatialSound)
-            {
-                a.spatialBlend = 0;
-            }
         }
         loopingSources[loopingSources.Count - 1].priority = (int)p;
         loopingSources[loopingSources.Count - 1].clip = s;
@@ -474,8 +456,7 @@ public class AudioManager : MonoBehaviour
         {
             if (loopingSources[i].clip == clips[(int)s])
             {
-                for (int j = 0; j < sources.Length; j++)
-                { // Thanks Connor Smiley 
+                for (int j = 0; j < sources.Length; j++) { // Thanks Connor Smiley 
                     if (sources[j] == loopingSources[i])
                     {
                         if (t != sources[j].transform)
@@ -556,7 +537,7 @@ public class AudioManager : MonoBehaviour
             s.volume = soundVolume;
         }
     }
-
+    
     public void SetSoundVolume(UnityEngine.UI.Slider v)
     {
         soundVolume = v.value;
@@ -565,7 +546,7 @@ public class AudioManager : MonoBehaviour
             s.volume = soundVolume;
         }
     }
-
+    
     public void SetMusicVolume(UnityEngine.UI.Slider v)
     {
         musicVolume = v.value;
@@ -582,6 +563,22 @@ public class AudioManager : MonoBehaviour
         ApplySoundVolume();
         SetSpatialSound(spatialSound);
         musicSource.volume = musicVolume;
+    }
+
+    /// <summary>
+    /// Accomodates the "None" helper enum during runtime
+    /// </summary>
+    public void AddOffsetToArrays()
+    {
+        if (clips[0] != null && clips.Count < (int)Sound.Count)
+        {
+            clips.Insert(0, null);
+        }
+
+        //if (tracks[0] != null && tracks.Count < (int)Music.Count)
+        //{
+        //    tracks.Insert(0, null);
+        //}
     }
 
     /// <summary>
@@ -618,7 +615,7 @@ public class AudioManager : MonoBehaviour
     /// <returns></returns>
     AudioSource GetAvailableSource()
     {
-        foreach (AudioSource a in sources)
+        foreach(AudioSource a in sources)
         {
             if (!a.isPlaying && !loopingSources.Contains(a))
             {
@@ -674,8 +671,7 @@ public class AudioManager : MonoBehaviour
     /// </summary>
     /// <param name="s">The sound in question</param>
     /// <returns>True or false you dingus</returns>
-    public bool IsSoundLooping(Sound s)
-    {
+    public bool IsSoundLooping(Sound s) {
         foreach (AudioSource c in loopingSources)
         {
             if (c.clip == clips[(int)s])
