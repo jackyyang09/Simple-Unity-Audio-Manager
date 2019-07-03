@@ -698,7 +698,7 @@ public class AudioManager : MonoBehaviour {
         return 0;
     }
 
-    void GenerateAudioDictionarys()
+    public void GenerateAudioDictionarys()
     {
         // Create dictionary for sound
         if (transform.childCount == 0) return; // Probably script execution order issue
@@ -719,8 +719,8 @@ public class AudioManager : MonoBehaviour {
             }
         }
 
-        if (transform.GetChild(1).childCount != music.Count) music.Clear();
         // Create a dictionary for music
+        if (transform.GetChild(1).childCount != music.Count) music.Clear();
         foreach (AudioFileMusic a in transform.GetChild(1).GetComponentsInChildren<AudioFileMusic>())
         {
             if (music.ContainsKey(a.name))
@@ -736,6 +736,8 @@ public class AudioManager : MonoBehaviour {
                 music.Add(a.name, a.GetFile());
             }
         }
+
+        print("AudioManager: Audio Library Generated!");
     }
 
     public string GetEditorMessage()
