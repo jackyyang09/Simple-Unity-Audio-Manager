@@ -6,21 +6,8 @@ using UnityEngine.SceneManagement;
 /// <summary>
 /// AudioManager singleton that manages all audio in the game
 /// </summary>
+[System.Serializable]
 public class AudioManager : MonoBehaviour {
-
-    public enum Sound {
-        None,
-        Drilling,
-        DrillSwitch,
-        Switch,
-        Sparks,
-        Count
-    }
-
-    public enum Music {
-        None,
-        Count
-    }
 
     /// <summary>
     /// From 0 (least important) to 255 (most important)
@@ -56,48 +43,35 @@ public class AudioManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Number of audiosources AKA sources
+    /// Number of Audio Sources to be created on start
     /// </summary>
     [SerializeField]
-    [Tooltip("Number of audiosources AKA sources")]
-    int numSources = 16;
+    [Tooltip("Number of Audio Sources to be created on start")]
+    int audioSources = 16;
 
-    /// <summary>
-    /// Sound library, add more through the inspector window
-    /// </summary>
     [SerializeField]
-    [Tooltip("Track library, add more through the inspector window")]
-    List<AudioClip> clips;
+    [Tooltip("If true, adds more sources if you exceed the starting count, keeping this disabled is recommended")]
+    bool dynamicSourceAllocation;
 
-    /// <summary>
-    /// Music library, add more through the inspector window
-    /// </summary>
-    [SerializeField]
-    [Tooltip("Music library, these will loop by default, add more through the inspector window if necessary")]
-    List<AudioClip> tracks;
+    Dictionary<string, AudioClip> sounds = new Dictionary<string, AudioClip>();
 
-    /// <summary>
-    /// Music introduction library, add more through the inspector window if necessary
-    /// </summary>
-    [SerializeField]
-    [Tooltip("Music introduction library, add more through the inspector window if necessary")]
-    List<AudioClip> trackIntros;
+    Dictionary<string, AudioClip[]> music = new Dictionary<string, AudioClip[]>();
 
     /// <summary>
     /// List of sources allocated to play looping sounds
     /// </summary>
-    [SerializeField]
+    //[SerializeField]
     [Tooltip("List of sources allocated to play looping sounds")]
     List<AudioSource> loopingSources;
 
-    [SerializeField]
+    //[SerializeField]
     [Tooltip("[DON'T TOUCH THIS], looping sound positions")]
     Transform[] sourcePositions;
 
     /// <summary>
     /// Limits the number of each sounds being played. If at 0 or no value, assume infinite
     /// </summary>
-    [SerializeField]
+    //[SerializeField]
     [Tooltip("Limits the number of each sounds being played. If at 0 or no value, assume infinite")]
     int[] exclusiveList;
 
@@ -117,6 +91,7 @@ public class AudioManager : MonoBehaviour {
     float musicVolume;
 
     [SerializeField]
+    [Tooltip("If true, enables 3D spatialized audio for sound effects, does not effect music")]
     bool spatialSound = true;
 
     public static AudioManager Singleton;
@@ -129,10 +104,11 @@ public class AudioManager : MonoBehaviour {
     /// <summary>
     /// Current music that's playing
     /// </summary>
-    [SerializeField]
-    [Tooltip("Current music that's playing")]
-    Music currentTrack;
+    //[Tooltip("Current music that's playing")]
+    [HideInInspector]
+    public string currentTrack = "None";
 
+    [Tooltip("The Audio Listener in your scene, will try to automatically locate on start")]
     [SerializeField]
     AudioListener listener;
 
@@ -141,31 +117,36 @@ public class AudioManager : MonoBehaviour {
 
     bool doneLoading;
 
+    string editorMessage = "";
+
     // Use this for initialization
     void Awake () {
         if (Singleton == null)
         {
             Singleton = this;
         }
-        else
+        else if (Singleton != this)
             Destroy(gameObject);
 
-        //AudioManager is important, keep it between scenes
+        // AudioManager is important, keep it between scenes
         DontDestroyOnLoad(gameObject);
 
-        sources = new AudioSource[numSources];
-        sourcePositions = new Transform[numSources];
+        sources = new AudioSource[audioSources];
+        loopingSources = new List<AudioSource>();
+        sourcePositions = new Transform[audioSources];
+        GameObject sourceHolder = new GameObject("Sources");
+        sourceHolder.transform.SetParent(transform);
 
-        for (int i = 0; i < numSources; i++)
+        for (int i = 0; i < audioSources; i++)
         {
-            sources[i] = Instantiate(sourcePrefab, transform).GetComponent<AudioSource>();
+            sources[i] = Instantiate(sourcePrefab, sourceHolder.transform).GetComponent<AudioSource>();
         }
 
-        //Subscribes itself to the sceneLoaded notifier
+        // Subscribes itself to the sceneLoaded notifier
         SceneManager.sceneLoaded += OnSceneLoaded;
 
-        //Get a reference to all our audiosources on startup
-        sources = GetComponentsInChildren<AudioSource>();
+        // Get a reference to all our audiosources on startup
+        sources = sourceHolder.GetComponentsInChildren<AudioSource>();
 
         GameObject m = new GameObject("MusicSource");
         m.transform.parent = transform;
@@ -181,9 +162,10 @@ public class AudioManager : MonoBehaviour {
         // Find the listener if not manually set
         FindNewListener();
 
-        PlayMusic(currentTrack);
+        print(currentTrack);
+        PlayMusic(currentTrack, true);
 
-        AddOffsetToArrays();
+        //AddOffsetToArrays();
 
         doneLoading = true;
     }
@@ -195,8 +177,8 @@ public class AudioManager : MonoBehaviour {
             listener = Camera.main.GetComponent<AudioListener>();
             if (listener == null) // In the case that there still isn't an AudioListener
             {
-                listener = gameObject.AddComponent<AudioListener>();
-                print("AudioManager Warning: Scene is missing an AudioListener! Mark the listener with the \"Main Camera\" tag!");
+                editorMessage = "AudioManager Warning: Scene is missing an AudioListener! Mark the listener with the \"Main Camera\" tag or set it manually!";
+                print(editorMessage);
             }
         }
     }
@@ -226,19 +208,18 @@ public class AudioManager : MonoBehaviour {
     /// </summary>
     /// <param name="m">Index of the music</param>
     /// <param name="hasIntro">Does the clip have an intro portion that plays only once?</param>
-    public void PlayMusic(Music m, bool hasIntro = false)
+    public void PlayMusic(string m, bool hasIntro = false)
     {
-        if (m == Music.None) return;
+        if (m.Equals("None")) return;
         currentTrack = m;
-        m--; //Offset for the code to follow
-        if (hasIntro)
+        if (hasIntro && music[m][1] != null)
         {
-            musicSource.clip = trackIntros[(int)m];
+            musicSource.clip = music[m][1];
             musicSource.loop = false;
         }
         else
         {
-            musicSource.clip = tracks[(int)m];
+            musicSource.clip = music[m][0];
             musicSource.loop = true;
         }
         queueIntro = hasIntro;
@@ -252,7 +233,7 @@ public class AudioManager : MonoBehaviour {
     public void StopMusic()
     {
         musicSource.Stop();
-        currentTrack = Music.None;
+        currentTrack = "None";
     }
 
     private void Update()
@@ -262,7 +243,7 @@ public class AudioManager : MonoBehaviour {
             if (!musicSource.isPlaying) //Returns true the moment the intro ends
             {
                 //Swap to the main loop
-                musicSource.clip = tracks[(int)currentTrack];
+                musicSource.clip = music[currentTrack][0];
                 musicSource.loop = true;
                 musicSource.Play();
                 queueIntro = false;
@@ -271,7 +252,7 @@ public class AudioManager : MonoBehaviour {
 
         if (spatialSound) // Only do this part if we have 3D sound enabled
         {
-            for (int i = 0; i < numSources; i++) // Search every sources
+            for (int i = 0; i < audioSources; i++) // Search every sources
             {
                 if (sourcePositions[i] != null) // If there's a designated location
                 {
@@ -293,7 +274,7 @@ public class AudioManager : MonoBehaviour {
     /// <param name="p">The priority of the sound</param>
     /// <param name="pitchShift">If not None, randomizes the pitch of the sound, use AudioManager.Pitches for presets</param>
     /// <param name="delay">Amount of seconds to wait before playing the sound</param>
-    public void PlaySoundOnce(Sound s, Transform trans = null, Priority p = Priority.Default, float pitchShift = 0, float delay = 0)
+    public void PlaySoundOnce(string s, Transform trans = null, Priority p = Priority.Default, float pitchShift = 0, float delay = 0)
     {
         AudioSource a = GetAvailableSource();
 
@@ -324,7 +305,8 @@ public class AudioManager : MonoBehaviour {
             a.pitch = 1;
         }
 
-        a.clip = clips[(int)s];
+        //a.clip = clips[(int)s];
+        a.clip = sounds[s];
         a.priority = (int)p;
         a.PlayDelayed(delay);
     }
@@ -373,14 +355,13 @@ public class AudioManager : MonoBehaviour {
         a.PlayDelayed(delay);
     }
 
-
     /// <summary>
     /// Play a sound and loop it forever
     /// </summary>
     /// <param name="s"></param>
     /// <param name="trans">The transform of the sound's source</param>
     /// <param name="p">The priority of the sound</param>
-    public void PlaySoundLoop(Sound s, Transform trans = null, Priority p = Priority.Default)
+    public void PlaySoundLoop(string s, Transform trans = null, Priority p = Priority.Default)
     {
         AudioSource a = GetAvailableSource();
         loopingSources.Add(a);
@@ -392,11 +373,14 @@ public class AudioManager : MonoBehaviour {
         {
             sourcePositions[Array.IndexOf(sources, a)] = listener.transform;
         }
-        loopingSources[loopingSources.Count - 1].priority = (int)p;
-        loopingSources[loopingSources.Count - 1].clip = clips[(int)s];
-        loopingSources[loopingSources.Count - 1].pitch = 1;
-        loopingSources[loopingSources.Count - 1].Play();
-        loopingSources[loopingSources.Count - 1].loop = true;
+
+        AudioSource source = loopingSources[loopingSources.Count - 1];
+        //loopingSources[loopingSources.Count - 1].clip = clips[(int)s];
+        source.clip = sounds[s];
+        source.priority = (int)p;
+        source.pitch = 1;
+        source.Play();
+        source.loop = true;
     }
 
     /// <summary>
@@ -417,11 +401,12 @@ public class AudioManager : MonoBehaviour {
         {
             sourcePositions[Array.IndexOf(sources, a)] = listener.transform;
         }
-        loopingSources[loopingSources.Count - 1].priority = (int)p;
-        loopingSources[loopingSources.Count - 1].clip = s;
-        loopingSources[loopingSources.Count - 1].pitch = 1;
-        loopingSources[loopingSources.Count - 1].Play();
-        loopingSources[loopingSources.Count - 1].loop = true;
+        AudioSource source = loopingSources[loopingSources.Count - 1];
+        source.priority = (int)p;
+        source.clip = s;
+        source.pitch = 1;
+        source.Play();
+        source.loop = true;
     }
 
     /// <summary>
@@ -429,11 +414,11 @@ public class AudioManager : MonoBehaviour {
     /// </summary>
     /// <param name="s">The sound to be stopped</param>
     /// <param name="t">For sources, helps with duplicate soundss</param>
-    public void StopSound(Sound s, Transform t = null)
+    public void StopSound(string s, Transform t = null)
     {
-        for (int i = 0; i < numSources; i++)
+        for (int i = 0; i < audioSources; i++)
         {
-            if (sources[i].clip == clips[(int)s])
+            if (sources[i].clip == sounds[s])
             {
                 if (t != null)
                 {
@@ -450,11 +435,11 @@ public class AudioManager : MonoBehaviour {
     /// </summary>
     /// <param name="s"></param>
     /// <param name="stopInstantly">Stops sound instantly if true</param>
-    public void StopSoundLoop(Sound s, bool stopInstantly = false, Transform t = null)
+    public void StopSoundLoop(string s, bool stopInstantly = false, Transform t = null)
     {
         for (int i = 0; i < loopingSources.Count; i++)
         {
-            if (loopingSources[i].clip == clips[(int)s])
+            if (loopingSources[i].clip == sounds[s])
             {
                 for (int j = 0; j < sources.Length; j++) { // Thanks Connor Smiley 
                     if (sources[j] == loopingSources[i])
@@ -510,14 +495,17 @@ public class AudioManager : MonoBehaviour {
     /// </param>
     public void StopSoundLoopAll(bool stopPlaying = false)
     {
-        foreach (AudioSource a in loopingSources)
+        if (loopingSources.Count > 0)
         {
-            if (stopPlaying) a.Stop();
-            a.loop = false;
-            loopingSources.Remove(a);
+            foreach (AudioSource a in loopingSources)
+            {
+                if (stopPlaying) a.Stop();
+                a.loop = false;
+                loopingSources.Remove(a);
+            }
+            if (sourcePositions != null)
+                sourcePositions = new Transform[audioSources];
         }
-        if (sourcePositions != null)
-            sourcePositions = new Transform[numSources];
     }
 
     /// <summary>
@@ -558,6 +546,11 @@ public class AudioManager : MonoBehaviour {
     /// </summary>
     private void OnValidate()
     {
+        if (Singleton == null)
+        {
+            Singleton = this;
+        }
+        GenerateAudioDictionarys();
         if (!doneLoading) return;
         //Updates volume
         ApplySoundVolume();
@@ -570,10 +563,10 @@ public class AudioManager : MonoBehaviour {
     /// </summary>
     public void AddOffsetToArrays()
     {
-        if (clips[0] != null && clips.Count < (int)Sound.Count)
-        {
-            clips.Insert(0, null);
-        }
+        //if (clips[0] != null && clips.Count < (int)Sound.Count)
+        //{
+        //    clips.Insert(0, null);
+        //}
 
         //if (tracks[0] != null && tracks.Count < (int)Music.Count)
         //{
@@ -647,11 +640,11 @@ public class AudioManager : MonoBehaviour {
     /// <param name="s">The sound in question</param>
     /// <param name="trans">Specify is the sound is playing from that transform</param>
     /// <returns></returns>
-    public bool IsSoundPlaying(Sound s, Transform trans = null)
+    public bool IsSoundPlaying(string s, Transform trans = null)
     {
-        for (int i = 0; i < numSources; i++) // Loop through all sources
+        for (int i = 0; i < audioSources; i++) // Loop through all sources
         {
-            if (sources[i].clip == clips[(int)s] && sources[i].isPlaying) // If this source is playing the clip
+            if (sources[i].clip == sounds[s] && sources[i].isPlaying) // If this source is playing the clip
             {
                 if (trans != null)
                 {
@@ -671,10 +664,10 @@ public class AudioManager : MonoBehaviour {
     /// </summary>
     /// <param name="s">The sound in question</param>
     /// <returns>True or false you dingus</returns>
-    public bool IsSoundLooping(Sound s) {
+    public bool IsSoundLooping(string s) {
         foreach (AudioSource c in loopingSources)
         {
-            if (c.clip == clips[(int)s])
+            if (c.clip == sounds[s])
             {
                 return true;
             }
@@ -703,5 +696,60 @@ public class AudioManager : MonoBehaviour {
                 return Pitches.High;
         }
         return 0;
+    }
+
+    void GenerateAudioDictionarys()
+    {
+        // Create dictionary for sound
+        if (transform.childCount == 0) return; // Probably script execution order issue
+        if (transform.GetChild(0).childCount != sounds.Count) sounds.Clear();
+        foreach (AudioFile a in transform.GetChild(0).GetComponentsInChildren<AudioFile>())
+        {
+            if (sounds.ContainsKey(a.name))
+            {
+                if (sounds[a.name].Equals(a.GetFile())) continue;
+                else
+                {
+                    sounds[a.name] = a.GetFile();
+                }
+            }
+            else
+            {
+                sounds.Add(a.name, a.GetFile());
+            }
+        }
+
+        if (transform.GetChild(1).childCount != music.Count) music.Clear();
+        // Create a dictionary for music
+        foreach (AudioFileMusic a in transform.GetChild(1).GetComponentsInChildren<AudioFileMusic>())
+        {
+            if (music.ContainsKey(a.name))
+            {
+                if (music[a.name].Equals(a.GetFile())) continue;
+                else
+                {
+                    music[a.name] = a.GetFile();
+                }
+            }
+            else
+            {
+                music.Add(a.name, a.GetFile());
+            }
+        }
+    }
+
+    public string GetEditorMessage()
+    {
+        return editorMessage;
+    }
+
+    public Dictionary<string, AudioClip[]> GetMusicDictionary()
+    {
+        return music;
+    }
+
+    public Dictionary<string, AudioClip> GetSoundDictionary()
+    {
+        return sounds;
     }
 }

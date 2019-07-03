@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 
 /// <summary>
+/// Plays sounds when a particle system emits particles and when particles die
 /// https://answers.unity.com/questions/693044/play-sound-on-particle-emit-sub-emitter.html
 /// With help from these lovely gents
 /// </summary>

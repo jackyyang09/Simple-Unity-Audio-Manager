@@ -5,17 +5,19 @@ using UnityEngine;
 public class BaseAudioFeedback : MonoBehaviour
 {
     [Header("Sound Settings")]
+
     [SerializeField]
-    protected AudioManager.Sound sound;
+    protected bool spatialSound = true;
+
+    [HideInInspector]
+    public string sound;
 
     [SerializeField]
     protected AudioManager.Priority priority = AudioManager.Priority.Default;
 
     [SerializeField]
     protected AudioManager.Pitch pitchShift = AudioManager.Pitch.VeryLow;
-
-    [SerializeField]
-    protected bool spatialSound = true;
+    
     protected Transform sTransform;
 
     protected AudioManager am;
@@ -27,4 +29,9 @@ public class BaseAudioFeedback : MonoBehaviour
 
         sTransform = (spatialSound) ? transform : null;
     }
+
+    //public void SetSound(string s)
+    //{
+    //    sound = s;
+    //}
 }

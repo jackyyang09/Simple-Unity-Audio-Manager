@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AudioCollisionFeedback : BaseAudioFeedback
+public class AudioTriggerFeedback : BaseAudioFeedback
 {
     // Start is called before the first frame update
     protected override void Start()
@@ -10,12 +10,12 @@ public class AudioCollisionFeedback : BaseAudioFeedback
         base.Start();
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void OnTriggerEnter(Collider collision)
     {
         am.PlaySoundOnce(sound, transform, priority, AudioManager.UsePitch(pitchShift));
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnTriggerEnter2D(Collider2D collision)
     {
         am.PlaySoundOnce(sound, transform, priority, AudioManager.UsePitch(pitchShift));
     }
