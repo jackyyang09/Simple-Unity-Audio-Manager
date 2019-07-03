@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -35,7 +35,8 @@ public class AudioManagerEditor : Editor
 
         GUIContent content = new GUIContent("Current Track", "Current music that's playing, will play on start if not \"None\"");
 
-        serializedObject.FindProperty("currentTrack").stringValue = options[EditorGUILayout.Popup(content, options.IndexOf(serializedObject.FindProperty("currentTrack").stringValue), options.ToArray())];
+        if (serializedObject.FindProperty("currentTrack").stringValue.Equals("")) EditorGUILayout.Popup(content, 0, options.ToArray());
+        else serializedObject.FindProperty("currentTrack").stringValue = options[EditorGUILayout.Popup(content, options.IndexOf(serializedObject.FindProperty("currentTrack").stringValue), options.ToArray())];
 
         serializedObject.ApplyModifiedProperties();
 
