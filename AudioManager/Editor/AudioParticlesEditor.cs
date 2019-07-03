@@ -24,15 +24,16 @@ public class AudioParticlesEditor : Editor
             options.Add(s);
         }
 
-        //if (AudioManager.GetInstance().GetMusicDictionary() == null)
-        //{
-        //    EditorGUILayout.HelpBox("Error! Add an audio file before running!", MessageType.Error);
-        //}
-
         GUIContent soundDesc = new GUIContent("Sound", "Sound that will be played when particles spawn/die");
 
-        if (serializedObject.FindProperty("sound").stringValue.Equals("")) EditorGUILayout.Popup(soundDesc, 0, options.ToArray());
-        else serializedObject.FindProperty("sound").stringValue = options[EditorGUILayout.Popup(soundDesc, options.IndexOf(serializedObject.FindProperty("sound").stringValue), options.ToArray())];
+        if (serializedObject.FindProperty("sound").stringValue.Equals("")) // Default to "None"
+        {
+            serializedObject.FindProperty("sound").stringValue = options[EditorGUILayout.Popup(soundDesc, 0, options.ToArray())];
+        }
+        else
+        {
+            serializedObject.FindProperty("sound").stringValue = options[EditorGUILayout.Popup(soundDesc, options.IndexOf(serializedObject.FindProperty("sound").stringValue), options.ToArray())];
+        }
 
         serializedObject.ApplyModifiedProperties();
     }

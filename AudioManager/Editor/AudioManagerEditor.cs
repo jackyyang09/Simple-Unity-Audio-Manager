@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -23,6 +23,9 @@ public class AudioManagerEditor : Editor
             EditorGUILayout.HelpBox(editorMessage, MessageType.Info);
         }
 
+        if (myScript.GetSoundVolume() == 0) EditorGUILayout.HelpBox("Note: Sound is MUTED!", MessageType.Info);
+        if (myScript.GetMusicVolume() == 0) EditorGUILayout.HelpBox("Note: Music is MUTED!", MessageType.Info);
+
         DrawDefaultInspector();
 
         List<string> options = new List<string>();
@@ -39,6 +42,11 @@ public class AudioManagerEditor : Editor
         else serializedObject.FindProperty("currentTrack").stringValue = options[EditorGUILayout.Popup(content, options.IndexOf(serializedObject.FindProperty("currentTrack").stringValue), options.ToArray())];
 
         serializedObject.ApplyModifiedProperties();
+
+        if (GUILayout.Button("Re-Generate Audio Library"))
+        {
+            myScript.GenerateAudioDictionarys();
+        }
 
         if (myScript.GetSoundDictionary().Count > 0)
         {
