@@ -35,5 +35,6 @@ sysinfo.txt
 *.apk
 *.unitypackage
 
+AudioManager.meta
 LICENSE.md.meta
 README.md.meta
