@@ -37,6 +37,8 @@ public class AudioParticlesEditor : Editor
             sound = options[EditorGUILayout.Popup(soundDesc, options.IndexOf(sound), options.ToArray())];
         }
 
+        serializedObject.FindProperty("sound").stringValue = sound;
+
         serializedObject.ApplyModifiedProperties();
     }
 }

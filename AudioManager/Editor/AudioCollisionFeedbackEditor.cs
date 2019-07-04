@@ -10,12 +10,10 @@ public class AudioCollisionFeedbackEditor : Editor
 
     public override void OnInspectorGUI()
     {
-        DrawDefaultInspector();
-
         if (am == null) am = AudioManager.GetInstance();
 
         AudioCollisionFeedback myScript = (AudioCollisionFeedback)target;
-        
+
         List<string> options = new List<string>();
 
         options.Add("None");
@@ -24,9 +22,16 @@ public class AudioCollisionFeedbackEditor : Editor
             options.Add(s);
         }
 
-        GUIContent soundDesc = new GUIContent("Sound", "Sound that will be played on collision");
-
         string sound = serializedObject.FindProperty("sound").stringValue;
+
+        if (sound == "None")
+        {
+            EditorGUILayout.HelpBox("Choose a sound to play on collision before running!", MessageType.Error);
+        }
+
+        DrawDefaultInspector();
+
+        GUIContent soundDesc = new GUIContent("Sound", "Sound that will be played on collision");
 
         if (sound.Equals("") || !options.Contains(sound)) // Default to "None"
         {
@@ -36,6 +41,8 @@ public class AudioCollisionFeedbackEditor : Editor
         {
             sound = options[EditorGUILayout.Popup(soundDesc, options.IndexOf(sound), options.ToArray())];
         }
+
+        serializedObject.FindProperty("sound").stringValue = sound;
 
         serializedObject.ApplyModifiedProperties();
     }

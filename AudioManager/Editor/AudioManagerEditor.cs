@@ -49,6 +49,8 @@ public class AudioManagerEditor : Editor
             currentTrack = options[EditorGUILayout.Popup(content, options.IndexOf(currentTrack), options.ToArray())];
         }
 
+        serializedObject.FindProperty("currentTrack").stringValue = currentTrack;
+
         serializedObject.ApplyModifiedProperties();
 
         if (GUILayout.Button("Re-Generate Audio Library"))
