@@ -26,13 +26,15 @@ public class AudioParticlesEditor : Editor
 
         GUIContent soundDesc = new GUIContent("Sound", "Sound that will be played when particles spawn/die");
 
-        if (serializedObject.FindProperty("sound").stringValue.Equals("")) // Default to "None"
+        string sound = serializedObject.FindProperty("sound").stringValue;
+
+        if (sound.Equals("") || !options.Contains(sound)) // Default to "None"
         {
-            serializedObject.FindProperty("sound").stringValue = options[EditorGUILayout.Popup(soundDesc, 0, options.ToArray())];
+            sound = options[EditorGUILayout.Popup(soundDesc, 0, options.ToArray())];
         }
         else
         {
-            serializedObject.FindProperty("sound").stringValue = options[EditorGUILayout.Popup(soundDesc, options.IndexOf(serializedObject.FindProperty("sound").stringValue), options.ToArray())];
+            sound = options[EditorGUILayout.Popup(soundDesc, options.IndexOf(sound), options.ToArray())];
         }
 
         serializedObject.ApplyModifiedProperties();

@@ -38,8 +38,16 @@ public class AudioManagerEditor : Editor
 
         GUIContent content = new GUIContent("Current Track", "Current music that's playing, will play on start if not \"None\"");
 
-        if (serializedObject.FindProperty("currentTrack").stringValue.Equals("")) EditorGUILayout.Popup(content, 0, options.ToArray());
-        else serializedObject.FindProperty("currentTrack").stringValue = options[EditorGUILayout.Popup(content, options.IndexOf(serializedObject.FindProperty("currentTrack").stringValue), options.ToArray())];
+        string currentTrack = serializedObject.FindProperty("currentTrack").stringValue;
+
+        if (currentTrack.Equals("") || !options.Contains(currentTrack)) // Default to "None"
+        {
+            currentTrack = options[EditorGUILayout.Popup(content, 0, options.ToArray())];
+        }
+        else
+        {
+            currentTrack = options[EditorGUILayout.Popup(content, options.IndexOf(currentTrack), options.ToArray())];
+        }
 
         serializedObject.ApplyModifiedProperties();
 
