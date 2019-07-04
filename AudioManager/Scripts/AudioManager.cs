@@ -127,7 +127,17 @@ public class AudioManager : MonoBehaviour
             Singleton = this;
         }
         else if (Singleton != this)
-            Destroy(gameObject);
+        {
+            // A unique case where the Singleton exists but not in this scene
+            if (Singleton.gameObject.scene.name == null)
+            {
+                Singleton = this;
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
 
         // AudioManager is important, keep it between scenes
         DontDestroyOnLoad(gameObject);
