@@ -6,8 +6,8 @@ using UnityEngine.SceneManagement;
 /// <summary>
 /// AudioManager singleton that manages all audio in the game
 /// </summary>
-[System.Serializable]
-public class AudioManager : MonoBehaviour {
+public class AudioManager : MonoBehaviour
+{
 
     /// <summary>
     /// From 0 (least important) to 255 (most important)
@@ -120,7 +120,8 @@ public class AudioManager : MonoBehaviour {
     string editorMessage = "";
 
     // Use this for initialization
-    void Awake () {
+    void Awake()
+    {
         if (Singleton == null)
         {
             Singleton = this;
@@ -166,6 +167,11 @@ public class AudioManager : MonoBehaviour {
         PlayMusic(currentTrack, true);
 
         //AddOffsetToArrays();
+
+        if (!Application.isEditor)
+        {
+            GenerateAudioDictionarys();
+        }
 
         doneLoading = true;
     }
@@ -294,7 +300,7 @@ public class AudioManager : MonoBehaviour {
                 a.spatialBlend = 0;
             }
         }
-        
+
         //This is the base unchanged pitch
         if (pitchShift > Pitches.None)
         {
@@ -441,7 +447,8 @@ public class AudioManager : MonoBehaviour {
         {
             if (loopingSources[i].clip == sounds[s])
             {
-                for (int j = 0; j < sources.Length; j++) { // Thanks Connor Smiley 
+                for (int j = 0; j < sources.Length; j++)
+                { // Thanks Connor Smiley 
                     if (sources[j] == loopingSources[i])
                     {
                         if (t != sources[j].transform)
@@ -525,7 +532,7 @@ public class AudioManager : MonoBehaviour {
             s.volume = soundVolume;
         }
     }
-    
+
     public void SetSoundVolume(UnityEngine.UI.Slider v)
     {
         soundVolume = v.value;
@@ -534,7 +541,7 @@ public class AudioManager : MonoBehaviour {
             s.volume = soundVolume;
         }
     }
-    
+
     public void SetMusicVolume(UnityEngine.UI.Slider v)
     {
         musicVolume = v.value;
@@ -608,7 +615,7 @@ public class AudioManager : MonoBehaviour {
     /// <returns></returns>
     AudioSource GetAvailableSource()
     {
-        foreach(AudioSource a in sources)
+        foreach (AudioSource a in sources)
         {
             if (!a.isPlaying && !loopingSources.Contains(a))
             {
@@ -664,7 +671,8 @@ public class AudioManager : MonoBehaviour {
     /// </summary>
     /// <param name="s">The sound in question</param>
     /// <returns>True or false you dingus</returns>
-    public bool IsSoundLooping(string s) {
+    public bool IsSoundLooping(string s)
+    {
         foreach (AudioSource c in loopingSources)
         {
             if (c.clip == sounds[s])
