@@ -10,12 +10,10 @@ public class AudioParticlesEditor : Editor
 
     public override void OnInspectorGUI()
     {
-        DrawDefaultInspector();
-
         if (am == null) am = AudioManager.GetInstance();
 
         AudioParticles myScript = (AudioParticles)target;
-        
+
         List<string> options = new List<string>();
 
         options.Add("None");
@@ -24,9 +22,16 @@ public class AudioParticlesEditor : Editor
             options.Add(s);
         }
 
-        GUIContent soundDesc = new GUIContent("Sound", "Sound that will be played when particles spawn/die");
-
         string sound = serializedObject.FindProperty("sound").stringValue;
+
+        if (sound == "None")
+        {
+            EditorGUILayout.HelpBox("Choose a sound to play before running!", MessageType.Error);
+        }
+
+        DrawDefaultInspector();
+
+        GUIContent soundDesc = new GUIContent("Sound", "Sound that will be played when particles spawn/die");
 
         if (sound.Equals("") || !options.Contains(sound)) // Default to "None"
         {
