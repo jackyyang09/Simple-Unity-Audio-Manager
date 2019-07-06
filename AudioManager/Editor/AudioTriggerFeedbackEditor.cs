@@ -24,7 +24,7 @@ public class AudioTriggerFeedbackEditor : Editor
 
         string sound = serializedObject.FindProperty("sound").stringValue;
 
-        if (sound == "None")
+        if (sound == "None" && myScript.GetAttachedSound() == null)
         {
             EditorGUILayout.HelpBox("Choose a sound to play on trigger enter before running!", MessageType.Error);
         }

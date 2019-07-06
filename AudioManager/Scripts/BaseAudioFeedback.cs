@@ -17,6 +17,12 @@ public class BaseAudioFeedback : MonoBehaviour
 
     [SerializeField]
     protected AudioManager.Pitch pitchShift = AudioManager.Pitch.VeryLow;
+
+    [Header("Set your sound here")]
+
+    [SerializeField]
+    [Tooltip("Overrides the \"Sound\" parameter with an AudioClip if not null")]
+    protected AudioClip soundFile;
     
     protected Transform sTransform;
 
@@ -28,6 +34,11 @@ public class BaseAudioFeedback : MonoBehaviour
         am = AudioManager.GetInstance();
 
         sTransform = (spatialSound) ? transform : null;
+    }
+
+    public AudioClip GetAttachedSound()
+    {
+        return soundFile;
     }
 
     //public void SetSound(string s)

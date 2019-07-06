@@ -12,11 +12,25 @@ public class AudioTriggerFeedback : BaseAudioFeedback
 
     private void OnTriggerEnter(Collider collision)
     {
-        am.PlaySoundOnce(sound, transform, priority, AudioManager.UsePitch(pitchShift));
+        if (soundFile != null)
+        {
+            am.PlaySoundOnce(soundFile, transform, priority, AudioManager.UsePitch(pitchShift));
+        }
+        else
+        {
+            am.PlaySoundOnce(sound, transform, priority, AudioManager.UsePitch(pitchShift));
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        am.PlaySoundOnce(sound, transform, priority, AudioManager.UsePitch(pitchShift));
+        if (soundFile != null)
+        {
+            am.PlaySoundOnce(soundFile, transform, priority, AudioManager.UsePitch(pitchShift));
+        }
+        else
+        {
+            am.PlaySoundOnce(sound, transform, priority, AudioManager.UsePitch(pitchShift));
+        }
     }
 }
