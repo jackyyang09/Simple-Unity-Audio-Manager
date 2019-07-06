@@ -289,7 +289,7 @@ public class AudioManager : MonoBehaviour
     /// <param name="p">The priority of the sound</param>
     /// <param name="pitchShift">If not None, randomizes the pitch of the sound, use AudioManager.Pitches for presets</param>
     /// <param name="delay">Amount of seconds to wait before playing the sound</param>
-    public void PlaySoundOnce(string s, Transform trans = null, Priority p = Priority.Default, float pitchShift = 0, float delay = 0)
+    public AudioSource PlaySoundOnce(string s, Transform trans = null, Priority p = Priority.Default, float pitchShift = 0, float delay = 0)
     {
         AudioSource a = GetAvailableSource();
 
@@ -324,6 +324,8 @@ public class AudioManager : MonoBehaviour
         a.clip = sounds[s];
         a.priority = (int)p;
         a.PlayDelayed(delay);
+
+        return a;
     }
 
     /// <summary>
@@ -334,7 +336,7 @@ public class AudioManager : MonoBehaviour
     /// <param name="p">The priority of the sound</param>
     /// <param name="pitchShift">If not None, randomizes the pitch of the sound, use AudioManager.Pitches for presets</param>
     /// <param name="delay">Amount of seconds to wait before playing the sound</param>
-    public void PlaySoundOnce(AudioClip s, Transform trans = null, Priority p = Priority.Default, float pitchShift = 0, float delay = 0)
+    public AudioSource PlaySoundOnce(AudioClip s, Transform trans = null, Priority p = Priority.Default, float pitchShift = 0, float delay = 0)
     {
         AudioSource a = GetAvailableSource();
 
@@ -368,6 +370,8 @@ public class AudioManager : MonoBehaviour
         a.clip = s;
         a.priority = (int)p;
         a.PlayDelayed(delay);
+
+        return a;
     }
 
     /// <summary>
@@ -376,7 +380,7 @@ public class AudioManager : MonoBehaviour
     /// <param name="s"></param>
     /// <param name="trans">The transform of the sound's source</param>
     /// <param name="p">The priority of the sound</param>
-    public void PlaySoundLoop(string s, Transform trans = null, Priority p = Priority.Default)
+    public AudioSource PlaySoundLoop(string s, Transform trans = null, Priority p = Priority.Default)
     {
         AudioSource a = GetAvailableSource();
         loopingSources.Add(a);
@@ -396,6 +400,8 @@ public class AudioManager : MonoBehaviour
         source.pitch = 1;
         source.Play();
         source.loop = true;
+
+        return a;
     }
 
     /// <summary>
@@ -404,7 +410,7 @@ public class AudioManager : MonoBehaviour
     /// <param name="s"></param>
     /// <param name="trans">The transform of the sound's source</param>
     /// <param name="p">The priority of the sound</param>
-    public void PlaySoundLoop(AudioClip s, Transform trans = null, Priority p = Priority.Default)
+    public AudioSource PlaySoundLoop(AudioClip s, Transform trans = null, Priority p = Priority.Default)
     {
         AudioSource a = GetAvailableSource();
         loopingSources.Add(a);
@@ -422,6 +428,8 @@ public class AudioManager : MonoBehaviour
         source.pitch = 1;
         source.Play();
         source.loop = true;
+
+        return a;
     }
 
     /// <summary>
@@ -757,6 +765,19 @@ public class AudioManager : MonoBehaviour
         print("AudioManager: Audio Library Generated!");
     }
 
+    /// <summary>
+    /// Get reference to the music player for custom usage
+    /// </summary>
+    /// <returns></returns>
+    public AudioSource GetMusicSource()
+    {
+        return musicSource;
+    }
+
+    /// <summary>
+    /// Used by the custom inspector to get error messages
+    /// </summary>
+    /// <returns></returns>
     public string GetEditorMessage()
     {
         return editorMessage;

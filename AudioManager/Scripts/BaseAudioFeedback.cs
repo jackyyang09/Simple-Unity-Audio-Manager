@@ -18,7 +18,7 @@ public class BaseAudioFeedback : MonoBehaviour
     [SerializeField]
     protected AudioManager.Pitch pitchShift = AudioManager.Pitch.VeryLow;
 
-    [Header("Set your sound here")]
+    [Header("Set your sound settings here")]
 
     [SerializeField]
     [Tooltip("Overrides the \"Sound\" parameter with an AudioClip if not null")]

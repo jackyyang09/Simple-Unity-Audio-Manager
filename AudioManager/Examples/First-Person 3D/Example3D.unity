@@ -511,6 +511,7 @@ MonoBehaviour:
   sound: Abstract Pop
   priority: 128
   pitchShift: 1
+  soundFile: {fileID: 0}
   playSoundOn: 0
   lifeTimeOffset: 0.1
 --- !u!199 &985270136
