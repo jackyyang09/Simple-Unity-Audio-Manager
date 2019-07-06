@@ -2099,6 +2099,7 @@ MonoBehaviour:
   priority: 128
   pitchShift: 1
   playSoundOn: 0
+  lifeTimeOffset: 0.05
 --- !u!199 &2141624380
 ParticleSystemRenderer:
   serializedVersion: 6

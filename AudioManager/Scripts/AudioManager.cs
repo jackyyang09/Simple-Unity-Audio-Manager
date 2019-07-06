@@ -173,7 +173,6 @@ public class AudioManager : MonoBehaviour
         // Find the listener if not manually set
         FindNewListener();
 
-        print(currentTrack);
         PlayMusic(currentTrack, true);
 
         //AddOffsetToArrays();

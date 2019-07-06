@@ -23,6 +23,11 @@ public class AudioParticles : BaseAudioFeedback
     [SerializeField]
     PlayCondition playSoundOn = PlayCondition.ParticleEmitted;
 
+    [SerializeField]
+    [Tooltip("Reduces particle lifetime by this much, used to keep track of particles and keep them from spawning/dying at the same time")]
+    [Range(0.01f, 0.1f)]
+    float lifeTimeOffset = 0.05f;
+
     ParticleSystem particles;
 
     int prevParticleCount;
@@ -31,6 +36,10 @@ public class AudioParticles : BaseAudioFeedback
     {
         base.Start();
         particles = GetComponent<ParticleSystem>();
+
+        ParticleSystem.MainModule main = particles.main;
+        float offset = main.startLifetime.constant - lifeTimeOffset;
+        main.startLifetime = offset;
     }
 
     // Update is called once per frame

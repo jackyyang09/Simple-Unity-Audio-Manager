@@ -202,8 +202,8 @@ MonoBehaviour:
   dynamicSourceAllocation: 0
   soundVolume: 1
   musicVolume: 1
-  spatialSound: 0
-  currentTrack: Main Theme
+  spatialSound: 1
+  currentTrack: None
   listener: {fileID: 0}
   sourcePrefab: {fileID: 3048837711066349602, guid: cf11aed7e0e56ae45afe7eaebe30a616,
     type: 3}

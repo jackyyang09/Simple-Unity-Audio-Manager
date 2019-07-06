@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1597906674348266904}
   - component: {fileID: 1597906674348266907}
   - component: {fileID: 1597906674348266910}
+  - component: {fileID: -783860964657925481}
   - component: {fileID: -8625587954343364288}
   - component: {fileID: 4330606100798619872}
   m_Layer: 8
@@ -96,6 +97,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bulletSpeed: 50
   maxLifeTime: 1
+--- !u!114 &-783860964657925481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1597906674348266906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd9ab7a541c88814b8b84cb0c6264c72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spatialSound: 1
+  sound: None
+  priority: 128
+  pitchShift: 1
 --- !u!61 &-8625587954343364288
 BoxCollider2D:
   m_ObjectHideFlags: 0
