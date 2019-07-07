@@ -23,4 +23,9 @@ public class PauseMenu : MonoBehaviour
             else Time.timeScale = 1;
         }
     }
+
+    public void ChangeMusic()
+    {
+        AudioManager.GetInstance().FadeMusic("Main Theme", 5, true);
+    }
 }

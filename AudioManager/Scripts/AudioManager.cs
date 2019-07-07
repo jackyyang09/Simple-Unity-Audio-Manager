@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -8,7 +9,6 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public class AudioManager : MonoBehaviour
 {
-
     /// <summary>
     /// From 0 (least important) to 255 (most important)
     /// </summary>
@@ -78,9 +78,9 @@ public class AudioManager : MonoBehaviour
     AudioSource[] sources;
 
     /// <summary>
-    /// One sources dedicated to playing music
+    /// Sources dedicated to playing music
     /// </summary>
-    AudioSource musicSource;
+    AudioSource[] musicSources;
 
     [SerializeField]
     [Range(0, 1)]
@@ -159,11 +159,18 @@ public class AudioManager : MonoBehaviour
         // Get a reference to all our audiosources on startup
         sources = sourceHolder.GetComponentsInChildren<AudioSource>();
 
+        musicSources = new AudioSource[2];
         GameObject m = new GameObject("MusicSource");
         m.transform.parent = transform;
         m.AddComponent<AudioSource>();
-        musicSource = m.GetComponent<AudioSource>();
-        musicSource.priority = (int)Priority.Music;
+        musicSources[0] = m.GetComponent<AudioSource>();
+        musicSources[0].priority = (int)Priority.Music;
+
+        m = new GameObject("SecondaryMusicSource");
+        m.transform.parent = transform;
+        m.AddComponent<AudioSource>();
+        musicSources[1] = m.GetComponent<AudioSource>();
+        musicSources[1].priority = (int)Priority.Music;
 
         //Set sources properties based on current settings
         SetSoundVolume(soundVolume);
@@ -223,23 +230,83 @@ public class AudioManager : MonoBehaviour
     /// </summary>
     /// <param name="m">Index of the music</param>
     /// <param name="hasIntro">Does the clip have an intro portion that plays only once?</param>
-    public void PlayMusic(string m, bool hasIntro = false)
+    public void PlayMusic(string track, bool hasIntro = false)
     {
-        if (m.Equals("None")) return;
-        currentTrack = m;
-        if (hasIntro && music[m][1] != null)
+        if (track.Equals("None")) return;
+        currentTrack = track;
+        if (hasIntro && music[track][1] != null)
         {
-            musicSource.clip = music[m][1];
-            musicSource.loop = false;
+            musicSources[0].clip = music[track][1];
+            musicSources[0].loop = false;
         }
         else
         {
-            musicSource.clip = music[m][0];
-            musicSource.loop = true;
+            musicSources[0].clip = music[track][0];
+            musicSources[0].loop = true;
         }
         queueIntro = hasIntro;
 
-        musicSource.Play();
+        musicSources[0].Play();
+    }
+
+    /// <summary>
+    /// Fades music from the previous track to the new track specified
+    /// </summary>
+    /// <param name="track"></param>
+    /// <param name="time"></param>
+    public void FadeMusic(string track, float time = 0, bool hasIntro = false)
+    {
+        if (track.Equals("None")) return;
+        currentTrack = track;
+
+        musicSources[1].clip = music[track][0];
+        musicSources[1].loop = true;
+
+        AudioSource temp = musicSources[0];
+        musicSources[0] = musicSources[1];
+        musicSources[1] = temp;
+
+        if (hasIntro && music[track][1] != null)
+        {
+            musicSources[0].clip = music[track][1];
+            musicSources[0].loop = false;
+        }
+        else
+        {
+            musicSources[0].clip = music[track][0];
+            musicSources[0].loop = true;
+        }
+        queueIntro = hasIntro;
+
+        musicSources[0].Play();
+
+        if (time > 0)
+        {
+            StartCoroutine(FadeInMusic(time));
+            StartCoroutine(FadeOutMusic(time));
+        }
+    }
+
+    private IEnumerator FadeInMusic(float time = 0)
+    {
+        float timer = 0;
+        while (timer < time)
+        {
+            musicSources[0].volume = Mathf.Lerp(0, 1, timer / time);
+            timer += Time.unscaledDeltaTime;
+            yield return null;
+        }
+    }
+
+    private IEnumerator FadeOutMusic(float time = 0)
+    {
+        float timer = 0;
+        while (timer < time)
+        {
+            musicSources[1].volume = Mathf.Lerp(1, 0, timer / time);
+            timer += Time.unscaledDeltaTime;
+            yield return null;
+        }
     }
 
     /// <summary>
@@ -247,7 +314,7 @@ public class AudioManager : MonoBehaviour
     /// </summary>
     public void StopMusic()
     {
-        musicSource.Stop();
+        musicSources[0].Stop();
         currentTrack = "None";
     }
 
@@ -255,12 +322,12 @@ public class AudioManager : MonoBehaviour
     {
         if (queueIntro) //If we're playing the intro to a track
         {
-            if (!musicSource.isPlaying) //Returns true the moment the intro ends
+            if (!musicSources[0].isPlaying) //Returns true the moment the intro ends
             {
                 //Swap to the main loop
-                musicSource.clip = music[currentTrack][0];
-                musicSource.loop = true;
-                musicSource.Play();
+                musicSources[0].clip = music[currentTrack][0];
+                musicSources[0].loop = true;
+                musicSources[0].Play();
                 queueIntro = false;
             }
         }
@@ -562,7 +629,7 @@ public class AudioManager : MonoBehaviour
     public void SetMusicVolume(UnityEngine.UI.Slider v)
     {
         musicVolume = v.value;
-        musicSource.volume = musicVolume;
+        musicSources[0].volume = musicVolume;
     }
 
     /// <summary>
@@ -579,7 +646,7 @@ public class AudioManager : MonoBehaviour
         //Updates volume
         ApplySoundVolume();
         SetSpatialSound(spatialSound);
-        musicSource.volume = musicVolume;
+        musicSources[0].volume = musicVolume;
     }
 
     /// <summary>
@@ -605,7 +672,7 @@ public class AudioManager : MonoBehaviour
     public void SetMusicVolume(float v)
     {
         musicVolume = v;
-        musicSource.volume = musicVolume;
+        musicSources[0].volume = musicVolume;
     }
 
     /// <summary>
@@ -771,7 +838,7 @@ public class AudioManager : MonoBehaviour
     /// <returns></returns>
     public AudioSource GetMusicSource()
     {
-        return musicSource;
+        return musicSources[0];
     }
 
     /// <summary>
