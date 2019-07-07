@@ -30,3 +30,12 @@ Perfect for game jams, prototypes and if you just want to get started on a proje
 6. Add sounds to AudioManager's audio libraries
 
 ![Cat](https://raw.githubusercontent.com/jackyyang09/Simple-Unity-Audio-Manager/Media/Media/media2.png)
+
+7. To play your newly added sound, go into any script file and type the following
+```
+AudioManager.GetInstance().PlaySoundOnce("Shooting");
+```
+   - Be sure to replace "Shooting" with the name of your sound!
+   - You can also choose to pass in an audio clip rather than a string to play your sounds
+
+Go ahead and look at all the public functions within AudioManager to see what else you can do!
