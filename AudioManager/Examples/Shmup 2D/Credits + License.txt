@@ -1,0 +1,15 @@
+Please abide by the terms of licenses for each Example asset if you wish to use them assets in your projects 
+
+Credits for assets used:
+
+
+=== MUSIC ===
+Music is available under the Creative Commons Attribution 4.0 License
+
+MainIntro.wav + MainChorusv4.ogg by https://twitter.com/ToxicRish
+
+Italian Slice ~ Indian Spice by https://soundcloud.com/brogrammist
+
+Please include these two lines in the game credits or page in a readable format
+
+License terms can be found here: https://creativecommons.org/licenses/by/4.0/
