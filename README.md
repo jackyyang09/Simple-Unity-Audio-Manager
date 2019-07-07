@@ -19,13 +19,10 @@ Perfect for game jams, prototypes and if you just want to get started on a proje
 
 # How to Use
 
-Download the latest package [here](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/releases)
-
-Import the package into your Unity project
-
-Check out the Examples folder for a sample scene showing all the ways you can use AudioManager!
-
-Everything begins with the AudioManager singleton!
+1. Download the latest package [here](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/releases)
+2. Import the package into your Unity project
+3. Check out the Examples folder for a sample scene showing all the ways you can use AudioManager!
+4. Everything begins with the AudioManager singleton!
 
 ```
 AudioManager.GetInstance();
