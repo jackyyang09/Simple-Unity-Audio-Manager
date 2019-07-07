@@ -50,13 +50,13 @@ public class AudioParticles : BaseAudioFeedback
             case PlayCondition.ParticleEmitted:
                 if (particles.particleCount > prevParticleCount)
                 {
-                    am.PlaySoundOnce(sound, sTransform, priority, AudioManager.UsePitch(pitchShift));
+                    am.PlaySoundOnce(sound, sTransform, priority, pitchShift);
                 }
                 break;
             case PlayCondition.ParticleDeath:
                 if (particles.particleCount < prevParticleCount)
                 {
-                    am.PlaySoundOnce(sound, sTransform, priority, AudioManager.UsePitch(pitchShift));
+                    am.PlaySoundOnce(sound, sTransform, priority, pitchShift);
                 }
                 break;
         }

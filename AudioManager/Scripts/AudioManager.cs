@@ -84,11 +84,15 @@ public class AudioManager : MonoBehaviour
 
     [SerializeField]
     [Range(0, 1)]
-    float soundVolume;
+    float masterVolume = 1;
 
     [SerializeField]
     [Range(0, 1)]
-    float musicVolume;
+    float soundVolume = 1;
+
+    [SerializeField]
+    [Range(0, 1)]
+    float musicVolume = 1;
 
     [SerializeField]
     [Tooltip("If true, enables 3D spatialized audio for sound effects, does not effect music")]
@@ -356,7 +360,7 @@ public class AudioManager : MonoBehaviour
     /// <param name="p">The priority of the sound</param>
     /// <param name="pitchShift">If not None, randomizes the pitch of the sound, use AudioManager.Pitches for presets</param>
     /// <param name="delay">Amount of seconds to wait before playing the sound</param>
-    public AudioSource PlaySoundOnce(string s, Transform trans = null, Priority p = Priority.Default, float pitchShift = 0, float delay = 0)
+    public AudioSource PlaySoundOnce(string s, Transform trans = null, Priority p = Priority.Default, Pitch pitchShift = Pitch.None, float delay = 0)
     {
         AudioSource a = GetAvailableSource();
 
@@ -377,10 +381,12 @@ public class AudioManager : MonoBehaviour
             }
         }
 
+        float pitch = UsePitch(pitchShift);
+
         //This is the base unchanged pitch
-        if (pitchShift > Pitches.None)
+        if (pitch > Pitches.None)
         {
-            a.pitch = 1 + UnityEngine.Random.Range(-pitchShift, pitchShift);
+            a.pitch = 1 + UnityEngine.Random.Range(-pitch, pitch);
         }
         else
         {
@@ -403,7 +409,7 @@ public class AudioManager : MonoBehaviour
     /// <param name="p">The priority of the sound</param>
     /// <param name="pitchShift">If not None, randomizes the pitch of the sound, use AudioManager.Pitches for presets</param>
     /// <param name="delay">Amount of seconds to wait before playing the sound</param>
-    public AudioSource PlaySoundOnce(AudioClip s, Transform trans = null, Priority p = Priority.Default, float pitchShift = 0, float delay = 0)
+    public AudioSource PlaySoundOnce(AudioClip s, Transform trans = null, Priority p = Priority.Default, Pitch pitchShift = Pitch.None, float delay = 0)
     {
         AudioSource a = GetAvailableSource();
 
@@ -424,10 +430,12 @@ public class AudioManager : MonoBehaviour
             }
         }
 
+        float pitch = UsePitch(pitchShift);
+
         //This is the base unchanged pitch
-        if (pitchShift > Pitches.None)
+        if (pitch > Pitches.None)
         {
-            a.pitch = 1 + UnityEngine.Random.Range(-pitchShift, pitchShift);
+            a.pitch = 1 + UnityEngine.Random.Range(-pitch, pitch);
         }
         else
         {
@@ -613,7 +621,7 @@ public class AudioManager : MonoBehaviour
     {
         foreach (AudioSource s in sources)
         {
-            s.volume = soundVolume;
+            s.volume = soundVolume * masterVolume;
         }
     }
 
@@ -646,7 +654,8 @@ public class AudioManager : MonoBehaviour
         //Updates volume
         ApplySoundVolume();
         SetSpatialSound(spatialSound);
-        musicSources[0].volume = musicVolume;
+        musicSources[0].volume = musicVolume * masterVolume;
+        musicSources[1].volume = musicVolume * masterVolume;
     }
 
     /// <summary>
@@ -672,7 +681,8 @@ public class AudioManager : MonoBehaviour
     public void SetMusicVolume(float v)
     {
         musicVolume = v;
-        musicSources[0].volume = musicVolume;
+        musicSources[0].volume = musicVolume * masterVolume;
+        musicSources[1].volume = musicVolume * masterVolume;
     }
 
     /// <summary>
@@ -713,6 +723,11 @@ public class AudioManager : MonoBehaviour
     public static AudioManager GetInstance()
     {
         return Singleton;
+    }
+
+    public float GetMasterVolume()
+    {
+        return masterVolume;
     }
 
     public float GetSoundVolume()

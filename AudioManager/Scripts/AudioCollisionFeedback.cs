@@ -14,11 +14,11 @@ public class AudioCollisionFeedback : BaseAudioFeedback
     {
         if (soundFile != null)
         {
-            am.PlaySoundOnce(soundFile, transform, priority, AudioManager.UsePitch(pitchShift));
+            am.PlaySoundOnce(soundFile, transform, priority, pitchShift);
         }
         else
         {
-            am.PlaySoundOnce(sound, transform, priority, AudioManager.UsePitch(pitchShift));
+            am.PlaySoundOnce(sound, transform, priority, pitchShift);
         }
     }
 
@@ -26,11 +26,11 @@ public class AudioCollisionFeedback : BaseAudioFeedback
     {
         if (soundFile != null)
         {
-            am.PlaySoundOnce(soundFile, transform, priority, AudioManager.UsePitch(pitchShift));
+            am.PlaySoundOnce(soundFile, transform, priority, pitchShift);
         }
         else
         {
-            am.PlaySoundOnce(sound, transform, priority, AudioManager.UsePitch(pitchShift));
+            am.PlaySoundOnce(sound, transform, priority, pitchShift);
         }
     }
 }
