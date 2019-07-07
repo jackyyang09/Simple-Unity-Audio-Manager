@@ -2352,7 +2352,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   audioSources: 32
   dynamicSourceAllocation: 0
-  masterVolume: 0
+  masterVolume: 1
   soundVolume: 1
   musicVolume: 1
   spatialSound: 0
