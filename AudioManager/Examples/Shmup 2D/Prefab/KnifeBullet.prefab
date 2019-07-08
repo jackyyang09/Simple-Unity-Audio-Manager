@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: -783860964657925481}
   - component: {fileID: -8625587954343364288}
   - component: {fileID: 4330606100798619872}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: KnifeBullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
