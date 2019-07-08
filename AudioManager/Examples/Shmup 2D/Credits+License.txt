@@ -1,1 +1,50 @@
-All assets used in this example project can be used royalty-free provided that you abide by the terms of their license
+All assets used in the "Shmup 2D" example project can be used royalty-free provided that you abide by the terms of their respective licenses
+
+====Graphics====
+
+The following graphics are released under the Creative Commons Attribution 4.0 license
+https://creativecommons.org/licenses/by/4.0/
+
+chefSpriteSheetPadded.png by Brogrammist
+knife_double_transparent.png by Brogrammist
+
+Use of these graphics requrires that you give appropriate credit to the author
+
+Do list their username and provide the corresponding links alongside the rest of your credits
+https://brogrammist.itch.io/
+
+====Sound====
+
+This sound is released under the Creative Commons Attribution 4.0 license
+https://creativecommons.org/licenses/by/4.0/
+
+knifeslash.wav by beerbelly38
+
+Do list their username and provide the corresponding links alongside the rest of your credits
+
+This sound is released under the CC0 1.0 Universal Public Domain Dedication license
+https://creativecommons.org/publicdomain/zero/1.0/
+
+bulletHit.wav 
+
+You are free to use this sound however you wish
+
+====Music====
+
+The following tracks are released under the Creative Commons Attribution 4.0 license
+https://creativecommons.org/licenses/by/4.0/
+
+Italian Spice ~ Indian Spice by Brogrammist
+MainChorusv4.ogg by ToxicRish
+MainIntro.ogg by ToxicRish
+
+Use of these graphics requrires that you give appropriate credit to the author
+https://soundcloud.com/brogrammist
+https://twitter.com/ToxicRish
+
+Do list their username and provide the corresponding links alongside the rest of your credits
+
+====Code====
+
+All code included in this example project is released under the MIT License and is free to use for all purposes
+https://opensource.org/licenses/MIT

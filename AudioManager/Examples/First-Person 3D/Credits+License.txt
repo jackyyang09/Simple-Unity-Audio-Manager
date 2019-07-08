@@ -1,0 +1,16 @@
+All assets used in the "First-Person 3D" example project can be used royalty-free provided that you abide by the terms of their respective licenses
+
+====Sound====
+
+The following sounds are released under the CC0 1.0 Universal Public Domain Dedication license
+https://creativecommons.org/publicdomain/zero/1.0/
+
+abstractpop.wav
+walk (loop).wav
+
+You are free to use these sounds however you wish
+
+====Code====
+
+All code included in this example project is released under the MIT License and is free to use for all purposes
+https://opensource.org/licenses/MIT
