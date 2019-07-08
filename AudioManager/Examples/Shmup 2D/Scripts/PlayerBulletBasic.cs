@@ -52,6 +52,11 @@ public class PlayerBulletBasic : MonoBehaviour {
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        gameObject.SetActive(false);
+        // Highly recommended that you replace this if-statement with a physics check with objects on the same layer as itself
+        // Set it's layer to a new "Bullet" layer
+        if (other.GetComponent<PlayerBulletBasic>())
+        {
+            gameObject.SetActive(false);
+        }
     }
 }
