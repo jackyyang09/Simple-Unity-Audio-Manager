@@ -419,7 +419,7 @@ public class AudioManager : MonoBehaviour
 
         if (spatialSound) // Only do this part if we have 3D sound enabled
         {
-            for (int i = 0; i < audioSources; i++) // Search every sources
+            for (int i = 0; i < audioSources + 1; i++) // Search all sources
             {
                 if (i < audioSources - 1)
                 {
@@ -1009,5 +1009,19 @@ public class AudioManager : MonoBehaviour
     public Dictionary<string, AudioClip> GetSoundDictionary()
     {
         return sounds;
+    }
+
+    public GameObject GetSourcePrefab()
+    {
+        return sourcePrefab;
+    }
+
+    /// <summary>
+    /// Defined in the AudioSourcePrefab
+    /// </summary>
+    /// <returns></returns>
+    public float GetMaximumFalloffDistance()
+    {
+        return sourcePrefab.GetComponent<AudioSource>().maxDistance;
     }
 }
