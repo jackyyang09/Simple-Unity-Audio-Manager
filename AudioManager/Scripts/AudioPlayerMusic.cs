@@ -9,6 +9,9 @@ public class AudioPlayerMusic : MonoBehaviour
     string music = "None";
 
     [SerializeField]
+    bool useMusicIntro = false;
+
+    [SerializeField]
     bool spatializeSound;
 
     [SerializeField]
@@ -47,11 +50,25 @@ public class AudioPlayerMusic : MonoBehaviour
     {
         if (musicFile != null)
         {
-            am.PlaySoundOnce(musicFile, transform);
+            if (spatializeSound)
+            {
+                am.PlayMusic3D(musicFile, transform);
+            }
+            else
+            {
+                am.PlayMusic(musicFile);
+            }
         }
         else
         {
-            am.PlaySoundOnce(music, transform);
+            if (spatializeSound)
+            {
+                am.PlayMusic3D(music, transform, useMusicIntro);
+            }
+            else
+            {
+                am.PlayMusic(music, useMusicIntro);
+            }
         }
     }
 

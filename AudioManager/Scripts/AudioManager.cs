@@ -266,6 +266,24 @@ public class AudioManager : MonoBehaviour
 
     /// <summary>
     /// Swaps the current music track with the new music track
+    /// Music is played globally and does not change volume
+    /// </summary>
+    /// <param name="m">Index of the music</param>
+    /// <param name="hasIntro">Does the clip have an intro portion that plays only once?</param>
+    public void PlayMusic(AudioClip track)
+    {
+        if (track.Equals("None")) return;
+        currentTrack = "Custom Audio File";
+
+        musicSources[0].clip = track;
+        musicSources[0].loop = true;
+        musicSources[0].spatialBlend = 0;
+
+        musicSources[0].Play();
+    }
+
+    /// <summary>
+    /// Swaps the current music track with the new music track
     /// Music is played in the scene and becomes quieter as you move away from the source
     /// </summary>
     /// <param name="m">Index of the music</param>
@@ -290,6 +308,26 @@ public class AudioManager : MonoBehaviour
         }
         queueIntro = hasIntro;
 
+        musicSources[0].spatialBlend = 1;
+
+        musicSources[0].Play();
+    }
+
+    /// <summary>
+    /// Swaps the current music track with the new music track
+    /// Music is played in the scene and becomes quieter as you move away from the source
+    /// </summary>
+    /// <param name="m">Index of the music</param>
+    /// <param name="hasIntro">Does the clip have an intro portion that plays only once?</param>
+    public void PlayMusic3D(AudioClip track, Transform trans)
+    {
+        if (track.Equals("None")) return;
+        currentTrack = "Custom Audio File";
+
+        sourcePositions[sourcePositions.Length - 1] = trans;
+
+        musicSources[0].clip = track;
+        musicSources[0].loop = true;
         musicSources[0].spatialBlend = 1;
 
         musicSources[0].Play();
