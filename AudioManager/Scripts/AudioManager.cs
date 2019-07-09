@@ -170,7 +170,7 @@ public class AudioManager : MonoBehaviour
         // Get a reference to all our audiosources on startup
         sources = sourceHolder.GetComponentsInChildren<AudioSource>();
 
-        musicSources = new AudioSource[2];
+        musicSources = new AudioSource[3];
         GameObject m = new GameObject("MusicSource");
         m.transform.parent = transform;
         m.AddComponent<AudioSource>();
@@ -182,6 +182,10 @@ public class AudioManager : MonoBehaviour
         m.AddComponent<AudioSource>();
         musicSources[1] = m.GetComponent<AudioSource>();
         musicSources[1].priority = (int)Priority.Music;
+
+        musicSources[2] = Instantiate(sourcePrefab, transform).GetComponent<AudioSource>();
+        musicSources[2].gameObject.name = "SpatialMusicSource";
+        musicSources[2].priority = (int)Priority.Music;
 
         //Set sources properties based on current settings
         SetSoundVolume(soundVolume);
@@ -283,8 +287,8 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Swaps the current music track with the new music track
     /// Music is played in the scene and becomes quieter as you move away from the source
+    /// 3D music source is independent from the main music source, they can overlap if you let them
     /// </summary>
     /// <param name="m">Index of the music</param>
     /// <param name="trans">The transform of the gameobject playing the music</param>
@@ -298,24 +302,22 @@ public class AudioManager : MonoBehaviour
 
         if (hasIntro && music[track][1] != null)
         {
-            musicSources[0].clip = music[track][1];
-            musicSources[0].loop = false;
+            musicSources[2].clip = music[track][1];
+            musicSources[2].loop = false;
         }
         else
         {
-            musicSources[0].clip = music[track][0];
-            musicSources[0].loop = true;
+            musicSources[2].clip = music[track][0];
+            musicSources[2].loop = true;
         }
         queueIntro = hasIntro;
 
-        musicSources[0].spatialBlend = 1;
-
-        musicSources[0].Play();
+        musicSources[2].Play();
     }
 
     /// <summary>
-    /// Swaps the current music track with the new music track
     /// Music is played in the scene and becomes quieter as you move away from the source
+    /// 3D music source is independent from the main music source, they can overlap if you let them
     /// </summary>
     /// <param name="m">Index of the music</param>
     /// <param name="hasIntro">Does the clip have an intro portion that plays only once?</param>
@@ -326,11 +328,10 @@ public class AudioManager : MonoBehaviour
 
         sourcePositions[sourcePositions.Length - 1] = trans;
 
-        musicSources[0].clip = track;
-        musicSources[0].loop = true;
-        musicSources[0].spatialBlend = 1;
+        musicSources[2].clip = track;
+        musicSources[2].loop = true;
 
-        musicSources[0].Play();
+        musicSources[2].Play();
     }
 
     /// <summary>
