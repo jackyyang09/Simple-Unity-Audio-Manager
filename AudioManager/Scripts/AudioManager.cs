@@ -434,9 +434,9 @@ public class AudioManager : MonoBehaviour
                 }
                 else
                 {
-                    if (musicSources[0].isPlaying && sourcePositions[i] != null)
+                    if (musicSources[2].isPlaying && sourcePositions[i] != null)
                     {
-                        musicSources[0].transform.position = sourcePositions[i].transform.position;
+                        musicSources[2].transform.position = sourcePositions[i].transform.position;
                     }
                 }
             }
