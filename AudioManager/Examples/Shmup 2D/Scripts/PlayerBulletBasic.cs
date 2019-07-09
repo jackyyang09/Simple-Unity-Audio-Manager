@@ -37,7 +37,7 @@ public class PlayerBulletBasic : MonoBehaviour {
             yield return null;
         } while (isAlive);
 
-        this.gameObject.SetActive(false);
+        gameObject.SetActive(false);
     }
 
     public void SetSpeed(float s)

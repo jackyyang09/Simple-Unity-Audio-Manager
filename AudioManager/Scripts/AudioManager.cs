@@ -529,6 +529,27 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Stops any sound playing through PlaySoundOnce() immediately 
+    /// </summary>
+    /// <param name="s">The sound to be stopped</param>
+    /// <param name="t">For sources, helps with duplicate soundss</param>
+    public void StopSound(AudioClip a, Transform t = null)
+    {
+        for (int i = 0; i < audioSources; i++)
+        {
+            if (sources[i].clip == a)
+            {
+                if (t != null)
+                {
+                    if (sourcePositions[i] != t) continue;
+                }
+                sources[i].Stop();
+                return;
+            }
+        }
+    }
+
+    /// <summary>
     /// Stops a looping sound
     /// </summary>
     /// <param name="s"></param>
