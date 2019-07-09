@@ -10,6 +10,14 @@ public class ShipController : MonoBehaviour
     [SerializeField]
     float focusSpeed = 3;
 
+    /// <summary>
+    /// Time between each shot
+    /// </summary>
+    [SerializeField]
+    [Tooltip("Time between each shot")]
+    float shotCooldown = 0.15f;
+    bool canShoot = true;
+
     [SerializeField]
     ObjectPool bulletPool;
 
@@ -50,13 +58,11 @@ public class ShipController : MonoBehaviour
         {
             input += Vector2.left;
         }
-        anim.SetBool("left", Input.GetKey(KeyCode.LeftArrow));
-
+        
         if (Input.GetKey(KeyCode.RightArrow))
         {
             input += Vector2.right;
         }
-        anim.SetBool("right", Input.GetKey(KeyCode.RightArrow));
 
         if (Input.GetKey(KeyCode.DownArrow))
         {
@@ -65,21 +71,36 @@ public class ShipController : MonoBehaviour
 
         rb.MovePosition((Vector2)transform.position + input * speed * Time.deltaTime);
 
-        if (Input.GetKey(KeyCode.Z))
+        if (Time.timeScale > 0)
         {
-            GameObject bullet = bulletPool.GetObject();
+            anim.SetBool("left", Input.GetKey(KeyCode.LeftArrow));
+            anim.SetBool("right", Input.GetKey(KeyCode.RightArrow));
 
-            bullet.transform.position = transform.position;
-            bullet.SetActive(true);
-
-            if (!am.IsSoundPlaying("Shooting", transform))
+            if (Input.GetKey(KeyCode.Z) && canShoot)
             {
-                am.PlaySoundLoop("Shooting", transform);
+                GameObject bullet = bulletPool.GetObject();
+
+                bullet.transform.position = transform.position;
+                bullet.SetActive(true);
+
+                if (!am.IsSoundPlaying("Shooting", transform))
+                {
+                    am.PlaySoundLoop("Shooting", transform);
+                }
+
+                StartCoroutine(ShotCooldown());
+            }
+            else if (!Input.GetKey(KeyCode.Z))
+            {
+                am.StopSoundLoop("Shooting");
             }
         }
-        else
-        {
-            am.StopSoundLoop("Shooting");
-        }
+    }
+
+    IEnumerator ShotCooldown()
+    {
+        canShoot = false;
+        yield return new WaitForSeconds(shotCooldown);
+        canShoot = true;
     }
 }

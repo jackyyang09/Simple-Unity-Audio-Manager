@@ -82,6 +82,7 @@ public class AudioManager : MonoBehaviour
     /// </summary>
     AudioSource[] musicSources;
 
+    [Tooltip("All volume is set relative to the Master Volume")]
     [SerializeField]
     [Range(0, 1)]
     float masterVolume = 1;
@@ -97,6 +98,10 @@ public class AudioManager : MonoBehaviour
     [SerializeField]
     [Tooltip("If true, enables 3D spatialized audio for sound effects, does not effect music")]
     bool spatialSound = true;
+
+    [SerializeField]
+    [Tooltip("When Time.timeScale is set to 0, pause all sounds")]
+    bool timeScaledSounds = true;
 
     public static AudioManager Singleton;
 
@@ -123,6 +128,8 @@ public class AudioManager : MonoBehaviour
 
     string editorMessage = "";
 
+    bool gamePaused = false;
+
     // Use this for initialization
     void Awake()
     {
@@ -148,7 +155,7 @@ public class AudioManager : MonoBehaviour
 
         sources = new AudioSource[audioSources];
         loopingSources = new List<AudioSource>();
-        sourcePositions = new Transform[audioSources];
+        sourcePositions = new Transform[audioSources + 1]; // The final one is for music
         GameObject sourceHolder = new GameObject("Sources");
         sourceHolder.transform.SetParent(transform);
 
@@ -231,6 +238,7 @@ public class AudioManager : MonoBehaviour
 
     /// <summary>
     /// Swaps the current music track with the new music track
+    /// Music is played globally and does not change volume
     /// </summary>
     /// <param name="m">Index of the music</param>
     /// <param name="hasIntro">Does the clip have an intro portion that plays only once?</param>
@@ -238,6 +246,7 @@ public class AudioManager : MonoBehaviour
     {
         if (track.Equals("None")) return;
         currentTrack = track;
+
         if (hasIntro && music[track][1] != null)
         {
             musicSources[0].clip = music[track][1];
@@ -249,6 +258,39 @@ public class AudioManager : MonoBehaviour
             musicSources[0].loop = true;
         }
         queueIntro = hasIntro;
+
+        musicSources[0].spatialBlend = 0;
+
+        musicSources[0].Play();
+    }
+
+    /// <summary>
+    /// Swaps the current music track with the new music track
+    /// Music is played in the scene and becomes quieter as you move away from the source
+    /// </summary>
+    /// <param name="m">Index of the music</param>
+    /// <param name="trans">The transform of the gameobject playing the music</param>
+    /// <param name="hasIntro">Does the clip have an intro portion that plays only once?</param>
+    public void PlayMusic3D(string track, Transform trans, bool hasIntro = false)
+    {
+        if (track.Equals("None")) return;
+        currentTrack = track;
+
+        sourcePositions[sourcePositions.Length - 1] = trans;
+
+        if (hasIntro && music[track][1] != null)
+        {
+            musicSources[0].clip = music[track][1];
+            musicSources[0].loop = false;
+        }
+        else
+        {
+            musicSources[0].clip = music[track][0];
+            musicSources[0].loop = true;
+        }
+        queueIntro = hasIntro;
+
+        musicSources[0].spatialBlend = 1;
 
         musicSources[0].Play();
     }
@@ -340,14 +382,48 @@ public class AudioManager : MonoBehaviour
         {
             for (int i = 0; i < audioSources; i++) // Search every sources
             {
-                if (sourcePositions[i] != null) // If there's a designated location
+                if (i < audioSources - 1)
                 {
-                    sources[i].transform.position = sourcePositions[i].transform.position;
+                    if (sourcePositions[i] != null) // If there's a designated location
+                    {
+                        sources[i].transform.position = sourcePositions[i].transform.position;
+                    }
+                    if (!sources[i].isPlaying) // However if it's not playing a sound
+                    {
+                        sourcePositions[i] = null; // Erase the designated transform so we don't check again
+                    }
                 }
-                if (!sources[i].isPlaying) // However if it's not playing a sound
+                else
                 {
-                    sourcePositions[i] = null; // Erase the designated transform so we don't check again
+                    if (musicSources[0].isPlaying && sourcePositions[i] != null)
+                    {
+                        musicSources[0].transform.position = sourcePositions[i].transform.position;
+                    }
                 }
+            }
+        }
+
+        if (timeScaledSounds)
+        {
+            if (Time.timeScale == 0 && !gamePaused)
+            {
+                foreach (AudioSource a in sources)
+                {
+                    if (a.isPlaying)
+                    {
+                        a.Pause();
+                    }
+                }
+                print("Sounds paused!");
+                gamePaused = true;
+            }
+            else if (Time.timeScale != 0)
+            {
+                foreach (AudioSource a in sources)
+                {
+                    a.UnPause();
+                }
+                gamePaused = false;
             }
         }
     }

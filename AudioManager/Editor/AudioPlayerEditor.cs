@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 
 [CustomEditor(typeof(AudioPlayer))]
-public class AudioPlayerFeedbackEditor : Editor
+public class AudioPlayerEditor : Editor
 {
     AudioManager am;
 
@@ -31,7 +31,7 @@ public class AudioPlayerFeedbackEditor : Editor
 
         DrawDefaultInspector();
 
-        GUIContent soundDesc = new GUIContent("Sound", "Sound that will be played on collision");
+        GUIContent soundDesc = new GUIContent("Sound", "Sound that will be played");
 
         if (sound.Equals("") || !options.Contains(sound)) // Default to "None"
         {

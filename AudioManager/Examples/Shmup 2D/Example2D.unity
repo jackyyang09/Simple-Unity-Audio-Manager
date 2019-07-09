@@ -281,6 +281,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 8
   focusSpeed: 3
+  shotCooldown: 0.025
   bulletPool: {fileID: 1702197542}
   bulletSpawnZone: {fileID: 372230434}
 --- !u!1 &170707497
@@ -2581,6 +2582,7 @@ MonoBehaviour:
   soundVolume: 1
   musicVolume: 1
   spatialSound: 0
+  timeScaledSounds: 1
   currentTrack: Side Theme
   listener: {fileID: 0}
   sourcePrefab: {fileID: 3048837711066349602, guid: cf11aed7e0e56ae45afe7eaebe30a616,

@@ -8,10 +8,16 @@ public class AudioPlayer : BaseAudioFeedback
     bool playOnStart;
 
     [SerializeField]
+    bool playOnEnable;
+
+    [SerializeField]
     bool stopOnDisable = true;
 
     [SerializeField]
     bool stopOnDestroy = true;
+
+    [SerializeField]
+    bool loopSound = false;
 
     // Start is called before the first frame update
     protected override void Start()
@@ -20,14 +26,7 @@ public class AudioPlayer : BaseAudioFeedback
 
         if (playOnStart)
         {
-            if (soundFile != null)
-            {
-                am.PlaySoundOnce(soundFile, transform, priority, pitchShift);
-            }
-            else
-            {
-                am.PlaySoundOnce(sound, transform, priority, pitchShift);
-            }
+            Play();
         }
     }
 
@@ -52,6 +51,14 @@ public class AudioPlayer : BaseAudioFeedback
         else
         {
             am.StopSound(sound, transform);
+        }
+    }
+
+    private void OnEnable()
+    {
+        if (playOnEnable)
+        {
+            Play();
         }
     }
 
