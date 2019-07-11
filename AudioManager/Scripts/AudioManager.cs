@@ -98,6 +98,9 @@ public class AudioManager : MonoBehaviour
     [SerializeField]
     [Tooltip("If true, enables 3D spatialized audio for sound effects, does not effect music")]
     bool spatialSound = true;
+    [SerializeField]
+    [Tooltip("Use if spatialized sounds act wonky in-editor")]
+    bool spatializeLateUpdate = false;
 
     [SerializeField]
     [Tooltip("When Time.timeScale is set to 0, pause all sounds")]
@@ -195,16 +198,19 @@ public class AudioManager : MonoBehaviour
         // Find the listener if not manually set
         FindNewListener();
 
-        PlayMusic(currentTrack, true);
-
         //AddOffsetToArrays();
 
+        doneLoading = true;
+    }
+
+    void Start()
+    {
         if (!Application.isEditor)
         {
             GenerateAudioDictionarys();
         }
 
-        doneLoading = true;
+        PlayMusic(currentTrack, true);
     }
 
     void FindNewListener()
@@ -417,29 +423,9 @@ public class AudioManager : MonoBehaviour
             }
         }
 
-        if (spatialSound) // Only do this part if we have 3D sound enabled
+        if (spatialSound)
         {
-            for (int i = 0; i < audioSources + 1; i++) // Search all sources
-            {
-                if (i < audioSources - 1)
-                {
-                    if (sourcePositions[i] != null) // If there's a designated location
-                    {
-                        sources[i].transform.position = sourcePositions[i].transform.position;
-                    }
-                    if (!sources[i].isPlaying) // However if it's not playing a sound
-                    {
-                        sourcePositions[i] = null; // Erase the designated transform so we don't check again
-                    }
-                }
-                else
-                {
-                    if (musicSources[2].isPlaying && sourcePositions[i] != null)
-                    {
-                        musicSources[2].transform.position = sourcePositions[i].transform.position;
-                    }
-                }
-            }
+            TrackSounds();
         }
 
         if (timeScaledSounds)
@@ -463,6 +449,44 @@ public class AudioManager : MonoBehaviour
                     a.UnPause();
                 }
                 gamePaused = false;
+            }
+        }
+    }
+
+#if UNITY_EDITOR
+    private void LateUpdate()
+    {
+        if (spatialSound && spatializeLateUpdate)
+        {
+            TrackSounds();
+        }
+    }
+#endif
+
+    void TrackSounds()
+    {
+        if (spatialSound) // Only do this part if we have 3D sound enabled
+        {
+            for (int i = 0; i < audioSources + 1; i++) // Search every sources
+            {
+                if (i < audioSources - 1)
+                {
+                    if (sourcePositions[i] != null) // If there's a designated location
+                    {
+                        sources[i].transform.position = sourcePositions[i].transform.position;
+                    }
+                    if (!sources[i].isPlaying) // However if it's not playing a sound
+                    {
+                        sourcePositions[i] = null; // Erase the designated transform so we don't check again
+                    }
+                }
+                else
+                {
+                    if (musicSources[2].isPlaying && sourcePositions[i] != null)
+                    {
+                        musicSources[2].transform.position = sourcePositions[i].transform.position;
+                    }
+                }
             }
         }
     }
@@ -902,6 +926,31 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Returns true if a sound is currently being played
+    /// </summary>
+    /// <param name="a">The sound in question</param>
+    /// <param name="trans">Specify is the sound is playing from that transform</param>
+    /// <returns></returns>
+    public bool IsSoundPlaying(AudioClip a, Transform trans = null)
+    {
+        for (int i = 0; i < audioSources; i++) // Loop through all sources
+        {
+            if (sources[i].clip == a && sources[i].isPlaying) // If this source is playing the clip
+            {
+                if (trans != null)
+                {
+                    if (trans != sourcePositions[i]) // Continue if this isn't the specified source position
+                    {
+                        continue;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
     /// Returns true if a sound is currently being played by a looping sources, more efficient for looping sounds than IsSoundPlaying
     /// </summary>
     /// <param name="s">The sound in question</param>
@@ -911,6 +960,23 @@ public class AudioManager : MonoBehaviour
         foreach (AudioSource c in loopingSources)
         {
             if (c.clip == sounds[s])
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Returns true if a sound is currently being played by a looping sources, more efficient for looping sounds than IsSoundPlaying
+    /// </summary>
+    /// <param name="s">The sound in question</param>
+    /// <returns>True or false you dingus</returns>
+    public bool IsSoundLooping(AudioClip a)
+    {
+        foreach (AudioSource c in loopingSources)
+        {
+            if (c.clip == a)
             {
                 return true;
             }

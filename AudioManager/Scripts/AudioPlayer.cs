@@ -46,11 +46,17 @@ public class AudioPlayer : BaseAudioFeedback
     {
         if (soundFile != null)
         {
-            am.StopSound(soundFile, transform);
+            if (am.IsSoundPlaying(soundFile, transform))
+            {
+                am.StopSound(soundFile, transform);
+            }
         }
         else
         {
-            am.StopSound(sound, transform);
+            if (am.IsSoundPlaying(sound, transform))
+            {
+                am.StopSound(sound, transform);
+            }
         }
     }
 
