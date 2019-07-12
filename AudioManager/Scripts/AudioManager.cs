@@ -209,8 +209,6 @@ public class AudioManager : MonoBehaviour
         {
             GenerateAudioDictionarys();
         }
-
-        PlayMusic(currentTrack, true);
     }
 
     void FindNewListener()
@@ -777,6 +775,20 @@ public class AudioManager : MonoBehaviour
         ApplySoundVolume();
     }
 
+    /// <summary>
+    /// Set's the volume of the music
+    /// </summary>
+    /// <param name="v"></param>
+    public void SetMusicVolume(float v)
+    {
+        musicVolume = v;
+        foreach (AudioSource m in musicSources)
+        {
+            m.volume = musicVolume * masterVolume;
+        }
+        ApplyMusicVolume();
+    }
+
     void ApplySoundVolume()
     {
         foreach (AudioSource s in sources)
@@ -785,19 +797,22 @@ public class AudioManager : MonoBehaviour
         }
     }
 
+    void ApplyMusicVolume()
+    {
+        foreach (AudioSource s in musicSources)
+        {
+            s.volume = musicVolume * masterVolume;
+        }
+    }
+
     public void SetSoundVolume(UnityEngine.UI.Slider v)
     {
         soundVolume = v.value;
-        foreach (AudioSource s in sources)
-        {
-            s.volume = soundVolume;
-        }
     }
 
     public void SetMusicVolume(UnityEngine.UI.Slider v)
     {
         musicVolume = v.value;
-        musicSources[0].volume = musicVolume;
     }
 
     /// <summary>
@@ -813,9 +828,8 @@ public class AudioManager : MonoBehaviour
         if (!doneLoading) return;
         //Updates volume
         ApplySoundVolume();
+        ApplyMusicVolume();
         SetSpatialSound(spatialSound);
-        musicSources[0].volume = musicVolume * masterVolume;
-        musicSources[1].volume = musicVolume * masterVolume;
     }
 
     /// <summary>
@@ -832,17 +846,6 @@ public class AudioManager : MonoBehaviour
         //{
         //    tracks.Insert(0, null);
         //}
-    }
-
-    /// <summary>
-    /// Set's the volume of the music
-    /// </summary>
-    /// <param name="v"></param>
-    public void SetMusicVolume(float v)
-    {
-        musicVolume = v;
-        musicSources[0].volume = musicVolume * masterVolume;
-        musicSources[1].volume = musicVolume * masterVolume;
     }
 
     /// <summary>
@@ -1075,19 +1078,5 @@ public class AudioManager : MonoBehaviour
     public Dictionary<string, AudioClip> GetSoundDictionary()
     {
         return sounds;
-    }
-
-    public GameObject GetSourcePrefab()
-    {
-        return sourcePrefab;
-    }
-
-    /// <summary>
-    /// Defined in the AudioSourcePrefab
-    /// </summary>
-    /// <returns></returns>
-    public float GetMaximumFalloffDistance()
-    {
-        return sourcePrefab.GetComponent<AudioSource>().maxDistance;
     }
 }

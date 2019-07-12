@@ -11,9 +11,4 @@ public class AudioFileMusic : AudioFile
     {
         return new AudioClip[] { file, trackIntro };
     }
-
-    private void OnValidate()
-    {
-        gameObject.name = audioName;
-    }
 }

@@ -29,8 +29,6 @@ public class AudioManagerEditor : Editor
 
         DrawDefaultInspector();
 
-        if (myScript.GetSourcePrefab() == null) EditorGUILayout.HelpBox("WARNING: Source prefab is missing! Please locate AudioManager/Prefabs/AudioChannel!", MessageType.Error);
-
         List<string> options = new List<string>();
 
         options.Add("None");
