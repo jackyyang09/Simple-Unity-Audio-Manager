@@ -990,6 +990,40 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Returns true if music is currently being played by any music source
+    /// </summary>
+    /// <param name="a"></param>
+    /// <returns></returns>
+    public bool IsMusicPlaying(AudioClip a)
+    {
+        foreach (AudioSource m in musicSources)
+        {
+            if (m.clip == a && m.isPlaying)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Returns true if music is currently being played by any music source
+    /// </summary>
+    /// <param name="a"></param>
+    /// <returns></returns>
+    public bool IsMusicPlaying(string a)
+    {
+        foreach (AudioSource m in musicSources)
+        {
+            if (m.clip == music[a][0] && m.isPlaying)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
     /// Returns true if a sound is currently being played by a looping sources, more efficient for looping sounds than IsSoundPlaying
     /// </summary>
     /// <param name="s">The sound in question</param>

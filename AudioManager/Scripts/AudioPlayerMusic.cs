@@ -17,6 +17,10 @@ public class AudioPlayerMusic : MonoBehaviour
     bool spatializeSound;
 
     [SerializeField]
+    [Tooltip("If true, will restart playback of this music if the same music is being played right now")]
+    bool restartOnReplay = false;
+
+    [SerializeField]
     float musicFadeTime = 0;
 
     [SerializeField]
@@ -55,6 +59,8 @@ public class AudioPlayerMusic : MonoBehaviour
     {
         if (musicFile != null)
         {
+            if (am.IsMusicPlaying(musicFile) && !restartOnReplay) return;
+
             if (spatializeSound)
             {
                 am.PlayMusic3D(musicFile, transform);
@@ -70,13 +76,15 @@ public class AudioPlayerMusic : MonoBehaviour
         }
         else
         {
+            if (am.IsMusicPlaying(music) && !restartOnReplay) return;
+
             if (spatializeSound)
             {
                 am.PlayMusic3D(music, transform, useMusicIntro);
             }
             else if (musicFadeTime > 0)
             {
-                am.FadeMusic(musicFile, musicFadeTime);
+                am.FadeMusic(music, musicFadeTime);
             }
             else
             {
