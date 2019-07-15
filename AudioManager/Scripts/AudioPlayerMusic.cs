@@ -9,10 +9,15 @@ public class AudioPlayerMusic : MonoBehaviour
     string music = "None";
 
     [SerializeField]
+    [Tooltip("Start playing the music intro before playing the music loop, only works if the musicFile field is blank")]
     bool useMusicIntro = false;
 
     [SerializeField]
+    [Tooltip("Play Music in 3D space, will override Music Fading if true")]
     bool spatializeSound;
+
+    [SerializeField]
+    float musicFadeTime = 0;
 
     [SerializeField]
     bool loopMusic;
@@ -54,6 +59,10 @@ public class AudioPlayerMusic : MonoBehaviour
             {
                 am.PlayMusic3D(musicFile, transform);
             }
+            else if (musicFadeTime > 0)
+            {
+                am.FadeMusic(musicFile, musicFadeTime);
+            }
             else
             {
                 am.PlayMusic(musicFile);
@@ -64,6 +73,10 @@ public class AudioPlayerMusic : MonoBehaviour
             if (spatializeSound)
             {
                 am.PlayMusic3D(music, transform, useMusicIntro);
+            }
+            else if (musicFadeTime > 0)
+            {
+                am.FadeMusic(musicFile, musicFadeTime);
             }
             else
             {

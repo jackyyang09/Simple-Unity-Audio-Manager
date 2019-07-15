@@ -200,6 +200,11 @@ public class AudioManager : MonoBehaviour
 
         //AddOffsetToArrays();
 
+        if (!Application.isEditor)
+        {
+            GenerateAudioDictionarys();
+        }
+
         doneLoading = true;
     }
 
@@ -366,6 +371,37 @@ public class AudioManager : MonoBehaviour
             musicSources[0].loop = true;
         }
         queueIntro = hasIntro;
+
+        musicSources[0].Play();
+
+        if (time > 0)
+        {
+            StartCoroutine(FadeInMusic(time));
+            StartCoroutine(FadeOutMusic(time));
+        }
+    }
+
+    /// <summary>
+    /// Fades music from the previous track to the new track specified
+    /// </summary>
+    /// <param name="track"></param>
+    /// <param name="time"></param>
+    public void FadeMusic(AudioClip track, float time = 0)
+    {
+        if (track.Equals(null)) return;
+        currentTrack = "Custom";
+
+        musicSources[1].clip = track;
+        musicSources[1].loop = true;
+
+        AudioSource temp = musicSources[0];
+        musicSources[0] = musicSources[1];
+        musicSources[1] = temp;
+
+        musicSources[0].clip = track;
+        musicSources[0].loop = true;
+
+        queueIntro = false;
 
         musicSources[0].Play();
 
