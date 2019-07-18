@@ -24,9 +24,6 @@ Perfect for game jams, prototypes and if you just want to get started on a proje
 2. Import the package into your Unity project
 3. Check out the Examples folder for a sample scene showing all the ways you can use AudioManager!
 4. Everything begins with the AudioManager singleton!
-
-![Help1](https://raw.githubusercontent.com/jackyyang09/Simple-Unity-Audio-Manager/Media/Media/media1.png)
-
 5. Drag and drop the AudioManager prefab into your scene
 6. Add sounds to AudioManager's audio libraries
 
