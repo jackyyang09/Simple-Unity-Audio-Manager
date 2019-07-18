@@ -10,6 +10,7 @@ Perfect for game jams, prototypes and if you just want to get started on a proje
 - Easily and intuitively add and play sounds and music!
 - Control master volume, sound volume and music volume seperately and easily!
 - Fade music in and out!
+- Spatialized 3D sound and audio!
 
 ## Audio Feedback on
 
