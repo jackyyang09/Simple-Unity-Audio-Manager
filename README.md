@@ -1,4 +1,4 @@
-# Simple-Unity-Audio-Manager
+# Jacky's Simple Audio Manager (JSAM)
 
 Never worry about sounds and music ever again!
 
