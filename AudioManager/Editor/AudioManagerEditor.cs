@@ -11,6 +11,9 @@ using UnityEditor.SceneManagement;
 [CustomEditor(typeof(AudioManager))]
 public class AudioManagerEditor : Editor
 {
+    static bool showSoundLibrary;
+    static bool showMusicLibrary;
+
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
@@ -59,24 +62,38 @@ public class AudioManagerEditor : Editor
             myScript.GenerateAudioDictionarys();
         }
 
-        if (myScript.GetSoundDictionary().Count > 0)
+        content = new GUIContent("Sound Library", "Library of all sounds loaded into AudioManager's Sound Dictionary");
+
+        showSoundLibrary = EditorGUILayout.Foldout(showSoundLibrary, content);
+        if (showSoundLibrary)
         {
-            string list = "List of Sounds:";
-            foreach (string s in myScript.GetSoundDictionary().Keys)
+            if (myScript.GetSoundDictionary().Count > 0)
             {
-                list += "\n" + s;
+                string list = "";
+                foreach (string s in myScript.GetSoundDictionary().Keys)
+                {
+                    if (list == "") list = s;
+                    else list += "\n" + s;
+                }
+                EditorGUILayout.HelpBox(list, MessageType.None);
             }
-            EditorGUILayout.HelpBox(list, MessageType.None);
         }
 
-        if (myScript.GetMusicDictionary().Count > 0)
+        content = new GUIContent("Music Library", "Library of all music loaded into AudioManager's Music Dictionary");
+
+        showMusicLibrary = EditorGUILayout.Foldout(showMusicLibrary, content);
+        if (showMusicLibrary)
         {
-            string musiks = "List of Music:";
-            foreach (string m in myScript.GetMusicDictionary().Keys)
+            if (myScript.GetMusicDictionary().Count > 0)
             {
-                musiks += "\n" + m;
+                string musiks = "";
+                foreach (string m in myScript.GetMusicDictionary().Keys)
+                {
+                    if (musiks == "") musiks = m;
+                    else musiks += "\n" + m;
+                }
+                EditorGUILayout.HelpBox(musiks, MessageType.None);
             }
-            EditorGUILayout.HelpBox(musiks, MessageType.None);
         }
     }   
 }

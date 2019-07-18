@@ -1474,7 +1474,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3174737d2fa98ca49b89bf9b15228e7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioName: Main Theme
   file: {fileID: 8300000, guid: ec35383b3397c8a4c998aefa69059d4f, type: 3}
   trackIntro: {fileID: 8300000, guid: 092b18edff9494842b046dd9ca3307ec, type: 3}
 --- !u!1 &724720822
@@ -2251,7 +2250,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3174737d2fa98ca49b89bf9b15228e7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioName: Side Theme
   file: {fileID: 8300000, guid: c24976ce5925e0e4c83ba82f15fbf5e3, type: 3}
   trackIntro: {fileID: 0}
 --- !u!1 &1736690158
@@ -2498,7 +2496,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e4f07eb732153b41ae4bf364b486e87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioName: Shooting
   file: {fileID: 8300000, guid: a162759dde1d37b48ab2b1d5743b8f77, type: 3}
 --- !u!1 &2109210242
 GameObject:
@@ -2557,6 +2554,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4502563657082201730}
   - component: {fileID: 4502563657082201733}
+  - component: {fileID: 4502563657082201734}
   m_Layer: 0
   m_Name: AudioManager
   m_TagString: Untagged
@@ -2582,8 +2580,32 @@ MonoBehaviour:
   soundVolume: 1
   musicVolume: 1
   spatialSound: 0
+  spatializeLateUpdate: 0
   timeScaledSounds: 1
   currentTrack: Side Theme
   listener: {fileID: 0}
   sourcePrefab: {fileID: 3048837711066349602, guid: cf11aed7e0e56ae45afe7eaebe30a616,
     type: 3}
+--- !u!114 &4502563657082201734
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4502563657082201732}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd13adbb36a3a614fafbec256720d4c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  music: Side Theme
+  useMusicIntro: 0
+  spatializeSound: 0
+  restartOnReplay: 0
+  musicFadeTime: 0
+  loopMusic: 0
+  playOnStart: 1
+  playOnEnable: 0
+  stopOnDisable: 1
+  stopOnDestroy: 1
+  musicFile: {fileID: 0}
