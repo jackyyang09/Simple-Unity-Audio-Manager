@@ -70,11 +70,23 @@ public class AudioPlayer : BaseAudioFeedback
         {
             StartCoroutine(PlayOnEnable());
         }
+
+        am = AudioManager.GetInstance();
     }
 
     IEnumerator PlayOnEnable()
     {
-        yield return new WaitForEndOfFrame();
+        while (!AudioManager.GetInstance())
+        {
+            yield return new WaitForEndOfFrame();
+        }
+        while (!AudioManager.GetInstance().Initialized())
+        {
+            yield return new WaitForEndOfFrame();
+        }
+
+        am = AudioManager.GetInstance();
+
         Play();
     }
 

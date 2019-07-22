@@ -28,11 +28,14 @@ public class BaseAudioFeedback : MonoBehaviour
 
     protected AudioManager am;
 
+    private void OnEnable()
+    {
+        am = AudioManager.GetInstance();
+    }
+
     // Start is called before the first frame update
     protected virtual void Start()
     {
-        am = AudioManager.GetInstance();
-
         sTransform = (spatialSound) ? transform : null;
     }
 

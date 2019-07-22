@@ -133,6 +133,8 @@ public class AudioManager : MonoBehaviour
 
     bool gamePaused = false;
 
+    bool initialized = false;
+
     // Use this for initialization
     void Awake()
     {
@@ -214,6 +216,12 @@ public class AudioManager : MonoBehaviour
         {
             GenerateAudioDictionarys();
         }
+
+        initialized = true;
+    }
+
+    public bool Initialized(){
+        return initialized;
     }
 
     void FindNewListener()
