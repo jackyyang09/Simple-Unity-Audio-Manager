@@ -75,13 +75,10 @@ public class AudioManager : MonoBehaviour
     [Tooltip("Limits the number of each sounds being played. If at 0 or no value, assume infinite")]
     int[] exclusiveList;
 
-    /// <summary>
-    /// Audio Sources dedicated to playing music
-    /// </summary>
     AudioSource[] sources;
 
     /// <summary>
-    /// Audio Sources dedicated to playing music
+    /// Sources dedicated to playing music
     /// </summary>
     AudioSource[] musicSources;
 
@@ -90,12 +87,10 @@ public class AudioManager : MonoBehaviour
     [Range(0, 1)]
     float masterVolume = 1;
 
-    [Tooltip("Volume that applies to everything played as a Sound")]
     [SerializeField]
     [Range(0, 1)]
     float soundVolume = 1;
 
-    [Tooltip("Volume that applies to everything played through the Music Sources")]
     [SerializeField]
     [Range(0, 1)]
     float musicVolume = 1;
@@ -111,14 +106,6 @@ public class AudioManager : MonoBehaviour
     [Tooltip("When Time.timeScale is set to 0, pause all sounds")]
     bool timeScaledSounds = true;
 
-    [SerializeField]
-    [Tooltip("If false, sounds will continue playing even after scene change, does not affect music")]
-    bool stopSoundsOnSceneLoad = true;
-
-    [SerializeField]
-    [Tooltip("If false, destroys this instance of AudioManager, disable at your own risk!")]
-    bool dontDestroyOnLoad = true;
-
     public static AudioManager Singleton;
 
     /// <summary>
@@ -129,6 +116,7 @@ public class AudioManager : MonoBehaviour
     /// <summary>
     /// Current music that's playing
     /// </summary>
+    //[Tooltip("Current music that's playing")]
     [HideInInspector]
     public string currentTrack = "None";
 
@@ -166,10 +154,7 @@ public class AudioManager : MonoBehaviour
         }
 
         // AudioManager is important, keep it between scenes
-        if (dontDestroyOnLoad)
-        {
-            DontDestroyOnLoad(gameObject);
-        }
+        DontDestroyOnLoad(gameObject);
 
         sources = new AudioSource[audioSources];
         loopingSources = new List<AudioSource>();
@@ -188,7 +173,6 @@ public class AudioManager : MonoBehaviour
         // Get a reference to all our audiosources on startup
         sources = sourceHolder.GetComponentsInChildren<AudioSource>();
 
-        // Create our 3 unique music sources
         musicSources = new AudioSource[3];
         GameObject m = new GameObject("MusicSource");
         m.transform.parent = transform;
@@ -196,14 +180,12 @@ public class AudioManager : MonoBehaviour
         musicSources[0] = m.GetComponent<AudioSource>();
         musicSources[0].priority = (int)Priority.Music;
 
-        // Used as an additional buffer to fade music in and out
         m = new GameObject("SecondaryMusicSource");
         m.transform.parent = transform;
         m.AddComponent<AudioSource>();
         musicSources[1] = m.GetComponent<AudioSource>();
         musicSources[1].priority = (int)Priority.Music;
 
-        // Used to play music in world space
         musicSources[2] = Instantiate(sourcePrefab, transform).GetComponent<AudioSource>();
         musicSources[2].gameObject.name = "SpatialMusicSource";
         musicSources[2].priority = (int)Priority.Music;
@@ -216,7 +198,8 @@ public class AudioManager : MonoBehaviour
         // Find the listener if not manually set
         FindNewListener();
 
-        // Generate the library when running in-build
+        //AddOffsetToArrays();
+
         if (!Application.isEditor)
         {
             GenerateAudioDictionarys();
@@ -227,16 +210,12 @@ public class AudioManager : MonoBehaviour
 
     void Start()
     {
-        // Generate the library when running in-build
         if (!Application.isEditor)
         {
             GenerateAudioDictionarys();
         }
     }
 
-    /// <summary>
-    /// Looks for a listener by getting a reference to an object marked as the Main Camera
-    /// </summary>
     void FindNewListener()
     {
         if (listener == null)
@@ -253,10 +232,7 @@ public class AudioManager : MonoBehaviour
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         FindNewListener();
-        if (stopSoundsOnSceneLoad)
-        {
-            StopSoundLoopAll(true);
-        }
+        StopSoundLoopAll(true);
     }
 
     /// <summary>
@@ -458,6 +434,15 @@ public class AudioManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Stop whatever is playing in musicSource
+    /// </summary>
+    public void StopMusic()
+    {
+        musicSources[0].Stop();
+        currentTrack = "None";
+    }
+
     private void Update()
     {
         if (queueIntro) //If we're playing the intro to a track
@@ -488,6 +473,7 @@ public class AudioManager : MonoBehaviour
                         a.Pause();
                     }
                 }
+                print("Sounds paused!");
                 gamePaused = true;
             }
             else if (Time.timeScale != 0)
@@ -737,47 +723,6 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Stop whatever is playing in musicSource
-    /// </summary>
-    public void StopMusic()
-    {
-        if (musicSources[0].isPlaying)
-        {
-            musicSources[0].Stop();
-        }
-        currentTrack = "None";
-    }
-
-    /// <summary>
-    /// Stop whatever music is playing in the world
-    /// </summary>
-    public void StopMusic3D()
-    {
-        if (musicSources[2].isPlaying)
-        {
-            musicSources[2].Stop();
-        }
-    }
-
-    /// <summary>
-    /// Stop any instances of a specific track across all music sources
-    /// </summary>
-    /// <param name="s"></param>
-    /// <param name="stopInstantly"></param>
-    public void StopMusic(string s)
-    {
-        for (int i = 0; i < musicSources.Length; i++)
-        {
-            if (musicSources[i].clip == music[s][0] || musicSources[i].clip == music[s][1])
-            {
-                if (!musicSources[i].isPlaying) return;
-                musicSources[i].Stop();
-                currentTrack = "None";
-            }
-        }
-    }
-
-    /// <summary>
     /// Stops a looping sound
     /// </summary>
     /// <param name="s"></param>
@@ -789,7 +734,7 @@ public class AudioManager : MonoBehaviour
             if (loopingSources[i].clip == sounds[s])
             {
                 for (int j = 0; j < sources.Length; j++)
-                {   // Thanks to Connor Smiley for a workaround
+                { // Thanks Connor Smiley 
                     if (sources[j] == loopingSources[i])
                     {
                         if (t != sources[j].transform)
@@ -818,7 +763,7 @@ public class AudioManager : MonoBehaviour
             if (loopingSources[i].clip == s)
             {
                 for (int j = 0; j < sources.Length; j++)
-                {   // Thanks to Connor Smiley for a workaround
+                { // Thanks Connor Smiley 
                     if (sources[j] == loopingSources[i])
                     {
                         if (t != sources[j].transform)
@@ -873,12 +818,13 @@ public class AudioManager : MonoBehaviour
     public void SetMusicVolume(float v)
     {
         musicVolume = v;
+        foreach (AudioSource m in musicSources)
+        {
+            m.volume = musicVolume * masterVolume;
+        }
         ApplyMusicVolume();
     }
 
-    /// <summary>
-    /// Helper method called after changing the volume in the inspector
-    /// </summary>
     void ApplySoundVolume()
     {
         foreach (AudioSource s in sources)
@@ -887,15 +833,22 @@ public class AudioManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Helper method called after changing the volume in the inspector
-    /// </summary>
     void ApplyMusicVolume()
     {
         foreach (AudioSource s in musicSources)
         {
             s.volume = musicVolume * masterVolume;
         }
+    }
+
+    public void SetSoundVolume(UnityEngine.UI.Slider v)
+    {
+        soundVolume = v.value;
+    }
+
+    public void SetMusicVolume(UnityEngine.UI.Slider v)
+    {
+        musicVolume = v.value;
     }
 
     /// <summary>
@@ -916,7 +869,23 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Called externally to update slider values if you're modifying volume with a slider
+    /// Accomodates the "None" helper enum during runtime
+    /// </summary>
+    public void AddOffsetToArrays()
+    {
+        //if (clips[0] != null && clips.Count < (int)Sound.Count)
+        //{
+        //    clips.Insert(0, null);
+        //}
+
+        //if (tracks[0] != null && tracks.Count < (int)Music.Count)
+        //{
+        //    tracks.Insert(0, null);
+        //}
+    }
+
+    /// <summary>
+    /// Called externally to update slider values
     /// </summary>
     /// <param name="s"></param>
     public void UpdateSoundSlider(UnityEngine.UI.Slider s)
@@ -925,7 +894,7 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Called externally to update slider values if you're modifying volume with a slider
+    /// Called externally to update slider values
     /// </summary>
     /// <param name="s"></param>
     public void UpdateMusicSlider(UnityEngine.UI.Slider s)
@@ -950,37 +919,21 @@ public class AudioManager : MonoBehaviour
         return null;
     }
 
-    /// <summary>
-    /// Returns the static instance of AudioManager
-    /// </summary>
-    /// <returns>An existing AudioManager in the scene</returns>
     public static AudioManager GetInstance()
     {
         return Singleton;
     }
 
-    /// <summary>
-    /// Returns the current Master Volume as a float
-    /// </summary>
-    /// <returns>The volume level of all audio controlled by AudioManager from 0 to 1</returns>
     public float GetMasterVolume()
     {
         return masterVolume;
     }
 
-    /// <summary>
-    /// Returns the current Sound Volume as a float
-    /// </summary>
-    /// <returns>The volume level of all sound controlled by AudioManager from 0 to 1</returns>
     public float GetSoundVolume()
     {
         return soundVolume;
     }
 
-    /// <summary>
-    /// Returns the current Music Volume as a float
-    /// </summary>
-    /// <returns>The volume level of all music controlled by AudioManager from 0 to 1</returns>
     public float GetMusicVolume()
     {
         return musicVolume;
@@ -1127,10 +1080,6 @@ public class AudioManager : MonoBehaviour
         return 0;
     }
 
-    /// <summary>
-    /// Regenerates the Audio Library based on the children of Sound Library and Music Library
-    /// Called automatically at run time and in-editor
-    /// </summary>
     public void GenerateAudioDictionarys()
     {
         // Create dictionary for sound
@@ -1183,15 +1132,6 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Get reference to the world space music player for custom usage
-    /// </summary>
-    /// <returns></returns>
-    public AudioSource GetMusicSource3D()
-    {
-        return musicSources[2];
-    }
-
-    /// <summary>
     /// Used by the custom inspector to get error messages
     /// </summary>
     /// <returns></returns>
@@ -1200,19 +1140,11 @@ public class AudioManager : MonoBehaviour
         return editorMessage;
     }
 
-    /// <summary>
-    /// Returns the dictionary used by AudioManager to store Music
-    /// </summary>
-    /// <returns></returns>
     public Dictionary<string, AudioClip[]> GetMusicDictionary()
     {
         return music;
     }
 
-    /// <summary>
-    /// Returns the dictionary used by AudioManager to store Sounds
-    /// </summary>
-    /// <returns></returns>
     public Dictionary<string, AudioClip> GetSoundDictionary()
     {
         return sounds;

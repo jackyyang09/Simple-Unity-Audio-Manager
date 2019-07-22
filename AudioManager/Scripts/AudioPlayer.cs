@@ -10,6 +10,10 @@ public class AudioPlayer : BaseAudioFeedback
     [SerializeField]
     bool playOnEnable;
 
+    [Tooltip("Play sound after this long")]
+    [SerializeField]
+    float delay = 0;
+
     [SerializeField]
     bool stopOnDisable = true;
 
@@ -34,11 +38,11 @@ public class AudioPlayer : BaseAudioFeedback
     {
         if (soundFile != null)
         {
-            am.PlaySoundOnce(soundFile, transform, priority, pitchShift);
+            am.PlaySoundOnce(soundFile, transform, priority, pitchShift, delay);
         }
         else
         {
-            am.PlaySoundOnce(sound, transform, priority, pitchShift);
+            am.PlaySoundOnce(sound, transform, priority, pitchShift, delay);
         }
     }
 
@@ -64,8 +68,14 @@ public class AudioPlayer : BaseAudioFeedback
     {
         if (playOnEnable)
         {
-            Play();
+            StartCoroutine(PlayOnEnable());
         }
+    }
+
+    IEnumerator PlayOnEnable()
+    {
+        yield return new WaitForEndOfFrame();
+        Play();
     }
 
     private void OnDisable()

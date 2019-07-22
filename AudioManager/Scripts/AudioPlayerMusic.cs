@@ -44,11 +44,14 @@ public class AudioPlayerMusic : MonoBehaviour
 
     AudioManager am;
 
+    private void Awake()
+    {
+        am = AudioManager.GetInstance();
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        am = AudioManager.GetInstance();
-
         if (playOnStart)
         {
             Play();
@@ -90,6 +93,7 @@ public class AudioPlayerMusic : MonoBehaviour
             {
                 am.PlayMusic(music, useMusicIntro);
             }
+            print("Playing");
         }
     }
 
@@ -109,8 +113,14 @@ public class AudioPlayerMusic : MonoBehaviour
     {
         if (playOnEnable)
         {
-            Play();
+            StartCoroutine(PlayOnEnable());
         }
+    }
+
+    IEnumerator PlayOnEnable()
+    {
+        yield return new WaitForEndOfFrame();
+        Play();
     }
 
     private void OnDisable()

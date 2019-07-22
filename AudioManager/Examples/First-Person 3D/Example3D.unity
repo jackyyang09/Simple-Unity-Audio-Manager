@@ -5404,6 +5404,8 @@ MonoBehaviour:
   music: None
   useMusicIntro: 0
   spatializeSound: 0
+  restartOnReplay: 0
+  musicFadeTime: 0
   loopMusic: 1
   playOnStart: 1
   playOnEnable: 0
@@ -5823,7 +5825,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e4f07eb732153b41ae4bf364b486e87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioName: Abstract Pop
   file: {fileID: 8300000, guid: 1a3ec11eedd102f4488b169670fcef28, type: 3}
 --- !u!1 &1911626181
 GameObject:
@@ -6057,7 +6058,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e4f07eb732153b41ae4bf364b486e87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioName: Walk
   file: {fileID: 8300000, guid: 6992658e5fb03354ea113982a3bf39e4, type: 3}
 --- !u!1 &2094897746
 GameObject:
@@ -6208,6 +6208,7 @@ MonoBehaviour:
   soundVolume: 1
   musicVolume: 1
   spatialSound: 1
+  spatializeLateUpdate: 0
   timeScaledSounds: 1
   currentTrack: None
   listener: {fileID: 0}
