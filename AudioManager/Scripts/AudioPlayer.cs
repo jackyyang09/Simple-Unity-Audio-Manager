@@ -32,6 +32,8 @@ public class AudioPlayer : BaseAudioFeedback
         {
             Play();
         }
+
+        if (am == null) am = AudioManager.GetInstance();
     }
 
     public void Play()
