@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -55,7 +55,7 @@ public class AudioPlayerMusic : MonoBehaviour
 
     public void Play()
     {
-        if (musicFile != null)
+        if (musicFile == null)
         {
             if (am.IsMusicPlaying(musicFile) && !restartOnReplay) return;
 
