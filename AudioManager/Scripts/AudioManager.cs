@@ -451,6 +451,30 @@ public class AudioManager : MonoBehaviour
         currentTrack = "None";
     }
 
+    public void StopMusic(string m)
+    {
+        if (!music.ContainsKey(m)) return;
+        foreach(AudioSource a in musicSources)
+        {
+            if (a.clip == music[m][0])
+            {
+                a.Stop();
+            }
+        }
+        currentTrack = "None";
+    }
+
+    public void StopMusic(AudioClip m)
+    {
+        foreach (AudioSource a in musicSources)
+        {
+            if (a.clip == m)
+            {
+                a.Stop();
+            }
+        }
+    }
+
     private void Update()
     {
         if (queueIntro) //If we're playing the intro to a track
@@ -695,6 +719,7 @@ public class AudioManager : MonoBehaviour
     /// <param name="t">For sources, helps with duplicate soundss</param>
     public void StopSound(string s, Transform t = null)
     {
+        if (!sounds.ContainsKey(s)) return;
         for (int i = 0; i < audioSources; i++)
         {
             if (sources[i].clip == sounds[s])

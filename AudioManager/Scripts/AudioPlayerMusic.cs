@@ -47,6 +47,8 @@ public class AudioPlayerMusic : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        am = AudioManager.GetInstance();
+
         if (playOnStart)
         {
             Play();
@@ -95,11 +97,11 @@ public class AudioPlayerMusic : MonoBehaviour
     {
         if (musicFile != null)
         {
-            am.StopSound(musicFile, transform);
+            am.StopMusic(musicFile);
         }
         else
         {
-            am.StopSound(music, transform);
+            am.StopMusic(music);
         }
     }
 
