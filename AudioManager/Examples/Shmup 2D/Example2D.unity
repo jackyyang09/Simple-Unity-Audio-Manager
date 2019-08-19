@@ -282,8 +282,8 @@ MonoBehaviour:
   moveSpeed: 8
   focusSpeed: 3
   shotCooldown: 0.025
-  bulletPool: {fileID: 1702197542}
   bulletSpawnZone: {fileID: 372230434}
+  bulletPool: {fileID: 1702197542}
 --- !u!1 &170707497
 GameObject:
   m_ObjectHideFlags: 0
@@ -1119,7 +1119,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 692425069}
-        m_MethodName: ChangeMusic
+        m_MethodName: FadeMusic
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2417,6 +2417,7 @@ GameObject:
   - component: {fileID: 1753536677}
   - component: {fileID: 1753536676}
   - component: {fileID: 1753536679}
+  - component: {fileID: 1753536680}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -2484,6 +2485,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d090206c5b3595c40b788384e6d9e8b9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1753536680
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1753536675}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd13adbb36a3a614fafbec256720d4c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  music: Side Theme
+  useMusicIntro: 0
+  spatializeSound: 0
+  restartOnReplay: 0
+  musicFadeTime: 0
+  loopMusic: 0
+  playOnStart: 1
+  playOnEnable: 0
+  stopOnDisable: 1
+  stopOnDestroy: 1
+  musicFile: {fileID: 0}
 --- !u!114 &2109210240
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2554,7 +2578,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4502563657082201730}
   - component: {fileID: 4502563657082201733}
-  - component: {fileID: 4502563657082201734}
   m_Layer: 0
   m_Name: AudioManager
   m_TagString: Untagged
@@ -2586,26 +2609,3 @@ MonoBehaviour:
   listener: {fileID: 0}
   sourcePrefab: {fileID: 3048837711066349602, guid: cf11aed7e0e56ae45afe7eaebe30a616,
     type: 3}
---- !u!114 &4502563657082201734
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4502563657082201732}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bd13adbb36a3a614fafbec256720d4c4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  music: Side Theme
-  useMusicIntro: 0
-  spatializeSound: 0
-  restartOnReplay: 0
-  musicFadeTime: 0
-  loopMusic: 0
-  playOnStart: 1
-  playOnEnable: 0
-  stopOnDisable: 1
-  stopOnDestroy: 1
-  musicFile: {fileID: 0}

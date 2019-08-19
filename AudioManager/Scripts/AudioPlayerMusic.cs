@@ -57,7 +57,7 @@ public class AudioPlayerMusic : MonoBehaviour
 
     public void Play()
     {
-        if (musicFile == null)
+        if (musicFile != null)
         {
             if (am.IsMusicPlaying(musicFile) && !restartOnReplay) return;
 
@@ -67,7 +67,7 @@ public class AudioPlayerMusic : MonoBehaviour
             }
             else if (musicFadeTime > 0)
             {
-                am.FadeMusic(musicFile, musicFadeTime);
+                am.CrossfadeMusic(musicFile, musicFadeTime);
             }
             else
             {
@@ -84,7 +84,7 @@ public class AudioPlayerMusic : MonoBehaviour
             }
             else if (musicFadeTime > 0)
             {
-                am.FadeMusic(music, musicFadeTime);
+                am.CrossfadeMusic(music, musicFadeTime);
             }
             else
             {

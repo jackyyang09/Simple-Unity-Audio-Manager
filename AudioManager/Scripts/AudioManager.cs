@@ -80,6 +80,7 @@ public class AudioManager : MonoBehaviour
     /// <summary>
     /// Sources dedicated to playing music
     /// </summary>
+    [SerializeField]
     AudioSource[] musicSources;
 
     [Tooltip("All volume is set relative to the Master Volume")]
@@ -181,16 +182,19 @@ public class AudioManager : MonoBehaviour
         m.AddComponent<AudioSource>();
         musicSources[0] = m.GetComponent<AudioSource>();
         musicSources[0].priority = (int)Priority.Music;
+        musicSources[0].playOnAwake = false;
 
         m = new GameObject("SecondaryMusicSource");
         m.transform.parent = transform;
         m.AddComponent<AudioSource>();
         musicSources[1] = m.GetComponent<AudioSource>();
         musicSources[1].priority = (int)Priority.Music;
+        musicSources[1].playOnAwake = false;
 
         musicSources[2] = Instantiate(sourcePrefab, transform).GetComponent<AudioSource>();
         musicSources[2].gameObject.name = "SpatialMusicSource";
         musicSources[2].priority = (int)Priority.Music;
+        musicSources[2].playOnAwake = false;
 
         //Set sources properties based on current settings
         SetSoundVolume(soundVolume);
@@ -352,11 +356,92 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Fades music from the previous track to the new track specified
+    /// Fade out the current track and fade in a new track
+    /// </summary>
+    /// <param name="track">The name of the music track</param>
+    /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
+    /// <param name="hasIntro">Does the track have an intro?</param>
+    public void FadeMusic(string track, float time = 0, bool hasIntro = false)
+    {
+        if (track.Equals("None")) return;
+
+        currentTrack = track;
+
+        musicSources[1].clip = music[track][0];
+        musicSources[1].loop = true;
+
+        AudioSource temp = musicSources[0];
+        musicSources[0] = musicSources[1];
+        musicSources[1] = temp;
+
+        if (hasIntro && music[track][1] != null)
+        {
+            musicSources[0].clip = music[track][1];
+            musicSources[0].loop = false;
+        }
+        else
+        {
+            musicSources[0].clip = music[track][0];
+            musicSources[0].loop = true;
+        }
+
+        queueIntro = hasIntro;
+
+        if (time > 0)
+        {
+            float stepTime = time / 2;
+
+            StartCoroutine(FadeOutMusic(stepTime));
+
+            StartCoroutine(FadeInMusicRoutine(stepTime));
+        }
+    }
+
+    /// <summary>
+    /// Fade out the current track and fade in a new track
+    /// </summary>
+    /// <param name="track">The name of the music track</param>
+    /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
+    /// <param name="hasIntro">Does the track have an intro?</param>
+    public void FadeMusic(AudioClip track, float time = 0)
+    {
+        if (track.Equals("None")) return;
+
+        currentTrack = track.name;
+
+        musicSources[1].clip = track;
+        musicSources[1].loop = true;
+
+        AudioSource temp = musicSources[0];
+        musicSources[0] = musicSources[1];
+        musicSources[1] = temp;
+
+        if (time > 0)
+        {
+            float stepTime = time / 2;
+
+            StartCoroutine(FadeOutMusic(stepTime));
+
+            StartCoroutine(FadeInMusicRoutine(stepTime));
+        }
+    }
+
+    IEnumerator FadeInMusicRoutine(float stepTime)
+    {
+        musicSources[0].volume = 0;
+
+        //Wait for previous song to fade out
+        yield return new WaitForSecondsRealtime(stepTime);
+        StartCoroutine(FadeInMusic(stepTime));
+        musicSources[0].Play();
+    }
+
+    /// <summary>
+    /// Crossfade music from the previous track to the new track specified
     /// </summary>
     /// <param name="track"></param>
     /// <param name="time"></param>
-    public void FadeMusic(string track, float time = 0, bool hasIntro = false)
+    public void CrossfadeMusic(string track, float time = 0, bool hasIntro = false)
     {
         if (track.Equals("None")) return;
         currentTrack = track;
@@ -390,11 +475,11 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Fades music from the previous track to the new track specified
+    /// Crossfade music from the previous track to the new track specified
     /// </summary>
     /// <param name="track"></param>
     /// <param name="time"></param>
-    public void FadeMusic(AudioClip track, float time = 0)
+    public void CrossfadeMusic(AudioClip track, float time = 0)
     {
         if (track.Equals(null)) return;
         currentTrack = "Custom";
@@ -425,10 +510,11 @@ public class AudioManager : MonoBehaviour
         float timer = 0;
         while (timer < time)
         {
-            musicSources[0].volume = Mathf.Lerp(0, 1, timer / time);
+            musicSources[0].volume = Mathf.Lerp(0, musicVolume, timer / time);
             timer += Time.unscaledDeltaTime;
             yield return null;
         }
+        musicSources[0].volume = musicVolume;
     }
 
     private IEnumerator FadeOutMusic(float time = 0)
@@ -436,10 +522,11 @@ public class AudioManager : MonoBehaviour
         float timer = 0;
         while (timer < time)
         {
-            musicSources[1].volume = Mathf.Lerp(1, 0, timer / time);
+            musicSources[1].volume = Mathf.Lerp(musicVolume, 0, timer / time);
             timer += Time.unscaledDeltaTime;
             yield return null;
         }
+        musicSources[1].volume = 0;
     }
 
     /// <summary>
@@ -456,6 +543,7 @@ public class AudioManager : MonoBehaviour
         if (!music.ContainsKey(m)) return;
         foreach(AudioSource a in musicSources)
         {
+            if (a == null) continue; // Sometimes AudioPlayerMusic calls StopMusic on scene stop
             if (a.clip == music[m][0])
             {
                 a.Stop();
@@ -1117,38 +1205,75 @@ public class AudioManager : MonoBehaviour
     {
         // Create dictionary for sound
         if (transform.childCount == 0) return; // Probably script execution order issue
-        if (transform.GetChild(0).childCount != sounds.Count) sounds.Clear();
-        foreach (AudioFile a in transform.GetChild(0).GetComponentsInChildren<AudioFile>())
+
+        bool regenerateSounds = transform.GetChild(0).childCount != sounds.Count;
+
+        // Regenerate sounds if you rename sounds
+        if (!regenerateSounds)
         {
-            if (sounds.ContainsKey(a.name))
+            for (int i = 0; i < transform.GetChild(0).childCount; i++)
             {
-                if (sounds[a.name].Equals(a.GetFile())) continue;
-                else
+                if (sounds.ContainsKey(transform.GetChild(0).GetChild(i).name))
                 {
-                    sounds[a.name] = a.GetFile();
+                    regenerateSounds = true;
+                    break;
                 }
             }
-            else
+        }
+
+        if (regenerateSounds)
+        {
+            sounds.Clear();
+            foreach (AudioFile a in transform.GetChild(0).GetComponentsInChildren<AudioFile>())
             {
-                sounds.Add(a.name, a.GetFile());
+                if (sounds.ContainsKey(a.name))
+                {
+                    if (sounds[a.name].Equals(a.GetFile())) continue;
+                    else
+                    {
+                        sounds[a.name] = a.GetFile();
+                    }
+                }
+                else
+                {
+                    sounds.Add(a.name, a.GetFile());
+                }
+            }
+        }
+
+        bool regenerateMusic = transform.GetChild(1).childCount != music.Count;
+
+        // Regenerate music if you rename sounds
+        if (!regenerateMusic)
+        {
+            for (int i = 0; i < transform.GetChild(1).childCount; i++)
+            {
+                if (sounds.ContainsKey(transform.GetChild(1).GetChild(i).name))
+                {
+                    regenerateMusic = true;
+                    break;
+                }
             }
         }
 
         // Create a dictionary for music
-        if (transform.GetChild(1).childCount != music.Count) music.Clear();
-        foreach (AudioFileMusic a in transform.GetChild(1).GetComponentsInChildren<AudioFileMusic>())
+        if (regenerateMusic)
         {
-            if (music.ContainsKey(a.name))
+            music.Clear();
+            foreach (AudioFileMusic a in transform.GetChild(1).GetComponentsInChildren<AudioFileMusic>())
             {
-                if (music[a.name].Equals(a.GetFile())) continue;
+                if (music.ContainsKey(a.name))
+                {
+                    if (music[a.name].Equals(a.GetFile())) continue;
+                    else
+                    {
+                        music[a.name] = a.GetFile();
+                    }
+                }
                 else
                 {
-                    music[a.name] = a.GetFile();
+                    music.Add(a.name, a.GetFile());
                 }
-            }
-            else
-            {
-                music.Add(a.name, a.GetFile());
             }
         }
 

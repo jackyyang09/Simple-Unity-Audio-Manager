@@ -24,7 +24,12 @@ public class PauseMenu : MonoBehaviour
         }
     }
 
-    public void ChangeMusic()
+    public void CrossfadeMusic()
+    {
+        AudioManager.GetInstance().CrossfadeMusic("Main Theme", 5, true);
+    }
+
+    public void FadeMusic()
     {
         AudioManager.GetInstance().FadeMusic("Main Theme", 5, true);
     }

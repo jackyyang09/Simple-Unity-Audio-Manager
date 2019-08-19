@@ -6099,6 +6099,7 @@ MonoBehaviour:
   soundFile: {fileID: 0}
   playOnStart: 0
   playOnEnable: 0
+  delay: 0
   stopOnDisable: 1
   stopOnDestroy: 1
   loopSound: 0
