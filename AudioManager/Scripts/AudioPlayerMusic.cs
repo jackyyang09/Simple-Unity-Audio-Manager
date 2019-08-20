@@ -105,6 +105,23 @@ public class AudioPlayerMusic : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Fades in the current track
+    /// </summary>
+    public void FadeIn(float time)
+    {
+        am.FadeMusicIn(music, time, useMusicIntro);
+    }
+
+    /// <summary>
+    /// Fades out the current track
+    /// </summary>
+    /// <param name="time"></param>
+    public void FadeOut(float time)
+    {
+        am.FadeMusicOut(time);
+    }
+
     private void OnEnable()
     {
         if (playOnEnable)

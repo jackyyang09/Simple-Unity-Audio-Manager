@@ -361,7 +361,7 @@ public class AudioManager : MonoBehaviour
     /// <param name="track">The name of the music track</param>
     /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
     /// <param name="hasIntro">Does the track have an intro?</param>
-    public void FadeMusic(string track, float time = 0, bool hasIntro = false)
+    public void FadeMusic(string track, float time, bool hasIntro = false)
     {
         if (track.Equals("None")) return;
 
@@ -403,7 +403,7 @@ public class AudioManager : MonoBehaviour
     /// <param name="track">The name of the music track</param>
     /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
     /// <param name="hasIntro">Does the track have an intro?</param>
-    public void FadeMusic(AudioClip track, float time = 0)
+    public void FadeMusic(AudioClip track, float time)
     {
         if (track.Equals("None")) return;
 
@@ -423,6 +423,90 @@ public class AudioManager : MonoBehaviour
             StartCoroutine(FadeOutMusic(stepTime));
 
             StartCoroutine(FadeInMusicRoutine(stepTime));
+        }
+    }
+
+    /// <summary>
+    /// Fade in a new track
+    /// </summary>
+    /// <param name="track">The name of the music track</param>
+    /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
+    /// <param name="hasIntro">Does the track have an intro?</param>
+    public void FadeMusicIn(string track, float time, bool hasIntro = false)
+    {
+        if (track.Equals("None")) return;
+
+        currentTrack = track;
+
+        musicSources[1].clip = music[track][0];
+        musicSources[1].loop = true;
+
+        AudioSource temp = musicSources[0];
+        musicSources[0] = musicSources[1];
+        musicSources[1] = temp;
+
+        if (hasIntro && music[track][1] != null)
+        {
+            musicSources[0].clip = music[track][1];
+            musicSources[0].loop = false;
+        }
+        else
+        {
+            musicSources[0].clip = music[track][0];
+            musicSources[0].loop = true;
+        }
+
+        queueIntro = hasIntro;
+
+        if (time > 0)
+        {
+            StartCoroutine(FadeInMusicRoutine(time));
+        }
+    }
+
+    /// <summary>
+    /// Fade in a new track
+    /// </summary>
+    /// <param name="track">The name of the music track</param>
+    /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
+    /// <param name="hasIntro">Does the track have an intro?</param>
+    public void FadeMusicIn(AudioClip track, float time)
+    {
+        if (track.Equals("None")) return;
+
+        currentTrack = track.ToString();
+
+        musicSources[1].clip = track;
+        musicSources[1].loop = true;
+
+        AudioSource temp = musicSources[0];
+        musicSources[0] = musicSources[1];
+        musicSources[1] = temp;
+
+        if (time > 0)
+        {
+            StartCoroutine(FadeInMusicRoutine(time));
+        }
+    }
+
+    /// <summary>
+    /// Fade out the current track to silence
+    /// </summary>
+    /// <param name="time">Fade duration</param>
+    public void FadeMusicOut(float time)
+    {
+        currentTrack = "None";
+
+        musicSources[1].clip = null;
+        musicSources[1].loop = false;
+
+        AudioSource temp = musicSources[0];
+        musicSources[0] = musicSources[1];
+        musicSources[1] = temp;
+
+        if (time > 0)
+        {
+            StartCoroutine(FadeOutMusic(time));
         }
     }
 
@@ -465,6 +549,8 @@ public class AudioManager : MonoBehaviour
         }
         queueIntro = hasIntro;
 
+        musicSources[0].volume = 0;
+
         musicSources[0].Play();
 
         if (time > 0)
@@ -493,6 +579,7 @@ public class AudioManager : MonoBehaviour
 
         musicSources[0].clip = track;
         musicSources[0].loop = true;
+        musicSources[0].volume = 0;
 
         queueIntro = false;
 
@@ -508,9 +595,10 @@ public class AudioManager : MonoBehaviour
     private IEnumerator FadeInMusic(float time = 0)
     {
         float timer = 0;
+        float startingVolume = musicSources[0].volume;
         while (timer < time)
         {
-            musicSources[0].volume = Mathf.Lerp(0, musicVolume, timer / time);
+            musicSources[0].volume = Mathf.Lerp(startingVolume, musicVolume, timer / time);
             timer += Time.unscaledDeltaTime;
             yield return null;
         }
@@ -520,9 +608,10 @@ public class AudioManager : MonoBehaviour
     private IEnumerator FadeOutMusic(float time = 0)
     {
         float timer = 0;
+        float startingVolume = musicSources[1].volume;
         while (timer < time)
         {
-            musicSources[1].volume = Mathf.Lerp(musicVolume, 0, timer / time);
+            musicSources[1].volume = Mathf.Lerp(startingVolume, 0, timer / time);
             timer += Time.unscaledDeltaTime;
             yield return null;
         }
@@ -1068,8 +1157,9 @@ public class AudioManager : MonoBehaviour
     /// <returns></returns>
     public bool IsSoundPlaying(string s, Transform trans = null)
     {
-        for (int i = 0; i < audioSources; i++) // Loop through all sources
+        for (int i = 0; i < Mathf.Clamp(audioSources, 0, sources.Length); i++) // Loop through all sources
         {
+            if (sources[i] == null) continue;
             if (sources[i].clip == sounds[s] && sources[i].isPlaying) // If this source is playing the clip
             {
                 if (trans != null)
