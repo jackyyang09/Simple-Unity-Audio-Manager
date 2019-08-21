@@ -38,30 +38,44 @@ public class AudioPlayer : BaseAudioFeedback
 
     public void Play()
     {
+        Transform t = (spatialSound) ? transform : null;
         if (soundFile != null)
         {
-            am.PlaySoundOnce(soundFile, transform, priority, pitchShift, delay);
+            if (loopSound) am.PlaySoundLoop(soundFile, t, priority);
+            else am.PlaySoundOnce(soundFile, t, priority, pitchShift, delay);
         }
         else
         {
-            am.PlaySoundOnce(sound, transform, priority, pitchShift, delay);
+            if (loopSound) am.PlaySoundLoop(sound, t, priority);
+            else am.PlaySoundOnce(sound, t, priority, pitchShift, delay);
         }
     }
 
+    /// <summary>
+    /// Stops the sound instantly
+    /// </summary>
     public void Stop()
     {
+        Transform t = (spatialSound) ? transform : null;
         if (soundFile != null)
         {
-            if (am.IsSoundPlaying(soundFile, transform))
+            if (am.IsSoundPlaying(soundFile, t))
             {
-                am.StopSound(soundFile, transform);
+                am.StopSound(soundFile, t);
+            }
+            else if (am.IsSoundLooping(soundFile)) {
+                am.StopSoundLoop(soundFile, t); 
             }
         }
         else
         {
-            if (am.IsSoundPlaying(sound, transform))
+            if (am.IsSoundPlaying(sound, t))
             {
-                am.StopSound(sound, transform);
+                am.StopSound(sound, t);
+            }
+            else if (am.IsSoundLooping(sound))
+            {
+                am.StopSoundLoop(sound, t);
             }
         }
     }

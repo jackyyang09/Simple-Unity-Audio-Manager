@@ -136,6 +136,10 @@ public class AudioManager : MonoBehaviour
 
     bool initialized = false;
 
+    Coroutine fadeInRoutine;
+
+    Coroutine fadeOutRoutine;
+
     // Use this for initialization
     void Awake()
     {
@@ -391,9 +395,11 @@ public class AudioManager : MonoBehaviour
         {
             float stepTime = time / 2;
 
-            StartCoroutine(FadeOutMusic(stepTime));
+            if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
+            fadeOutRoutine = StartCoroutine(FadeOutMusic(stepTime));
 
-            StartCoroutine(FadeInMusicRoutine(stepTime));
+            if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
+            fadeInRoutine = StartCoroutine(FadeInMusicRoutine(stepTime));
         }
     }
 
@@ -420,9 +426,11 @@ public class AudioManager : MonoBehaviour
         {
             float stepTime = time / 2;
 
-            StartCoroutine(FadeOutMusic(stepTime));
+            if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
+            fadeOutRoutine = StartCoroutine(FadeOutMusic(stepTime));
 
-            StartCoroutine(FadeInMusicRoutine(stepTime));
+            if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
+            fadeInRoutine = StartCoroutine(FadeInMusicRoutine(stepTime));
         }
     }
 
@@ -460,7 +468,8 @@ public class AudioManager : MonoBehaviour
 
         if (time > 0)
         {
-            StartCoroutine(FadeInMusicRoutine(time));
+            if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
+            fadeInRoutine = StartCoroutine(FadeInMusicRoutine(time));
         }
     }
 
@@ -485,7 +494,8 @@ public class AudioManager : MonoBehaviour
 
         if (time > 0)
         {
-            StartCoroutine(FadeInMusicRoutine(time));
+            if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
+            fadeInRoutine = StartCoroutine(FadeInMusicRoutine(time));
         }
     }
 
@@ -506,7 +516,8 @@ public class AudioManager : MonoBehaviour
 
         if (time > 0)
         {
-            StartCoroutine(FadeOutMusic(time));
+            if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
+            fadeOutRoutine = StartCoroutine(FadeOutMusic(time));
         }
     }
 
@@ -516,7 +527,7 @@ public class AudioManager : MonoBehaviour
 
         //Wait for previous song to fade out
         yield return new WaitForSecondsRealtime(stepTime);
-        StartCoroutine(FadeInMusic(stepTime));
+        fadeInRoutine = StartCoroutine(FadeInMusic(stepTime));
         musicSources[0].Play();
     }
 
@@ -555,8 +566,11 @@ public class AudioManager : MonoBehaviour
 
         if (time > 0)
         {
-            StartCoroutine(FadeInMusic(time));
-            StartCoroutine(FadeOutMusic(time));
+            if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
+            fadeInRoutine = StartCoroutine(FadeInMusic(time));
+
+            if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
+            fadeOutRoutine = StartCoroutine(FadeOutMusic(time));
         }
     }
 
@@ -587,8 +601,11 @@ public class AudioManager : MonoBehaviour
 
         if (time > 0)
         {
-            StartCoroutine(FadeInMusic(time));
-            StartCoroutine(FadeOutMusic(time));
+            if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
+            fadeInRoutine = StartCoroutine(FadeInMusic(time));
+
+            if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
+            fadeOutRoutine = StartCoroutine(FadeOutMusic(time));
         }
     }
 
@@ -603,6 +620,8 @@ public class AudioManager : MonoBehaviour
             yield return null;
         }
         musicSources[0].volume = musicVolume;
+
+        fadeInRoutine = null;
     }
 
     private IEnumerator FadeOutMusic(float time = 0)
@@ -616,6 +635,8 @@ public class AudioManager : MonoBehaviour
             yield return null;
         }
         musicSources[1].volume = 0;
+
+        fadeOutRoutine = null;
     }
 
     /// <summary>
@@ -914,7 +935,7 @@ public class AudioManager : MonoBehaviour
     /// <summary>
     /// Stops any sound playing through PlaySoundOnce() immediately 
     /// </summary>
-    /// <param name="s">The sound to be stopped</param>
+    /// <param name="a">The sound to be stopped</param>
     /// <param name="t">For sources, helps with duplicate soundss</param>
     public void StopSound(AudioClip a, Transform t = null)
     {
@@ -1169,6 +1190,7 @@ public class AudioManager : MonoBehaviour
                         continue;
                     }
                 }
+                print(sources[i].clip);
                 return true;
             }
         }
