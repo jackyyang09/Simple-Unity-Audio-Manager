@@ -80,7 +80,7 @@ public class AudioManager : MonoBehaviour
     /// <summary>
     /// Sources dedicated to playing music
     /// </summary>
-    [SerializeField]
+    //[SerializeField]
     AudioSource[] musicSources;
 
     [Tooltip("All volume is set relative to the Master Volume")]
@@ -172,6 +172,7 @@ public class AudioManager : MonoBehaviour
         for (int i = 0; i < audioSources; i++)
         {
             sources[i] = Instantiate(sourcePrefab, sourceHolder.transform).GetComponent<AudioSource>();
+            sources[i].name = "AudioSource " + i;
         }
 
         // Subscribes itself to the sceneLoaded notifier
@@ -247,6 +248,9 @@ public class AudioManager : MonoBehaviour
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        // Revert music source volume
+        ApplyMusicVolume();
+
         FindNewListener();
         StopSoundLoopAll(true);
     }
@@ -290,6 +294,7 @@ public class AudioManager : MonoBehaviour
 
         musicSources[0].spatialBlend = 0;
 
+        musicSources[0].Stop();
         musicSources[0].Play();
     }
 
@@ -796,9 +801,9 @@ public class AudioManager : MonoBehaviour
             a.pitch = 1;
         }
 
-        //a.clip = clips[(int)s];
         a.clip = sounds[s];
         a.priority = (int)p;
+        a.loop = false;
         a.PlayDelayed(delay);
 
         return a;
@@ -847,6 +852,7 @@ public class AudioManager : MonoBehaviour
 
         a.clip = s;
         a.priority = (int)p;
+        a.loop = false;
         a.PlayDelayed(delay);
 
         return a;
@@ -858,26 +864,30 @@ public class AudioManager : MonoBehaviour
     /// <param name="s"></param>
     /// <param name="trans">The transform of the sound's source</param>
     /// <param name="p">The priority of the sound</param>
-    public AudioSource PlaySoundLoop(string s, Transform trans = null, Priority p = Priority.Default)
+    public AudioSource PlaySoundLoop(string s, Transform trans = null, Priority p = Priority.Default, float delay = 0)
     {
         AudioSource a = GetAvailableSource();
         loopingSources.Add(a);
         if (trans != null)
         {
             sourcePositions[Array.IndexOf(sources, a)] = trans;
+            a.spatialBlend = 1;
         }
         else
         {
-            sourcePositions[Array.IndexOf(sources, a)] = listener.transform;
+            sourcePositions[Array.IndexOf(sources, a)] = null;
+            a.spatialBlend = 0;
         }
 
-        AudioSource source = loopingSources[loopingSources.Count - 1];
-        //loopingSources[loopingSources.Count - 1].clip = clips[(int)s];
-        source.clip = sounds[s];
-        source.priority = (int)p;
-        source.pitch = 1;
-        source.Play();
-        source.loop = true;
+        a.clip = sounds[s];
+        a.priority = (int)p;
+        a.pitch = 1;
+        a.loop = true;
+        if (delay > 0)
+        {
+            a.PlayDelayed(delay);
+        }
+        else a.Play();
 
         return a;
     }
@@ -888,24 +898,30 @@ public class AudioManager : MonoBehaviour
     /// <param name="s"></param>
     /// <param name="trans">The transform of the sound's source</param>
     /// <param name="p">The priority of the sound</param>
-    public AudioSource PlaySoundLoop(AudioClip s, Transform trans = null, Priority p = Priority.Default)
+    public AudioSource PlaySoundLoop(AudioClip s, Transform trans = null, Priority p = Priority.Default, float delay = 0)
     {
         AudioSource a = GetAvailableSource();
         loopingSources.Add(a);
         if (trans != null)
         {
             sourcePositions[Array.IndexOf(sources, a)] = trans;
+            a.spatialBlend = 1;
         }
         else
         {
-            sourcePositions[Array.IndexOf(sources, a)] = listener.transform;
+            sourcePositions[Array.IndexOf(sources, a)] = null;
+            a.spatialBlend = 0;
         }
-        AudioSource source = loopingSources[loopingSources.Count - 1];
-        source.priority = (int)p;
-        source.clip = s;
-        source.pitch = 1;
-        source.Play();
-        source.loop = true;
+
+        a.clip = s;
+        a.priority = (int)p;
+        a.pitch = 1;
+        a.loop = true;
+        if (delay > 0)
+        {
+            a.PlayDelayed(delay);
+        }
+        else a.Play();
 
         return a;
     }
@@ -962,6 +978,7 @@ public class AudioManager : MonoBehaviour
     {
         for (int i = 0; i < loopingSources.Count; i++)
         {
+            if (loopingSources[i] == null) continue;
             if (loopingSources[i].clip == sounds[s])
             {
                 for (int j = 0; j < sources.Length; j++)
@@ -1021,11 +1038,12 @@ public class AudioManager : MonoBehaviour
     {
         if (loopingSources.Count > 0)
         {
-            foreach (AudioSource a in loopingSources)
+            for (int i = 0; i < loopingSources.Count; i++)
             {
-                if (stopPlaying) a.Stop();
-                a.loop = false;
-                loopingSources.Remove(a);
+                if (loopingSources[i] == null) continue;
+                if (stopPlaying) loopingSources[i].Stop();
+                loopingSources[i].loop = false;
+                loopingSources.Remove(loopingSources[i]);
             }
             if (sourcePositions != null)
                 sourcePositions = new Transform[audioSources];
@@ -1190,7 +1208,6 @@ public class AudioManager : MonoBehaviour
                         continue;
                     }
                 }
-                print(sources[i].clip);
                 return true;
             }
         }
@@ -1265,6 +1282,7 @@ public class AudioManager : MonoBehaviour
     {
         foreach (AudioSource c in loopingSources)
         {
+            if (c == null) continue;
             if (c.clip == sounds[s])
             {
                 return true;

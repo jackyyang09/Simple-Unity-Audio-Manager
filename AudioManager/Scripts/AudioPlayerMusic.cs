@@ -57,6 +57,8 @@ public class AudioPlayerMusic : MonoBehaviour
 
     public void Play()
     {
+        am = AudioManager.GetInstance();
+
         if (musicFile != null)
         {
             if (am.IsMusicPlaying(musicFile) && !restartOnReplay) return;

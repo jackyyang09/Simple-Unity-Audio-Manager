@@ -41,12 +41,18 @@ public class AudioPlayer : BaseAudioFeedback
         Transform t = (spatialSound) ? transform : null;
         if (soundFile != null)
         {
-            if (loopSound) am.PlaySoundLoop(soundFile, t, priority);
+            if (loopSound)
+            {
+                if (!am.IsSoundLooping(soundFile)) am.PlaySoundLoop(soundFile, t, priority);
+            }
             else am.PlaySoundOnce(soundFile, t, priority, pitchShift, delay);
         }
         else
         {
-            if (loopSound) am.PlaySoundLoop(sound, t, priority);
+            if (loopSound)
+            {
+                if (!am.IsSoundLooping(sound)) am.PlaySoundLoop(sound, t, priority);
+            }
             else am.PlaySoundOnce(sound, t, priority, pitchShift, delay);
         }
     }
@@ -59,23 +65,36 @@ public class AudioPlayer : BaseAudioFeedback
         Transform t = (spatialSound) ? transform : null;
         if (soundFile != null)
         {
-            if (am.IsSoundPlaying(soundFile, t))
+            if (!loopSound)
             {
-                am.StopSound(soundFile, t);
+                if (am.IsSoundPlaying(soundFile, t))
+                {
+                    am.StopSound(soundFile, t);
+                }
             }
-            else if (am.IsSoundLooping(soundFile)) {
-                am.StopSoundLoop(soundFile, t); 
+            else
+            {
+                if (am.IsSoundLooping(soundFile))
+                {
+                    am.StopSoundLoop(sound, true, t);
+                }
             }
         }
         else
         {
-            if (am.IsSoundPlaying(sound, t))
+            if (!loopSound)
             {
-                am.StopSound(sound, t);
+                if (am.IsSoundPlaying(sound, t))
+                {
+                    am.StopSound(sound, t);
+                }
             }
-            else if (am.IsSoundLooping(sound))
+            else
             {
-                am.StopSoundLoop(sound, t);
+                if (am.IsSoundLooping(sound))
+                {
+                    am.StopSoundLoop(sound, true, t);
+                }
             }
         }
     }
