@@ -2497,7 +2497,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd13adbb36a3a614fafbec256720d4c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  music: Side Theme
+  music: None
   useMusicIntro: 0
   spatializeSound: 0
   restartOnReplay: 0
@@ -2507,7 +2507,7 @@ MonoBehaviour:
   playOnEnable: 0
   stopOnDisable: 1
   stopOnDestroy: 1
-  musicFile: {fileID: 0}
+  musicFile: {fileID: 8300000, guid: c24976ce5925e0e4c83ba82f15fbf5e3, type: 3}
 --- !u!114 &2109210240
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2599,6 +2599,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   audioSources: 32
   dynamicSourceAllocation: 0
+  musicSources: []
   masterVolume: 1
   soundVolume: 1
   musicVolume: 1
