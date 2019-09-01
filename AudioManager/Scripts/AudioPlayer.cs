@@ -38,30 +38,63 @@ public class AudioPlayer : BaseAudioFeedback
 
     public void Play()
     {
+        Transform t = (spatialSound) ? transform : null;
         if (soundFile != null)
         {
-            am.PlaySoundOnce(soundFile, transform, priority, pitchShift, delay);
+            if (loopSound)
+            {
+                if (!am.IsSoundLooping(soundFile)) am.PlaySoundLoop(soundFile, t, priority);
+            }
+            else am.PlaySoundOnce(soundFile, t, priority, pitchShift, delay);
         }
         else
         {
-            am.PlaySoundOnce(sound, transform, priority, pitchShift, delay);
+            if (loopSound)
+            {
+                if (!am.IsSoundLooping(sound)) am.PlaySoundLoop(sound, t, priority);
+            }
+            else am.PlaySoundOnce(sound, t, priority, pitchShift, delay);
         }
     }
 
+    /// <summary>
+    /// Stops the sound instantly
+    /// </summary>
     public void Stop()
     {
+        Transform t = (spatialSound) ? transform : null;
         if (soundFile != null)
         {
-            if (am.IsSoundPlaying(soundFile, transform))
+            if (!loopSound)
             {
-                am.StopSound(soundFile, transform);
+                if (am.IsSoundPlaying(soundFile, t))
+                {
+                    am.StopSound(soundFile, t);
+                }
+            }
+            else
+            {
+                if (am.IsSoundLooping(soundFile))
+                {
+                    am.StopSoundLoop(sound, true, t);
+                }
             }
         }
         else
         {
-            if (am.IsSoundPlaying(sound, transform))
+            if (!loopSound)
             {
-                am.StopSound(sound, transform);
+                if (am.IsSoundPlaying(sound, t))
+                {
+                    am.StopSound(sound, t);
+                }
+            }
+            else
+            {
+                if (am.IsSoundLooping(sound))
+                {
+                    am.StopSoundLoop(sound, true, t);
+                }
             }
         }
     }

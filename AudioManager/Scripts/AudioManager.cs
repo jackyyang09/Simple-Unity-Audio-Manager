@@ -80,7 +80,7 @@ public class AudioManager : MonoBehaviour
     /// <summary>
     /// Sources dedicated to playing music
     /// </summary>
-    [SerializeField]
+    //[SerializeField]
     AudioSource[] musicSources;
 
     [Tooltip("All volume is set relative to the Master Volume")]
@@ -136,6 +136,10 @@ public class AudioManager : MonoBehaviour
 
     bool initialized = false;
 
+    Coroutine fadeInRoutine;
+
+    Coroutine fadeOutRoutine;
+
     // Use this for initialization
     void Awake()
     {
@@ -168,6 +172,7 @@ public class AudioManager : MonoBehaviour
         for (int i = 0; i < audioSources; i++)
         {
             sources[i] = Instantiate(sourcePrefab, sourceHolder.transform).GetComponent<AudioSource>();
+            sources[i].name = "AudioSource " + i;
         }
 
         // Subscribes itself to the sceneLoaded notifier
@@ -243,6 +248,9 @@ public class AudioManager : MonoBehaviour
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        // Revert music source volume
+        ApplyMusicVolume();
+
         FindNewListener();
         StopSoundLoopAll(true);
     }
@@ -286,6 +294,7 @@ public class AudioManager : MonoBehaviour
 
         musicSources[0].spatialBlend = 0;
 
+        musicSources[0].Stop();
         musicSources[0].Play();
     }
 
@@ -361,7 +370,7 @@ public class AudioManager : MonoBehaviour
     /// <param name="track">The name of the music track</param>
     /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
     /// <param name="hasIntro">Does the track have an intro?</param>
-    public void FadeMusic(string track, float time = 0, bool hasIntro = false)
+    public void FadeMusic(string track, float time, bool hasIntro = false)
     {
         if (track.Equals("None")) return;
 
@@ -391,9 +400,11 @@ public class AudioManager : MonoBehaviour
         {
             float stepTime = time / 2;
 
-            StartCoroutine(FadeOutMusic(stepTime));
+            if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
+            fadeOutRoutine = StartCoroutine(FadeOutMusic(stepTime));
 
-            StartCoroutine(FadeInMusicRoutine(stepTime));
+            if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
+            fadeInRoutine = StartCoroutine(FadeInMusicRoutine(stepTime));
         }
     }
 
@@ -403,7 +414,7 @@ public class AudioManager : MonoBehaviour
     /// <param name="track">The name of the music track</param>
     /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
     /// <param name="hasIntro">Does the track have an intro?</param>
-    public void FadeMusic(AudioClip track, float time = 0)
+    public void FadeMusic(AudioClip track, float time)
     {
         if (track.Equals("None")) return;
 
@@ -420,9 +431,98 @@ public class AudioManager : MonoBehaviour
         {
             float stepTime = time / 2;
 
-            StartCoroutine(FadeOutMusic(stepTime));
+            if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
+            fadeOutRoutine = StartCoroutine(FadeOutMusic(stepTime));
 
-            StartCoroutine(FadeInMusicRoutine(stepTime));
+            if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
+            fadeInRoutine = StartCoroutine(FadeInMusicRoutine(stepTime));
+        }
+    }
+
+    /// <summary>
+    /// Fade in a new track
+    /// </summary>
+    /// <param name="track">The name of the music track</param>
+    /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
+    /// <param name="hasIntro">Does the track have an intro?</param>
+    public void FadeMusicIn(string track, float time, bool hasIntro = false)
+    {
+        if (track.Equals("None")) return;
+
+        currentTrack = track;
+
+        musicSources[1].clip = music[track][0];
+        musicSources[1].loop = true;
+
+        AudioSource temp = musicSources[0];
+        musicSources[0] = musicSources[1];
+        musicSources[1] = temp;
+
+        if (hasIntro && music[track][1] != null)
+        {
+            musicSources[0].clip = music[track][1];
+            musicSources[0].loop = false;
+        }
+        else
+        {
+            musicSources[0].clip = music[track][0];
+            musicSources[0].loop = true;
+        }
+
+        queueIntro = hasIntro;
+
+        if (time > 0)
+        {
+            if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
+            fadeInRoutine = StartCoroutine(FadeInMusicRoutine(time));
+        }
+    }
+
+    /// <summary>
+    /// Fade in a new track
+    /// </summary>
+    /// <param name="track">The name of the music track</param>
+    /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
+    /// <param name="hasIntro">Does the track have an intro?</param>
+    public void FadeMusicIn(AudioClip track, float time)
+    {
+        if (track.Equals("None")) return;
+
+        currentTrack = track.ToString();
+
+        musicSources[1].clip = track;
+        musicSources[1].loop = true;
+
+        AudioSource temp = musicSources[0];
+        musicSources[0] = musicSources[1];
+        musicSources[1] = temp;
+
+        if (time > 0)
+        {
+            if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
+            fadeInRoutine = StartCoroutine(FadeInMusicRoutine(time));
+        }
+    }
+
+    /// <summary>
+    /// Fade out the current track to silence
+    /// </summary>
+    /// <param name="time">Fade duration</param>
+    public void FadeMusicOut(float time)
+    {
+        currentTrack = "None";
+
+        musicSources[1].clip = null;
+        musicSources[1].loop = false;
+
+        AudioSource temp = musicSources[0];
+        musicSources[0] = musicSources[1];
+        musicSources[1] = temp;
+
+        if (time > 0)
+        {
+            if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
+            fadeOutRoutine = StartCoroutine(FadeOutMusic(time));
         }
     }
 
@@ -432,7 +532,7 @@ public class AudioManager : MonoBehaviour
 
         //Wait for previous song to fade out
         yield return new WaitForSecondsRealtime(stepTime);
-        StartCoroutine(FadeInMusic(stepTime));
+        fadeInRoutine = StartCoroutine(FadeInMusic(stepTime));
         musicSources[0].Play();
     }
 
@@ -465,12 +565,17 @@ public class AudioManager : MonoBehaviour
         }
         queueIntro = hasIntro;
 
+        musicSources[0].volume = 0;
+
         musicSources[0].Play();
 
         if (time > 0)
         {
-            StartCoroutine(FadeInMusic(time));
-            StartCoroutine(FadeOutMusic(time));
+            if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
+            fadeInRoutine = StartCoroutine(FadeInMusic(time));
+
+            if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
+            fadeOutRoutine = StartCoroutine(FadeOutMusic(time));
         }
     }
 
@@ -493,6 +598,7 @@ public class AudioManager : MonoBehaviour
 
         musicSources[0].clip = track;
         musicSources[0].loop = true;
+        musicSources[0].volume = 0;
 
         queueIntro = false;
 
@@ -500,33 +606,42 @@ public class AudioManager : MonoBehaviour
 
         if (time > 0)
         {
-            StartCoroutine(FadeInMusic(time));
-            StartCoroutine(FadeOutMusic(time));
+            if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
+            fadeInRoutine = StartCoroutine(FadeInMusic(time));
+
+            if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
+            fadeOutRoutine = StartCoroutine(FadeOutMusic(time));
         }
     }
 
     private IEnumerator FadeInMusic(float time = 0)
     {
         float timer = 0;
+        float startingVolume = musicSources[0].volume;
         while (timer < time)
         {
-            musicSources[0].volume = Mathf.Lerp(0, musicVolume, timer / time);
+            musicSources[0].volume = Mathf.Lerp(startingVolume, musicVolume, timer / time);
             timer += Time.unscaledDeltaTime;
             yield return null;
         }
         musicSources[0].volume = musicVolume;
+
+        fadeInRoutine = null;
     }
 
     private IEnumerator FadeOutMusic(float time = 0)
     {
         float timer = 0;
+        float startingVolume = musicSources[1].volume;
         while (timer < time)
         {
-            musicSources[1].volume = Mathf.Lerp(musicVolume, 0, timer / time);
+            musicSources[1].volume = Mathf.Lerp(startingVolume, 0, timer / time);
             timer += Time.unscaledDeltaTime;
             yield return null;
         }
         musicSources[1].volume = 0;
+
+        fadeOutRoutine = null;
     }
 
     /// <summary>
@@ -686,9 +801,9 @@ public class AudioManager : MonoBehaviour
             a.pitch = 1;
         }
 
-        //a.clip = clips[(int)s];
         a.clip = sounds[s];
         a.priority = (int)p;
+        a.loop = false;
         a.PlayDelayed(delay);
 
         return a;
@@ -737,6 +852,7 @@ public class AudioManager : MonoBehaviour
 
         a.clip = s;
         a.priority = (int)p;
+        a.loop = false;
         a.PlayDelayed(delay);
 
         return a;
@@ -748,26 +864,30 @@ public class AudioManager : MonoBehaviour
     /// <param name="s"></param>
     /// <param name="trans">The transform of the sound's source</param>
     /// <param name="p">The priority of the sound</param>
-    public AudioSource PlaySoundLoop(string s, Transform trans = null, Priority p = Priority.Default)
+    public AudioSource PlaySoundLoop(string s, Transform trans = null, Priority p = Priority.Default, float delay = 0)
     {
         AudioSource a = GetAvailableSource();
         loopingSources.Add(a);
         if (trans != null)
         {
             sourcePositions[Array.IndexOf(sources, a)] = trans;
+            a.spatialBlend = 1;
         }
         else
         {
-            sourcePositions[Array.IndexOf(sources, a)] = listener.transform;
+            sourcePositions[Array.IndexOf(sources, a)] = null;
+            a.spatialBlend = 0;
         }
 
-        AudioSource source = loopingSources[loopingSources.Count - 1];
-        //loopingSources[loopingSources.Count - 1].clip = clips[(int)s];
-        source.clip = sounds[s];
-        source.priority = (int)p;
-        source.pitch = 1;
-        source.Play();
-        source.loop = true;
+        a.clip = sounds[s];
+        a.priority = (int)p;
+        a.pitch = 1;
+        a.loop = true;
+        if (delay > 0)
+        {
+            a.PlayDelayed(delay);
+        }
+        else a.Play();
 
         return a;
     }
@@ -778,24 +898,30 @@ public class AudioManager : MonoBehaviour
     /// <param name="s"></param>
     /// <param name="trans">The transform of the sound's source</param>
     /// <param name="p">The priority of the sound</param>
-    public AudioSource PlaySoundLoop(AudioClip s, Transform trans = null, Priority p = Priority.Default)
+    public AudioSource PlaySoundLoop(AudioClip s, Transform trans = null, Priority p = Priority.Default, float delay = 0)
     {
         AudioSource a = GetAvailableSource();
         loopingSources.Add(a);
         if (trans != null)
         {
             sourcePositions[Array.IndexOf(sources, a)] = trans;
+            a.spatialBlend = 1;
         }
         else
         {
-            sourcePositions[Array.IndexOf(sources, a)] = listener.transform;
+            sourcePositions[Array.IndexOf(sources, a)] = null;
+            a.spatialBlend = 0;
         }
-        AudioSource source = loopingSources[loopingSources.Count - 1];
-        source.priority = (int)p;
-        source.clip = s;
-        source.pitch = 1;
-        source.Play();
-        source.loop = true;
+
+        a.clip = s;
+        a.priority = (int)p;
+        a.pitch = 1;
+        a.loop = true;
+        if (delay > 0)
+        {
+            a.PlayDelayed(delay);
+        }
+        else a.Play();
 
         return a;
     }
@@ -825,7 +951,7 @@ public class AudioManager : MonoBehaviour
     /// <summary>
     /// Stops any sound playing through PlaySoundOnce() immediately 
     /// </summary>
-    /// <param name="s">The sound to be stopped</param>
+    /// <param name="a">The sound to be stopped</param>
     /// <param name="t">For sources, helps with duplicate soundss</param>
     public void StopSound(AudioClip a, Transform t = null)
     {
@@ -852,6 +978,7 @@ public class AudioManager : MonoBehaviour
     {
         for (int i = 0; i < loopingSources.Count; i++)
         {
+            if (loopingSources[i] == null) continue;
             if (loopingSources[i].clip == sounds[s])
             {
                 for (int j = 0; j < sources.Length; j++)
@@ -911,11 +1038,12 @@ public class AudioManager : MonoBehaviour
     {
         if (loopingSources.Count > 0)
         {
-            foreach (AudioSource a in loopingSources)
+            for (int i = 0; i < loopingSources.Count; i++)
             {
-                if (stopPlaying) a.Stop();
-                a.loop = false;
-                loopingSources.Remove(a);
+                if (loopingSources[i] == null) continue;
+                if (stopPlaying) loopingSources[i].Stop();
+                loopingSources[i].loop = false;
+                loopingSources.Remove(loopingSources[i]);
             }
             if (sourcePositions != null)
                 sourcePositions = new Transform[audioSources];
@@ -1068,8 +1196,9 @@ public class AudioManager : MonoBehaviour
     /// <returns></returns>
     public bool IsSoundPlaying(string s, Transform trans = null)
     {
-        for (int i = 0; i < audioSources; i++) // Loop through all sources
+        for (int i = 0; i < Mathf.Clamp(audioSources, 0, sources.Length); i++) // Loop through all sources
         {
+            if (sources[i] == null) continue;
             if (sources[i].clip == sounds[s] && sources[i].isPlaying) // If this source is playing the clip
             {
                 if (trans != null)
@@ -1153,6 +1282,7 @@ public class AudioManager : MonoBehaviour
     {
         foreach (AudioSource c in loopingSources)
         {
+            if (c == null) continue;
             if (c.clip == sounds[s])
             {
                 return true;
