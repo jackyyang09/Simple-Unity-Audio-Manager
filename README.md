@@ -31,7 +31,7 @@ Perfect for game jams, prototypes and if you just want to get started on a proje
 
 7. To play your newly added sound, go into any script file and type the following
 ```
-AudioManager.GetInstance().PlaySoundOnce("Shooting");
+AudioManager.instance.PlaySoundOnce("Shooting");
 ```
    - Be sure to replace "Shooting" with the name of your sound!
    - Note: The name of the gameObject with the AudioFile component will be the string parameter used in AudioManager's dictionary!
