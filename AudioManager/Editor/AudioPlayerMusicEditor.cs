@@ -10,7 +10,7 @@ public class AudioPlayerMusicEditor : Editor
 
     public override void OnInspectorGUI()
     {
-        if (am == null) am = AudioManager.GetInstance();
+        if (am == null) am = AudioManager.instance;
 
         AudioPlayerMusic myScript = (AudioPlayerMusic)target;
 

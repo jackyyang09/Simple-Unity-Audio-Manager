@@ -25,7 +25,7 @@ public class FPSWalker : MonoBehaviour
         controller = GetComponent<CharacterController>();
         stand = transform.GetChild(0);
 
-        am = AudioManager.GetInstance();
+        am = AudioManager.instance;
     }
 
     // Update is called once per frame

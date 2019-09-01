@@ -26,11 +26,11 @@ public class PauseMenu : MonoBehaviour
 
     public void CrossfadeMusic()
     {
-        AudioManager.GetInstance().CrossfadeMusic("Main Theme", 5, true);
+        AudioManager.instance.CrossfadeMusic("Main Theme", 5, true);
     }
 
     public void FadeMusic()
     {
-        AudioManager.GetInstance().FadeMusic("Main Theme", 5, true);
+        AudioManager.instance.FadeMusic("Main Theme", 5, true);
     }
 }

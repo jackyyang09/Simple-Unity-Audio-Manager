@@ -30,7 +30,7 @@ public class BaseAudioFeedback : MonoBehaviour
 
     private void OnEnable()
     {
-        am = AudioManager.GetInstance();
+        am = AudioManager.instance;
     }
 
     // Start is called before the first frame update

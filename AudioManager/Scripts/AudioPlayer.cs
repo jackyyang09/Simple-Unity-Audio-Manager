@@ -33,7 +33,7 @@ public class AudioPlayer : BaseAudioFeedback
             Play();
         }
 
-        if (am == null) am = AudioManager.GetInstance();
+        if (am == null) am = AudioManager.instance;
     }
 
     public void Play()
@@ -106,21 +106,21 @@ public class AudioPlayer : BaseAudioFeedback
             StartCoroutine(PlayOnEnable());
         }
 
-        am = AudioManager.GetInstance();
+        am = AudioManager.instance;
     }
 
     IEnumerator PlayOnEnable()
     {
-        while (!AudioManager.GetInstance())
+        while (!AudioManager.instance)
         {
             yield return new WaitForEndOfFrame();
         }
-        while (!AudioManager.GetInstance().Initialized())
+        while (!AudioManager.instance.Initialized())
         {
             yield return new WaitForEndOfFrame();
         }
 
-        am = AudioManager.GetInstance();
+        am = AudioManager.instance;
 
         Play();
     }

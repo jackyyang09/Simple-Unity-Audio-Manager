@@ -44,7 +44,7 @@ public class ShipController : MonoBehaviour
     {
         // Set object references
         rb = GetComponent<Rigidbody2D>();
-        am = AudioManager.GetInstance();
+        am = AudioManager.instance;
         anim = GetComponentInChildren<Animator>();
         hitBox = transform.GetChild(0).GetComponent<SpriteRenderer>();
     }

@@ -107,7 +107,7 @@ public class AudioManager : MonoBehaviour
     [Tooltip("When Time.timeScale is set to 0, pause all sounds")]
     bool timeScaledSounds = true;
 
-    public static AudioManager Singleton;
+    public static AudioManager instance;
 
     /// <summary>
     /// Only used if you have super special music with an intro portion that plays only once
@@ -143,16 +143,16 @@ public class AudioManager : MonoBehaviour
     // Use this for initialization
     void Awake()
     {
-        if (Singleton == null)
+        if (instance == null)
         {
-            Singleton = this;
+            instance = this;
         }
-        else if (Singleton != this)
+        else if (instance != this)
         {
             // A unique case where the Singleton exists but not in this scene
-            if (Singleton.gameObject.scene.name == null)
+            if (instance.gameObject.scene.name == null)
             {
-                Singleton = this;
+                instance = this;
             }
             else
             {
@@ -1105,9 +1105,9 @@ public class AudioManager : MonoBehaviour
     /// </summary>
     private void OnValidate()
     {
-        if (Singleton == null)
+        if (instance == null)
         {
-            Singleton = this;
+            instance = this;
         }
         GenerateAudioDictionarys();
         if (!doneLoading) return;
@@ -1166,11 +1166,6 @@ public class AudioManager : MonoBehaviour
         }
         Debug.LogError("AudioManager Error: Ran out of Audio Sources!");
         return null;
-    }
-
-    public static AudioManager GetInstance()
-    {
-        return Singleton;
     }
 
     public float GetMasterVolume()

@@ -47,7 +47,7 @@ public class AudioPlayerMusic : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        am = AudioManager.GetInstance();
+        am = AudioManager.instance;
 
         if (playOnStart)
         {
@@ -57,7 +57,7 @@ public class AudioPlayerMusic : MonoBehaviour
 
     public void Play()
     {
-        am = AudioManager.GetInstance();
+        am = AudioManager.instance;
 
         if (musicFile != null)
         {
@@ -134,16 +134,16 @@ public class AudioPlayerMusic : MonoBehaviour
 
     IEnumerator PlayOnEnable()
     {
-        while (!AudioManager.GetInstance())
+        while (!AudioManager.instance)
         {
             yield return new WaitForEndOfFrame();
         }
-        while (!AudioManager.GetInstance().Initialized())
+        while (!AudioManager.instance.Initialized())
         {
             yield return new WaitForEndOfFrame();
         }
 
-        am = AudioManager.GetInstance();
+        am = AudioManager.instance;
 
         Play();
     }

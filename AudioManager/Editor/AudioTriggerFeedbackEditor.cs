@@ -10,7 +10,7 @@ public class AudioTriggerFeedbackEditor : Editor
 
     public override void OnInspectorGUI()
     {
-        if (am == null) am = AudioManager.GetInstance();
+        if (am == null) am = AudioManager.instance;
 
         AudioTriggerFeedback myScript = (AudioTriggerFeedback)target;
 

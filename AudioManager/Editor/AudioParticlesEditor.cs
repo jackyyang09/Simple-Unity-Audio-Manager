@@ -10,7 +10,7 @@ public class AudioParticlesEditor : Editor
 
     public override void OnInspectorGUI()
     {
-        if (am == null) am = AudioManager.GetInstance();
+        if (am == null) am = AudioManager.instance;
 
         AudioParticles myScript = (AudioParticles)target;
 
