@@ -26,10 +26,6 @@ public class AudioManagerEditor : Editor
             EditorGUILayout.HelpBox(editorMessage, MessageType.Info);
         }
 
-        if (myScript.GetMasterVolume() == 0) EditorGUILayout.HelpBox("Note: Master Volume is MUTED!", MessageType.Info);
-        if (myScript.GetSoundVolume() == 0) EditorGUILayout.HelpBox("Note: Sound is MUTED!", MessageType.Info);
-        if (myScript.GetMusicVolume() == 0) EditorGUILayout.HelpBox("Note: Music is MUTED!", MessageType.Info);
-
         DrawDefaultInspector();
 
         List<string> options = new List<string>();
@@ -95,5 +91,9 @@ public class AudioManagerEditor : Editor
                 EditorGUILayout.HelpBox(musiks, MessageType.None);
             }
         }
+
+        if (myScript.GetMasterVolume() == 0) EditorGUILayout.HelpBox("Note: Master Volume is MUTED!", MessageType.Info);
+        if (myScript.GetSoundVolume() == 0) EditorGUILayout.HelpBox("Note: Sound is MUTED!", MessageType.Info);
+        if (myScript.GetMusicVolume() == 0) EditorGUILayout.HelpBox("Note: Music is MUTED!", MessageType.Info);
     }   
 }

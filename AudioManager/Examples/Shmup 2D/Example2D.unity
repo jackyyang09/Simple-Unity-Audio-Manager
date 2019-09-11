@@ -1016,6 +1016,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 724720823}
+  - {fileID: 1493171423}
   - {fileID: 1734195394}
   m_Father: {fileID: 4502563657082201730}
   m_RootOrder: 1
@@ -1476,6 +1477,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   file: {fileID: 8300000, guid: ec35383b3397c8a4c998aefa69059d4f, type: 3}
   trackIntro: {fileID: 8300000, guid: 092b18edff9494842b046dd9ca3307ec, type: 3}
+  loopStart: 0
 --- !u!1 &724720822
 GameObject:
   m_ObjectHideFlags: 0
@@ -2038,6 +2040,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1490801461}
   m_CullTransparentMesh: 0
+--- !u!1 &1493171422
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1493171423}
+  - component: {fileID: 1493171424}
+  m_Layer: 0
+  m_Name: Main Theme Combined
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1493171423
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1493171422}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 524352818}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1493171424
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1493171422}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3174737d2fa98ca49b89bf9b15228e7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  file: {fileID: 8300000, guid: 4cd473ea326bb224499d94db7251c75c, type: 3}
+  trackIntro: {fileID: 0}
+  loopStart: 0
 --- !u!1 &1695110667
 GameObject:
   m_ObjectHideFlags: 0
@@ -2236,7 +2284,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 524352818}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1734195395
 MonoBehaviour:
@@ -2252,6 +2300,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   file: {fileID: 8300000, guid: c24976ce5925e0e4c83ba82f15fbf5e3, type: 3}
   trackIntro: {fileID: 0}
+  loopStart: 0
 --- !u!1 &1736690158
 GameObject:
   m_ObjectHideFlags: 0
@@ -2599,7 +2648,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   audioSources: 32
   dynamicSourceAllocation: 0
-  musicSources: []
   masterVolume: 1
   soundVolume: 1
   musicVolume: 1
