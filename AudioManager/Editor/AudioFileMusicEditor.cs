@@ -100,7 +100,7 @@ public class AudioFileMusicEditor : Editor
                         EditorGUILayout.Space();
 
                         GUILayout.BeginHorizontal();
-                        GUILayout.Label("Loop Point Start:  ");
+                        GUILayout.Label("Loop Point Start:");
                         float samplesStart = EditorGUILayout.FloatField(myScript.loopStart * music.frequency);
                         GUILayout.EndHorizontal();
                         loopStart = samplesStart / music.frequency;
