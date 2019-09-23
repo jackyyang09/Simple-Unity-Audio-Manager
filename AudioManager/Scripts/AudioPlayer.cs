@@ -43,7 +43,7 @@ public class AudioPlayer : BaseAudioFeedback
         {
             if (loopSound)
             {
-                if (!am.IsSoundLooping(soundFile)) am.PlaySoundLoop(soundFile, t, priority);
+                if (!am.IsSoundLooping(soundFile)) am.PlaySoundLoop(soundFile, transform, spatialSound, priority);
             }
             else am.PlaySoundOnce(soundFile, t, priority, pitchShift, delay);
         }
@@ -51,7 +51,7 @@ public class AudioPlayer : BaseAudioFeedback
         {
             if (loopSound)
             {
-                if (!am.IsSoundLooping(sound)) am.PlaySoundLoop(sound, t, priority);
+                if (!am.IsSoundLooping(sound)) am.PlaySoundLoop(sound, transform, spatialSound, priority);
             }
             else am.PlaySoundOnce(sound, t, priority, pitchShift, delay);
         }

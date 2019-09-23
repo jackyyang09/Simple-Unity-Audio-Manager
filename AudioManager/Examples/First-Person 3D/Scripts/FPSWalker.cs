@@ -63,7 +63,7 @@ public class FPSWalker : MonoBehaviour
         {
             if (!am.IsSoundLooping("Walk"))
             {
-                am.PlaySoundLoop("Walk", transform, AudioManager.Priority.Default);
+                am.PlaySoundLoop("Walk", transform, false, AudioManager.Priority.Default);
             }
         }
         else

@@ -13,8 +13,16 @@ public class AudioPlayerMusic : MonoBehaviour
     bool useMusicIntro = false;
 
     [SerializeField]
+    [Tooltip("Enables looping using the loop points defined in the music file")]
+    bool useLoopPoints = false;
+
+    [SerializeField]
     [Tooltip("Play Music in 3D space, will override Music Fading if true")]
     bool spatializeSound;
+
+    [SerializeField]
+    [Tooltip("Play music starting from previous track's playback position, only works when musicFadeTime is greater than 0")]
+    bool keepPlaybackPosition;
 
     [SerializeField]
     [Tooltip("If true, will restart playback of this music if the same music is being played right now")]
@@ -65,15 +73,15 @@ public class AudioPlayerMusic : MonoBehaviour
 
             if (spatializeSound)
             {
-                am.PlayMusic3D(musicFile, transform);
+                am.PlayMusic3D(musicFile, transform, loopMusic);
             }
             else if (musicFadeTime > 0)
             {
-                am.CrossfadeMusic(musicFile, musicFadeTime);
+                am.CrossfadeMusic(musicFile, musicFadeTime, keepPlaybackPosition);
             }
             else
             {
-                am.PlayMusic(musicFile);
+                am.PlayMusic(musicFile, loopMusic);
             }
         }
         else
@@ -82,15 +90,15 @@ public class AudioPlayerMusic : MonoBehaviour
 
             if (spatializeSound)
             {
-                am.PlayMusic3D(music, transform, useMusicIntro);
+                am.PlayMusic3D(music, transform, loopMusic, useMusicIntro, useLoopPoints);
             }
             else if (musicFadeTime > 0)
             {
-                am.CrossfadeMusic(music, musicFadeTime);
+                am.CrossfadeMusic(music, musicFadeTime, useMusicIntro, useLoopPoints, keepPlaybackPosition);
             }
             else
             {
-                am.PlayMusic(music, useMusicIntro);
+                am.PlayMusic(music, loopMusic, useMusicIntro, useLoopPoints);
             }
         }
     }
