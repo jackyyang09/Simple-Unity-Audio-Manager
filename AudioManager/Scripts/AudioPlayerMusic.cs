@@ -9,10 +9,6 @@ public class AudioPlayerMusic : MonoBehaviour
     string music = "None";
 
     [SerializeField]
-    [Tooltip("Start playing the music intro before playing the music loop, only works if the musicFile field is blank")]
-    bool useMusicIntro = false;
-
-    [SerializeField]
     [Tooltip("Enables looping using the loop points defined in the music file")]
     bool useLoopPoints = false;
 
@@ -90,15 +86,15 @@ public class AudioPlayerMusic : MonoBehaviour
 
             if (spatializeSound)
             {
-                am.PlayMusic3D(music, transform, loopMusic, useMusicIntro, useLoopPoints);
+                am.PlayMusic3D(music, transform, loopMusic, useLoopPoints);
             }
             else if (musicFadeTime > 0)
             {
-                am.CrossfadeMusic(music, musicFadeTime, useMusicIntro, useLoopPoints, keepPlaybackPosition);
+                am.CrossfadeMusic(music, musicFadeTime, useLoopPoints, keepPlaybackPosition);
             }
             else
             {
-                am.PlayMusic(music, loopMusic, useMusicIntro, useLoopPoints);
+                am.PlayMusic(music, loopMusic, useLoopPoints);
             }
         }
     }
@@ -120,7 +116,7 @@ public class AudioPlayerMusic : MonoBehaviour
     /// </summary>
     public void FadeIn(float time)
     {
-        am.FadeMusicIn(music, time, useMusicIntro);
+        am.FadeMusicIn(music, time);
     }
 
     /// <summary>

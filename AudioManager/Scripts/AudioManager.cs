@@ -55,7 +55,7 @@ public class AudioManager : MonoBehaviour
 
     Dictionary<string, AudioClip> sounds = new Dictionary<string, AudioClip>();
 
-    Dictionary<string, AudioClip[]> music = new Dictionary<string, AudioClip[]>();
+    Dictionary<string, AudioClip> music = new Dictionary<string, AudioClip>();
     Dictionary<string, AudioFileMusic> musicFiles = new Dictionary<string, AudioFileMusic>();
 
     /// <summary>
@@ -111,15 +111,18 @@ public class AudioManager : MonoBehaviour
     public static AudioManager instance;
 
     /// <summary>
-    /// Only used if you have super special music with an intro portion that plays only once
-    /// </summary>
-    bool queueIntro;
-
-    /// <summary>
     /// Only used if you have super special music with a custom looping portion that can be enabled/disabled on the fly
     /// </summary>
+    [SerializeField]
     bool enableLoopPoints;
+    /// <summary>
+    /// Loop time stored using samples
+    /// </summary>
     float loopStartTime, loopEndTime;
+    /// <summary>
+    /// Used in the case that a track has a loop end point placed at the end of the track
+    /// </summary>
+    bool loopTrackAfterStopping = false;
 
     /// <summary>
     /// Current music that's playing
@@ -163,7 +166,7 @@ public class AudioManager : MonoBehaviour
             }
             else
             {
-                Destroy(gameObject);
+                Destroy(this);
             }
         }
 
@@ -265,18 +268,6 @@ public class AudioManager : MonoBehaviour
 
     private void Update()
     {
-        if (queueIntro) //If we're playing the intro to a track
-        {
-            if (!musicSources[0].isPlaying) //Returns true the moment the intro ends
-            {
-                //Swap to the main loop
-                musicSources[0].clip = music[currentTrack][0];
-                musicSources[0].loop = true;
-                musicSources[0].Play();
-                queueIntro = false;
-            }
-        }
-
         if (enableLoopPoints)
         {
             if (musicSources[0].isPlaying)
@@ -285,6 +276,11 @@ public class AudioManager : MonoBehaviour
                 {
                     musicSources[0].timeSamples = (int)loopStartTime;
                 }
+            }
+            else if (loopTrackAfterStopping)
+            {
+                musicSources[0].timeSamples = (int)loopStartTime;
+                musicSources[0].Play();
             }
         }
 
@@ -317,16 +313,17 @@ public class AudioManager : MonoBehaviour
         }
     }
 
-#if UNITY_EDITOR
     private void LateUpdate()
     {
+        
+
+#if UNITY_EDITOR
         if (spatialSound && spatializeLateUpdate)
         {
             TrackSounds();
         }
-    }
 #endif
-
+    }
 
     /// <summary>
     /// Set whether or not sounds are 2D or 3D (spatial)
@@ -353,51 +350,54 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Swaps the current music track with the new music track
-    /// Music is played globally and does not change volume
+    /// Swaps the current music track with the new music track,
+    /// music is played globally and does not change volume
     /// </summary>
     /// <param name="m">Index of the music</param>
     /// <param name="loopTrack">Does the music play forever?</param>
-    /// <param name="hasIntro">Does the clip have an intro portion that plays only once?</param>
     /// <param name="useLoopPoints">Does the clip have an intro portion that plays only once?</param>
-    public void PlayMusic(string track, bool loopTrack = true, bool hasIntro = false, bool useLoopPoints = false)
+    public AudioSource PlayMusic(string track, bool loopTrack = true, bool useLoopPoints = false)
     {
-        if (track.Equals("None")) return;
+        if (track.Equals("None")) return null;
         currentTrack = track;
 
-        if (hasIntro && music[track][1] != null)
-        {
-            musicSources[0].clip = music[track][1];
-            musicSources[0].loop = false;
-        }
-        else
-        {
-            musicSources[0].clip = music[track][0];
-            musicSources[0].loop = loopTrack;
-        }
-        queueIntro = hasIntro;
+        musicSources[0].clip = music[track];
+
         enableLoopPoints = useLoopPoints;
         if (enableLoopPoints)
         {
-            loopStartTime = musicFiles[track].loopStart * music[track][0].frequency;
-            loopEndTime = musicFiles[track].loopEnd * music[track][0].frequency;
+            loopStartTime = musicFiles[track].loopStart * music[track].frequency;
+            loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
+        }
+
+        if (enableLoopPoints && loopTrack)
+        {
+            if (musicFiles[track].loopEnd == music[track].length) loopTrack = false;
+            loopTrackAfterStopping = true;
+        }
+        else
+        {
+            musicSources[0].loop = loopTrack;
+            loopTrackAfterStopping = false;
         }
 
         musicSources[0].spatialBlend = 0;
 
         musicSources[0].Stop();
         musicSources[0].Play();
+
+        return musicSources[0];
     }
 
     /// <summary>
-    /// Swaps the current music track with the new music track
-    /// Music is played globally and does not change volume
+    /// Swaps the current music track with the new music track,
+    /// music is played globally and does not change volume
     /// </summary>
     /// <param name="track">Index of the music</param>
     /// <param name="loopTrack">Does the music play forever?</param>
-    public void PlayMusic(AudioClip track, bool loopTrack = true)
+    public AudioSource PlayMusic(AudioClip track, bool loopTrack = true)
     {
-        if (track.Equals("None")) return;
+        if (track.Equals("None")) return null;
         currentTrack = "Custom Audio File";
 
         musicSources[0].clip = track;
@@ -405,42 +405,55 @@ public class AudioManager : MonoBehaviour
         musicSources[0].spatialBlend = 0;
 
         musicSources[0].Play();
+
+        return musicSources[0];
+    }
+
+    public void PlayMusicFromStartPoint()
+    {
+
     }
 
     /// <summary>
-    /// Music is played in the scene and becomes quieter as you move away from the source
+    /// Music is played in the scene and becomes quieter as you move away from the source.
     /// 3D music source is independent from the main music source, they can overlap if you let them
     /// </summary>
-    /// <param name="m">Index of the music</param>
+    /// <param name="track">Index of the music</param>
     /// <param name="trans">The transform of the gameobject playing the music</param>
     /// <param name="loopTrack">Does the music play forever?</param>
-    /// <param name="hasIntro">Does the clip have an intrso portion that plays only once?</param>
     /// <param name="useLoopPoints">Does the clip have an intro portion that plays only once?</param>
-    public void PlayMusic3D(string track, Transform trans, bool loopTrack = true, bool hasIntro = false, bool useLoopPoints = false)
+    /// <returns>The AudioSource playing the sound</returns>
+    public AudioSource PlayMusic3D(string track, Transform trans, bool loopTrack = true, bool useLoopPoints = false)
     {
-        if (track.Equals("None")) return;
+        if (track.Equals("None")) return null;
         currentTrack = track;
 
         sourcePositions[sourcePositions.Length - 1] = trans;
 
-        if (hasIntro && music[track][1] != null)
-        {
-            musicSources[2].clip = music[track][1];
-        }
-        else
-        {
-            musicSources[2].clip = music[track][0];
-        }
+        musicSources[2].clip = music[track];
         musicSources[2].loop = loopTrack;
-        queueIntro = hasIntro;
+
         enableLoopPoints = useLoopPoints;
         if (enableLoopPoints)
         {
-            loopStartTime = musicFiles[track].loopStart * music[track][0].frequency;
-            loopEndTime = musicFiles[track].loopEnd * music[track][0].frequency;
+            loopStartTime = musicFiles[track].loopStart * music[track].frequency;
+            loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
+        }
+
+        if (enableLoopPoints && loopTrack)
+        {
+            if (musicFiles[track].loopEnd == music[track].length) loopTrack = false;
+            loopTrackAfterStopping = true;
+        }
+        else
+        {
+            musicSources[2].loop = loopTrack;
+            loopTrackAfterStopping = false;
         }
 
         musicSources[2].Play();
+
+        return musicSources[2];
     }
 
     /// <summary>
@@ -448,10 +461,11 @@ public class AudioManager : MonoBehaviour
     /// 3D music source is independent from the main music source, they can overlap if you let them
     /// </summary>
     /// <param name="track">Index of the music</param>
+    /// <param name="trans">The origin of the music source</param>
     /// <param name="loopTrack">Does the music play forever?</param>
-    public void PlayMusic3D(AudioClip track, Transform trans, bool loopTrack = true)
+    public AudioSource PlayMusic3D(AudioClip track, Transform trans, bool loopTrack = true)
     {
-        if (track.Equals("None")) return;
+        if (track.Equals("None")) return null;
         currentTrack = "Custom Audio File";
 
         sourcePositions[sourcePositions.Length - 1] = trans;
@@ -460,17 +474,23 @@ public class AudioManager : MonoBehaviour
         musicSources[2].loop = loopTrack;
 
         musicSources[2].Play();
+
+        return musicSources[2];
     }
 
     /// <summary>
-    /// If music is currently playing, pause music
+    /// Pause all music sources
     /// </summary>
     public void PauseMusic()
     {
-        if (musicSources[0].clip == null) return;
-        if (musicSources[0].isPlaying){
-            musicSources[0].Pause();
+        if (musicSources[0].clip != null)
+        {
+            if (musicSources[0].isPlaying)
+            {
+                musicSources[0].Pause();
+            }
         }
+
         if (musicSources[1].clip != null)
         {
             if (musicSources[1].isPlaying)
@@ -540,38 +560,27 @@ public class AudioManager : MonoBehaviour
     /// </summary>
     /// <param name="track">The name of the music track</param>
     /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
-    /// <param name="hasIntro">Does the track have an intro?</param>
     /// <param name="useLoopPoints">Loop the track between preset loop points?</param>
-    public void FadeMusic(string track, float time, bool hasIntro = false, bool useLoopPoints = false)
+    public void FadeMusic(string track, float time, bool useLoopPoints = false)
     {
         if (track.Equals("None")) return;
 
         currentTrack = track;
 
-        musicSources[1].clip = music[track][0];
+        musicSources[1].clip = music[track];
         musicSources[1].loop = true;
 
         AudioSource temp = musicSources[0];
         musicSources[0] = musicSources[1];
         musicSources[1] = temp;
 
-        if (hasIntro && music[track][1] != null)
-        {
-            musicSources[0].clip = music[track][1];
-            musicSources[0].loop = false;
-        }
-        else
-        {
-            musicSources[0].clip = music[track][0];
-            musicSources[0].loop = true;
-        }
+        musicSources[0].clip = music[track];
+        musicSources[0].loop = true;
 
-        queueIntro = hasIntro;
-        enableLoopPoints = useLoopPoints;
         if (enableLoopPoints)
         {
-            loopStartTime = musicFiles[track].loopStart * music[track][0].frequency;
-            loopEndTime = musicFiles[track].loopEnd * music[track][0].frequency;
+            loopStartTime = musicFiles[track].loopStart * music[track].frequency;
+            loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
         }
 
         if (time > 0)
@@ -621,37 +630,33 @@ public class AudioManager : MonoBehaviour
     /// </summary>
     /// <param name="track">The name of the music track</param>
     /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
-    /// <param name="hasIntro">Does the track have an intro?</param>
-    public void FadeMusicIn(string track, float time, bool hasIntro = false, bool useLoopPoints = false)
+    /// <param name="useLoopPoints">Plays using loop points enabled if true</param>
+    /// <param name="playFromStartPoint">Start track playback from starting loop point, only works if useLoopPoints is true</param>
+    public AudioSource FadeMusicIn(string track, float time, bool useLoopPoints = false, bool playFromStartPoint = false)
     {
-        if (track.Equals("None")) return;
+        if (track.Equals("None")) return null;
 
         currentTrack = track;
 
-        musicSources[1].clip = music[track][0];
+        musicSources[1].clip = music[track];
         musicSources[1].loop = true;
 
         AudioSource temp = musicSources[0];
         musicSources[0] = musicSources[1];
         musicSources[1] = temp;
 
-        if (hasIntro && music[track][1] != null)
-        {
-            musicSources[0].clip = music[track][1];
-            musicSources[0].loop = false;
-        }
-        else
-        {
-            musicSources[0].clip = music[track][0];
-            musicSources[0].loop = true;
-        }
+        musicSources[0].clip = music[track];
+        musicSources[0].loop = true;
 
-        queueIntro = hasIntro;
         enableLoopPoints = useLoopPoints;
         if (enableLoopPoints)
         {
-            loopStartTime = musicFiles[track].loopStart * music[track][0].frequency;
-            loopEndTime = musicFiles[track].loopEnd * music[track][0].frequency;
+            loopStartTime = musicFiles[track].loopStart * music[track].frequency;
+            loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
+            if (playFromStartPoint)
+            {
+                musicSources[0].timeSamples = (int)loopStartTime;
+            }
         }
 
         if (time > 0)
@@ -659,6 +664,8 @@ public class AudioManager : MonoBehaviour
             if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
             fadeInRoutine = StartCoroutine(FadeInMusicRoutine(time));
         }
+
+        return musicSources[0];
     }
 
     /// <summary>
@@ -666,7 +673,6 @@ public class AudioManager : MonoBehaviour
     /// </summary>
     /// <param name="track">The name of the music track</param>
     /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
-    /// <param name="hasIntro">Does the track have an intro?</param>
     public void FadeMusicIn(AudioClip track, float time)
     {
         if (track.Equals("None")) return;
@@ -726,34 +732,26 @@ public class AudioManager : MonoBehaviour
     /// <param name="time">How long the fade will last (between both tracks)</param>
     /// <param name="useLoopPoints">Loop the track between preset loop points?</param>
     /// <param name="keepMusicTime">Carry the current playback time of current track over to the next track?</param>
-    public void CrossfadeMusic(string track, float time = 0, bool hasIntro = false, bool useLoopPoints = false, bool keepMusicTime = false)
+    public void CrossfadeMusic(string track, float time = 0, bool useLoopPoints = false, bool keepMusicTime = false)
     {
         if (track.Equals("None")) return;
         currentTrack = track;
 
-        musicSources[1].clip = music[track][0];
+        musicSources[1].clip = music[track];
         musicSources[1].loop = true;
 
         AudioSource temp = musicSources[0];
         musicSources[0] = musicSources[1];
         musicSources[1] = temp;
 
-        if (hasIntro && music[track][1] != null)
-        {
-            musicSources[0].clip = music[track][1];
-            musicSources[0].loop = false;
-        }
-        else
-        {
-            musicSources[0].clip = music[track][0];
-            musicSources[0].loop = true;
-        }
-        queueIntro = hasIntro;
+        musicSources[0].clip = music[track];
+        musicSources[0].loop = true;
+
         enableLoopPoints = useLoopPoints;
         if (enableLoopPoints)
         {
-            loopStartTime = musicFiles[track].loopStart * music[track][0].frequency;
-            loopEndTime = musicFiles[track].loopEnd * music[track][0].frequency;
+            loopStartTime = musicFiles[track].loopStart * music[track].frequency;
+            loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
         }
 
         musicSources[0].volume = 0;
@@ -796,8 +794,6 @@ public class AudioManager : MonoBehaviour
         musicSources[0].clip = track;
         musicSources[0].loop = true;
         musicSources[0].volume = 0;
-
-        queueIntro = false;
 
         musicSources[0].Play();
 
@@ -865,7 +861,7 @@ public class AudioManager : MonoBehaviour
         foreach(AudioSource a in musicSources)
         {
             if (a == null) continue; // Sometimes AudioPlayerMusic calls StopMusic on scene stop
-            if (a.clip == music[m][0])
+            if (a.clip == music[m])
             {
                 a.Stop();
             }
@@ -925,6 +921,7 @@ public class AudioManager : MonoBehaviour
     /// <param name="p">The priority of the sound</param>
     /// <param name="pitchShift">If not None, randomizes the pitch of the sound, use AudioManager.Pitches for presets</param>
     /// <param name="delay">Amount of seconds to wait before playing the sound</param>
+    /// <returns>The AudioSource playing the sound</returns>
     public AudioSource PlaySoundOnce(string s, Transform trans = null, Priority p = Priority.Default, Pitch pitchShift = Pitch.None, float delay = 0)
     {
         AudioSource a = GetAvailableSource();
@@ -1131,6 +1128,7 @@ public class AudioManager : MonoBehaviour
     /// </summary>
     /// <param name="s"></param>
     /// <param name="stopInstantly">Stops sound instantly if true</param>
+    /// <param name="t">Transform of the object playing the looping sound</param>
     public void StopSoundLoop(string s, bool stopInstantly = false, Transform t = null)
     {
         for (int i = 0; i < loopingSources.Count; i++)
@@ -1161,6 +1159,7 @@ public class AudioManager : MonoBehaviour
     /// </summary>
     /// <param name="s"></param>
     /// <param name="stopInstantly">Stops sound instantly if true</param>
+    /// <param name="t">Transform of the object playing the looping sound</param>
     public void StopSoundLoop(AudioClip s, bool stopInstantly = false, Transform t = null)
     {
         for (int i = 0; i < loopingSources.Count; i++)
@@ -1417,7 +1416,7 @@ public class AudioManager : MonoBehaviour
     {
         foreach (AudioSource m in musicSources)
         {
-            if (m.clip == music[a][0] && m.isPlaying)
+            if (m.clip == music[a] && m.isPlaying)
             {
                 return true;
             }
@@ -1574,6 +1573,15 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Get reference to the 3D music player for custom usage
+    /// </summary>
+    /// <returns></returns>
+    public AudioSource GetMusicSource3D()
+    {
+        return musicSources[2];
+    }
+
+    /// <summary>
     /// Used by the custom inspector to get error messages
     /// </summary>
     /// <returns></returns>
@@ -1582,7 +1590,7 @@ public class AudioManager : MonoBehaviour
         return editorMessage;
     }
 
-    public Dictionary<string, AudioClip[]> GetMusicDictionary()
+    public Dictionary<string, AudioClip> GetMusicDictionary()
     {
         return music;
     }

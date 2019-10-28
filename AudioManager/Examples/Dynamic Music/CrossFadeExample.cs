@@ -11,11 +11,11 @@ public class CrossFadeExample : MonoBehaviour
         pitched = !pitched;
         if (pitched)
         {
-            AudioManager.instance.CrossfadeMusic("MenuPitched", 5, false, false, true);
+            AudioManager.instance.CrossfadeMusic("MenuPitched", 5, false,  true);
         }
         else
         {
-            AudioManager.instance.CrossfadeMusic("Menu", 5, false, false, true);
+            AudioManager.instance.CrossfadeMusic("Menu", 5, false, true);
         }
     }
 }

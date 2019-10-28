@@ -20,7 +20,7 @@ public class AudioFileMusicEditor : Editor
 
         EditorGUILayout.LabelField("The name of this gameObject will be used to refer to audio in script");
 
-        if (myScript.GetFile()[0] == null)
+        if (myScript.GetFile() == null)
         {
             EditorGUILayout.HelpBox("Error! Add an audio file before running!", MessageType.Error);
         }
@@ -48,7 +48,7 @@ public class AudioFileMusicEditor : Editor
                     EditorUtility.SetDirty(myScript);
                 }
 
-                AudioClip music = myScript.GetFile()[0];
+                AudioClip music = myScript.GetFile();
                 float loopStart = myScript.loopStart;
                 float loopEnd = myScript.loopEnd;
 
@@ -120,11 +120,11 @@ public class AudioFileMusicEditor : Editor
                         GUILayout.EndHorizontal();
                         EditorGUILayout.Space();
 
-                        int startBeat = Mathf.RoundToInt(loopStart / (60f / (float)myScript.bpm));
-                        startBeat = EditorGUILayout.IntField("Starting Beat:", startBeat);
+                        float startBeat = loopStart / (60f / (float)myScript.bpm);
+                        startBeat = EditorGUILayout.FloatField("Starting Beat:", startBeat);
 
-                        int endBeat = Mathf.RoundToInt(loopEnd / (60f / (float)myScript.bpm));
-                        endBeat = EditorGUILayout.IntField("Ending Beat:", endBeat);
+                        float endBeat = loopEnd / (60f / (float)myScript.bpm);
+                        endBeat = EditorGUILayout.FloatField("Ending Beat:", endBeat);
 
                         loopStart = (float)startBeat * 60f / (float)myScript.bpm;
                         loopEnd = (float)endBeat * 60f / (float)myScript.bpm;
@@ -269,7 +269,7 @@ public class AudioFileMusicEditor : Editor
         // Get a rect for the progress bar using the same margins as a textfield:
         Rect rect = GUILayoutUtility.GetRect(64, 64, "TextBox");
 
-        AudioClip music = ((AudioFileMusic)target).GetFile()[0];
+        AudioClip music = ((AudioFileMusic)target).GetFile();
 
         Texture2D waveformTexture = PaintWaveformSpectrum(music, (int)rect.width, (int)rect.height, new Color(1, 0.5f, 0));
         if (waveformTexture != null)    
@@ -307,7 +307,7 @@ public class AudioFileMusicEditor : Editor
             Repaint();
 
             AudioFileMusic myScript = (AudioFileMusic)target;
-            AudioClip music = myScript.GetFile()[0];
+            AudioClip music = myScript.GetFile();
             float clipPos = (float)AudioUtil.GetClipSamplePosition(music) / (float)music.frequency;
 
             AudioUtil.LoopClip(music, loopClip);

@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 
 /// <summary>
+/// Majority of this code was borrowed from Reddit user WaterfordSS
+/// Blessings be upon you WaterfordSS!
 /// https://www.reddit.com/r/Unity3D/comments/5n6ddx/audioclip_propertydrawer/
 /// </summary>
 [CustomPropertyDrawer(typeof(AudioClip))]

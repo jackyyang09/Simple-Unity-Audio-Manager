@@ -13,10 +13,6 @@ public class AudioFileMusic : AudioFile
         //BPMInputWithBars
     }
 
-    [Header("Attach music intro if any at all")]
-    [Tooltip("Use this if you separated your music into an intro that plays once and a looping portion")]
-    public AudioClip trackIntro;
-
     public bool useLoopPoints = false;
 
     /// <summary>
@@ -31,9 +27,4 @@ public class AudioFileMusic : AudioFile
     [HideInInspector] public LoopPointTool loopPointInputMode;
 
     [HideInInspector] public int bpm = 120;
-
-    new public AudioClip[] GetFile()
-    {
-        return new AudioClip[] { file, trackIntro };
-    }
 }

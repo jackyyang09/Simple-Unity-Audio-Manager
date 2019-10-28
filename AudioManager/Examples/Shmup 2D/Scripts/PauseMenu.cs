@@ -26,6 +26,6 @@ public class PauseMenu : MonoBehaviour
 
     public void FadeMusic()
     {
-        AudioManager.instance.FadeMusic("Main Theme Combined", 5, true, true);
+        AudioManager.instance.FadeMusic("Main Theme Combined", 5, true);
     }
 }
