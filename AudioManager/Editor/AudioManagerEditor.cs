@@ -53,10 +53,32 @@ public class AudioManagerEditor : Editor
 
         serializedObject.ApplyModifiedProperties();
 
+        EditorGUILayout.Space();
+
         if (GUILayout.Button("Re-Generate Audio Library"))
         {
             myScript.GenerateAudioDictionarys();
         }
+
+        EditorGUILayout.Space();
+
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("Add New Sound File"))
+        {
+            GameObject newSound = new GameObject("NEW AUDIO FILE (RENAME ME)", typeof(AudioFile));
+            newSound.transform.parent = myScript.transform.GetChild(0);
+            EditorGUIUtility.PingObject(newSound);
+            Undo.RegisterCreatedObjectUndo(newSound, "Added new sound file");
+        }
+
+        if (GUILayout.Button("Add New Music File"))
+        {
+            GameObject newMusic = new GameObject("NEW AUDIO FILE (RENAME ME)", typeof(AudioFileMusic));
+            newMusic.transform.parent = myScript.transform.GetChild(1);
+            EditorGUIUtility.PingObject(newMusic);
+            Undo.RegisterCreatedObjectUndo(newMusic, "Added new music file");
+        }
+        EditorGUILayout.EndHorizontal();
 
         content = new GUIContent("Sound Library", "Library of all sounds loaded into AudioManager's Sound Dictionary");
 

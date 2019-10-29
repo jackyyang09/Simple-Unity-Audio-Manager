@@ -54,7 +54,6 @@ public class AudioManager : MonoBehaviour
     bool dynamicSourceAllocation;
 
     Dictionary<string, AudioClip> sounds = new Dictionary<string, AudioClip>();
-
     Dictionary<string, AudioClip> music = new Dictionary<string, AudioClip>();
     Dictionary<string, AudioFileMusic> musicFiles = new Dictionary<string, AudioFileMusic>();
 
@@ -67,7 +66,7 @@ public class AudioManager : MonoBehaviour
 
     //[SerializeField]
     [Tooltip("[DON'T TOUCH THIS], looping sound positions")]
-    Transform[] sourcePositions;
+    List<Transform> sourcePositions;
 
     /// <summary>
     /// Limits the number of each sounds being played. If at 0 or no value, assume infinite
@@ -76,7 +75,7 @@ public class AudioManager : MonoBehaviour
     [Tooltip("Limits the number of each sounds being played. If at 0 or no value, assume infinite")]
     int[] exclusiveList;
 
-    AudioSource[] sources;
+    List<AudioSource> sources;
 
     /// <summary>
     /// Sources dedicated to playing music
@@ -138,6 +137,11 @@ public class AudioManager : MonoBehaviour
     [SerializeField]
     GameObject sourcePrefab;
 
+    /// <summary>
+    /// This object holds all AudioChannels
+    /// </summary>
+    GameObject sourceHolder;
+
     bool doneLoading;
 
     string editorMessage = "";
@@ -173,10 +177,11 @@ public class AudioManager : MonoBehaviour
         // AudioManager is important, keep it between scenes
         DontDestroyOnLoad(gameObject);
 
-        sources = new AudioSource[audioSources];
+        // Initialize helper arrays
+        sources = new List<AudioSource>();
         loopingSources = new List<AudioSource>();
-        sourcePositions = new Transform[audioSources + 1]; // The final one is for music
-        GameObject sourceHolder = new GameObject("Sources");
+        sourcePositions = new List<Transform>(sources.Count + 1); // The final one is for music
+        sourceHolder = new GameObject("Sources");
         sourceHolder.transform.SetParent(transform);
 
         for (int i = 0; i < audioSources; i++)
@@ -189,8 +194,9 @@ public class AudioManager : MonoBehaviour
         SceneManager.sceneLoaded += OnSceneLoaded;
 
         // Get a reference to all our audiosources on startup
-        sources = sourceHolder.GetComponentsInChildren<AudioSource>();
+        sources = new List<AudioSource>(sourceHolder.GetComponentsInChildren<AudioSource>());
 
+        // Create music sources
         musicSources = new AudioSource[3];
         GameObject m = new GameObject("MusicSource");
         m.transform.parent = transform;
@@ -315,8 +321,6 @@ public class AudioManager : MonoBehaviour
 
     private void LateUpdate()
     {
-        
-
 #if UNITY_EDITOR
         if (spatialSound && spatializeLateUpdate)
         {
@@ -428,7 +432,7 @@ public class AudioManager : MonoBehaviour
         if (track.Equals("None")) return null;
         currentTrack = track;
 
-        sourcePositions[sourcePositions.Length - 1] = trans;
+        sourcePositions[sourcePositions.Count - 1] = trans;
 
         musicSources[2].clip = music[track];
         musicSources[2].loop = loopTrack;
@@ -468,7 +472,7 @@ public class AudioManager : MonoBehaviour
         if (track.Equals("None")) return null;
         currentTrack = "Custom Audio File";
 
-        sourcePositions[sourcePositions.Length - 1] = trans;
+        sourcePositions[sourcePositions.Count - 1] = trans;
 
         musicSources[2].clip = track;
         musicSources[2].loop = loopTrack;
@@ -540,7 +544,7 @@ public class AudioManager : MonoBehaviour
     /// <summary>
     /// Move the current music's playing position to the specified time
     /// </summary>
-    /// <param name="time">Time in samples, must be between 0 and the current track's sample length</param>
+    /// <param name="samples">Time in samples, must be between 0 and the current track's sample length</param>
     public void SetMusicPlaybackPosition(int samples)
     {
         if (musicSources[0].clip == null)
@@ -576,6 +580,8 @@ public class AudioManager : MonoBehaviour
 
         musicSources[0].clip = music[track];
         musicSources[0].loop = true;
+
+        enableLoopPoints = useLoopPoints;
 
         if (enableLoopPoints)
         {
@@ -928,7 +934,7 @@ public class AudioManager : MonoBehaviour
 
         if (trans != null)
         {
-            sourcePositions[Array.IndexOf(sources, a)] = trans;
+            sourcePositions[sources.IndexOf(a)] = trans;
             if (spatialSound)
             {
                 a.spatialBlend = 1;
@@ -977,7 +983,7 @@ public class AudioManager : MonoBehaviour
 
         if (trans != null)
         {
-            sourcePositions[Array.IndexOf(sources, a)] = trans;
+            sourcePositions[sources.IndexOf(a)] = trans;
             if (spatialSound)
             {
                 a.spatialBlend = 1;
@@ -1025,11 +1031,11 @@ public class AudioManager : MonoBehaviour
         loopingSources.Add(a);
         if (trans != null)
         {
-            sourcePositions[Array.IndexOf(sources, a)] = trans;
+            sourcePositions[sources.IndexOf(a)] = trans;
         }
         else
         {
-            sourcePositions[Array.IndexOf(sources, a)] = null;
+            sourcePositions[sources.IndexOf(a)] = null;
         }
 
         a.spatialBlend = spatialSound ? 1 : 0;
@@ -1059,11 +1065,11 @@ public class AudioManager : MonoBehaviour
         loopingSources.Add(a);
         if (trans != null)
         {
-            sourcePositions[Array.IndexOf(sources, a)] = trans;
+            sourcePositions[sources.IndexOf(a)] = trans;
         }
         else
         {
-            sourcePositions[Array.IndexOf(sources, a)] = null;
+            sourcePositions[sources.IndexOf(a)] = null;
         }
 
         a.spatialBlend = spatialSound ? 1 : 0;
@@ -1136,7 +1142,7 @@ public class AudioManager : MonoBehaviour
             if (loopingSources[i] == null) continue;
             if (loopingSources[i].clip == sounds[s])
             {
-                for (int j = 0; j < sources.Length; j++)
+                for (int j = 0; j < sources.Count; j++)
                 { // Thanks Connor Smiley 
                     if (sources[j] == loopingSources[i])
                     {
@@ -1166,7 +1172,7 @@ public class AudioManager : MonoBehaviour
         {
             if (loopingSources[i].clip == s)
             {
-                for (int j = 0; j < sources.Length; j++)
+                for (int j = 0; j < sources.Count; j++)
                 { // Thanks Connor Smiley 
                     if (sources[j] == loopingSources[i])
                     {
@@ -1202,7 +1208,7 @@ public class AudioManager : MonoBehaviour
                 loopingSources.Remove(loopingSources[i]);
             }
             if (sourcePositions != null)
-                sourcePositions = new Transform[audioSources];
+                sourcePositions = new List<Transform>(audioSources + 1);
         }
     }
 
@@ -1274,6 +1280,7 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
+    /// DEPRECATED
     /// Accomodates the "None" helper enum during runtime
     /// </summary>
     public void AddOffsetToArrays()
@@ -1320,20 +1327,40 @@ public class AudioManager : MonoBehaviour
                 return a;
             }
         }
-        Debug.LogError("AudioManager Error: Ran out of Audio Sources!");
+
+        if (dynamicSourceAllocation)
+        {
+            AudioSource newSource = Instantiate(sourcePrefab, sourceHolder.transform).GetComponent<AudioSource>();
+            newSource.name = "AudioSource " + sources.Count;
+            sources.Add(newSource);
+            sourcePositions.Add(null);
+        }
+        else
+        {
+            Debug.LogError("AudioManager Error: Ran out of Audio Sources!");
+        }
         return null;
     }
 
+    /// <summary>
+    /// Returns Master volume from 0-1
+    /// </summary>
     public float GetMasterVolume()
     {
         return masterVolume;
     }
 
+    /// <summary>
+    /// Returns sound volume from 0-1
+    /// </summary>
     public float GetSoundVolume()
     {
         return soundVolume;
     }
 
+    /// <summary>
+    /// Returns music volume from 0-1
+    /// </summary>
     public float GetMusicVolume()
     {
         return musicVolume;
@@ -1347,7 +1374,7 @@ public class AudioManager : MonoBehaviour
     /// <returns></returns>
     public bool IsSoundPlaying(string s, Transform trans = null)
     {
-        for (int i = 0; i < Mathf.Clamp(audioSources, 0, sources.Length); i++) // Loop through all sources
+        for (int i = 0; i < Mathf.Clamp(audioSources, 0, sources.Count); i++) // Loop through all sources
         {
             if (sources[i] == null) continue;
             if (sources[i].clip == sounds[s] && sources[i].isPlaying) // If this source is playing the clip
@@ -1445,7 +1472,7 @@ public class AudioManager : MonoBehaviour
     /// <summary>
     /// Returns true if a sound is currently being played by a looping sources, more efficient for looping sounds than IsSoundPlaying
     /// </summary>
-    /// <param name="s">The sound in question</param>
+    /// <param name="a">The sound in question</param>
     /// <returns>True or false you dingus</returns>
     public bool IsSoundLooping(AudioClip a)
     {
