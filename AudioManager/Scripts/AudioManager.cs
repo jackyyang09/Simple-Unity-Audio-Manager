@@ -66,7 +66,7 @@ public class AudioManager : MonoBehaviour
 
     //[SerializeField]
     [Tooltip("[DON'T TOUCH THIS], looping sound positions")]
-    List<Transform> sourcePositions;
+    Dictionary<AudioSource, Transform> sourcePositions = new Dictionary<AudioSource, Transform>();
 
     /// <summary>
     /// Limits the number of each sounds being played. If at 0 or no value, assume infinite
@@ -180,13 +180,13 @@ public class AudioManager : MonoBehaviour
         // Initialize helper arrays
         sources = new List<AudioSource>();
         loopingSources = new List<AudioSource>();
-        sourcePositions = new List<Transform>(sources.Count + 1); // The final one is for music
+
         sourceHolder = new GameObject("Sources");
         sourceHolder.transform.SetParent(transform);
 
         for (int i = 0; i < audioSources; i++)
         {
-            sources[i] = Instantiate(sourcePrefab, sourceHolder.transform).GetComponent<AudioSource>();
+            sources.Add(Instantiate(sourcePrefab, sourceHolder.transform).GetComponent<AudioSource>());
             sources[i].name = "AudioSource " + i;
         }
 
@@ -432,7 +432,7 @@ public class AudioManager : MonoBehaviour
         if (track.Equals("None")) return null;
         currentTrack = track;
 
-        sourcePositions[sourcePositions.Count - 1] = trans;
+        sourcePositions[musicSources[2]] = trans;
 
         musicSources[2].clip = music[track];
         musicSources[2].loop = loopTrack;
@@ -472,7 +472,7 @@ public class AudioManager : MonoBehaviour
         if (track.Equals("None")) return null;
         currentTrack = "Custom Audio File";
 
-        sourcePositions[sourcePositions.Count - 1] = trans;
+        sourcePositions[musicSources[2]] = trans;
 
         musicSources[2].clip = track;
         musicSources[2].loop = loopTrack;
@@ -899,20 +899,20 @@ public class AudioManager : MonoBehaviour
             {
                 if (i < audioSources - 1)
                 {
-                    if (sourcePositions[i] != null) // If there's a designated location
+                    if (sourcePositions.ContainsKey(sources[i]))
                     {
-                        sources[i].transform.position = sourcePositions[i].transform.position;
+                        sources[i].transform.position = sourcePositions[sources[i]].transform.position;
                     }
                     if (!sources[i].isPlaying) // However if it's not playing a sound
                     {
-                        sourcePositions[i] = null; // Erase the designated transform so we don't check again
+                        sourcePositions.Remove(sources[i]);
                     }
                 }
                 else
                 {
-                    if (musicSources[2].isPlaying && sourcePositions[i] != null)
+                    if (musicSources[2].isPlaying && sourcePositions.ContainsKey(sources[i]))
                     {
-                        musicSources[2].transform.position = sourcePositions[i].transform.position;
+                        musicSources[2].transform.position = sourcePositions[sources[i]].transform.position;
                     }
                 }
             }
@@ -934,7 +934,7 @@ public class AudioManager : MonoBehaviour
 
         if (trans != null)
         {
-            sourcePositions[sources.IndexOf(a)] = trans;
+            sourcePositions[a] = trans;
             if (spatialSound)
             {
                 a.spatialBlend = 1;
@@ -983,7 +983,7 @@ public class AudioManager : MonoBehaviour
 
         if (trans != null)
         {
-            sourcePositions[sources.IndexOf(a)] = trans;
+            sourcePositions[a] = trans;
             if (spatialSound)
             {
                 a.spatialBlend = 1;
@@ -1031,11 +1031,11 @@ public class AudioManager : MonoBehaviour
         loopingSources.Add(a);
         if (trans != null)
         {
-            sourcePositions[sources.IndexOf(a)] = trans;
+            sourcePositions[a] = trans;
         }
         else
         {
-            sourcePositions[sources.IndexOf(a)] = null;
+            sourcePositions[a] = null;
         }
 
         a.spatialBlend = spatialSound ? 1 : 0;
@@ -1065,11 +1065,11 @@ public class AudioManager : MonoBehaviour
         loopingSources.Add(a);
         if (trans != null)
         {
-            sourcePositions[sources.IndexOf(a)] = trans;
+            sourcePositions[a] = trans;
         }
         else
         {
-            sourcePositions[sources.IndexOf(a)] = null;
+            sourcePositions[a] = null;
         }
 
         a.spatialBlend = spatialSound ? 1 : 0;
@@ -1100,7 +1100,7 @@ public class AudioManager : MonoBehaviour
             {
                 if (t != null)
                 {
-                    if (sourcePositions[i] != t) continue;
+                    if (sourcePositions[sources[i]] != t) continue;
                 }
                 sources[i].Stop();
                 return;
@@ -1121,7 +1121,7 @@ public class AudioManager : MonoBehaviour
             {
                 if (t != null)
                 {
-                    if (sourcePositions[i] != t) continue;
+                    if (sourcePositions[sources[i]] != t) continue;
                 }
                 sources[i].Stop();
                 return;
@@ -1153,7 +1153,7 @@ public class AudioManager : MonoBehaviour
                 if (stopInstantly) loopingSources[i].Stop();
                 loopingSources[i].loop = false;
                 loopingSources.RemoveAt(i);
-                sourcePositions[i] = null;
+                sourcePositions.Remove(sources[i]);
                 return;
             }
         }
@@ -1183,7 +1183,7 @@ public class AudioManager : MonoBehaviour
                 if (stopInstantly) loopingSources[i].Stop();
                 loopingSources[i].loop = false;
                 loopingSources.RemoveAt(i);
-                sourcePositions[i] = null;
+                sourcePositions.Remove(sources[i]);
                 return;
             }
         }
@@ -1207,8 +1207,6 @@ public class AudioManager : MonoBehaviour
                 loopingSources[i].loop = false;
                 loopingSources.Remove(loopingSources[i]);
             }
-            if (sourcePositions != null)
-                sourcePositions = new List<Transform>(audioSources + 1);
         }
     }
 
@@ -1333,7 +1331,6 @@ public class AudioManager : MonoBehaviour
             AudioSource newSource = Instantiate(sourcePrefab, sourceHolder.transform).GetComponent<AudioSource>();
             newSource.name = "AudioSource " + sources.Count;
             sources.Add(newSource);
-            sourcePositions.Add(null);
         }
         else
         {
@@ -1381,7 +1378,7 @@ public class AudioManager : MonoBehaviour
             {
                 if (trans != null)
                 {
-                    if (trans != sourcePositions[i]) // Continue if this isn't the specified source position
+                    if (trans != sourcePositions[sources[i]]) // Continue if this isn't the specified source position
                     {
                         continue;
                     }
@@ -1406,7 +1403,7 @@ public class AudioManager : MonoBehaviour
             {
                 if (trans != null)
                 {
-                    if (trans != sourcePositions[i]) // Continue if this isn't the specified source position
+                    if (trans != sourcePositions[sources[i]]) // Continue if this isn't the specified source position
                     {
                         continue;
                     }
