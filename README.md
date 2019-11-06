@@ -1,10 +1,11 @@
 # Jacky's Simple Audio Manager (JSAM)
 
+Tired of having a billion AudioSources lying about? That will no longer be a reality!
 Never worry about sounds and music ever again!
 
 A quick, easy-to-use, decentralized audio playing system for Unity
 
-Perfect for game jams, prototypes and if you just want to get started on a project quickly
+Perfect for game jams, prototypes, or if you just want to get started on a project quickly
 
 # Features
 - Easily and intuitively add and play sounds and music!
@@ -27,13 +28,13 @@ Perfect for game jams, prototypes and if you just want to get started on a proje
 5. Drag and drop the AudioManager prefab into your scene
 6. Add sounds to AudioManager's audio libraries
 
-![Help2](https://raw.githubusercontent.com/jackyyang09/Simple-Unity-Audio-Manager/Media/Media/media2.png)
+![Help2](https://raw.githubusercontent.com/jackyyang09/Simple-Unity-Audio-Manager/Media/Media/media3.png)
 
 7. To play your newly added sound, go into any script file and type the following
 ```
-AudioManager.instance.PlaySoundOnce("Shooting");
+AudioManager.instance.PlaySoundOnce("Shooting (But Better)");
 ```
-   - Be sure to replace "Shooting" with the name of your sound!
+   - Be sure to replace "Shooting (But Better)" with the name of your sound!
    - Note: The name of the gameObject with the AudioFile component will be the string parameter used in AudioManager's dictionary!
    - You can also choose to pass in an audio clip rather than a string to play your sounds
 
