@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using JSAM;
 
 /// <summary>
 /// Control script for a generic scrolling shooter game

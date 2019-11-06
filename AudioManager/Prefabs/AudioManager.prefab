@@ -43,7 +43,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e4f07eb732153b41ae4bf364b486e87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioName: NEW AUDIO FILE
   file: {fileID: 0}
 --- !u!1 &865652143
 GameObject:
@@ -150,9 +149,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3174737d2fa98ca49b89bf9b15228e7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioName: NEW AUDIO FILE
   file: {fileID: 0}
-  trackIntro: {fileID: 0}
+  useLoopPoints: 0
+  loopStart: 0
+  loopEnd: 0
+  loopPointInputMode: 0
+  bpm: 120
 --- !u!1 &4502563656087406110
 GameObject:
   m_ObjectHideFlags: 0
@@ -204,7 +206,11 @@ MonoBehaviour:
   soundVolume: 1
   musicVolume: 1
   spatialSound: 1
+  spatializeLateUpdate: 0
   timeScaledSounds: 1
+  enableLoopPoints: 0
+  stopSoundsOnSceneLoad: 1
+  dontDestroyOnLoad: 1
   currentTrack: None
   listener: {fileID: 0}
   sourcePrefab: {fileID: 3048837711066349602, guid: cf11aed7e0e56ae45afe7eaebe30a616,

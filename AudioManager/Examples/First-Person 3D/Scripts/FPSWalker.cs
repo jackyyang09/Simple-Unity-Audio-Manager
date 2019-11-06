@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using JSAM;
 
 public class FPSWalker : MonoBehaviour
 {
@@ -63,7 +64,7 @@ public class FPSWalker : MonoBehaviour
         {
             if (!am.IsSoundLooping("Walk"))
             {
-                am.PlaySoundLoop("Walk", transform, false, AudioManager.Priority.Default);
+                am.PlaySoundLoop("Walk", transform, false, Priority.Default);
             }
         }
         else

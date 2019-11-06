@@ -917,6 +917,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 421830743}
   m_CullTransparentMesh: 0
+--- !u!1 &469408089
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 469408090}
+  - component: {fileID: 469408091}
+  m_Layer: 0
+  m_Name: Shooting (But Better)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &469408090
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 469408089}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1321446698}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &469408091
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 469408089}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e4f07eb732153b41ae4bf364b486e87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  file: {fileID: 8300000, guid: a162759dde1d37b48ab2b1d5743b8f77, type: 3}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -1116,7 +1160,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 692425069}
-        m_MethodName: CrossfadeMusic
+        m_MethodName: FadeMusic
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1466,7 +1510,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   file: {fileID: 8300000, guid: ec35383b3397c8a4c998aefa69059d4f, type: 3}
-  trackIntro: {fileID: 8300000, guid: 092b18edff9494842b046dd9ca3307ec, type: 3}
   useLoopPoints: 0
   loopStart: 0
   loopEnd: 47.995
@@ -1893,6 +1936,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 2109210243}
+  - {fileID: 469408090}
   m_Father: {fileID: 4502563657082201730}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2069,7 +2113,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   file: {fileID: 8300000, guid: 4cd473ea326bb224499d94db7251c75c, type: 3}
-  trackIntro: {fileID: 0}
   useLoopPoints: 1
   loopStart: 48
   loopEnd: 96
@@ -2289,7 +2332,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   file: {fileID: 8300000, guid: c24976ce5925e0e4c83ba82f15fbf5e3, type: 3}
-  trackIntro: {fileID: 0}
   useLoopPoints: 0
   loopStart: 0
   loopEnd: 0
@@ -2537,9 +2579,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd13adbb36a3a614fafbec256720d4c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  music: Main Theme
-  useMusicIntro: 0
+  music: Side Theme
+  useLoopPoints: 0
   spatializeSound: 0
+  keepPlaybackPosition: 0
   restartOnReplay: 0
   musicFadeTime: 0
   loopMusic: 0
@@ -2637,14 +2680,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7241a3e106230140bd9d59ff2d17ccd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioSources: 32
-  dynamicSourceAllocation: 0
   masterVolume: 1
   soundVolume: 1
   musicVolume: 1
+  audioSources: 32
   spatialSound: 0
   spatializeLateUpdate: 0
   timeScaledSounds: 1
+  enableLoopPoints: 0
+  stopSoundsOnSceneLoad: 1
+  dontDestroyOnLoad: 1
+  dynamicSourceAllocation: 0
   currentTrack: Side Theme
   listener: {fileID: 0}
   sourcePrefab: {fileID: 3048837711066349602, guid: cf11aed7e0e56ae45afe7eaebe30a616,

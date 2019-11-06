@@ -2,50 +2,53 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BaseAudioFeedback : MonoBehaviour
+namespace JSAM
 {
-    [Header("Sound Settings")]
-
-    [SerializeField]
-    protected bool spatialSound = true;
-
-    [HideInInspector]
-    public string sound;
-
-    [SerializeField]
-    protected AudioManager.Priority priority = AudioManager.Priority.Default;
-
-    [SerializeField]
-    protected AudioManager.Pitch pitchShift = AudioManager.Pitch.VeryLow;
-
-    [Header("Set your sound settings here")]
-
-    [SerializeField]
-    [Tooltip("Overrides the \"Sound\" parameter with an AudioClip if not null")]
-    protected AudioClip soundFile;
-    
-    protected Transform sTransform;
-
-    protected AudioManager am;
-
-    private void OnEnable()
+    public class BaseAudioFeedback : MonoBehaviour
     {
-        am = AudioManager.instance;
-    }
+        [Header("Sound Settings")]
 
-    // Start is called before the first frame update
-    protected virtual void Start()
-    {
-        sTransform = (spatialSound) ? transform : null;
-    }
+        [SerializeField]
+        protected bool spatialSound = true;
 
-    public AudioClip GetAttachedSound()
-    {
-        return soundFile;
-    }
+        [HideInInspector]
+        public string sound;
 
-    //public void SetSound(string s)
-    //{
-    //    sound = s;
-    //}
+        [SerializeField]
+        protected Priority priority = Priority.Default;
+
+        [SerializeField]
+        protected Pitch pitchShift = Pitch.VeryLow;
+
+        [Header("Set your sound settings here")]
+
+        [SerializeField]
+        [Tooltip("Overrides the \"Sound\" parameter with an AudioClip if not null")]
+        protected AudioClip soundFile;
+
+        protected Transform sTransform;
+
+        protected AudioManager am;
+
+        private void OnEnable()
+        {
+            am = AudioManager.instance;
+        }
+
+        // Start is called before the first frame update
+        protected virtual void Start()
+        {
+            sTransform = (spatialSound) ? transform : null;
+        }
+
+        public AudioClip GetAttachedSound()
+        {
+            return soundFile;
+        }
+
+        //public void SetSound(string s)
+        //{
+        //    sound = s;
+        //}
+    }
 }

@@ -9,6 +9,6 @@ public class LoopPointExample : MonoBehaviour
     public void ToggleLoopPoints()
     {
         active = !active;
-        AudioManager.instance.SetLoopPoints(active);
+        JSAM.AudioManager.instance.SetLoopPoints(active);
     }
 }

@@ -2,35 +2,38 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AudioTriggerFeedback : BaseAudioFeedback
+namespace JSAM 
 {
-    // Start is called before the first frame update
-    protected override void Start()
+    public class AudioTriggerFeedback : BaseAudioFeedback
     {
-        base.Start();
-    }
+        // Start is called before the first frame update
+        protected override void Start()
+        {
+            base.Start();
+        }
 
-    private void OnTriggerEnter(Collider collision)
-    {
-        if (soundFile != null)
+        private void OnTriggerEnter(Collider collision)
         {
-            am.PlaySoundOnce(soundFile, transform, priority, pitchShift);
+            if (soundFile != null)
+            {
+                am.PlaySoundOnce(soundFile, transform, priority, pitchShift);
+            }
+            else
+            {
+                am.PlaySoundOnce(sound, transform, priority, pitchShift);
+            }
         }
-        else
-        {
-            am.PlaySoundOnce(sound, transform, priority, pitchShift);
-        }
-    }
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (soundFile != null)
+        private void OnTriggerEnter2D(Collider2D collision)
         {
-            am.PlaySoundOnce(soundFile, transform, priority, pitchShift);
-        }
-        else
-        {
-            am.PlaySoundOnce(sound, transform, priority, pitchShift);
+            if (soundFile != null)
+            {
+                am.PlaySoundOnce(soundFile, transform, priority, pitchShift);
+            }
+            else
+            {
+                am.PlaySoundOnce(sound, transform, priority, pitchShift);
+            }
         }
     }
 }
