@@ -32,10 +32,11 @@ Perfect for game jams, prototypes, or if you just want to get started on a proje
 
 7. To play your newly added sound, go into any script file and type the following
 ```
-AudioManager.instance.PlaySoundOnce("Shooting (But Better)");
+JSAM.AudioManager.instance.PlaySoundOnce("Shooting (But Better)");
 ```
    - Be sure to replace "Shooting (But Better)" with the name of your sound!
    - Note: The name of the gameObject with the AudioFile component will be the string parameter used in AudioManager's dictionary!
    - You can also choose to pass in an audio clip rather than a string to play your sounds
+   - Include `using JSAM` at the top of your script if you are planning to use AudioManager often!
 
 Go ahead and look at all the public functions within AudioManager to see what else you can do!
