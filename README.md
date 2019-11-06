@@ -28,7 +28,7 @@ Perfect for game jams, prototypes, or if you just want to get started on a proje
 5. Drag and drop the AudioManager prefab into your scene
 6. Add sounds to AudioManager's audio libraries
 
-![Help2](https://raw.githubusercontent.com/jackyyang09/Simple-Unity-Audio-Manager/Media/Media/media3r2.png)
+![Help2](https://raw.githubusercontent.com/jackyyang09/Simple-Unity-Audio-Manager/Media/Media/media3r3.png)
 
 7. To play your newly added sound, go into any script file and type the following
 ```
