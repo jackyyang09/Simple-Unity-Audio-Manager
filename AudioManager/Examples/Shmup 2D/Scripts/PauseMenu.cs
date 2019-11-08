@@ -9,7 +9,7 @@ public class PauseMenu : MonoBehaviour
     Canvas pauseMenu;
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         pauseMenu = GetComponent<Canvas>();
     }
@@ -28,5 +28,15 @@ public class PauseMenu : MonoBehaviour
     public void FadeMusic()
     {
         AudioManager.instance.FadeMusic("Main Theme Combined", 5, true);
+    }
+
+    public void UpdateSoundVolume(UnityEngine.UI.Slider uiElement)
+    {
+        AudioManager.instance.SetSoundVolume(uiElement.value);
+    }
+
+    public void UpdateMusicVolume(UnityEngine.UI.Slider uiElement)
+    {
+        AudioManager.instance.SetMusicVolume(uiElement.value);
     }
 }

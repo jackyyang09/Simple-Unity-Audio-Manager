@@ -1264,9 +1264,9 @@ namespace JSAM
         }
     
         /// <summary>
-        /// Set's the volume of sounds and applies changes instantly across all sources
+        /// Sets the volume of sounds and applies changes instantly across all sources
         /// </summary>
-        /// <param name="v"></param>
+        /// <param name="v">The new volume level from 0 to 1</param>
         public void SetSoundVolume(float v)
         {
             soundVolume = v;
@@ -1274,9 +1274,9 @@ namespace JSAM
         }
     
         /// <summary>
-        /// Set's the volume of the music
+        /// Sets the volume of the music and applies changes instantly across all music sources
         /// </summary>
-        /// <param name="v"></param>
+        /// <param name="v">The new volume level from 0 to 1</param>
         public void SetMusicVolume(float v)
         {
             musicVolume = v;
