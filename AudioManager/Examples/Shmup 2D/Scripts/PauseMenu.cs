@@ -5,7 +5,13 @@ using JSAM;
 
 public class PauseMenu : MonoBehaviour
 {
+    /// <summary>
+    /// Button used to toggle the pause menu, incomptabile with Unity's new input manager
+    /// </summary>
+    [Tooltip("Button used to toggle the pause menu, incomptabile with Unity's new input manager")]
     [SerializeField]
+    KeyCode toggleButton = KeyCode.Escape;
+
     Canvas pauseMenu;
 
     // Start is called before the first frame update
@@ -17,7 +23,7 @@ public class PauseMenu : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(toggleButton))
         {
             pauseMenu.enabled = !pauseMenu.enabled;
             if (pauseMenu.enabled) Time.timeScale = 0;
@@ -25,6 +31,9 @@ public class PauseMenu : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Sample method that gets called from the sample button in the Pause Menu hierarchy
+    /// </summary>
     public void FadeMusic()
     {
         AudioManager.instance.FadeMusic("Main Theme Combined", 5, true);
