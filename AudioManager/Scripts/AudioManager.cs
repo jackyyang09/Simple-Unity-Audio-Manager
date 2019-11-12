@@ -1571,14 +1571,14 @@ namespace JSAM
             {
                 for (int i = 0; i < transform.GetChild(0).childCount; i++)
                 {
-                    if (sounds.ContainsKey(transform.GetChild(0).GetChild(i).name))
+                    if (!sounds.ContainsKey(transform.GetChild(0).GetChild(i).name))
                     {
                         regenerateSounds = true;
                         break;
                     }
                 }
             }
-    
+
             if (regenerateSounds)
             {
                 sounds.Clear();
@@ -1606,7 +1606,7 @@ namespace JSAM
             {
                 for (int i = 0; i < transform.GetChild(1).childCount; i++)
                 {
-                    if (sounds.ContainsKey(transform.GetChild(1).GetChild(i).name))
+                    if (!sounds.ContainsKey(transform.GetChild(1).GetChild(i).name))
                     {
                         regenerateMusic = true;
                         break;
