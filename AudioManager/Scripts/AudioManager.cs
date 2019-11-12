@@ -186,22 +186,7 @@ namespace JSAM
         // Use this for initialization
         void Awake()
         {
-            if (instance == null)
-            {
-                instance = this;
-            }
-            else if (instance != this)
-            {
-                // A unique case where the Singleton exists but not in this scene
-                if (instance.gameObject.scene.name == null)
-                {
-                    instance = this;
-                }
-                else
-                {
-                    Destroy(this);
-                }
-            }
+            EstablishSingletonDominance();
     
             // AudioManager is important, keep it between scenes
             if (dontDestroyOnLoad)
@@ -1318,16 +1303,36 @@ namespace JSAM
         /// </summary>
         private void OnValidate()
         {
-            if (instance == null)
-            {
-                instance = this;
-            }
+            EstablishSingletonDominance();
             GenerateAudioDictionarys();
             if (!doneLoading) return;
             //Updates volume
             ApplySoundVolume();
             ApplyMusicVolume();
             SetSpatialSound(spatialSound);
+        }
+
+        /// <summary>
+        /// Ensures that the Audiomanager you think you're referring to actually exists in this scene
+        /// </summary>
+        public void EstablishSingletonDominance()
+        {
+            if (instance == null)
+            {
+                instance = this;
+            }
+            else if (instance != this)
+            {
+                // A unique case where the Singleton exists but not in this scene
+                if (instance.gameObject.scene.name == null)
+                {
+                    instance = this;
+                }
+                else
+                {
+                    Destroy(this);
+                }
+            }
         }
     
         /// <summary>

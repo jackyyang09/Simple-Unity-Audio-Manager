@@ -1452,7 +1452,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d271da891608f40468ba9048deec2ee0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pauseMenu: {fileID: 692425067}
+  toggleButton: 27
 --- !u!114 &724720820
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2533,14 +2533,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd13adbb36a3a614fafbec256720d4c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  music: Side Theme
+  music: None
   useLoopPoints: 0
   spatializeSound: 0
   keepPlaybackPosition: 0
   restartOnReplay: 0
   musicFadeTime: 0
   loopMusic: 0
-  playOnStart: 1
+  playOnStart: 0
   playOnEnable: 0
   stopOnDisable: 1
   stopOnDestroy: 1
