@@ -24,7 +24,7 @@ public class FPSWalker : MonoBehaviour
     void Start()
     {
         controller = GetComponent<CharacterController>();
-        stand = transform.GetChild(0);
+        stand = Camera.main.transform;
 
         am = AudioManager.instance;
     }
