@@ -511,7 +511,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spatialSound: 1
-  sound: Abstract Pop
+  sound: None
   priority: 128
   pitchShift: 1
   soundFile: {fileID: 0}
@@ -6301,6 +6301,7 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
+<<<<<<< HEAD
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8223871712611784823}
@@ -6314,6 +6315,30 @@ GameObject:
   m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &9477062610787996
+=======
+  m_GameObject: {fileID: 4502563657454752326}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7241a3e106230140bd9d59ff2d17ccd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  masterVolume: 1
+  soundVolume: 1
+  musicVolume: 1
+  audioSources: 32
+  spatialSound: 1
+  spatializeLateUpdate: 0
+  timeScaledSounds: 1
+  enableLoopPoints: 0
+  stopSoundsOnSceneLoad: 0
+  dontDestroyOnLoad: 0
+  dynamicSourceAllocation: 0
+  currentTrack: None
+  listener: {fileID: 0}
+  sourcePrefab: {fileID: 3048837711066349602, guid: cf11aed7e0e56ae45afe7eaebe30a616,
+    type: 3}
+--- !u!4 &4502563657454752320
+>>>>>>> 76f2b5f6efd3536d28d9b38c16fa420854339d17
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

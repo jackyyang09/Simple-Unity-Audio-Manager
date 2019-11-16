@@ -202,6 +202,7 @@ public class AudioFileMusicEditor : Editor
                         if (evt.mousePosition.y > progressRect.yMin && evt.mousePosition.y < progressRect.yMax)
                         {
                             mouseDragging = true;
+                            Debug.Log("AAAAAAAH");
                         }
                     }
                     if (!mouseDragging) break;
@@ -302,7 +303,7 @@ public class AudioFileMusicEditor : Editor
 
     void Update()
     {
-        if (clipPlaying && !clipPaused)
+        if ((clipPlaying && !clipPaused) || mouseDragging)
         {
             Repaint();
 
