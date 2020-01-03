@@ -154,7 +154,7 @@ namespace JSAM
         [HideInInspector]
         public string currentTrack = "None";
 
-        [Header("Object References")]
+        [Header("Scene Audiolistener Reference (Optional)")]
 
         /// <summary>
         /// The Audio Listener in your scene, will try to automatically set itself on start by looking at the object tagged as \"Main Camera\"
@@ -163,6 +163,8 @@ namespace JSAM
         [SerializeField]
         AudioListener listener;
     
+        [Header("AudioSource Reference Prefab (MANDATORY)")]
+
         [SerializeField]
         GameObject sourcePrefab;
     
@@ -1287,17 +1289,7 @@ namespace JSAM
                 s.volume = musicVolume * masterVolume;
             }
         }
-    
-        public void SetSoundVolume(UnityEngine.UI.Slider v)
-        {
-            soundVolume = v.value;
-        }
-    
-        public void SetMusicVolume(UnityEngine.UI.Slider v)
-        {
-            musicVolume = v.value;
-        }
-    
+
         /// <summary>
         /// A Monobehaviour function called when the script is loaded or a value is changed in the inspector (Called in the editor only).
         /// </summary>
