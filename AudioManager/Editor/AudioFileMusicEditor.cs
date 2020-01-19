@@ -16,9 +16,11 @@ public class AudioFileMusicEditor : Editor
 
     public override void OnInspectorGUI()
     {
+        serializedObject.Update();
+
         AudioFileMusic myScript = (AudioFileMusic)target;
 
-        EditorGUILayout.LabelField("The name of this gameObject will be used to refer to audio in script");
+        EditorGUILayout.HelpBox("The name of this gameObject will be used to refer to audio in script", MessageType.None);
 
         if (myScript.GetFile() == null)
         {
@@ -29,7 +31,7 @@ public class AudioFileMusicEditor : Editor
             EditorGUILayout.HelpBox("Warning! Change the name of the gameObject to something different or things will break!", MessageType.Warning);
         }
 
-        DrawDefaultInspector();
+        DrawPropertiesExcluding(serializedObject, "m_Script");
 
         if (myScript.useLoopPoints)
         {

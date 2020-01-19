@@ -8,8 +8,20 @@ public class AudioFile : MonoBehaviour
     [SerializeField]
     protected AudioClip file;
 
+    [Header("Attach audio files here to use")]
+    [SerializeField]
+    protected AudioClip[] files;
+
+    [SerializeField]
+    private bool useLibrary;
+
     public AudioClip GetFile()
     {
         return file;
+    }
+
+    public bool UsingLibrary()
+    {
+        return useLibrary;
     }
 }

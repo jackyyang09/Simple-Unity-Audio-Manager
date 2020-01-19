@@ -25,16 +25,19 @@ public class FPSAnimator : MonoBehaviour
                 if (Input.GetKeyDown(KeyCode.Mouse0))
                 {
                     anim.SetTrigger("FireFinal");
+                    bullets--;
                 }
                 break;
             default:
-                if (Input.GetKeyDown(KeyCode.Mouse0))
+                if (Input.GetKeyDown(KeyCode.Mouse0) && bullets > 1)
                 {
                     anim.SetTrigger("Fire");
+                    bullets--;
                 }
                 else if (Input.GetKeyDown(KeyCode.R))
                 {
                     anim.SetTrigger("Reload");
+                    Invoke("ReloadBullets", 3);
                 }
                 break;
         }

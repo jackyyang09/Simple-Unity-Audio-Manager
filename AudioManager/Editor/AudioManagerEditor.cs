@@ -28,7 +28,7 @@ namespace JSAM
                 EditorGUILayout.HelpBox(editorMessage, MessageType.Info);
             }
 
-            DrawDefaultInspector();
+            DrawPropertiesExcluding(serializedObject, "m_Script");
 
             List<string> options = new List<string>();
 

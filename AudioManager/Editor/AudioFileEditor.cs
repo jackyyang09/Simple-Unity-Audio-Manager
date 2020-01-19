@@ -8,9 +8,11 @@ public class AudioFileEditor : Editor
 {
     public override void OnInspectorGUI()
     {
+        serializedObject.Update();
+
         AudioFile myScript = (AudioFile)target;
 
-        EditorGUILayout.LabelField("The name of this gameObject will be used to refer to audio in script");
+        EditorGUILayout.HelpBox("The name of this gameObject will be used to refer to audio in script", MessageType.None);
 
         if (myScript.GetFile() == null)
         {
@@ -21,6 +23,17 @@ public class AudioFileEditor : Editor
             EditorGUILayout.HelpBox("Warning! Change the name of the gameObject to something different or things will break!", MessageType.Warning);
         }
 
-        DrawDefaultInspector();
+        string[] excludedProperties = new string[2] { "m_Script", "files" };
+
+        if (myScript.UsingLibrary()) // Swap file with files
+        {
+            excludedProperties[1] = "file";
+        }
+
+        DrawPropertiesExcluding(serializedObject, excludedProperties);
+
+        EditorGUILayout.HelpBox("Use this option if you want to have this sound correspond to multiple different variant sounds", MessageType.None);
+
+        serializedObject.ApplyModifiedProperties();
     }
 }

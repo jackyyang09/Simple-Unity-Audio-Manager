@@ -154,12 +154,12 @@ namespace JSAM
         [HideInInspector]
         public string currentTrack = "None";
 
-        [Header("Scene Audiolistener Reference (Optional)")]
+        [Header("Scene AudioListener Reference (Optional)")]
 
         /// <summary>
         /// The Audio Listener in your scene, will try to automatically set itself on start by looking at the object tagged as \"Main Camera\"
         /// </summary>
-        [Tooltip("The Audio Listener in your scene, will try to automatically set itself on start by looking at the object tagged as \"Main Camera\"")]
+        [Tooltip("The Audio Listener in your scene, will try to automatically set itself on Start by looking in the object tagged as \"Main Camera\"")]
         [SerializeField]
         AudioListener listener;
     
@@ -385,8 +385,8 @@ namespace JSAM
         /// </summary>
         /// <param name="m">Index of the music</param>
         /// <param name="loopTrack">Does the music play forever?</param>
-        /// <param name="useLoopPoints">Does the clip have an intro portion that plays only once?</param>
-        public AudioSource PlayMusic(string track, bool loopTrack = true, bool useLoopPoints = false)
+        /// <param name="useLoopPoints">Does the clip have an intro portion that plays only once? True by default, will loop from start to end otherwise</param>
+        public AudioSource PlayMusic(string track, bool loopTrack = true, bool useLoopPoints = true)
         {
             if (track.Equals("None")) return null;
             currentTrack = track;
@@ -394,13 +394,13 @@ namespace JSAM
             musicSources[0].clip = music[track];
     
             enableLoopPoints = useLoopPoints;
-            if (enableLoopPoints)
+            if (enableLoopPoints && musicFiles[track].useLoopPoints)
             {
                 loopStartTime = musicFiles[track].loopStart * music[track].frequency;
                 loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
             }
     
-            if (enableLoopPoints && loopTrack)
+            if (enableLoopPoints && loopTrack && musicFiles[track].useLoopPoints)
             {
                 if (musicFiles[track].loopEnd == music[track].length) loopTrack = false;
                 loopTrackAfterStopping = true;

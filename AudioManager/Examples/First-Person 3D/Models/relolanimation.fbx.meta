@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: ff86d202cfa0185438c63bc28f959900
+guid: 65acfafed8988314ba026b117525e61e
 ModelImporter:
   serializedVersion: 19300
   internalIDToNameTable:
@@ -96,9 +96,6 @@ ModelImporter:
   - first:
       74: 1555722406952785416
     second: Grip.001|WeaponReload
-  - first:
-      74: -623603649343465320
-    second: Scene
   externalObjects: {}
   materials:
     materialImportMode: 1
@@ -185,7 +182,7 @@ ModelImporter:
   autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 2
   humanoidOversampling: 1
-  avatarSetup: 1
+  avatarSetup: 0
   additionalBone: 0
   userData: 
   assetBundleName: 
