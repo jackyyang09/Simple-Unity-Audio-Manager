@@ -20,6 +20,11 @@ public class AudioFile : MonoBehaviour
         return file;
     }
 
+    public AudioClip[] GetFiles()
+    {
+        return files;
+    }
+
     public bool UsingLibrary()
     {
         return useLibrary;

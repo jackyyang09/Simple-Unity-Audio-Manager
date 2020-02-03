@@ -71,7 +71,11 @@ namespace JSAM
             {
                 GameObject newSound = new GameObject("NEW AUDIO FILE (RENAME ME)", typeof(AudioFile));
                 newSound.transform.parent = myScript.transform.GetChild(0);
-                EditorGUIUtility.PingObject(newSound);
+
+                Selection.activeGameObject = newSound;
+                //EditorApplication.ExecuteMenuItem("Window/General/Hierarchy");
+                EditorApplication.delayCall += () => EngageRenameMode(newSound);
+
                 Undo.RegisterCreatedObjectUndo(newSound, "Added new sound file");
             }
 
@@ -79,7 +83,10 @@ namespace JSAM
             {
                 GameObject newMusic = new GameObject("NEW AUDIO FILE (RENAME ME)", typeof(AudioFileMusic));
                 newMusic.transform.parent = myScript.transform.GetChild(1);
-                EditorGUIUtility.PingObject(newMusic);
+
+                Selection.activeGameObject = newMusic;
+                EditorApplication.delayCall += () => EngageRenameMode(newMusic);
+
                 Undo.RegisterCreatedObjectUndo(newMusic, "Added new music file");
             }
             EditorGUILayout.EndHorizontal();
@@ -121,6 +128,34 @@ namespace JSAM
             if (myScript.GetMasterVolume() == 0) EditorGUILayout.HelpBox("Note: Master Volume is MUTED!", MessageType.Info);
             if (myScript.GetSoundVolume() == 0) EditorGUILayout.HelpBox("Note: Sound is MUTED!", MessageType.Info);
             if (myScript.GetMusicVolume() == 0) EditorGUILayout.HelpBox("Note: Music is MUTED!", MessageType.Info);
+        }
+
+        /// <summary>
+        /// Below code referenced by the lovely Unity Answers user vexe
+        /// https://answers.unity.com/questions/644608/sending-a-rename-commandevent-to-the-hiearchy-almo.html
+        /// </summary>
+        /// <param name="go">The gameObject to rename</param>
+        public static void EngageRenameMode(Object go)
+        {
+            SelectObject(go);
+            GetFocusedWindow("Hierarchy").SendEvent(Events.Rename);
+        }
+        public static void SelectObject(Object obj)
+        {
+            Selection.objects = new Object[] { obj };
+        }
+        public static EditorWindow GetFocusedWindow(string window)
+        {
+            FocusOnWindow(window);
+            return EditorWindow.focusedWindow;
+        }
+        public static void FocusOnWindow(string window)
+        {
+            EditorApplication.ExecuteMenuItem("Window/General/" + window);
+        }
+        public static class Events
+        {
+            public static Event Rename = new Event() { keyCode = KeyCode.F2, type = EventType.KeyDown };
         }
     }
 }

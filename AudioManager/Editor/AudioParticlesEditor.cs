@@ -6,6 +6,7 @@ using UnityEditor;
 namespace JSAM
 {
     [CustomEditor(typeof(AudioParticles))]
+    [CanEditMultipleObjects]
     public class AudioParticlesEditor : Editor
     {
         AudioManager am;

@@ -44,7 +44,7 @@ namespace JSAM
     /// </summary>
     public class AudioManager : MonoBehaviour
     {
-        Dictionary<string, AudioClip> sounds = new Dictionary<string, AudioClip>();
+        Dictionary<string, AudioFile> sounds = new Dictionary<string, AudioFile>();
         Dictionary<string, AudioClip> music = new Dictionary<string, AudioClip>();
         Dictionary<string, AudioFileMusic> musicFiles = new Dictionary<string, AudioFileMusic>();
     
@@ -987,7 +987,15 @@ namespace JSAM
                 a.pitch = 1;
             }
     
-            a.clip = sounds[s];
+            if (sounds[s].UsingLibrary())
+            {
+                AudioClip[] library = sounds[s].GetFiles();
+                a.clip = library[UnityEngine.Random.Range(0, library.Length)];
+            }
+            else
+            {
+                a.clip = sounds[s].GetFile();
+            }
             a.priority = (int)p;
             a.loop = false;
             a.PlayDelayed(delay);
@@ -1064,8 +1072,16 @@ namespace JSAM
                 sourcePositions[a] = null;
             }
     
+            if (sounds[s].UsingLibrary())
+            {
+                AudioClip[] library = sounds[s].GetFiles();
+                a.clip = library[UnityEngine.Random.Range(0, library.Length)];
+            }
+            else
+            {
+                a.clip = sounds[s].GetFile();
+            }
             a.spatialBlend = spatialSound ? 1 : 0;
-            a.clip = sounds[s];
             a.priority = (int)p;
             a.pitch = 1;
             a.loop = true;
@@ -1295,7 +1311,6 @@ namespace JSAM
         /// </summary>
         private void OnValidate()
         {
-            EstablishSingletonDominance();
             GenerateAudioDictionarys();
             if (!doneLoading) return;
             //Updates volume
@@ -1583,15 +1598,15 @@ namespace JSAM
                 {
                     if (sounds.ContainsKey(a.name))
                     {
-                        if (sounds[a.name].Equals(a.GetFile())) continue;
+                        if (sounds[a.name].Equals(a)) continue;
                         else
                         {
-                            sounds[a.name] = a.GetFile();
+                            sounds[a.name] = a;
                         }
                     }
                     else
                     {
-                        sounds.Add(a.name, a.GetFile());
+                        sounds.Add(a.name, a);
                     }
                 }
             }
@@ -1669,7 +1684,7 @@ namespace JSAM
             return music;
         }
     
-        public Dictionary<string, AudioClip> GetSoundDictionary()
+        public Dictionary<string, AudioFile> GetSoundDictionary()
         {
             return sounds;
         }

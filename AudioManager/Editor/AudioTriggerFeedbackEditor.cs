@@ -6,6 +6,7 @@ using UnityEditor;
 namespace JSAM
 {
     [CustomEditor(typeof(AudioTriggerFeedback))]
+    [CanEditMultipleObjects]
     public class AudioTriggerFeedbackEditor : Editor
     {
         AudioManager am;

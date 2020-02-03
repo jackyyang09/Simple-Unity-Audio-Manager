@@ -6,6 +6,7 @@ using UnityEditor;
 namespace JSAM
 {
     [CustomEditor(typeof(AudioCollisionFeedback))]
+    [CanEditMultipleObjects]
     public class AudioCollisionFeedbackEditor : Editor
     {
         AudioManager am;

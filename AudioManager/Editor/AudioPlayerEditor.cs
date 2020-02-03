@@ -6,6 +6,7 @@ using UnityEditor;
 namespace JSAM
 {
     [CustomEditor(typeof(AudioPlayer))]
+    [CanEditMultipleObjects]
     public class AudioPlayerEditor : Editor
     {
         AudioManager am;
