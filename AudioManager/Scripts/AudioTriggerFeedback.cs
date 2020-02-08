@@ -18,11 +18,11 @@ namespace JSAM
 
             if (soundFile != null)
             {
-                am.PlaySoundOnce(soundFile, transform, priority, pitchShift);
+                AudioManager.instance.PlaySoundOnce(soundFile, transform, priority, pitchShift);
             }
             else
             {
-                am.PlaySoundOnce(sound, transform, priority, pitchShift);
+                AudioManager.instance.PlaySoundOnce(sound, transform, priority, pitchShift);
             }
         }
 
@@ -32,11 +32,11 @@ namespace JSAM
 
             if (soundFile != null)
             {
-                am.PlaySoundOnce(soundFile, transform, priority, pitchShift);
+                AudioManager.instance.PlaySoundOnce(soundFile, transform, priority, pitchShift);
             }
             else
             {
-                am.PlaySoundOnce(sound, transform, priority, pitchShift);
+                AudioManager.instance.PlaySoundOnce(sound, transform, priority, pitchShift);
             }
         }
     }

@@ -39,7 +39,10 @@ namespace JSAM
         public void Play()
         {
             AudioManager am = AudioManager.instance;
+<<<<<<< HEAD
 
+=======
+>>>>>>> ffad8f2e20ce18cefdd768d3cad36e1923868b17
             Transform t = (spatialSound) ? transform : null;
             if (soundFile != null)
             {
@@ -65,7 +68,10 @@ namespace JSAM
         public void Stop()
         {
             AudioManager am = AudioManager.instance;
+<<<<<<< HEAD
 
+=======
+>>>>>>> ffad8f2e20ce18cefdd768d3cad36e1923868b17
             Transform t = (spatialSound) ? transform : null;
             if (soundFile != null)
             {

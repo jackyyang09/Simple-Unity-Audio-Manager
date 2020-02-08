@@ -13,8 +13,26 @@ namespace JSAM
     [CustomEditor(typeof(AudioManager))]
     public class AudioManagerEditor : Editor
     {
+        static bool showVolumeSettings = true;
+        static bool showAdvancedSettings;
         static bool showSoundLibrary;
         static bool showMusicLibrary;
+
+        [MenuItem("Tools/Add New AudioManager")]
+        public static void AddAudioManager()
+        {
+            if (!AudioManager.instance)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("AudioChannel")[0]);
+                assetPath = assetPath.Replace("Channel", "Manager");
+                GameObject newManager = (GameObject)Instantiate(AssetDatabase.LoadAssetAtPath(assetPath, typeof(GameObject)));
+                newManager.name = newManager.name.Replace("(Clone)", string.Empty);
+            }
+            else
+            {
+                Debug.Log("AudioManager already exists in this scene!");
+            }
+        }
 
         public override void OnInspectorGUI()
         {
@@ -28,7 +46,35 @@ namespace JSAM
                 EditorGUILayout.HelpBox(editorMessage, MessageType.Info);
             }
 
-            DrawPropertiesExcluding(serializedObject, "m_Script");
+            string[] excludedProperties = new string[] { "m_Script" };
+
+            GUIContent content = new GUIContent("Show Advanced Settings", "Toggle this if you're an experienced Unity user");
+
+            showAdvancedSettings = EditorGUILayout.Toggle(content, showAdvancedSettings);
+
+            if (!showAdvancedSettings)
+            {
+                excludedProperties = new string[9]
+                {
+                    "m_Script", "audioSources", "spatialSound",
+                    "spatializeLateUpdate", "timeScaledSounds",
+                    "stopSoundsOnSceneLoad", "dontDestroyOnLoad",
+                    "dynamicSourceAllocation", "disableConsoleLogs"
+                };
+            }
+
+            //content = new GUIContent("Volume Controls", "Volume of all Audio managed by AudioManager controlled here");
+
+            //showVolumeSettings = EditorGUILayout.Foldout(showVolumeSettings, content);
+            //if (!showVolumeSettings)
+            //{
+            //    excludedProperties = new string[4]
+            //    {
+            //        "m_Script", "masterVolume", "musicVolume", "soundVolume"
+            //    };
+            //}
+
+            DrawPropertiesExcluding(serializedObject, excludedProperties);
 
             List<string> options = new List<string>();
 
@@ -38,7 +84,6 @@ namespace JSAM
                 options.Add(s);
             }
 
-            GUIContent content;
             // Potentially Deprecated
             //GUIContent content = new GUIContent("Current Track", "Current music that's playing, will play on start if not \"None\"");
             //
@@ -71,7 +116,11 @@ namespace JSAM
             {
                 GameObject newSound = new GameObject("NEW AUDIO FILE (RENAME ME)", typeof(AudioFile));
                 newSound.transform.parent = myScript.transform.GetChild(0);
-                EditorGUIUtility.PingObject(newSound);
+
+                Selection.activeGameObject = newSound;
+                //EditorApplication.ExecuteMenuItem("Window/General/Hierarchy");
+                EditorApplication.delayCall += () => EngageRenameMode(newSound);
+
                 Undo.RegisterCreatedObjectUndo(newSound, "Added new sound file");
             }
 
@@ -79,7 +128,10 @@ namespace JSAM
             {
                 GameObject newMusic = new GameObject("NEW AUDIO FILE (RENAME ME)", typeof(AudioFileMusic));
                 newMusic.transform.parent = myScript.transform.GetChild(1);
-                EditorGUIUtility.PingObject(newMusic);
+
+                Selection.activeGameObject = newMusic;
+                EditorApplication.delayCall += () => EngageRenameMode(newMusic);
+
                 Undo.RegisterCreatedObjectUndo(newMusic, "Added new music file");
             }
             EditorGUILayout.EndHorizontal();
@@ -122,5 +174,35 @@ namespace JSAM
             if (myScript.GetSoundVolume() == 0) EditorGUILayout.HelpBox("Note: Sound is MUTED!", MessageType.Info);
             if (myScript.GetMusicVolume() == 0) EditorGUILayout.HelpBox("Note: Music is MUTED!", MessageType.Info);
         }
+
+        #region GameObject Rename Code
+        /// <summary>
+        /// Below code referenced by the lovely Unity Answers user vexe
+        /// https://answers.unity.com/questions/644608/sending-a-rename-commandevent-to-the-hiearchy-almo.html
+        /// </summary>
+        /// <param name="go">The gameObject to rename</param>
+        public static void EngageRenameMode(Object go)
+        {
+            SelectObject(go);
+            GetFocusedWindow("Hierarchy").SendEvent(Events.Rename);
+        }
+        public static void SelectObject(Object obj)
+        {
+            Selection.objects = new Object[] { obj };
+        }
+        public static EditorWindow GetFocusedWindow(string window)
+        {
+            FocusOnWindow(window);
+            return EditorWindow.focusedWindow;
+        }
+        public static void FocusOnWindow(string window)
+        {
+            EditorApplication.ExecuteMenuItem("Window/General/" + window);
+        }
+        public static class Events
+        {
+            public static Event Rename = new Event() { keyCode = KeyCode.F2, type = EventType.KeyDown };
+        }
+        #endregion
     }
 }

@@ -3,26 +3,29 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(AudioFile))]
-public class AudioFileEditor : Editor
+namespace JSAM
 {
-    public override void OnInspectorGUI()
+    [CustomEditor(typeof(AudioFile))]
+    public class AudioFileEditor : Editor
     {
-        serializedObject.Update();
-
-        AudioFile myScript = (AudioFile)target;
-
-        EditorGUILayout.HelpBox("The name of this gameObject will be used to refer to audio in script", MessageType.None);
-
-        if (myScript.GetFile() == null)
+        public override void OnInspectorGUI()
         {
-            EditorGUILayout.HelpBox("Error! Add an audio file before running!", MessageType.Error);
-        }
-        if (myScript.name.Contains("NEW AUDIO FILE") || myScript.name.Equals("None") || myScript.name.Equals("GameObject"))
-        {
-            EditorGUILayout.HelpBox("Warning! Change the name of the gameObject to something different or things will break!", MessageType.Warning);
-        }
+            serializedObject.Update();
 
+            AudioFile myScript = (AudioFile)target;
+
+            EditorGUILayout.HelpBox("The name of this gameObject will be used to refer to audio in script", MessageType.None);
+
+            if (myScript.GetFile() == null)
+            {
+                EditorGUILayout.HelpBox("Error! Add an audio file before running!", MessageType.Error);
+            }
+            if (myScript.name.Contains("NEW AUDIO FILE") || myScript.name.Equals("None") || myScript.name.Equals("GameObject"))
+            {
+                EditorGUILayout.HelpBox("Warning! Change the name of the gameObject to something different or things will break!", MessageType.Warning);
+            }
+
+<<<<<<< HEAD
         EditorGUILayout.Space();
 
         EditorGUILayout.HelpBox("If true, the single AudioFile will be changed to a list of AudioFiles. AudioManager will choose a random AudioClip from this list when you playback this sound", MessageType.None);
@@ -41,16 +44,20 @@ public class AudioFileEditor : Editor
         }
 
         string[] excludedProperties = new string[2] { "m_Script", "files" };
+=======
+            string[] excludedProperties = new string[2] { "m_Script", "files" };
+>>>>>>> ffad8f2e20ce18cefdd768d3cad36e1923868b17
 
-        if (myScript.UsingLibrary()) // Swap file with files
-        {
-            excludedProperties[1] = "file";
+            if (myScript.UsingLibrary()) // Swap file with files
+            {
+                excludedProperties[1] = "file";
+            }
+
+            DrawPropertiesExcluding(serializedObject, excludedProperties);
+
+            EditorGUILayout.HelpBox("Use this option if you want to have this sound correspond to multiple different variant sounds", MessageType.None);
+
+            serializedObject.ApplyModifiedProperties();
         }
-
-        DrawPropertiesExcluding(serializedObject, excludedProperties);
-
-        EditorGUILayout.HelpBox("Use this option if you want to have this sound correspond to multiple different variant sounds", MessageType.None);
-
-        serializedObject.ApplyModifiedProperties();
     }
 }

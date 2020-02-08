@@ -100,7 +100,10 @@ namespace JSAM
         public void Stop()
         {
             AudioManager am = AudioManager.instance;
+<<<<<<< HEAD
 
+=======
+>>>>>>> ffad8f2e20ce18cefdd768d3cad36e1923868b17
             if (musicFile != null)
             {
                 am.StopMusic(musicFile);

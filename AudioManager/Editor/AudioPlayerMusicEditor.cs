@@ -6,20 +6,17 @@ using UnityEditor;
 namespace JSAM 
 {
     [CustomEditor(typeof(AudioPlayerMusic))]
+    [CanEditMultipleObjects]
     public class AudioPlayerMusicEditor : Editor
     {
-        AudioManager am;
-
         public override void OnInspectorGUI()
         {
-            if (am == null) am = AudioManager.instance;
-
             AudioPlayerMusic myScript = (AudioPlayerMusic)target;
 
             List<string> options = new List<string>();
 
             options.Add("None");
-            foreach (string s in am.GetMusicDictionary().Keys)
+            foreach (string s in AudioManager.instance.GetMusicDictionary().Keys)
             {
                 options.Add(s);
             }

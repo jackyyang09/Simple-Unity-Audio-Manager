@@ -20,7 +20,11 @@ public class AudioFile : MonoBehaviour
         return file;
     }
 
+<<<<<<< HEAD
     public List<AudioClip> GetFiles()
+=======
+    public AudioClip[] GetFiles()
+>>>>>>> ffad8f2e20ce18cefdd768d3cad36e1923868b17
     {
         return files;
     }
