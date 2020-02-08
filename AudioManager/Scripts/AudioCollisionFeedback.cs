@@ -18,6 +18,8 @@ namespace JSAM
 
         private void OnCollisionEnter(Collision collision)
         {
+            AudioManager am = AudioManager.instance;
+
             if (Contains(collidesWith, collision.gameObject.layer))
             {
                 if (soundFile != null)
@@ -33,6 +35,8 @@ namespace JSAM
 
         private void OnCollisionEnter2D(Collision2D collision)
         {
+            AudioManager am = AudioManager.instance;
+
             if (Contains(collidesWith, collision.gameObject.layer))
             {
                 if (soundFile != null)

@@ -23,6 +23,23 @@ public class AudioFileEditor : Editor
             EditorGUILayout.HelpBox("Warning! Change the name of the gameObject to something different or things will break!", MessageType.Warning);
         }
 
+        EditorGUILayout.Space();
+
+        EditorGUILayout.HelpBox("If true, the single AudioFile will be changed to a list of AudioFiles. AudioManager will choose a random AudioClip from this list when you playback this sound", MessageType.None);
+        bool oldValue = myScript.useLibrary;
+        bool newValue = EditorGUILayout.Toggle("Use Library", oldValue);
+        if (newValue != oldValue) // If you clicked the toggle
+        {
+            if (newValue)
+            {
+                if (myScript.files.Count == 0)
+                {
+                    myScript.files.Add(myScript.file);
+                }
+            }
+            myScript.useLibrary = newValue;
+        }
+
         string[] excludedProperties = new string[2] { "m_Script", "files" };
 
         if (myScript.UsingLibrary()) // Swap file with files

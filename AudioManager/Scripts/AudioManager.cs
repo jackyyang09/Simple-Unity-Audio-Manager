@@ -18,9 +18,15 @@ namespace JSAM
         Spam = 256
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public enum Pitch
     {
-        None,
+        /// <summary>
+        /// Test
+        /// </summary>
+        None, 
         VeryLow,
         Low,
         Medium,

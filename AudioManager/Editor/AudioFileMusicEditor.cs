@@ -163,9 +163,8 @@ public class AudioFileMusicEditor : Editor
                     EditorUtility.SetDirty(myScript);
                 }
             }
-
-            serializedObject.ApplyModifiedProperties();
         }
+        serializedObject.ApplyModifiedProperties();
     }
 
     public static string TimeToString(float time)
@@ -204,7 +203,6 @@ public class AudioFileMusicEditor : Editor
                         if (evt.mousePosition.y > progressRect.yMin && evt.mousePosition.y < progressRect.yMax)
                         {
                             mouseDragging = true;
-                            Debug.Log("AAAAAAAH");
                         }
                     }
                     if (!mouseDragging) break;

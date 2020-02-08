@@ -28,13 +28,6 @@ namespace JSAM
 
         protected Transform sTransform;
 
-        protected AudioManager am;
-
-        private void OnEnable()
-        {
-            am = AudioManager.instance;
-        }
-
         // Start is called before the first frame update
         protected virtual void Start()
         {

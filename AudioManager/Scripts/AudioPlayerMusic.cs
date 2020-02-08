@@ -48,13 +48,9 @@ namespace JSAM
         [SerializeField]
         AudioClip musicFile;
 
-        AudioManager am;
-
         // Start is called before the first frame update
         void Start()
         {
-            am = AudioManager.instance;
-
             if (playOnStart)
             {
                 Play();
@@ -63,7 +59,7 @@ namespace JSAM
 
         public void Play()
         {
-            am = AudioManager.instance;
+            AudioManager am = AudioManager.instance;
 
             if (musicFile != null)
             {
@@ -103,6 +99,8 @@ namespace JSAM
 
         public void Stop()
         {
+            AudioManager am = AudioManager.instance;
+
             if (musicFile != null)
             {
                 am.StopMusic(musicFile);
@@ -118,7 +116,7 @@ namespace JSAM
         /// </summary>
         public void FadeIn(float time)
         {
-            am.FadeMusicIn(music, time);
+            AudioManager.instance.FadeMusicIn(music, time);
         }
 
         /// <summary>
@@ -127,7 +125,7 @@ namespace JSAM
         /// <param name="time"></param>
         public void FadeOut(float time)
         {
-            am.FadeMusicOut(time);
+            AudioManager.instance.FadeMusicOut(time);
         }
 
         private void OnEnable()
@@ -148,8 +146,6 @@ namespace JSAM
             {
                 yield return new WaitForEndOfFrame();
             }
-
-            am = AudioManager.instance;
 
             Play();
         }

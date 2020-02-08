@@ -47,6 +47,8 @@ namespace JSAM
         // Update is called once per frame
         void Update()
         {
+            AudioManager am = AudioManager.instance;
+
             switch (playSoundOn)
             {
                 case PlayCondition.ParticleEmitted:

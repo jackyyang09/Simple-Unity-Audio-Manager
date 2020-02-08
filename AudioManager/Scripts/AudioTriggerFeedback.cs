@@ -14,6 +14,8 @@ namespace JSAM
 
         private void OnTriggerEnter(Collider collision)
         {
+            AudioManager am = AudioManager.instance;
+
             if (soundFile != null)
             {
                 am.PlaySoundOnce(soundFile, transform, priority, pitchShift);
@@ -26,6 +28,8 @@ namespace JSAM
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
+            AudioManager am = AudioManager.instance;
+
             if (soundFile != null)
             {
                 am.PlaySoundOnce(soundFile, transform, priority, pitchShift);
