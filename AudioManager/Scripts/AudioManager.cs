@@ -1001,7 +1001,7 @@ namespace JSAM
     
             if (sounds[s].UsingLibrary())
             {
-                AudioClip[] library = sounds[s].GetFiles();
+                AudioClip[] library = sounds[s].GetFiles().ToArray();
                 a.clip = library[UnityEngine.Random.Range(0, library.Length)];
             }
             else
@@ -1086,7 +1086,7 @@ namespace JSAM
     
             if (sounds[s].UsingLibrary())
             {
-                AudioClip[] library = sounds[s].GetFiles();
+                AudioClip[] library = sounds[s].GetFiles().ToArray();
                 a.clip = library[UnityEngine.Random.Range(0, library.Length)];
             }
             else

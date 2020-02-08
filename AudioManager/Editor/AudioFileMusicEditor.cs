@@ -168,14 +168,8 @@ namespace JSAM
                     }
                 }
             }
-<<<<<<< HEAD
-        }
-        serializedObject.ApplyModifiedProperties();
-    }
-=======
             serializedObject.ApplyModifiedProperties();
         }
->>>>>>> ffad8f2e20ce18cefdd768d3cad36e1923868b17
 
         public static string TimeToString(float time)
         {
@@ -210,14 +204,10 @@ namespace JSAM
                     case EventType.MouseDrag:
                         if (evt.type == EventType.MouseDown && !mouseDragging)
                         {
-<<<<<<< HEAD
-                            mouseDragging = true;
-=======
                             if (evt.mousePosition.y > progressRect.yMin && evt.mousePosition.y < progressRect.yMax)
                             {
                                 mouseDragging = true;
                             }
->>>>>>> ffad8f2e20ce18cefdd768d3cad36e1923868b17
                         }
                         if (!mouseDragging) break;
                         float newProgress = Mathf.InverseLerp(progressRect.xMin, progressRect.xMax, evt.mousePosition.x);

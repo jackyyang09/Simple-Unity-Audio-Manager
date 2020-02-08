@@ -25,7 +25,6 @@ namespace JSAM
                 EditorGUILayout.HelpBox("Warning! Change the name of the gameObject to something different or things will break!", MessageType.Warning);
             }
 
-<<<<<<< HEAD
         EditorGUILayout.Space();
 
         EditorGUILayout.HelpBox("If true, the single AudioFile will be changed to a list of AudioFiles. AudioManager will choose a random AudioClip from this list when you playback this sound", MessageType.None);
@@ -44,9 +43,6 @@ namespace JSAM
         }
 
         string[] excludedProperties = new string[2] { "m_Script", "files" };
-=======
-            string[] excludedProperties = new string[2] { "m_Script", "files" };
->>>>>>> ffad8f2e20ce18cefdd768d3cad36e1923868b17
 
             if (myScript.UsingLibrary()) // Swap file with files
             {
