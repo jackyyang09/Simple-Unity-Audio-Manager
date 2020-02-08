@@ -33,11 +33,11 @@ namespace JSAM
                 EditorGUILayout.HelpBox("Warning! Change the name of the gameObject to something different or things will break!", MessageType.Warning);
             }
 
-            DrawPropertiesExcluding(serializedObject, "m_Script");
+            DrawPropertiesExcluding(serializedObject, new string[] { "m_Script", "useLibrary"});
 
+            showLoopPointTool = EditorGUILayout.Foldout(showLoopPointTool, "Loop Point Tools");
             if (myScript.useLoopPoints)
             {
-                showLoopPointTool = EditorGUILayout.Foldout(showLoopPointTool, "Loop Point Tools");
                 if (showLoopPointTool)
                 {
                     EditorGUILayout.Space();
@@ -82,10 +82,11 @@ namespace JSAM
                             GUILayout.Label("Loop Point Start:");
                             int minutes = EditorGUILayout.IntField((int)(theTime / 60000f));
                             GUILayout.Label(":");
-                            int seconds = EditorGUILayout.IntField((int)(theTime % 60000) / 1000);
+                            int seconds = Mathf.Clamp(EditorGUILayout.IntField((int)(theTime % 60000) / 1000), 0, 59);
                             GUILayout.Label(":");
-                            int milliseconds = EditorGUILayout.IntField((int)(theTime % 60000) % 1000);
-                            loopStart = (float)minutes * 60f + (float)seconds + (float)milliseconds / 1000f;
+                            float milliseconds = EditorGUILayout.IntField((int)(theTime % 60000) % 1000);
+                            milliseconds = float.Parse("0." + milliseconds.ToString("0.####")); // Ensures that our milliseconds never leave their decimal place
+                            loopStart = (float)minutes * 60f + (float)seconds + milliseconds;
                             GUILayout.EndHorizontal();
 
                             GUILayout.BeginHorizontal();
@@ -93,10 +94,11 @@ namespace JSAM
                             GUILayout.Label("Loop Point End:  ");
                             minutes = EditorGUILayout.IntField((int)theTime / 60000);
                             GUILayout.Label(":");
-                            seconds = EditorGUILayout.IntField((int)(theTime % 60000) / 1000);
+                            seconds = Mathf.Clamp(EditorGUILayout.IntField((int)(theTime % 60000) / 1000), 0, 59);
                             GUILayout.Label(":");
                             milliseconds = EditorGUILayout.IntField((int)(theTime % 60000) % 1000);
-                            loopEnd = (float)minutes * 60f + (float)seconds + (float)milliseconds / 1000f;
+                            milliseconds = float.Parse("0." + milliseconds.ToString("0.####")); // Ensures that our milliseconds never leave their decimal place
+                            loopEnd = (float)minutes * 60f + (float)seconds + milliseconds;
                             GUILayout.EndHorizontal();
                             break;
                         case AudioFileMusic.LoopPointTool.TimeSamplesInput:
@@ -165,9 +167,8 @@ namespace JSAM
                         EditorUtility.SetDirty(myScript);
                     }
                 }
-
-                serializedObject.ApplyModifiedProperties();
             }
+            serializedObject.ApplyModifiedProperties();
         }
 
         public static string TimeToString(float time)

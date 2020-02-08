@@ -34,12 +34,11 @@ namespace JSAM
             {
                 Play();
             }
-
-            if (am == null) am = AudioManager.instance;
         }
 
         public void Play()
         {
+            AudioManager am = AudioManager.instance;
             Transform t = (spatialSound) ? transform : null;
             if (soundFile != null)
             {
@@ -64,6 +63,7 @@ namespace JSAM
         /// </summary>
         public void Stop()
         {
+            AudioManager am = AudioManager.instance;
             Transform t = (spatialSound) ? transform : null;
             if (soundFile != null)
             {
@@ -107,8 +107,6 @@ namespace JSAM
             {
                 StartCoroutine(PlayOnEnable());
             }
-
-            am = AudioManager.instance;
         }
 
         IEnumerator PlayOnEnable()
@@ -121,8 +119,6 @@ namespace JSAM
             {
                 yield return new WaitForEndOfFrame();
             }
-
-            am = AudioManager.instance;
 
             Play();
         }

@@ -113,7 +113,6 @@ namespace JSAM
         /// <summary>
         /// Only used if you have super special music with a custom looping portion that can be enabled/disabled on the fly
         /// </summary>
-        [SerializeField]
         bool enableLoopPoints;
         /// <summary>
         /// Loop time stored using samples
@@ -146,6 +145,13 @@ namespace JSAM
         [Tooltip("If true, adds more Audio Sources automatically if you exceed the starting count, you are recommended to keep this disabled")]
         [SerializeField]
         bool dynamicSourceAllocation;
+
+        /// <summary>
+        /// If true, AudioManager no longer prints info to the console. Does not affect AudioManager errors/warnings
+        /// </summary>
+        [Tooltip("If true, AudioManager no longer prints info to the console. Does not affect AudioManager errors/warnings")]
+        [SerializeField]
+        bool disableConsoleLogs;
 
         /// <summary>
         /// Current music that's playing
@@ -276,7 +282,7 @@ namespace JSAM
                 if (listener == null) // In the case that there still isn't an AudioListener
                 {
                     editorMessage = "AudioManager Warning: Scene is missing an AudioListener! Mark the listener with the \"Main Camera\" tag or set it manually!";
-                    print(editorMessage);
+                    Debug.LogWarning(editorMessage);
                 }
             }
         }
@@ -1311,6 +1317,7 @@ namespace JSAM
         /// </summary>
         private void OnValidate()
         {
+            EstablishSingletonDominance();
             GenerateAudioDictionarys();
             if (!doneLoading) return;
             //Updates volume
@@ -1337,7 +1344,7 @@ namespace JSAM
                 }
                 else
                 {
-                    Destroy(this);
+                    DestroyImmediate(this, false);
                 }
             }
         }
@@ -1649,7 +1656,7 @@ namespace JSAM
                 }
             }
     
-            print("AudioManager: Audio Library Generated!");
+            DebugLog("AudioManager: Audio Library Generated!");
         }
     
         /// <summary>
@@ -1679,6 +1686,16 @@ namespace JSAM
             return editorMessage;
         }
     
+        /// <summary>
+        /// Called internally by AudioManager to output non-error console messages
+        /// </summary>
+        /// <param name="consoleOutput"></param>
+        void DebugLog(string consoleOutput)
+        {
+            if (disableConsoleLogs) return;
+            Debug.Log(consoleOutput);
+        }
+
         public Dictionary<string, AudioClip> GetMusicDictionary()
         {
             return music;

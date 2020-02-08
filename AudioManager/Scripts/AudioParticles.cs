@@ -52,13 +52,13 @@ namespace JSAM
                 case PlayCondition.ParticleEmitted:
                     if (particles.particleCount > prevParticleCount)
                     {
-                        am.PlaySoundOnce(sound, sTransform, priority, pitchShift);
+                        AudioManager.instance.PlaySoundOnce(sound, sTransform, priority, pitchShift);
                     }
                     break;
                 case PlayCondition.ParticleDeath:
                     if (particles.particleCount < prevParticleCount)
                     {
-                        am.PlaySoundOnce(sound, sTransform, priority, pitchShift);
+                        AudioManager.instance.PlaySoundOnce(sound, sTransform, priority, pitchShift);
                     }
                     break;
             }

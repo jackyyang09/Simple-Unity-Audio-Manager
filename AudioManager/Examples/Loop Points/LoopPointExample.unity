@@ -96,6 +96,7 @@ LightmapSettings:
     m_PVRFilteringAtrousPositionSigmaAO: 1
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
+    m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
   m_UseShadowmask: 1
 --- !u!196 &4
@@ -529,9 +530,11 @@ MonoBehaviour:
 
 
 
-    Modify loop points by checking out the Music File!
+    Modify
+    loop points by checking out the Music File!
 
-    Expand AudioManager -> Music Library -> Intro+Loop'
+    Expand AudioManager -> Music
+    Library -> Intro+Loop'
 --- !u!222 &1892494263
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -810,15 +813,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7241a3e106230140bd9d59ff2d17ccd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioSources: 32
-  dynamicSourceAllocation: 0
   masterVolume: 1
   soundVolume: 1
   musicVolume: 0.138
+  audioSources: 32
   spatialSound: 1
   spatializeLateUpdate: 0
   timeScaledSounds: 1
-  enableLoopPoints: 0
+  stopSoundsOnSceneLoad: 0
+  dontDestroyOnLoad: 0
+  dynamicSourceAllocation: 0
+  disableConsoleLogs: 1
   currentTrack: None
   listener: {fileID: 0}
   sourcePrefab: {fileID: 3048837711066349602, guid: cf11aed7e0e56ae45afe7eaebe30a616,
@@ -883,10 +888,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   file: {fileID: 8300000, guid: 4cd473ea326bb224499d94db7251c75c, type: 3}
+  files: []
+  useLibrary: 0
   useLoopPoints: 1
-  loopStart: 48
-  loopEnd: 95.9913
-  loopPointInputMode: 3
+  loopStart: 47.999985
+  loopEnd: 95.991295
+  loopPointInputMode: 0
   bpm: 160
 --- !u!4 &4378017389769321501
 Transform:
