@@ -25,6 +25,11 @@ public class AudioFile : MonoBehaviour
         return files;
     }
 
+    public bool HasAudioClip(AudioClip a)
+    {
+        return file == a || files.Contains(a);
+    }
+
     public bool UsingLibrary()
     {
         return useLibrary;

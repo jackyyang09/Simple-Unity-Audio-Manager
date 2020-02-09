@@ -26,7 +26,7 @@ namespace JSAM
         /// <summary>
         /// Test
         /// </summary>
-        None, 
+        None,
         VeryLow,
         Low,
         Medium,
@@ -53,48 +53,48 @@ namespace JSAM
         Dictionary<string, AudioFile> sounds = new Dictionary<string, AudioFile>();
         Dictionary<string, AudioClip> music = new Dictionary<string, AudioClip>();
         Dictionary<string, AudioFileMusic> musicFiles = new Dictionary<string, AudioFileMusic>();
-    
+
         /// <summary>
         /// List of sources allocated to play looping sounds
         /// </summary>
         //[SerializeField]
         [Tooltip("List of sources allocated to play looping sounds")]
         List<AudioSource> loopingSources;
-    
+
         //[SerializeField]
         [Tooltip("[DON'T TOUCH THIS], looping sound positions")]
         Dictionary<AudioSource, Transform> sourcePositions = new Dictionary<AudioSource, Transform>();
-    
+
         /// <summary>
         /// Limits the number of each sounds being played. If at 0 or no value, assume infinite
         /// </summary>
         //[SerializeField]
         [Tooltip("Limits the number of each sounds being played. If at 0 or no value, assume infinite")]
         int[] exclusiveList;
-    
+
         List<AudioSource> sources;
-    
+
         /// <summary>
         /// Sources dedicated to playing music
         /// </summary>
         //[SerializeField]
         AudioSource[] musicSources;
-    
+
         [Header("Volume Controls")]
 
         [Tooltip("All volume is set relative to the Master Volume")]
         [SerializeField]
         [Range(0, 1)]
         float masterVolume = 1;
-    
+
         [SerializeField]
         [Range(0, 1)]
         float soundVolume = 1;
-    
+
         [SerializeField]
         [Range(0, 1)]
         float musicVolume = 1;
-    
+
         [Header("General Settings")]
 
         /// <summary>
@@ -109,13 +109,13 @@ namespace JSAM
         [SerializeField]
         [Tooltip("Use if spatialized sounds act wonky in-editor")]
         bool spatializeLateUpdate = false;
-    
+
         [SerializeField]
         [Tooltip("When Time.timeScale is set to 0, pause all sounds")]
         bool timeScaledSounds = true;
-    
+
         public static AudioManager instance;
-    
+
         /// <summary>
         /// Only used if you have super special music with a custom looping portion that can be enabled/disabled on the fly
         /// </summary>
@@ -128,7 +128,7 @@ namespace JSAM
         /// Used in the case that a track has a loop end point placed at the end of the track
         /// </summary>
         bool loopTrackAfterStopping = false;
-    
+
         [Header("System Settings")]
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace JSAM
         [Tooltip("If true, stops all sounds when you load a scene")]
         [SerializeField]
         bool stopSoundsOnSceneLoad;
-    
+
         /// <summary>
         /// If true, keeps AudioManager alive through scene loads
         /// </summary>
@@ -174,59 +174,59 @@ namespace JSAM
         [Tooltip("The Audio Listener in your scene, will try to automatically set itself on Start by looking in the object tagged as \"Main Camera\"")]
         [SerializeField]
         AudioListener listener;
-    
+
         [Header("AudioSource Reference Prefab (MANDATORY)")]
 
         [SerializeField]
         GameObject sourcePrefab;
-    
+
         /// <summary>
         /// This object holds all AudioChannels
         /// </summary>
         GameObject sourceHolder;
-    
+
         bool doneLoading;
-    
+
         string editorMessage = "";
-    
+
         bool gamePaused = false;
-    
+
         bool initialized = false;
-    
+
         Coroutine fadeInRoutine;
-    
+
         Coroutine fadeOutRoutine;
-    
+
         // Use this for initialization
         void Awake()
         {
             EstablishSingletonDominance();
-    
+
             // AudioManager is important, keep it between scenes
             if (dontDestroyOnLoad)
             {
                 DontDestroyOnLoad(gameObject);
             }
-    
+
             // Initialize helper arrays
             sources = new List<AudioSource>();
             loopingSources = new List<AudioSource>();
-    
+
             sourceHolder = new GameObject("Sources");
             sourceHolder.transform.SetParent(transform);
-    
+
             for (int i = 0; i < audioSources; i++)
             {
                 sources.Add(Instantiate(sourcePrefab, sourceHolder.transform).GetComponent<AudioSource>());
                 sources[i].name = "AudioSource " + i;
             }
-    
+
             // Subscribes itself to the sceneLoaded notifier
             SceneManager.sceneLoaded += OnSceneLoaded;
-    
+
             // Get a reference to all our audiosources on startup
             sources = new List<AudioSource>(sourceHolder.GetComponentsInChildren<AudioSource>());
-    
+
             // Create music sources
             musicSources = new AudioSource[3];
             GameObject m = new GameObject("MusicSource");
@@ -235,51 +235,52 @@ namespace JSAM
             musicSources[0] = m.GetComponent<AudioSource>();
             musicSources[0].priority = (int)Priority.Music;
             musicSources[0].playOnAwake = false;
-    
+
             m = new GameObject("SecondaryMusicSource");
             m.transform.parent = transform;
             m.AddComponent<AudioSource>();
             musicSources[1] = m.GetComponent<AudioSource>();
             musicSources[1].priority = (int)Priority.Music;
             musicSources[1].playOnAwake = false;
-    
+
             musicSources[2] = Instantiate(sourcePrefab, transform).GetComponent<AudioSource>();
             musicSources[2].gameObject.name = "SpatialMusicSource";
             musicSources[2].priority = (int)Priority.Music;
             musicSources[2].playOnAwake = false;
-    
+
             //Set sources properties based on current settings
             SetSoundVolume(soundVolume);
             SetMusicVolume(musicVolume);
             SetSpatialSound(spatialSound);
-    
+
             // Find the listener if not manually set
             FindNewListener();
-    
+
             //AddOffsetToArrays();
-    
+
             if (!Application.isEditor)
             {
                 GenerateAudioDictionarys();
             }
-    
+
             doneLoading = true;
         }
-    
+
         void Start()
         {
             if (!Application.isEditor)
             {
                 GenerateAudioDictionarys();
             }
-    
+
             initialized = true;
         }
-    
-        public bool Initialized(){
+
+        public bool Initialized()
+        {
             return initialized;
         }
-    
+
         void FindNewListener()
         {
             if (listener == null)
@@ -292,12 +293,12 @@ namespace JSAM
                 }
             }
         }
-    
+
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             // Revert music source volume
             ApplyMusicVolume();
-    
+
             FindNewListener();
             if (stopSoundsOnSceneLoad)
             {
@@ -308,8 +309,8 @@ namespace JSAM
                 StopSoundLoopAll(true);
             }
         }
-    
-    
+
+
         private void Update()
         {
             if (enableLoopPoints)
@@ -327,12 +328,12 @@ namespace JSAM
                     musicSources[0].Play();
                 }
             }
-    
+
             if (spatialSound)
             {
                 TrackSounds();
             }
-    
+
             if (timeScaledSounds)
             {
                 if (Time.timeScale == 0 && !gamePaused)
@@ -356,17 +357,17 @@ namespace JSAM
                 }
             }
         }
-    
+
         private void LateUpdate()
         {
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
             if (spatialSound && spatializeLateUpdate)
             {
                 TrackSounds();
             }
-    #endif
+#endif
         }
-    
+
         /// <summary>
         /// Set whether or not sounds are 2D or 3D (spatial)
         /// </summary>
@@ -380,7 +381,7 @@ namespace JSAM
                 s.spatialBlend = val;
             }
         }
-    
+
         /// <summary>
         /// Enables/Disables loop points in track currently being played,
         /// does not affect whether or not the track will loop after finishing
@@ -390,7 +391,7 @@ namespace JSAM
         {
             enableLoopPoints = b;
         }
-    
+
         /// <summary>
         /// Swaps the current music track with the new music track,
         /// music is played globally and does not change volume
@@ -402,16 +403,16 @@ namespace JSAM
         {
             if (track.Equals("None")) return null;
             currentTrack = track;
-    
+
             musicSources[0].clip = music[track];
-    
+
             enableLoopPoints = useLoopPoints;
             if (enableLoopPoints && musicFiles[track].useLoopPoints)
             {
                 loopStartTime = musicFiles[track].loopStart * music[track].frequency;
                 loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
             }
-    
+
             if (enableLoopPoints && loopTrack && musicFiles[track].useLoopPoints)
             {
                 if (musicFiles[track].loopEnd == music[track].length) loopTrack = false;
@@ -422,15 +423,15 @@ namespace JSAM
                 musicSources[0].loop = loopTrack;
                 loopTrackAfterStopping = false;
             }
-    
+
             musicSources[0].spatialBlend = 0;
-    
+
             musicSources[0].Stop();
             musicSources[0].Play();
-    
+
             return musicSources[0];
         }
-    
+
         /// <summary>
         /// Swaps the current music track with the new music track,
         /// music is played globally and does not change volume
@@ -441,21 +442,21 @@ namespace JSAM
         {
             if (track.Equals("None")) return null;
             currentTrack = "Custom Audio File";
-    
+
             musicSources[0].clip = track;
             musicSources[0].loop = loopTrack;
             musicSources[0].spatialBlend = 0;
-    
+
             musicSources[0].Play();
-    
+
             return musicSources[0];
         }
-    
+
         public void PlayMusicFromStartPoint()
         {
-    
+
         }
-    
+
         /// <summary>
         /// Music is played in the scene and becomes quieter as you move away from the source.
         /// 3D music source is independent from the main music source, they can overlap if you let them
@@ -469,19 +470,19 @@ namespace JSAM
         {
             if (track.Equals("None")) return null;
             currentTrack = track;
-    
+
             sourcePositions[musicSources[2]] = trans;
-    
+
             musicSources[2].clip = music[track];
             musicSources[2].loop = loopTrack;
-    
+
             enableLoopPoints = useLoopPoints;
             if (enableLoopPoints)
             {
                 loopStartTime = musicFiles[track].loopStart * music[track].frequency;
                 loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
             }
-    
+
             if (enableLoopPoints && loopTrack)
             {
                 if (musicFiles[track].loopEnd == music[track].length) loopTrack = false;
@@ -492,12 +493,12 @@ namespace JSAM
                 musicSources[2].loop = loopTrack;
                 loopTrackAfterStopping = false;
             }
-    
+
             musicSources[2].Play();
-    
+
             return musicSources[2];
         }
-    
+
         /// <summary>
         /// Music is played in the scene and becomes quieter as you move away from the source
         /// 3D music source is independent from the main music source, they can overlap if you let them
@@ -509,17 +510,17 @@ namespace JSAM
         {
             if (track.Equals("None")) return null;
             currentTrack = "Custom Audio File";
-    
+
             sourcePositions[musicSources[2]] = trans;
-    
+
             musicSources[2].clip = track;
             musicSources[2].loop = loopTrack;
-    
+
             musicSources[2].Play();
-    
+
             return musicSources[2];
         }
-    
+
         /// <summary>
         /// Pause all music sources
         /// </summary>
@@ -532,7 +533,7 @@ namespace JSAM
                     musicSources[0].Pause();
                 }
             }
-    
+
             if (musicSources[1].clip != null)
             {
                 if (musicSources[1].isPlaying)
@@ -541,7 +542,7 @@ namespace JSAM
                 }
             }
         }
-    
+
         /// <summary>
         /// If music is currently paused, resume music
         /// </summary>
@@ -560,7 +561,7 @@ namespace JSAM
                 }
             }
         }
-    
+
         /// <summary>
         /// Move the current music's playing position to the specified time
         /// </summary>
@@ -578,7 +579,7 @@ namespace JSAM
                 musicSources[1].time = Mathf.Clamp(time, 0, musicSources[1].clip.length);
             }
         }
-    
+
         /// <summary>
         /// Move the current music's playing position to the specified time
         /// </summary>
@@ -596,7 +597,7 @@ namespace JSAM
                 musicSources[1].timeSamples = Mathf.Clamp(samples, 0, musicSources[1].clip.samples);
             }
         }
-    
+
         /// <summary>
         /// Fade out the current track and fade in a new track
         /// </summary>
@@ -606,39 +607,39 @@ namespace JSAM
         public void FadeMusic(string track, float time, bool useLoopPoints = false)
         {
             if (track.Equals("None")) return;
-    
+
             currentTrack = track;
-    
+
             musicSources[1].clip = music[track];
             musicSources[1].loop = true;
-    
+
             AudioSource temp = musicSources[0];
             musicSources[0] = musicSources[1];
             musicSources[1] = temp;
-    
+
             musicSources[0].clip = music[track];
             musicSources[0].loop = true;
-    
+
             enableLoopPoints = useLoopPoints;
-    
+
             if (enableLoopPoints)
             {
                 loopStartTime = musicFiles[track].loopStart * music[track].frequency;
                 loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
             }
-    
+
             if (time > 0)
             {
                 float stepTime = time / 2;
-    
+
                 if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
                 fadeOutRoutine = StartCoroutine(FadeOutMusic(stepTime));
-    
+
                 if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
                 fadeInRoutine = StartCoroutine(FadeInMusicRoutine(stepTime));
             }
         }
-    
+
         /// <summary>
         /// Fade out the current track and fade in a new track
         /// </summary>
@@ -647,28 +648,28 @@ namespace JSAM
         public void FadeMusic(AudioClip track, float time)
         {
             if (track.Equals("None")) return;
-    
+
             currentTrack = track.name;
-    
+
             musicSources[1].clip = track;
             musicSources[1].loop = true;
-    
+
             AudioSource temp = musicSources[0];
             musicSources[0] = musicSources[1];
             musicSources[1] = temp;
-    
+
             if (time > 0)
             {
                 float stepTime = time / 2;
-    
+
                 if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
                 fadeOutRoutine = StartCoroutine(FadeOutMusic(stepTime));
-    
+
                 if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
                 fadeInRoutine = StartCoroutine(FadeInMusicRoutine(stepTime));
             }
         }
-    
+
         /// <summary>
         /// Fade in a new track
         /// </summary>
@@ -679,19 +680,19 @@ namespace JSAM
         public AudioSource FadeMusicIn(string track, float time, bool useLoopPoints = false, bool playFromStartPoint = false)
         {
             if (track.Equals("None")) return null;
-    
+
             currentTrack = track;
-    
+
             musicSources[1].clip = music[track];
             musicSources[1].loop = true;
-    
+
             AudioSource temp = musicSources[0];
             musicSources[0] = musicSources[1];
             musicSources[1] = temp;
-    
+
             musicSources[0].clip = music[track];
             musicSources[0].loop = true;
-    
+
             enableLoopPoints = useLoopPoints;
             if (enableLoopPoints)
             {
@@ -702,16 +703,16 @@ namespace JSAM
                     musicSources[0].timeSamples = (int)loopStartTime;
                 }
             }
-    
+
             if (time > 0)
             {
                 if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
                 fadeInRoutine = StartCoroutine(FadeInMusicRoutine(time));
             }
-    
+
             return musicSources[0];
         }
-    
+
         /// <summary>
         /// Fade in a new track
         /// </summary>
@@ -720,23 +721,23 @@ namespace JSAM
         public void FadeMusicIn(AudioClip track, float time)
         {
             if (track.Equals("None")) return;
-    
+
             currentTrack = track.ToString();
-    
+
             musicSources[1].clip = track;
             musicSources[1].loop = true;
-    
+
             AudioSource temp = musicSources[0];
             musicSources[0] = musicSources[1];
             musicSources[1] = temp;
-    
+
             if (time > 0)
             {
                 if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
                 fadeInRoutine = StartCoroutine(FadeInMusicRoutine(time));
             }
         }
-    
+
         /// <summary>
         /// Fade out the current track to silence
         /// </summary>
@@ -744,31 +745,31 @@ namespace JSAM
         public void FadeMusicOut(float time)
         {
             currentTrack = "None";
-    
+
             musicSources[1].clip = null;
             musicSources[1].loop = false;
-    
+
             AudioSource temp = musicSources[0];
             musicSources[0] = musicSources[1];
             musicSources[1] = temp;
-    
+
             if (time > 0)
             {
                 if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
                 fadeOutRoutine = StartCoroutine(FadeOutMusic(time));
             }
         }
-    
+
         IEnumerator FadeInMusicRoutine(float stepTime)
         {
             musicSources[0].volume = 0;
-    
+
             //Wait for previous song to fade out
             yield return new WaitForSecondsRealtime(stepTime);
             fadeInRoutine = StartCoroutine(FadeInMusic(stepTime));
             musicSources[0].Play();
         }
-    
+
         /// <summary>
         /// Crossfade music from the previous track to the new track specified
         /// </summary>
@@ -780,43 +781,43 @@ namespace JSAM
         {
             if (track.Equals("None")) return;
             currentTrack = track;
-    
+
             musicSources[1].clip = music[track];
             musicSources[1].loop = true;
-    
+
             AudioSource temp = musicSources[0];
             musicSources[0] = musicSources[1];
             musicSources[1] = temp;
-    
+
             musicSources[0].clip = music[track];
             musicSources[0].loop = true;
-    
+
             enableLoopPoints = useLoopPoints;
             if (enableLoopPoints)
             {
                 loopStartTime = musicFiles[track].loopStart * music[track].frequency;
                 loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
             }
-    
+
             musicSources[0].volume = 0;
-    
+
             musicSources[0].Play();
-    
+
             if (time > 0)
             {
                 if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
                 fadeInRoutine = StartCoroutine(FadeInMusic(time));
-    
+
                 if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
                 fadeOutRoutine = StartCoroutine(FadeOutMusic(time));
             }
-    
+
             if (keepMusicTime)
             {
                 SetMusicPlaybackPosition(musicSources[1].timeSamples);
             }
         }
-    
+
         /// <summary>
         /// Crossfade music from the previous track to the new track specified
         /// </summary>
@@ -827,35 +828,35 @@ namespace JSAM
         {
             if (track.Equals(null)) return;
             currentTrack = "Custom";
-    
+
             musicSources[1].clip = track;
             musicSources[1].loop = true;
-    
+
             AudioSource temp = musicSources[0];
             musicSources[0] = musicSources[1];
             musicSources[1] = temp;
-    
+
             musicSources[0].clip = track;
             musicSources[0].loop = true;
             musicSources[0].volume = 0;
-    
+
             musicSources[0].Play();
-    
+
             if (time > 0)
             {
                 if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
                 fadeInRoutine = StartCoroutine(FadeInMusic(time));
-    
+
                 if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
                 fadeOutRoutine = StartCoroutine(FadeOutMusic(time));
             }
-    
+
             if (keepMusicTime)
             {
                 SetMusicPlaybackPosition(musicSources[1].timeSamples);
             }
         }
-    
+
         private IEnumerator FadeInMusic(float time = 0)
         {
             float timer = 0;
@@ -867,10 +868,10 @@ namespace JSAM
                 yield return null;
             }
             musicSources[0].volume = musicVolume;
-    
+
             fadeInRoutine = null;
         }
-    
+
         private IEnumerator FadeOutMusic(float time = 0)
         {
             float timer = 0;
@@ -882,10 +883,10 @@ namespace JSAM
                 yield return null;
             }
             musicSources[1].volume = 0;
-    
+
             fadeOutRoutine = null;
         }
-    
+
         /// <summary>
         /// Stop whatever is playing in musicSource
         /// </summary>
@@ -894,7 +895,7 @@ namespace JSAM
             musicSources[0].Stop();
             currentTrack = "None";
         }
-    
+
         /// <summary>
         /// Stops the specified track
         /// </summary>
@@ -902,7 +903,7 @@ namespace JSAM
         public void StopMusic(string m)
         {
             if (!music.ContainsKey(m)) return;
-            foreach(AudioSource a in musicSources)
+            foreach (AudioSource a in musicSources)
             {
                 if (a == null) continue; // Sometimes AudioPlayerMusic calls StopMusic on scene stop
                 if (a.clip == music[m])
@@ -912,7 +913,7 @@ namespace JSAM
             }
             currentTrack = "None";
         }
-    
+
         /// <summary>
         /// Stops the specified track
         /// </summary>
@@ -928,7 +929,7 @@ namespace JSAM
                 }
             }
         }
-    
+
         void TrackSounds()
         {
             if (spatialSound) // Only do this part if we have 3D sound enabled
@@ -956,7 +957,7 @@ namespace JSAM
                 }
             }
         }
-    
+
         /// <summary>
         /// Equivalent of PlayOneShot
         /// </summary>
@@ -969,7 +970,7 @@ namespace JSAM
         public AudioSource PlaySoundOnce(string s, Transform trans = null, Priority p = Priority.Default, Pitch pitchShift = Pitch.None, float delay = 0)
         {
             AudioSource a = GetAvailableSource();
-    
+
             if (trans != null)
             {
                 sourcePositions[a] = trans;
@@ -986,9 +987,9 @@ namespace JSAM
                     a.spatialBlend = 0;
                 }
             }
-    
+
             float pitch = UsePitch(pitchShift);
-    
+
             //This is the base unchanged pitch
             if (pitch > Pitches.None)
             {
@@ -998,7 +999,7 @@ namespace JSAM
             {
                 a.pitch = 1;
             }
-    
+
             if (sounds[s].UsingLibrary())
             {
                 AudioClip[] library = sounds[s].GetFiles().ToArray();
@@ -1011,10 +1012,10 @@ namespace JSAM
             a.priority = (int)p;
             a.loop = false;
             a.PlayDelayed(delay);
-    
+
             return a;
         }
-    
+
         /// <summary>
         /// Equivalent of PlayOneShot
         /// </summary>
@@ -1026,7 +1027,7 @@ namespace JSAM
         public AudioSource PlaySoundOnce(AudioClip s, Transform trans = null, Priority p = Priority.Default, Pitch pitchShift = Pitch.None, float delay = 0)
         {
             AudioSource a = GetAvailableSource();
-    
+
             if (trans != null)
             {
                 sourcePositions[a] = trans;
@@ -1043,9 +1044,9 @@ namespace JSAM
                     a.spatialBlend = 0;
                 }
             }
-    
+
             float pitch = UsePitch(pitchShift);
-    
+
             //This is the base unchanged pitch
             if (pitch > Pitches.None)
             {
@@ -1055,15 +1056,15 @@ namespace JSAM
             {
                 a.pitch = 1;
             }
-    
+
             a.clip = s;
             a.priority = (int)p;
             a.loop = false;
             a.PlayDelayed(delay);
-    
+
             return a;
         }
-    
+
         /// <summary>
         /// Play a sound and loop it forever
         /// </summary>
@@ -1083,7 +1084,7 @@ namespace JSAM
             {
                 sourcePositions[a] = null;
             }
-    
+
             if (sounds[s].UsingLibrary())
             {
                 AudioClip[] library = sounds[s].GetFiles().ToArray();
@@ -1102,10 +1103,10 @@ namespace JSAM
                 a.PlayDelayed(delay);
             }
             else a.Play();
-    
+
             return a;
         }
-    
+
         /// <summary>
         /// Play a sound and loop it forever
         /// </summary>
@@ -1125,7 +1126,7 @@ namespace JSAM
             {
                 sourcePositions[a] = null;
             }
-    
+
             a.spatialBlend = spatialSound ? 1 : 0;
             a.clip = s;
             a.priority = (int)p;
@@ -1136,10 +1137,10 @@ namespace JSAM
                 a.PlayDelayed(delay);
             }
             else a.Play();
-    
+
             return a;
         }
-    
+
         /// <summary>
         /// Stops all playing sounds maintained by AudioManager
         /// </summary>
@@ -1153,7 +1154,7 @@ namespace JSAM
                 }
             }
         }
-    
+
         /// <summary>
         /// Stops any sound playing through PlaySoundOnce() immediately 
         /// </summary>
@@ -1175,7 +1176,7 @@ namespace JSAM
                 }
             }
         }
-    
+
         /// <summary>
         /// Stops any sound playing through PlaySoundOnce() immediately 
         /// </summary>
@@ -1196,7 +1197,7 @@ namespace JSAM
                 }
             }
         }
-    
+
         /// <summary>
         /// Stops a looping sound
         /// </summary>
@@ -1208,7 +1209,7 @@ namespace JSAM
             for (int i = 0; i < loopingSources.Count; i++)
             {
                 if (loopingSources[i] == null) continue;
-                if (loopingSources[i].clip == sounds[s])
+                if (sounds[s].HasAudioClip(loopingSources[i].clip))
                 {
                     for (int j = 0; j < sources.Count; j++)
                     { // Thanks Connor Smiley 
@@ -1227,7 +1228,7 @@ namespace JSAM
             }
             //Debug.LogError("AudioManager Error: Did not find specified loop to stop!");
         }
-    
+
         /// <summary>
         /// Stops a looping sound
         /// </summary>
@@ -1257,7 +1258,7 @@ namespace JSAM
             }
             //Debug.LogError("AudioManager Error: Did not find specified loop to stop!");
         }
-    
+
         /// <summary>
         /// Stops all looping sounds
         /// </summary>
@@ -1277,7 +1278,7 @@ namespace JSAM
                 }
             }
         }
-    
+
         /// <summary>
         /// Sets the volume of sounds and applies changes instantly across all sources
         /// </summary>
@@ -1287,7 +1288,7 @@ namespace JSAM
             soundVolume = v;
             ApplySoundVolume();
         }
-    
+
         /// <summary>
         /// Sets the volume of the music and applies changes instantly across all music sources
         /// </summary>
@@ -1301,7 +1302,7 @@ namespace JSAM
             }
             ApplyMusicVolume();
         }
-    
+
         void ApplySoundVolume()
         {
             foreach (AudioSource s in sources)
@@ -1309,7 +1310,7 @@ namespace JSAM
                 s.volume = soundVolume * masterVolume;
             }
         }
-    
+
         void ApplyMusicVolume()
         {
             foreach (AudioSource s in musicSources)
@@ -1354,7 +1355,7 @@ namespace JSAM
                 }
             }
         }
-    
+
         /// <summary>
         /// DEPRECATED
         /// Accomodates the "None" helper enum during runtime
@@ -1365,13 +1366,13 @@ namespace JSAM
             //{
             //    clips.Insert(0, null);
             //}
-    
+
             //if (tracks[0] != null && tracks.Count < (int)Music.Count)
             //{
             //    tracks.Insert(0, null);
             //}
         }
-    
+
         /// <summary>
         /// Called externally to update slider values
         /// </summary>
@@ -1380,7 +1381,7 @@ namespace JSAM
         {
             s.value = soundVolume;
         }
-    
+
         /// <summary>
         /// Called externally to update slider values
         /// </summary>
@@ -1389,7 +1390,7 @@ namespace JSAM
         {
             s.value = musicVolume;
         }
-    
+
         /// <summary>
         /// Returns null if all sources are used
         /// </summary>
@@ -1403,7 +1404,7 @@ namespace JSAM
                     return a;
                 }
             }
-    
+
             if (dynamicSourceAllocation)
             {
                 AudioSource newSource = Instantiate(sourcePrefab, sourceHolder.transform).GetComponent<AudioSource>();
@@ -1416,7 +1417,7 @@ namespace JSAM
             }
             return null;
         }
-    
+
         /// <summary>
         /// Returns Master volume from 0-1
         /// </summary>
@@ -1424,7 +1425,7 @@ namespace JSAM
         {
             return masterVolume;
         }
-    
+
         /// <summary>
         /// Returns sound volume from 0-1
         /// </summary>
@@ -1432,7 +1433,7 @@ namespace JSAM
         {
             return soundVolume;
         }
-    
+
         /// <summary>
         /// Returns music volume from 0-1
         /// </summary>
@@ -1440,7 +1441,7 @@ namespace JSAM
         {
             return musicVolume;
         }
-    
+
         /// <summary>
         /// Returns true if a sound is currently being played
         /// </summary>
@@ -1466,7 +1467,7 @@ namespace JSAM
             }
             return false;
         }
-    
+
         /// <summary>
         /// Returns true if a sound is currently being played
         /// </summary>
@@ -1491,7 +1492,7 @@ namespace JSAM
             }
             return false;
         }
-    
+
         /// <summary>
         /// Returns true if music is currently being played by any music source
         /// </summary>
@@ -1508,7 +1509,7 @@ namespace JSAM
             }
             return false;
         }
-    
+
         /// <summary>
         /// Returns true if music is currently being played by any music source
         /// </summary>
@@ -1525,7 +1526,7 @@ namespace JSAM
             }
             return false;
         }
-    
+
         /// <summary>
         /// Returns true if a sound is currently being played by a looping sources, more efficient for looping sounds than IsSoundPlaying
         /// </summary>
@@ -1536,14 +1537,15 @@ namespace JSAM
             foreach (AudioSource c in loopingSources)
             {
                 if (c == null) continue;
-                if (c.clip == sounds[s])
+                if (sounds[s].HasAudioClip(c.clip))
                 {
                     return true;
                 }
+
             }
             return false;
         }
-    
+
         /// <summary>
         /// Returns true if a sound is currently being played by a looping sources, more efficient for looping sounds than IsSoundPlaying
         /// </summary>
@@ -1560,7 +1562,7 @@ namespace JSAM
             }
             return false;
         }
-    
+
         /// <summary>
         /// Converts a pitch enum to float value
         /// </summary>
@@ -1583,14 +1585,14 @@ namespace JSAM
             }
             return 0;
         }
-    
+
         public void GenerateAudioDictionarys()
         {
             // Create dictionary for sound
             if (transform.childCount == 0) return; // Probably script execution order issue
-    
+
             bool regenerateSounds = transform.GetChild(0).childCount != sounds.Count;
-    
+
             // Regenerate sounds if you rename sounds
             if (!regenerateSounds)
             {
@@ -1623,9 +1625,9 @@ namespace JSAM
                     }
                 }
             }
-    
+
             bool regenerateMusic = transform.GetChild(1).childCount != music.Count;
-    
+
             // Regenerate music if you rename sounds
             if (!regenerateMusic)
             {
@@ -1638,7 +1640,7 @@ namespace JSAM
                     }
                 }
             }
-    
+
             // Create a dictionary for music
             if (regenerateMusic)
             {
@@ -1661,10 +1663,10 @@ namespace JSAM
                     }
                 }
             }
-    
+
             DebugLog("AudioManager: Audio Library Generated!");
         }
-    
+
         /// <summary>
         /// Get reference to the music player for custom usage
         /// </summary>
@@ -1673,7 +1675,7 @@ namespace JSAM
         {
             return musicSources[0];
         }
-    
+
         /// <summary>
         /// Get reference to the 3D music player for custom usage
         /// </summary>
@@ -1682,7 +1684,7 @@ namespace JSAM
         {
             return musicSources[2];
         }
-    
+
         /// <summary>
         /// Used by the custom inspector to get error messages
         /// </summary>
@@ -1691,7 +1693,7 @@ namespace JSAM
         {
             return editorMessage;
         }
-    
+
         /// <summary>
         /// Called internally by AudioManager to output non-error console messages
         /// </summary>
@@ -1706,7 +1708,7 @@ namespace JSAM
         {
             return music;
         }
-    
+
         public Dictionary<string, AudioFile> GetSoundDictionary()
         {
             return sounds;
