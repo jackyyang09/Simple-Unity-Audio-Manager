@@ -40,3 +40,9 @@ JSAM.AudioManager.instance.PlaySoundOnce("Shooting (But Better)");
    - Include `using JSAM` at the top of your script if you are planning to use AudioManager often!
 
 Go ahead and look at all the public functions within AudioManager to see what else you can do!
+
+## What's New?
+
+Check out the Releases page to see all the latest updates!
+
+If you'd like to see what parts of AudioManager I'm actively working on, you can do check out the Trello [here!](https://trello.com/b/r6237lmD/audiomanager)
