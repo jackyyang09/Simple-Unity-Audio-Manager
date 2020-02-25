@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using UnityEditor.SceneManagement;
+using System.IO;
 
 namespace JSAM
 {
@@ -17,22 +17,6 @@ namespace JSAM
         static bool showAdvancedSettings;
         static bool showSoundLibrary;
         static bool showMusicLibrary;
-
-        [MenuItem("Tools/Add New AudioManager")]
-        public static void AddAudioManager()
-        {
-            if (!AudioManager.instance)
-            {
-                string assetPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("AudioChannel")[0]);
-                assetPath = assetPath.Replace("Channel", "Manager");
-                GameObject newManager = (GameObject)Instantiate(AssetDatabase.LoadAssetAtPath(assetPath, typeof(GameObject)));
-                newManager.name = newManager.name.Replace("(Clone)", string.Empty);
-            }
-            else
-            {
-                Debug.Log("AudioManager already exists in this scene!");
-            }
-        }
 
         public override void OnInspectorGUI()
         {
@@ -174,6 +158,90 @@ namespace JSAM
             if (myScript.GetSoundVolume() == 0) EditorGUILayout.HelpBox("Note: Sound is MUTED!", MessageType.Info);
             if (myScript.GetMusicVolume() == 0) EditorGUILayout.HelpBox("Note: Music is MUTED!", MessageType.Info);
         }
+
+
+        [MenuItem("Tools/Add New AudioManager")]
+        public static void AddAudioManager()
+        {
+            if (!AudioManager.instance)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("AudioChannel")[0]);
+                assetPath = assetPath.Replace("Channel", "Manager");
+                GameObject newManager = (GameObject)Instantiate(AssetDatabase.LoadAssetAtPath(assetPath, typeof(GameObject)));
+                newManager.name = newManager.name.Replace("(Clone)", string.Empty);
+            }
+            else
+            {
+                Debug.Log("AudioManager already exists in this scene!");
+            }
+        }
+
+        #region Per-Scene Enum Generation
+        /// <summary>
+        /// With help from Daniel Robledo
+        /// https://support.unity3d.com/hc/en-us/articles/115000341143-How-do-I-read-and-write-data-from-a-text-file-
+        /// </summary>
+        //[MenuItem("Tools/Generate Enum File")] //Only used for debugging
+        public static void GenerateEnumFile()
+        {
+            // Looking for AudioEnums
+            string assetPath = Directory.GetDirectories(Directory.GetCurrentDirectory(), "audioe*", SearchOption.AllDirectories)[0];
+            assetPath += "\\AudioEnums - " + AudioManager.instance.gameObject.scene.name + ".cs";
+            Debug.Log(assetPath);
+
+            File.WriteAllText(assetPath, string.Empty);
+            StreamWriter writer = new StreamWriter(assetPath, true);
+            writer.WriteLine("namespace JSAM {");
+            writer.WriteLine("    public enum Sounds {");
+            string[] dict = new string[AudioManager.instance.GetSoundDictionary().Count];
+            AudioManager.instance.GetSoundDictionary().Keys.CopyTo(dict, 0);
+            if (dict.Length > 0)
+            {
+                for (int i = 0; i < dict.Length - 1; i++)
+                {
+                    writer.WriteLine("        " + ConvertToAlphanumeric(dict[i]) + ",");
+                }
+                writer.WriteLine("        " + ConvertToAlphanumeric(dict[dict.Length - 1]));
+            }
+
+            dict = new string[AudioManager.instance.GetMusicDictionary().Count];
+            AudioManager.instance.GetMusicDictionary().Keys.CopyTo(dict, 0);
+            if (dict.Length > 0)
+            {
+                for (int i = 0; i < dict.Length - 1; i++)
+                {
+                    writer.WriteLine("        " + ConvertToAlphanumeric(dict[i]) + ",");
+                }
+                writer.WriteLine("        " + ConvertToAlphanumeric(dict[dict.Length - 1]));
+            }
+
+            writer.WriteLine("    }");
+            writer.WriteLine("    public enum Music {");
+            writer.WriteLine("    }");
+            writer.WriteLine("}");
+            writer.Close();
+
+            //Re-import the file to update the reference in the editor
+            AssetDatabase.ImportAsset(assetPath);
+            AssetDatabase.Refresh();
+        }
+
+        /// <summary>
+        /// Helpful method by Stack Overflow user ata
+        /// https://stackoverflow.com/questions/3210393/how-do-i-remove-all-non-alphanumeric-characters-from-a-string-except-dash
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        static string ConvertToAlphanumeric(string input)
+        {
+            char[] arr = input.ToCharArray();
+
+            arr = System.Array.FindAll<char>(arr, (c => (char.IsLetterOrDigit(c)
+                                              || char.IsWhiteSpace(c)
+                                              || c == '-')));
+            return new string(arr);
+        }
+        #endregion
 
         #region GameObject Rename Code
         /// <summary>
