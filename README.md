@@ -43,6 +43,6 @@ Go ahead and look at all the public functions within AudioManager to see what el
 
 ## What's New?
 
-Check out the Releases page to see all the latest updates!
+Check out the [Releases](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/releases) page to see all the latest updates!
 
 If you'd like to see what parts of AudioManager I'm actively working on, you can check out the Trello [here!](https://trello.com/b/r6237lmD/audiomanager)
