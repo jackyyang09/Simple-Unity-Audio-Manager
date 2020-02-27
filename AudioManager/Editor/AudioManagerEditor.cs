@@ -178,7 +178,7 @@ namespace JSAM
             AudioManager existingAudioManager = FindObjectOfType<AudioManager>();
             if (!existingAudioManager)
             {
-                string assetPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("AudioChannel")[0]);
+                string assetPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("Audio Channel")[0]);
                 assetPath = assetPath.Replace("Channel", "Manager");
                 GameObject newManager = (GameObject)Instantiate(AssetDatabase.LoadAssetAtPath(assetPath, typeof(GameObject)));
                 newManager.name = newManager.name.Replace("(Clone)", string.Empty);
