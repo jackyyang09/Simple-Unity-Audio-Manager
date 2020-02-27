@@ -7,6 +7,10 @@ https://creativecommons.org/publicdomain/zero/1.0/
 
 abstractpop.wav
 walk (loop).wav
+371041__morganpurkis__single-gunshot-3.wav
+391725__morganpurkis__battle-rifle.wav
+391847__morganpurkis__single-gunshot-5-4.wav
+390663__morganpurkis__submachine-gun.wav
 
 You are free to use these sounds however you wish
 

@@ -80,7 +80,7 @@ public class ShipController : MonoBehaviour
         }
 
         // Moves player based on input
-        rb.MovePosition((Vector2)transform.position + input * speed * Time.deltaTime);
+        rb.MovePosition((Vector2)transform.position + input.normalized * speed * Time.deltaTime);
 
         // Only do the following if the game is not paused
         if (Time.timeScale > 0)

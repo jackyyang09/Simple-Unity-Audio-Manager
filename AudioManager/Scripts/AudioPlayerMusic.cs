@@ -25,13 +25,9 @@ namespace JSAM
         [SerializeField]
         float musicFadeTime = 0;
 
-        [Tooltip("If true, will restart playback when music reaches the end")]
+        [Tooltip("Standard looping disregards all loop point logic, loop point use is enabled in the audio music file")]
         [SerializeField]
-        bool loopMusic;
-
-        [SerializeField]
-        [Tooltip("Enables looping using the loop points defined in the music file, can only be used loop point use is enabled in the music file")]
-        bool useLoopPoints = false;
+        LoopMode loopMode = LoopMode.Looping;
 
         [Tooltip("Plays the music when this component or the GameObject its attached is first created")]
         [SerializeField]
@@ -74,7 +70,7 @@ namespace JSAM
 
                 if (spatializeSound)
                 {
-                    am.PlayMusic3D(musicFile, transform, loopMusic);
+                    am.PlayMusic3D(musicFile, transform, loopMode > LoopMode.NoLooping);
                 }
                 else if (musicFadeTime > 0)
                 {
@@ -82,26 +78,24 @@ namespace JSAM
                 }
                 else
                 {
-                    am.PlayMusic(musicFile, loopMusic);
+                    am.PlayMusic(musicFile, loopMode > LoopMode.NoLooping);
                 }
             }
             else
             {
                 if (am.IsMusicPlaying(music) && !restartOnReplay) return;
 
-                useLoopPoints = (useLoopPoints && AudioManager.instance.GetMusicFile(music).useLoopPoints);
-
                 if (spatializeSound)
                 {
-                    am.PlayMusic3D(music, transform, loopMusic, useLoopPoints);
+                    am.PlayMusic3D(music, transform, loopMode);
                 }
                 else if (musicFadeTime > 0)
                 {
-                    am.CrossfadeMusic(music, musicFadeTime, useLoopPoints, keepPlaybackPosition);
+                    am.CrossfadeMusic(music, musicFadeTime, LoopMode.LoopWithLoopPoints, keepPlaybackPosition);
                 }
                 else
                 {
-                    am.PlayMusic(music, loopMusic, useLoopPoints);
+                    am.PlayMusic(music, loopMode);
                 }
             }
         }

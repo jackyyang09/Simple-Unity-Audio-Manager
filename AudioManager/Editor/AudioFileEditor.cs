@@ -35,9 +35,9 @@ namespace JSAM
             {
                 if (newValue)
                 {
-                    if (myScript.files.Count == 0)
+                    if (myScript.files[0] == null)
                     {
-                        myScript.files.Add(myScript.file);
+                        myScript.files[0] = myScript.file;
                     }
                 }
                 myScript.useLibrary = newValue;

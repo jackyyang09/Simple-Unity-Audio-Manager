@@ -11,11 +11,11 @@ public class CrossFadeExample : MonoBehaviour
         pitched = !pitched;
         if (pitched)
         {
-            JSAM.AudioManager.instance.CrossfadeMusic("MenuPitched", 5, false,  true);
+            JSAM.AudioManager.instance.CrossfadeMusic("MenuPitched", 5, JSAM.LoopMode.LoopWithLoopPoints,  true);
         }
         else
         {
-            JSAM.AudioManager.instance.CrossfadeMusic("Menu", 5, false, true);
+            JSAM.AudioManager.instance.CrossfadeMusic("Menu", 5, JSAM.LoopMode.LoopWithLoopPoints, true);
         }
     }
 }

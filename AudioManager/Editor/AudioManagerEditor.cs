@@ -172,7 +172,7 @@ namespace JSAM
         }
 
 
-        [MenuItem("Tools/Add New AudioManager")]
+        [MenuItem("GameObject/Audio/Audio Manager", false, 0)]
         public static void AddAudioManager()
         {
             AudioManager existingAudioManager = FindObjectOfType<AudioManager>();
@@ -182,6 +182,7 @@ namespace JSAM
                 assetPath = assetPath.Replace("Channel", "Manager");
                 GameObject newManager = (GameObject)Instantiate(AssetDatabase.LoadAssetAtPath(assetPath, typeof(GameObject)));
                 newManager.name = newManager.name.Replace("(Clone)", string.Empty);
+                EditorGUIUtility.PingObject(newManager);
             }
             else
             {

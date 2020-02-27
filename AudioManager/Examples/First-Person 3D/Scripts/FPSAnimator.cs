@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using JSAM;
 
 public class FPSAnimator : MonoBehaviour
 {
@@ -24,6 +25,7 @@ public class FPSAnimator : MonoBehaviour
             case 1:
                 if (Input.GetKeyDown(KeyCode.Mouse0))
                 {
+                    AudioManager.instance.PlaySoundOnce("Gunshot", transform, Priority.Default, Pitch.Low);
                     anim.SetTrigger("FireFinal");
                     bullets--;
                 }
@@ -31,6 +33,7 @@ public class FPSAnimator : MonoBehaviour
             default:
                 if (Input.GetKeyDown(KeyCode.Mouse0) && bullets > 1)
                 {
+                    AudioManager.instance.PlaySoundOnce("Gunshot", transform, Priority.Default, Pitch.Low);
                     anim.SetTrigger("Fire");
                     bullets--;
                 }

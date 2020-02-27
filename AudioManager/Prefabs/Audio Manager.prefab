@@ -44,6 +44,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   file: {fileID: 0}
+  files: []
+  useLibrary: 0
 --- !u!1 &865652143
 GameObject:
   m_ObjectHideFlags: 0
@@ -150,7 +152,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   file: {fileID: 0}
+  files: []
+  useLibrary: 0
   useLoopPoints: 0
+  clampBetweenLoopPoints: 0
   loopStart: 0
   loopEnd: 0
   loopPointInputMode: 0
@@ -166,7 +171,7 @@ GameObject:
   - component: {fileID: 4502563656087406104}
   - component: {fileID: 2133915684049951699}
   m_Layer: 0
-  m_Name: AudioManager
+  m_Name: Audio Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -200,18 +205,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7241a3e106230140bd9d59ff2d17ccd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioSources: 32
-  dynamicSourceAllocation: 0
   masterVolume: 1
   soundVolume: 1
   musicVolume: 1
   spatialSound: 1
+  audioSources: 32
+  disableConsoleLogs: 0
+  dontDestroyOnLoad: 1
+  dynamicSourceAllocation: 1
+  stopSoundsOnSceneLoad: 1
   spatializeLateUpdate: 0
   timeScaledSounds: 1
-  enableLoopPoints: 0
-  stopSoundsOnSceneLoad: 1
-  dontDestroyOnLoad: 1
-  currentTrack: None
   listener: {fileID: 0}
   sourcePrefab: {fileID: 3048837711066349602, guid: cf11aed7e0e56ae45afe7eaebe30a616,
     type: 3}

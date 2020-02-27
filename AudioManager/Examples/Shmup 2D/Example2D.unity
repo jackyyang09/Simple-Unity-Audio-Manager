@@ -281,8 +281,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3425e4da79e6e0429c072edbacc1a3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 24
-  focusSpeed: 12
+  moveSpeed: 10
+  focusSpeed: 5
   shotCooldown: 0.025
   bulletSpawnZone: {fileID: 372230434}
   bulletPool: {fileID: 1702197542}
@@ -1473,6 +1473,7 @@ MonoBehaviour:
   files: []
   useLibrary: 0
   useLoopPoints: 0
+  clampBetweenLoopPoints: 0
   loopStart: 0
   loopEnd: 47.995647
   loopPointInputMode: 0
@@ -2077,8 +2078,9 @@ MonoBehaviour:
   file: {fileID: 8300000, guid: 4cd473ea326bb224499d94db7251c75c, type: 3}
   files: []
   useLibrary: 0
-  useLoopPoints: 0
-  loopStart: 47.989
+  useLoopPoints: 1
+  clampBetweenLoopPoints: 1
+  loopStart: 48
   loopEnd: 95.991
   loopPointInputMode: 1
   bpm: 160
@@ -2347,6 +2349,7 @@ MonoBehaviour:
   files: []
   useLibrary: 0
   useLoopPoints: 0
+  clampBetweenLoopPoints: 0
   loopStart: 0
   loopEnd: 0
   loopPointInputMode: 0
@@ -2598,8 +2601,7 @@ MonoBehaviour:
   keepPlaybackPosition: 0
   restartOnReplay: 0
   musicFadeTime: 0
-  loopMusic: 1
-  useLoopPoints: 1
+  loopMode: 2
   playOnStart: 1
   playOnEnable: 0
   stopOnDisable: 0

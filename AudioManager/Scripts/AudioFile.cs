@@ -10,7 +10,7 @@ public class AudioFile : MonoBehaviour
 
     [Header("Attach audio files here to use")]
     [SerializeField]
-    public List<AudioClip> files;
+    public List<AudioClip> files = new List<AudioClip>();
 
     [HideInInspector]
     public bool useLibrary;

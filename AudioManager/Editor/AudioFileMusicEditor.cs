@@ -34,17 +34,19 @@ namespace JSAM
                 EditorGUILayout.HelpBox("Warning! Change the name of the gameObject to something different or things will break!", MessageType.Warning);
             }
 
-            string[] propertiesToExclude;
+            List<string> propertiesToExclude = new List<string>();
             if (myScript.file == null)
             {
-                propertiesToExclude = new string[] { "m_Script", "useLibrary", "files", "useLoopPoints" };
+                propertiesToExclude.AddRange(new List<string>(){ "m_Script", "useLibrary", "files", "useLoopPoints" });
             }
             else
             {
-                propertiesToExclude = new string[] { "m_Script", "useLibrary", "files" };
+                propertiesToExclude.AddRange(new List<string>(){ "m_Script", "useLibrary", "files" });
             }
 
-            DrawPropertiesExcluding(serializedObject, propertiesToExclude);
+            if (!myScript.useLoopPoints) propertiesToExclude.Add("clampBetweenLoopPoints");
+
+            DrawPropertiesExcluding(serializedObject, propertiesToExclude.ToArray());
 
             if (myScript.file != null)
             {

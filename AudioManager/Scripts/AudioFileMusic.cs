@@ -16,6 +16,11 @@ public class AudioFileMusic : AudioFile
     public bool useLoopPoints = false;
 
     /// <summary>
+    /// If true, music will always start and end between loop points
+    /// </summary>
+    public bool clampBetweenLoopPoints = false;
+
+    /// <summary>
     /// Starting loop point, stored as time for accuracy sake, converted to samples in backend
     /// </summary>
     [HideInInspector] public float loopStart;

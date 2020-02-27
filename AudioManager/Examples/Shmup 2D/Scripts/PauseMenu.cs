@@ -36,7 +36,7 @@ public class PauseMenu : MonoBehaviour
     /// </summary>
     public void FadeMusic()
     {
-        AudioManager.instance.FadeMusic("Main Theme Combined", 5, true);
+        AudioManager.instance.FadeMusic("Main Theme Combined", 5);
     }
 
     public void UpdateSoundVolume(UnityEngine.UI.Slider uiElement)

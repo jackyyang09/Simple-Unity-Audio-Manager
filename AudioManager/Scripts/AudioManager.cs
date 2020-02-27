@@ -19,30 +19,33 @@ namespace JSAM
     }
 
     /// <summary>
-    /// 
+    /// Defines the different ways music can loop
     /// </summary>
-    public enum Pitch
+    public enum LoopMode
     {
-        /// <summary>
-        /// Test
-        /// </summary>
-        None,
-        VeryLow,
-        Low,
-        Medium,
-        High
+        /// <summary> Music will not loop </summary>
+        NoLooping,
+        /// <summary> Music will loop back to start after reaching the end regardless of loop points </summary>
+        Looping,
+        /// <summary> Music will loop between loop points </summary>
+        LoopWithLoopPoints
     }
 
     /// <summary>
-    /// Defined as a class with predefined static values to use as an enum of floats
+    /// Most of the time you'll be using VeryLow or Low pitch variation
     /// </summary>
-    public class Pitches
+    public enum Pitch
     {
-        public static float None = 0;
-        public static float VeryLow = 0.05f;
-        public static float Low = 0.15f;
-        public static float Medium = 0.25f;
-        public static float High = 0.5f;
+        /// <summary> No variation in pitch </summary>
+        None,
+        /// <summary> Pitch varies by 0.05 +/- </summary>
+        VeryLow,
+        /// <summary> Pitch varies by 0.15 +/- </summary>
+        Low,
+        /// <summary> Pitch varies by 0.25 +/- </summary>
+        Medium,
+        /// <summary> Pitch varies by 0.5 +/- </summary>
+        High
     }
 
     /// <summary>
@@ -50,6 +53,18 @@ namespace JSAM
     /// </summary>
     public class AudioManager : MonoBehaviour
     {
+        /// <summary>
+        /// Defined as a class with predefined static values to use as an enum of floats
+        /// </summary>
+        private class Pitches
+        {
+            public static float None = 0;
+            public static float VeryLow = 0.05f;
+            public static float Low = 0.15f;
+            public static float Medium = 0.25f;
+            public static float High = 0.5f;
+        }
+
         Dictionary<string, AudioFile> sounds = new Dictionary<string, AudioFile>();
         Dictionary<string, AudioClip> music = new Dictionary<string, AudioClip>();
         Dictionary<string, AudioFileMusic> musicFiles = new Dictionary<string, AudioFileMusic>();
@@ -111,6 +126,7 @@ namespace JSAM
         /// Used in the case that a track has a loop end point placed at the end of the track
         /// </summary>
         bool loopTrackAfterStopping = false;
+        bool clampBetweenLoopPoints = false;
 
         [Header("System Settings")]
 
@@ -323,10 +339,22 @@ namespace JSAM
                         musicSources[0].timeSamples = (int)loopStartTime;
                     }
                 }
-                else if (loopTrackAfterStopping)
+                else if (loopTrackAfterStopping && fadeInRoutine == null)
                 {
                     musicSources[0].timeSamples = (int)loopStartTime;
                     musicSources[0].Play();
+                }
+            }
+
+            if (clampBetweenLoopPoints && musicSources[0].isPlaying)
+            {
+                if (musicSources[0].timeSamples < (int)loopStartTime)
+                {
+                    musicSources[0].timeSamples = (int)loopStartTime;
+                }
+                else if (musicSources[0].timeSamples >= loopEndTime)
+                {
+                    musicSources[0].Stop();
                 }
             }
 
@@ -399,30 +427,42 @@ namespace JSAM
         /// </summary>
         /// <param name="m">Index of the music</param>
         /// <param name="loopTrack">Does the music play forever?</param>
-        /// <param name="useLoopPoints">Does the clip have an intro portion that plays only once? True by default, will loop from start to end otherwise</param>
-        public AudioSource PlayMusic(string track, bool loopTrack = true, bool useLoopPoints = true)
+        /// <param name="loopMode">Does the track loop from start to finish? Does the track loop between loop points?</param>
+        public AudioSource PlayMusic(string track, LoopMode loopMode = LoopMode.LoopWithLoopPoints)
         {
             if (track.Equals("None")) return null;
 
             musicSources[0].clip = music[track];
 
-            enableLoopPoints = useLoopPoints;
-            if (enableLoopPoints && musicFiles[track].useLoopPoints)
+            switch (loopMode)
             {
-                loopStartTime = musicFiles[track].loopStart * music[track].frequency;
-                loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
+                case LoopMode.NoLooping:
+                    enableLoopPoints = false;
+                    musicSources[0].loop = false;
+                    loopTrackAfterStopping = false;
+                    break;
+                case LoopMode.Looping:
+                    enableLoopPoints = false;
+                    musicSources[0].loop = true;
+                    loopTrackAfterStopping = false;
+                    break;
+                case LoopMode.LoopWithLoopPoints:
+                    if (musicFiles[track].useLoopPoints) // Only apply loop points if the audio music file has loop points set
+                    {
+                        enableLoopPoints = true;
+                        loopStartTime = musicFiles[track].loopStart * music[track].frequency;
+                        loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
+                        musicSources[0].loop = false;
+                        loopTrackAfterStopping = true;
+                    }
+                    else
+                    {
+                        musicSources[0].loop = true;
+                    }
+                    break;
             }
 
-            if (enableLoopPoints && loopTrack && musicFiles[track].useLoopPoints)
-            {
-                if (musicFiles[track].loopEnd == music[track].length) loopTrack = false;
-                loopTrackAfterStopping = true;
-            }
-            else
-            {
-                musicSources[0].loop = loopTrack;
-                loopTrackAfterStopping = false;
-            }
+            clampBetweenLoopPoints = musicFiles[track].clampBetweenLoopPoints;
 
             musicSources[0].spatialBlend = 0;
 
@@ -462,35 +502,45 @@ namespace JSAM
         /// </summary>
         /// <param name="track">Index of the music</param>
         /// <param name="trans">The transform of the gameobject playing the music</param>
-        /// <param name="loopTrack">Does the music play forever?</param>
-        /// <param name="useLoopPoints">Does the clip have an intro portion that plays only once?</param>
+        /// <param name="loopMode">Does the track loop from start to finish? Does the track loop between loop points?</param>
         /// <returns>The AudioSource playing the sound</returns>
-        public AudioSource PlayMusic3D(string track, Transform trans, bool loopTrack = true, bool useLoopPoints = false)
+        public AudioSource PlayMusic3D(string track, Transform trans, LoopMode loopMode = LoopMode.LoopWithLoopPoints)
         {
             if (track.Equals("None")) return null;
 
             sourcePositions[musicSources[2]] = trans;
 
             musicSources[2].clip = music[track];
-            musicSources[2].loop = loopTrack;
 
-            enableLoopPoints = useLoopPoints;
-            if (enableLoopPoints)
+            switch (loopMode)
             {
-                loopStartTime = musicFiles[track].loopStart * music[track].frequency;
-                loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
+                case LoopMode.NoLooping:
+                    enableLoopPoints = false;
+                    musicSources[2].loop = false;
+                    loopTrackAfterStopping = false;
+                    break;
+                case LoopMode.Looping:
+                    enableLoopPoints = false;
+                    musicSources[2].loop = true;
+                    loopTrackAfterStopping = false;
+                    break;
+                case LoopMode.LoopWithLoopPoints:
+                    if (musicFiles[track].useLoopPoints) // Only apply loop points if the audio music file has loop points set
+                    {
+                        enableLoopPoints = true;
+                        loopStartTime = musicFiles[track].loopStart * music[track].frequency;
+                        loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
+                        musicSources[2].loop = false;
+                        loopTrackAfterStopping = true;
+                    }
+                    else
+                    {
+                        musicSources[2].loop = true;
+                    }
+                    break;
             }
 
-            if (enableLoopPoints && loopTrack)
-            {
-                if (musicFiles[track].loopEnd == music[track].length) loopTrack = false;
-                loopTrackAfterStopping = true;
-            }
-            else
-            {
-                musicSources[2].loop = loopTrack;
-                loopTrackAfterStopping = false;
-            }
+            clampBetweenLoopPoints = musicFiles[track].clampBetweenLoopPoints;
 
             musicSources[2].Play();
 
@@ -600,8 +650,8 @@ namespace JSAM
         /// </summary>
         /// <param name="track">The name of the music track</param>
         /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
-        /// <param name="useLoopPoints">Loop the track between preset loop points?</param>
-        public void FadeMusic(string track, float time, bool useLoopPoints = false)
+        /// <param name="loopMode">Does the track loop from start to finish? Does the track loop between loop points?</param>
+        public void FadeMusic(string track, float time, LoopMode loopMode = LoopMode.LoopWithLoopPoints)
         {
             if (track.Equals("None")) return;
 
@@ -615,13 +665,31 @@ namespace JSAM
             musicSources[0].clip = music[track];
             musicSources[0].loop = true;
 
-            enableLoopPoints = useLoopPoints;
-
-            if (enableLoopPoints)
+            switch (loopMode)
             {
-                loopStartTime = musicFiles[track].loopStart * music[track].frequency;
-                loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
+                case LoopMode.NoLooping:
+                    enableLoopPoints = false;
+                    musicSources[0].loop = false;
+                    musicSources[1].loop = false;
+                    loopTrackAfterStopping = false;
+                    break;
+                case LoopMode.Looping:
+                    enableLoopPoints = false;
+                    loopTrackAfterStopping = false;
+                    break;
+                case LoopMode.LoopWithLoopPoints:
+                    if (musicFiles[track].useLoopPoints) // Only apply loop points if the audio music file has loop points set
+                    {
+                        enableLoopPoints = true;
+                        loopStartTime = musicFiles[track].loopStart * music[track].frequency;
+                        loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
+                        musicSources[0].loop = false;
+                        loopTrackAfterStopping = true;
+                    }
+                    break;
             }
+
+            clampBetweenLoopPoints = musicFiles[track].clampBetweenLoopPoints;
 
             if (time > 0)
             {
@@ -668,9 +736,9 @@ namespace JSAM
         /// </summary>
         /// <param name="track">The name of the music track</param>
         /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
-        /// <param name="useLoopPoints">Plays using loop points enabled if true</param>
-        /// <param name="playFromStartPoint">Start track playback from starting loop point, only works if useLoopPoints is true</param>
-        public AudioSource FadeMusicIn(string track, float time, bool useLoopPoints = false, bool playFromStartPoint = false)
+        /// <param name="loopMode">Does the track loop from start to finish? Does the track loop between loop points?</param>
+        /// <param name="playFromStartPoint">Start track playback from starting loop point, only works if loopMode is set to LoopWithLoopPoints</param>
+        public AudioSource FadeMusicIn(string track, float time, LoopMode loopMode = LoopMode.LoopWithLoopPoints, bool playFromStartPoint = false)
         {
             if (track.Equals("None")) return null;
 
@@ -684,16 +752,35 @@ namespace JSAM
             musicSources[0].clip = music[track];
             musicSources[0].loop = true;
 
-            enableLoopPoints = useLoopPoints;
-            if (enableLoopPoints)
+            switch (loopMode)
             {
-                loopStartTime = musicFiles[track].loopStart * music[track].frequency;
-                loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
-                if (playFromStartPoint)
-                {
-                    musicSources[0].timeSamples = (int)loopStartTime;
-                }
+                case LoopMode.NoLooping:
+                    enableLoopPoints = false;
+                    loopTrackAfterStopping = false;
+                    musicSources[0].loop = false;
+                    musicSources[1].loop = false;
+                    break;
+                case LoopMode.Looping:
+                    enableLoopPoints = false;
+                    loopTrackAfterStopping = false;
+                    break;
+                case LoopMode.LoopWithLoopPoints:
+                    if (musicFiles[track].useLoopPoints) // Only apply loop points if the audio music file has loop points set
+                    {
+                        enableLoopPoints = true;
+                        loopStartTime = musicFiles[track].loopStart * music[track].frequency;
+                        loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
+                        musicSources[0].loop = false;
+                        loopTrackAfterStopping = true;
+                        if (playFromStartPoint)
+                        {
+                            musicSources[0].timeSamples = (int)loopStartTime;
+                        }
+                    }
+                    break;
             }
+
+            clampBetweenLoopPoints = musicFiles[track].clampBetweenLoopPoints;
 
             if (time > 0)
             {
@@ -762,9 +849,9 @@ namespace JSAM
         /// </summary>
         /// <param name="track">The new track to fade to</param>
         /// <param name="time">How long the fade will last (between both tracks)</param>
-        /// <param name="useLoopPoints">Loop the track between preset loop points?</param>
+        /// <param name="loopMode">Does the track loop from start to finish? Does the track loop between loop points?</param>
         /// <param name="keepMusicTime">Carry the current playback time of current track over to the next track?</param>
-        public void CrossfadeMusic(string track, float time = 0, bool useLoopPoints = false, bool keepMusicTime = false)
+        public void CrossfadeMusic(string track, float time = 0, LoopMode loopMode = LoopMode.LoopWithLoopPoints, bool keepMusicTime = false)
         {
             if (track.Equals("None")) return;
 
@@ -778,12 +865,31 @@ namespace JSAM
             musicSources[0].clip = music[track];
             musicSources[0].loop = true;
 
-            enableLoopPoints = useLoopPoints;
-            if (enableLoopPoints)
+            switch (loopMode)
             {
-                loopStartTime = musicFiles[track].loopStart * music[track].frequency;
-                loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
+                case LoopMode.NoLooping:
+                    enableLoopPoints = false;
+                    loopTrackAfterStopping = false;
+                    musicSources[0].loop = false;
+                    musicSources[1].loop = false;
+                    break;
+                case LoopMode.Looping:
+                    enableLoopPoints = false;
+                    loopTrackAfterStopping = false;
+                    break;
+                case LoopMode.LoopWithLoopPoints:
+                    if (musicFiles[track].useLoopPoints) // Only apply loop points if the audio music file has loop points set
+                    {
+                        enableLoopPoints = true;
+                        loopStartTime = musicFiles[track].loopStart * music[track].frequency;
+                        loopEndTime = musicFiles[track].loopEnd * music[track].frequency;
+                        musicSources[0].loop = false;
+                        loopTrackAfterStopping = true;
+                    }
+                    break;
             }
+
+            clampBetweenLoopPoints = musicFiles[track].clampBetweenLoopPoints;
 
             musicSources[0].volume = 0;
 
@@ -868,6 +974,7 @@ namespace JSAM
                 yield return null;
             }
             musicSources[1].volume = 0;
+            musicSources[1].Stop();
 
             fadeOutRoutine = null;
         }
@@ -1637,8 +1744,6 @@ namespace JSAM
                     }
                 }
             }
-
-            DebugLog("AudioManager: Audio Library Generated!");
         }
 
         /// <summary>
