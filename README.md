@@ -21,7 +21,7 @@ Perfect for game jams, prototypes, or if you just want to get started on a proje
 
 # How to Use
 
-1. Download the latest package [here](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/releases/download/1.4.0/AudioManager.1.4.unitypackage)
+1. Download the latest package [here](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/releases/download/1.4.1/JSAM.Audio.Manager.1.4.1.unitypackage)
 2. Import the package into your Unity project
 3. Check out the Examples folder for a sample scene showing all the ways you can use AudioManager!
 4. Everything begins with the AudioManager singleton!
