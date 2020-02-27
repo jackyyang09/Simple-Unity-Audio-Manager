@@ -6,6 +6,7 @@ using UnityEditor;
 namespace JSAM
 {
     [CustomEditor(typeof(AudioFileMusic))]
+    [CanEditMultipleObjects]
     public class AudioFileMusicEditor : Editor
     {
         bool clipPlaying = false;
@@ -33,141 +34,155 @@ namespace JSAM
                 EditorGUILayout.HelpBox("Warning! Change the name of the gameObject to something different or things will break!", MessageType.Warning);
             }
 
-            DrawPropertiesExcluding(serializedObject, new string[] { "m_Script", "useLibrary"});
-
-            showLoopPointTool = EditorGUILayout.Foldout(showLoopPointTool, "Loop Point Tools");
-            if (myScript.useLoopPoints)
+            string[] propertiesToExclude;
+            if (myScript.file == null)
             {
-                if (showLoopPointTool)
+                propertiesToExclude = new string[] { "m_Script", "useLibrary", "files", "useLoopPoints" };
+            }
+            else
+            {
+                propertiesToExclude = new string[] { "m_Script", "useLibrary", "files" };
+            }
+
+            DrawPropertiesExcluding(serializedObject, propertiesToExclude);
+
+            if (myScript.file != null)
+            {
+                if (myScript.useLoopPoints)
                 {
-                    EditorGUILayout.Space();
-
-                    EditorGUILayout.LabelField("Customize where music will loop between", EditorStyles.boldLabel);
-                    int option = (int)myScript.loopPointInputMode;
-                    option = EditorGUILayout.Popup("Loop Point Setting Mode", option, System.Enum.GetNames(typeof(AudioFileMusic.LoopPointTool)));
-                    if (option != (int)myScript.loopPointInputMode)
+                    showLoopPointTool = EditorGUILayout.Foldout(showLoopPointTool, "Loop Point Tools");
+                    if (showLoopPointTool)
                     {
-                        Undo.RecordObject(myScript, "Modified loop point tool");
-                        myScript.loopPointInputMode = (AudioFileMusic.LoopPointTool)option;
-                        EditorUtility.SetDirty(myScript);
-                    }
+                        EditorGUILayout.Space();
 
-                    AudioClip music = myScript.GetFile();
-                    float loopStart = myScript.loopStart;
-                    float loopEnd = myScript.loopEnd;
+                        EditorGUILayout.LabelField("Customize where music will loop between", EditorStyles.boldLabel);
+                        int option = (int)myScript.loopPointInputMode;
+                        option = EditorGUILayout.Popup("Loop Point Setting Mode", option, System.Enum.GetNames(typeof(AudioFileMusic.LoopPointTool)));
+                        if (option != (int)myScript.loopPointInputMode)
+                        {
+                            Undo.RecordObject(myScript, "Modified loop point tool");
+                            myScript.loopPointInputMode = (AudioFileMusic.LoopPointTool)option;
+                            EditorUtility.SetDirty(myScript);
+                        }
 
-                    DrawPlaybackTool(music);
+                        AudioClip music = myScript.GetFile();
+                        float loopStart = myScript.loopStart;
+                        float loopEnd = myScript.loopEnd;
 
-                    switch (myScript.loopPointInputMode)
-                    {
-                        case AudioFileMusic.LoopPointTool.Slider:
-                            GUILayout.Label("Song Duration Samples: " + music.samples);
-                            EditorGUILayout.MinMaxSlider(ref loopStart, ref loopEnd, 0, music.length);
+                        DrawPlaybackTool(music);
 
-                            GUILayout.BeginHorizontal();
-                            GUILayout.Label("Loop Point Start: " + TimeToString(loopStart));
-                            GUILayout.Label("Loop Point Start (Samples): " + myScript.loopStart * music.frequency);
-                            GUILayout.EndHorizontal();
+                        switch (myScript.loopPointInputMode)
+                        {
+                            case AudioFileMusic.LoopPointTool.Slider:
+                                GUILayout.Label("Song Duration Samples: " + music.samples);
+                                EditorGUILayout.MinMaxSlider(ref loopStart, ref loopEnd, 0, music.length);
 
-                            GUILayout.BeginHorizontal();
-                            GUILayout.Label("Loop Point End: " + TimeToString(loopEnd));
-                            GUILayout.Label("Loop Point End (Samples): " + myScript.loopEnd * music.frequency);
-                            GUILayout.EndHorizontal();
-                            break;
-                        case AudioFileMusic.LoopPointTool.TimeInput:
-                            EditorGUILayout.Space();
+                                GUILayout.BeginHorizontal();
+                                GUILayout.Label("Loop Point Start: " + TimeToString(loopStart));
+                                GUILayout.Label("Loop Point Start (Samples): " + myScript.loopStart * music.frequency);
+                                GUILayout.EndHorizontal();
 
-                            GUILayout.BeginHorizontal();
-                            float theTime = loopStart * 1000f;
-                            GUILayout.Label("Loop Point Start:");
-                            int minutes = EditorGUILayout.IntField((int)(theTime / 60000f));
-                            GUILayout.Label(":");
-                            int seconds = Mathf.Clamp(EditorGUILayout.IntField((int)(theTime % 60000) / 1000), 0, 59);
-                            GUILayout.Label(":");
-                            float milliseconds = EditorGUILayout.IntField((int)(theTime % 60000) % 1000);
-                            milliseconds = float.Parse("0." + milliseconds.ToString("0.####")); // Ensures that our milliseconds never leave their decimal place
-                            loopStart = (float)minutes * 60f + (float)seconds + milliseconds;
-                            GUILayout.EndHorizontal();
+                                GUILayout.BeginHorizontal();
+                                GUILayout.Label("Loop Point End: " + TimeToString(loopEnd));
+                                GUILayout.Label("Loop Point End (Samples): " + myScript.loopEnd * music.frequency);
+                                GUILayout.EndHorizontal();
+                                break;
+                            case AudioFileMusic.LoopPointTool.TimeInput:
+                                EditorGUILayout.Space();
 
-                            GUILayout.BeginHorizontal();
-                            theTime = loopEnd * 1000f;
-                            GUILayout.Label("Loop Point End:  ");
-                            minutes = EditorGUILayout.IntField((int)theTime / 60000);
-                            GUILayout.Label(":");
-                            seconds = Mathf.Clamp(EditorGUILayout.IntField((int)(theTime % 60000) / 1000), 0, 59);
-                            GUILayout.Label(":");
-                            milliseconds = EditorGUILayout.IntField((int)(theTime % 60000) % 1000);
-                            milliseconds = float.Parse("0." + milliseconds.ToString("0.####")); // Ensures that our milliseconds never leave their decimal place
-                            loopEnd = (float)minutes * 60f + (float)seconds + milliseconds;
-                            GUILayout.EndHorizontal();
-                            break;
-                        case AudioFileMusic.LoopPointTool.TimeSamplesInput:
-                            GUILayout.Label("Song Duration (Samples): " + music.samples);
-                            EditorGUILayout.Space();
+                                GUILayout.BeginHorizontal();
+                                float theTime = loopStart * 1000f;
+                                GUILayout.Label("Loop Point Start:");
+                                int minutes = EditorGUILayout.IntField((int)(theTime / 60000f));
+                                GUILayout.Label(":");
+                                int seconds = Mathf.Clamp(EditorGUILayout.IntField((int)(theTime % 60000) / 1000), 0, 59);
+                                GUILayout.Label(":");
+                                float milliseconds = EditorGUILayout.IntField((int)(theTime % 60000) % 1000);
+                                milliseconds = float.Parse("0." + milliseconds.ToString("0.####")); // Ensures that our milliseconds never leave their decimal place
+                                loopStart = (float)minutes * 60f + (float)seconds + milliseconds;
+                                GUILayout.EndHorizontal();
 
-                            GUILayout.BeginHorizontal();
-                            GUILayout.Label("Loop Point Start:");
-                            float samplesStart = EditorGUILayout.FloatField(myScript.loopStart * music.frequency);
-                            GUILayout.EndHorizontal();
-                            loopStart = samplesStart / music.frequency;
+                                GUILayout.BeginHorizontal();
+                                theTime = loopEnd * 1000f;
+                                GUILayout.Label("Loop Point End:  ");
+                                minutes = EditorGUILayout.IntField((int)theTime / 60000);
+                                GUILayout.Label(":");
+                                seconds = Mathf.Clamp(EditorGUILayout.IntField((int)(theTime % 60000) / 1000), 0, 59);
+                                GUILayout.Label(":");
+                                milliseconds = EditorGUILayout.IntField((int)(theTime % 60000) % 1000);
+                                milliseconds = float.Parse("0." + milliseconds.ToString("0.####")); // Ensures that our milliseconds never leave their decimal place
+                                loopEnd = (float)minutes * 60f + (float)seconds + milliseconds;
+                                GUILayout.EndHorizontal();
+                                break;
+                            case AudioFileMusic.LoopPointTool.TimeSamplesInput:
+                                GUILayout.Label("Song Duration (Samples): " + music.samples);
+                                EditorGUILayout.Space();
 
-                            GUILayout.BeginHorizontal();
-                            GUILayout.Label("Loop Point End:  ");
-                            float samplesEnd = EditorGUILayout.FloatField(myScript.loopEnd * music.frequency);
-                            GUILayout.EndHorizontal();
-                            loopEnd = samplesEnd / music.frequency;
-                            break;
-                        case AudioFileMusic.LoopPointTool.BPMInput/*WithBeats*/:
-                            GUILayout.BeginHorizontal();
-                            myScript.bpm = EditorGUILayout.IntField("Song BPM: ", myScript.bpm);
+                                GUILayout.BeginHorizontal();
+                                GUILayout.Label("Loop Point Start:");
+                                float samplesStart = EditorGUILayout.FloatField(myScript.loopStart * music.frequency);
+                                GUILayout.EndHorizontal();
+                                loopStart = samplesStart / music.frequency;
 
-                            GUILayout.Label("Song Duration (Beats): " + music.length / (60f / myScript.bpm));
+                                GUILayout.BeginHorizontal();
+                                GUILayout.Label("Loop Point End:  ");
+                                float samplesEnd = EditorGUILayout.FloatField(myScript.loopEnd * music.frequency);
+                                GUILayout.EndHorizontal();
+                                loopEnd = samplesEnd / music.frequency;
+                                break;
+                            case AudioFileMusic.LoopPointTool.BPMInput/*WithBeats*/:
+                                GUILayout.BeginHorizontal();
+                                myScript.bpm = EditorGUILayout.IntField("Song BPM: ", myScript.bpm);
 
-                            GUILayout.EndHorizontal();
-                            EditorGUILayout.Space();
+                                GUILayout.Label("Song Duration (Beats): " + music.length / (60f / myScript.bpm));
 
-                            float startBeat = loopStart / (60f / (float)myScript.bpm);
-                            startBeat = EditorGUILayout.FloatField("Starting Beat:", startBeat);
+                                GUILayout.EndHorizontal();
+                                EditorGUILayout.Space();
 
-                            float endBeat = loopEnd / (60f / (float)myScript.bpm);
-                            endBeat = EditorGUILayout.FloatField("Ending Beat:", endBeat);
+                                float startBeat = loopStart / (60f / (float)myScript.bpm);
+                                startBeat = EditorGUILayout.FloatField("Starting Beat:", startBeat);
 
-                            loopStart = (float)startBeat * 60f / (float)myScript.bpm;
-                            loopEnd = (float)endBeat * 60f / (float)myScript.bpm;
-                            break;
-                            //case AudioFileMusic.LoopPointTool.BPMInputWithBars:
-                            //    GUILayout.BeginHorizontal();
-                            //    GUILayout.Label("Song Duration: " + TimeToString(music.length));
-                            //    myScript.bpm = EditorGUILayout.IntField("Song BPM: ", myScript.bpm);
-                            //    GUILayout.EndHorizontal();
-                            //
-                            //    int startBar = (int)(loopStart / (60f / (float)myScript.bpm));
-                            //    startBar = EditorGUILayout.IntField("Starting Bar:", startBar);
-                            //
-                            //    int endBar = (int)(loopEnd / (60f / (float)myScript.bpm));
-                            //    endBar = EditorGUILayout.IntField("Ending Bar:", endBar);
-                            //
-                            //    loopStart = startBar * 60f / myScript.bpm;
-                            //    loopEnd = endBar * 60f / myScript.bpm;
-                            //    break;
-                    }
+                                float endBeat = loopEnd / (60f / (float)myScript.bpm);
+                                endBeat = EditorGUILayout.FloatField("Ending Beat:", endBeat);
 
-                    GUIContent buttonText = new GUIContent("Reset Loop Points", "Click to set loop points to the start and end of the track.");
-                    if (GUILayout.Button(buttonText))
-                    {
-                        loopStart = 0;
-                        loopEnd = music.length;
-                    }
+                                loopStart = (float)startBeat * 60f / (float)myScript.bpm;
+                                loopEnd = (float)endBeat * 60f / (float)myScript.bpm;
+                                break;
+                                //case AudioFileMusic.LoopPointTool.BPMInputWithBars:
+                                //    GUILayout.BeginHorizontal();
+                                //    GUILayout.Label("Song Duration: " + TimeToString(music.length));
+                                //    myScript.bpm = EditorGUILayout.IntField("Song BPM: ", myScript.bpm);
+                                //    GUILayout.EndHorizontal();
+                                //
+                                //    int startBar = (int)(loopStart / (60f / (float)myScript.bpm));
+                                //    startBar = EditorGUILayout.IntField("Starting Bar:", startBar);
+                                //
+                                //    int endBar = (int)(loopEnd / (60f / (float)myScript.bpm));
+                                //    endBar = EditorGUILayout.IntField("Ending Bar:", endBar);
+                                //
+                                //    loopStart = startBar * 60f / myScript.bpm;
+                                //    loopEnd = endBar * 60f / myScript.bpm;
+                                //    break;
+                        }
 
-                    if (myScript.loopStart != loopStart || myScript.loopEnd != loopEnd)
-                    {
-                        Undo.RecordObject(myScript, "Modified loop point properties");
-                        myScript.loopStart = Mathf.Clamp(loopStart, 0, music.length);
-                        myScript.loopEnd = Mathf.Clamp(loopEnd, 0, Mathf.Ceil(music.length));
-                        EditorUtility.SetDirty(myScript);
+                        GUIContent buttonText = new GUIContent("Reset Loop Points", "Click to set loop points to the start and end of the track.");
+                        if (GUILayout.Button(buttonText))
+                        {
+                            loopStart = 0;
+                            loopEnd = music.length;
+                        }
+
+                        if (myScript.loopStart != loopStart || myScript.loopEnd != loopEnd)
+                        {
+                            Undo.RecordObject(myScript, "Modified loop point properties");
+                            myScript.loopStart = Mathf.Clamp(loopStart, 0, music.length);
+                            myScript.loopEnd = Mathf.Clamp(loopEnd, 0, Mathf.Ceil(music.length));
+                            EditorUtility.SetDirty(myScript);
+                        }
                     }
                 }
             }
+
             serializedObject.ApplyModifiedProperties();
         }
 

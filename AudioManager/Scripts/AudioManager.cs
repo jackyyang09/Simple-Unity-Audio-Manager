@@ -57,18 +57,15 @@ namespace JSAM
         /// <summary>
         /// List of sources allocated to play looping sounds
         /// </summary>
-        //[SerializeField]
         [Tooltip("List of sources allocated to play looping sounds")]
         List<AudioSource> loopingSources;
 
-        //[SerializeField]
         [Tooltip("[DON'T TOUCH THIS], looping sound positions")]
         Dictionary<AudioSource, Transform> sourcePositions = new Dictionary<AudioSource, Transform>();
 
         /// <summary>
         /// Limits the number of each sounds being played. If at 0 or no value, assume infinite
         /// </summary>
-        //[SerializeField]
         [Tooltip("Limits the number of each sounds being played. If at 0 or no value, assume infinite")]
         int[] exclusiveList;
 
@@ -77,7 +74,6 @@ namespace JSAM
         /// <summary>
         /// Sources dedicated to playing music
         /// </summary>
-        //[SerializeField]
         AudioSource[] musicSources;
 
         [Header("Volume Controls")]
@@ -97,22 +93,9 @@ namespace JSAM
 
         [Header("General Settings")]
 
-        /// <summary>
-        /// Number of Audio Sources to be created on start
-        /// </summary>
         [SerializeField]
-        [Tooltip("Number of Audio Sources to be created on start")]
-        int audioSources = 16;
-        [SerializeField]
-        [Tooltip("If true, enables 3D spatialized audio for sound effects, does not effect music")]
+        [Tooltip("If true, enables 3D spatialized audio for all sound effects, does not effect music")]
         bool spatialSound = true;
-        [SerializeField]
-        [Tooltip("Use if spatialized sounds act wonky in-editor")]
-        bool spatializeLateUpdate = false;
-
-        [SerializeField]
-        [Tooltip("When Time.timeScale is set to 0, pause all sounds")]
-        bool timeScaledSounds = true;
 
         public static AudioManager instance;
 
@@ -132,25 +115,11 @@ namespace JSAM
         [Header("System Settings")]
 
         /// <summary>
-        /// If true, stops all sounds when you load a scene
+        /// Number of Audio Sources to be created on start
         /// </summary>
-        [Tooltip("If true, stops all sounds when you load a scene")]
         [SerializeField]
-        bool stopSoundsOnSceneLoad;
-
-        /// <summary>
-        /// If true, keeps AudioManager alive through scene loads
-        /// </summary>
-        [Tooltip("If true, keeps AudioManager alive through scene loads")]
-        [SerializeField]
-        bool dontDestroyOnLoad;
-
-        /// <summary>
-        /// If true, adds more Audio Sources automatically if you exceed the starting count, you are recommended to keep this disabled
-        /// </summary>
-        [Tooltip("If true, adds more Audio Sources automatically if you exceed the starting count, you are recommended to keep this disabled")]
-        [SerializeField]
-        bool dynamicSourceAllocation;
+        [Tooltip("Number of Audio Sources to be created on start")]
+        int audioSources = 16;
 
         /// <summary>
         /// If true, AudioManager no longer prints info to the console. Does not affect AudioManager errors/warnings
@@ -160,11 +129,33 @@ namespace JSAM
         bool disableConsoleLogs;
 
         /// <summary>
-        /// Current music that's playing
+        /// If true, keeps AudioManager alive through scene loads, you're recommended to keep this on
         /// </summary>
-        //[Tooltip("Current music that's playing")]
-        [HideInInspector]
-        public string currentTrack = "None";
+        [Tooltip("If true, keeps AudioManager alive through scene loads")]
+        [SerializeField]
+        bool dontDestroyOnLoad;
+
+        /// <summary>
+        /// If true, adds more Audio Sources automatically if you exceed the starting count, you are recommended to keep this enabled
+        /// </summary>
+        [Tooltip("If true, adds more Audio Sources automatically if you exceed the starting count, you are recommended to keep this enabled")]
+        [SerializeField]
+        bool dynamicSourceAllocation;
+
+        /// <summary>
+        /// If true, stops all sounds when you load a scene
+        /// </summary>
+        [Tooltip("If true, stops all sounds when you load a scene")]
+        [SerializeField]
+        bool stopSoundsOnSceneLoad;
+
+        [SerializeField]
+        [Tooltip("Use if spatialized sounds are spatializing late when playing in-editor, often happens with OVR")]
+        bool spatializeLateUpdate = false;
+
+        [SerializeField]
+        [Tooltip("When Time.timeScale is set to 0, pause all sounds")]
+        bool timeScaledSounds = true;
 
         [Header("Scene AudioListener Reference (Optional)")]
 
@@ -200,70 +191,71 @@ namespace JSAM
         // Use this for initialization
         void Awake()
         {
-            EstablishSingletonDominance();
-
             // AudioManager is important, keep it between scenes
             if (dontDestroyOnLoad)
             {
                 DontDestroyOnLoad(gameObject);
             }
 
-            // Initialize helper arrays
-            sources = new List<AudioSource>();
-            loopingSources = new List<AudioSource>();
+            EstablishSingletonDominance();
 
-            sourceHolder = new GameObject("Sources");
-            sourceHolder.transform.SetParent(transform);
-
-            for (int i = 0; i < audioSources; i++)
+            if (!initialized)
             {
-                sources.Add(Instantiate(sourcePrefab, sourceHolder.transform).GetComponent<AudioSource>());
-                sources[i].name = "AudioSource " + i;
+                // Initialize helper arrays
+                sources = new List<AudioSource>();
+                loopingSources = new List<AudioSource>();
+
+                sourceHolder = new GameObject("Sources");
+                sourceHolder.transform.SetParent(transform);
+
+                for (int i = 0; i < audioSources; i++)
+                {
+                    sources.Add(Instantiate(sourcePrefab, sourceHolder.transform).GetComponent<AudioSource>());
+                    sources[i].name = "AudioSource " + i;
+                }
+
+                // Subscribes itself to the sceneLoaded notifier
+                SceneManager.sceneLoaded += OnSceneLoaded;
+
+                // Get a reference to all our audiosources on startup
+                sources = new List<AudioSource>(sourceHolder.GetComponentsInChildren<AudioSource>());
+
+                // Create music sources
+                musicSources = new AudioSource[3];
+                GameObject m = new GameObject("MusicSource");
+                m.transform.parent = transform;
+                m.AddComponent<AudioSource>();
+                musicSources[0] = m.GetComponent<AudioSource>();
+                musicSources[0].priority = (int)Priority.Music;
+                musicSources[0].playOnAwake = false;
+
+                m = new GameObject("SecondaryMusicSource");
+                m.transform.parent = transform;
+                m.AddComponent<AudioSource>();
+                musicSources[1] = m.GetComponent<AudioSource>();
+                musicSources[1].priority = (int)Priority.Music;
+                musicSources[1].playOnAwake = false;
+
+                musicSources[2] = Instantiate(sourcePrefab, transform).GetComponent<AudioSource>();
+                musicSources[2].gameObject.name = "SpatialMusicSource";
+                musicSources[2].priority = (int)Priority.Music;
+                musicSources[2].playOnAwake = false;
+
+                //Set sources properties based on current settings
+                SetSoundVolume(soundVolume);
+                SetMusicVolume(musicVolume);
+                SetSpatialSound(spatialSound);
+
+                // Find the listener if not manually set
+                FindNewListener();
+
+                if (!Application.isEditor)
+                {
+                    GenerateAudioDictionarys();
+                }
+
+                doneLoading = true;
             }
-
-            // Subscribes itself to the sceneLoaded notifier
-            SceneManager.sceneLoaded += OnSceneLoaded;
-
-            // Get a reference to all our audiosources on startup
-            sources = new List<AudioSource>(sourceHolder.GetComponentsInChildren<AudioSource>());
-
-            // Create music sources
-            musicSources = new AudioSource[3];
-            GameObject m = new GameObject("MusicSource");
-            m.transform.parent = transform;
-            m.AddComponent<AudioSource>();
-            musicSources[0] = m.GetComponent<AudioSource>();
-            musicSources[0].priority = (int)Priority.Music;
-            musicSources[0].playOnAwake = false;
-
-            m = new GameObject("SecondaryMusicSource");
-            m.transform.parent = transform;
-            m.AddComponent<AudioSource>();
-            musicSources[1] = m.GetComponent<AudioSource>();
-            musicSources[1].priority = (int)Priority.Music;
-            musicSources[1].playOnAwake = false;
-
-            musicSources[2] = Instantiate(sourcePrefab, transform).GetComponent<AudioSource>();
-            musicSources[2].gameObject.name = "SpatialMusicSource";
-            musicSources[2].priority = (int)Priority.Music;
-            musicSources[2].playOnAwake = false;
-
-            //Set sources properties based on current settings
-            SetSoundVolume(soundVolume);
-            SetMusicVolume(musicVolume);
-            SetSpatialSound(spatialSound);
-
-            // Find the listener if not manually set
-            FindNewListener();
-
-            //AddOffsetToArrays();
-
-            if (!Application.isEditor)
-            {
-                GenerateAudioDictionarys();
-            }
-
-            doneLoading = true;
         }
 
         void Start()
@@ -286,6 +278,15 @@ namespace JSAM
             if (listener == null)
             {
                 listener = Camera.main.GetComponent<AudioListener>();
+                if (listener != null)
+                {
+                    DebugLog("AudioManager located an AudioListener successfully!");
+                }
+                else if (listener == null) // Try to find one ourselves
+                {
+                    listener = FindObjectOfType<AudioListener>();
+                    DebugLog("AudioManager located an AudioListener successfully!");
+                }
                 if (listener == null) // In the case that there still isn't an AudioListener
                 {
                     editorMessage = "AudioManager Warning: Scene is missing an AudioListener! Mark the listener with the \"Main Camera\" tag or set it manually!";
@@ -402,7 +403,6 @@ namespace JSAM
         public AudioSource PlayMusic(string track, bool loopTrack = true, bool useLoopPoints = true)
         {
             if (track.Equals("None")) return null;
-            currentTrack = track;
 
             musicSources[0].clip = music[track];
 
@@ -441,7 +441,6 @@ namespace JSAM
         public AudioSource PlayMusic(AudioClip track, bool loopTrack = true)
         {
             if (track.Equals("None")) return null;
-            currentTrack = "Custom Audio File";
 
             musicSources[0].clip = track;
             musicSources[0].loop = loopTrack;
@@ -469,7 +468,6 @@ namespace JSAM
         public AudioSource PlayMusic3D(string track, Transform trans, bool loopTrack = true, bool useLoopPoints = false)
         {
             if (track.Equals("None")) return null;
-            currentTrack = track;
 
             sourcePositions[musicSources[2]] = trans;
 
@@ -509,7 +507,6 @@ namespace JSAM
         public AudioSource PlayMusic3D(AudioClip track, Transform trans, bool loopTrack = true)
         {
             if (track.Equals("None")) return null;
-            currentTrack = "Custom Audio File";
 
             sourcePositions[musicSources[2]] = trans;
 
@@ -608,8 +605,6 @@ namespace JSAM
         {
             if (track.Equals("None")) return;
 
-            currentTrack = track;
-
             musicSources[1].clip = music[track];
             musicSources[1].loop = true;
 
@@ -649,8 +644,6 @@ namespace JSAM
         {
             if (track.Equals("None")) return;
 
-            currentTrack = track.name;
-
             musicSources[1].clip = track;
             musicSources[1].loop = true;
 
@@ -680,8 +673,6 @@ namespace JSAM
         public AudioSource FadeMusicIn(string track, float time, bool useLoopPoints = false, bool playFromStartPoint = false)
         {
             if (track.Equals("None")) return null;
-
-            currentTrack = track;
 
             musicSources[1].clip = music[track];
             musicSources[1].loop = true;
@@ -722,8 +713,6 @@ namespace JSAM
         {
             if (track.Equals("None")) return;
 
-            currentTrack = track.ToString();
-
             musicSources[1].clip = track;
             musicSources[1].loop = true;
 
@@ -744,8 +733,6 @@ namespace JSAM
         /// <param name="time">Fade duration</param>
         public void FadeMusicOut(float time)
         {
-            currentTrack = "None";
-
             musicSources[1].clip = null;
             musicSources[1].loop = false;
 
@@ -780,7 +767,6 @@ namespace JSAM
         public void CrossfadeMusic(string track, float time = 0, bool useLoopPoints = false, bool keepMusicTime = false)
         {
             if (track.Equals("None")) return;
-            currentTrack = track;
 
             musicSources[1].clip = music[track];
             musicSources[1].loop = true;
@@ -827,7 +813,6 @@ namespace JSAM
         public void CrossfadeMusic(AudioClip track, float time = 0, bool keepMusicTime = false)
         {
             if (track.Equals(null)) return;
-            currentTrack = "Custom";
 
             musicSources[1].clip = track;
             musicSources[1].loop = true;
@@ -893,7 +878,6 @@ namespace JSAM
         public void StopMusic()
         {
             musicSources[0].Stop();
-            currentTrack = "None";
         }
 
         /// <summary>
@@ -911,7 +895,6 @@ namespace JSAM
                     a.Stop();
                 }
             }
-            currentTrack = "None";
         }
 
         /// <summary>
@@ -1072,7 +1055,7 @@ namespace JSAM
         /// <param name="trans">The transform of the sound's source, makes it easier to stop the looping sound using StopSoundLoop</param>
         /// <param name="spatialSound">Makes the sound 3D if true, otherwise 2D</param>
         /// <param name="p">The priority of the sound</param>
-        public AudioSource PlaySoundLoop(string s, Transform trans = null, bool spatialSound = false, Priority p = Priority.Default, float delay = 0)
+        public AudioSource PlaySoundLoop(string s, Transform trans = null, bool useSpatialSound = false, Priority p = Priority.Default, float delay = 0)
         {
             AudioSource a = GetAvailableSource();
             loopingSources.Add(a);
@@ -1094,7 +1077,7 @@ namespace JSAM
             {
                 a.clip = sounds[s].GetFile();
             }
-            a.spatialBlend = spatialSound ? 1 : 0;
+            a.spatialBlend = (spatialSound && useSpatialSound) ? 1 : 0;
             a.priority = (int)p;
             a.pitch = 1;
             a.loop = true;
@@ -1114,7 +1097,7 @@ namespace JSAM
         /// <param name="trans">The transform of the sound's source, makes it easier to stop the looping sound using StopSoundLoop</param>
         /// <param name="spatialSound">Makes the sound 3D if true, otherwise 2D</param>
         /// <param name="p">The priority of the sound</param>
-        public AudioSource PlaySoundLoop(AudioClip s, Transform trans = null, bool spatialSound = false, Priority p = Priority.Default, float delay = 0)
+        public AudioSource PlaySoundLoop(AudioClip s, Transform trans = null, bool useSpatialSound = false, Priority p = Priority.Default, float delay = 0)
         {
             AudioSource a = GetAvailableSource();
             loopingSources.Add(a);
@@ -1127,7 +1110,7 @@ namespace JSAM
                 sourcePositions[a] = null;
             }
 
-            a.spatialBlend = spatialSound ? 1 : 0;
+            a.spatialBlend = (spatialSound && useSpatialSound) ? 1 : 0;
             a.clip = s;
             a.priority = (int)p;
             a.pitch = 1;
@@ -1148,6 +1131,7 @@ namespace JSAM
         {
             foreach (AudioSource s in sources)
             {
+                if (s == null) continue;
                 if (s.isPlaying)
                 {
                     s.Stop();
@@ -1307,7 +1291,10 @@ namespace JSAM
         {
             foreach (AudioSource s in sources)
             {
-                s.volume = soundVolume * masterVolume;
+                if (s!= null)
+                {
+                    s.volume = soundVolume * masterVolume;
+                }
             }
         }
 
@@ -1315,7 +1302,10 @@ namespace JSAM
         {
             foreach (AudioSource s in musicSources)
             {
-                s.volume = musicVolume * masterVolume;
+                if (s != null)
+                {
+                    s.volume = musicVolume * masterVolume;
+                }
             }
         }
 
@@ -1326,6 +1316,7 @@ namespace JSAM
         {
             EstablishSingletonDominance();
             GenerateAudioDictionarys();
+            if (GetListener() == null) FindNewListener();
             if (!doneLoading) return;
             //Updates volume
             ApplySoundVolume();
@@ -1351,26 +1342,9 @@ namespace JSAM
                 }
                 else
                 {
-                    DestroyImmediate(this, false);
+                    Destroy(gameObject);
                 }
             }
-        }
-
-        /// <summary>
-        /// DEPRECATED
-        /// Accomodates the "None" helper enum during runtime
-        /// </summary>
-        public void AddOffsetToArrays()
-        {
-            //if (clips[0] != null && clips.Count < (int)Sound.Count)
-            //{
-            //    clips.Insert(0, null);
-            //}
-
-            //if (tracks[0] != null && tracks.Count < (int)Music.Count)
-            //{
-            //    tracks.Insert(0, null);
-            //}
         }
 
         /// <summary>
@@ -1453,7 +1427,7 @@ namespace JSAM
             for (int i = 0; i < Mathf.Clamp(audioSources, 0, sources.Count); i++) // Loop through all sources
             {
                 if (sources[i] == null) continue;
-                if (sources[i].clip == sounds[s] && sources[i].isPlaying) // If this source is playing the clip
+                if (sounds[s].HasAudioClip(sources[i].clip) && sources[i].isPlaying) // If this source is playing the clip
                 {
                     if (trans != null)
                     {
@@ -1712,6 +1686,21 @@ namespace JSAM
         public Dictionary<string, AudioFile> GetSoundDictionary()
         {
             return sounds;
+        }
+
+        public AudioFileMusic GetMusicFile(string key)
+        {
+            return musicFiles[key];
+        }
+
+        public AudioListener GetListener()
+        {
+            return listener;
+        }
+
+        public bool SourcePrefabExists()
+        {
+            return sourcePrefab != null;
         }
     }
 }

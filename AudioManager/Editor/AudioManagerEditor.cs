@@ -30,23 +30,35 @@ namespace JSAM
                 EditorGUILayout.HelpBox(editorMessage, MessageType.Info);
             }
 
-            string[] excludedProperties = new string[] { "m_Script" };
+            List<string> excludedProperties = new List<string> { "m_Script" };
 
-            GUIContent content = new GUIContent("Show Advanced Settings", "Toggle this if you're an experienced Unity user");
-
-            showAdvancedSettings = EditorGUILayout.Toggle(content, showAdvancedSettings);
+            GUIContent content;
 
             if (!showAdvancedSettings)
             {
-                excludedProperties = new string[9]
+                excludedProperties.AddRange(new List<string>
                 {
-                    "m_Script", "audioSources", "spatialSound",
+                    "m_Script", "audioSources",
                     "spatializeLateUpdate", "timeScaledSounds",
                     "stopSoundsOnSceneLoad", "dontDestroyOnLoad",
                     "dynamicSourceAllocation", "disableConsoleLogs"
-                };
+                });
+                if (myScript.GetListener() != null) excludedProperties.Add("listener");
+                if (myScript.SourcePrefabExists()) excludedProperties.Add("sourcePrefab");
+
+                content = new GUIContent("Show Advanced Settings", "Toggle this if you're an experienced Unity user");
+            }
+            else
+            {
+                content = new GUIContent("Hide Advanced Settings", "Toggle this if you're an experienced Unity user");
             }
 
+            //showAdvancedSettings = EditorGUILayout.Toggle(content, showAdvancedSettings);
+            if (GUILayout.Button(content))
+            {
+                showAdvancedSettings = !showAdvancedSettings;
+            }
+            
             //content = new GUIContent("Volume Controls", "Volume of all Audio managed by AudioManager controlled here");
 
             //showVolumeSettings = EditorGUILayout.Foldout(showVolumeSettings, content);
@@ -58,7 +70,7 @@ namespace JSAM
             //    };
             //}
 
-            DrawPropertiesExcluding(serializedObject, excludedProperties);
+            DrawPropertiesExcluding(serializedObject, excludedProperties.ToArray());
 
             List<string> options = new List<string>();
 
@@ -163,7 +175,8 @@ namespace JSAM
         [MenuItem("Tools/Add New AudioManager")]
         public static void AddAudioManager()
         {
-            if (!AudioManager.instance)
+            AudioManager existingAudioManager = FindObjectOfType<AudioManager>();
+            if (!existingAudioManager)
             {
                 string assetPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("AudioChannel")[0]);
                 assetPath = assetPath.Replace("Channel", "Manager");
@@ -172,6 +185,7 @@ namespace JSAM
             }
             else
             {
+                EditorGUIUtility.PingObject(existingAudioManager);
                 Debug.Log("AudioManager already exists in this scene!");
             }
         }

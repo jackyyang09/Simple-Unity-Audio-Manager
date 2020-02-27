@@ -11,6 +11,11 @@ using System.Collections.Generic;
 [CustomPropertyDrawer(typeof(AudioClip))]
 public class AudioClipPropertyDrawer : PropertyDrawer
 {
+    /// <summary>
+    /// Sounds with durations greater than this (in seconds) will not be rendered to increase performance
+    /// </summary>
+    const int MAX_TIME = 30;
+
     public override float GetPropertyHeight(SerializedProperty prop, GUIContent label)
     {
         return EditorGUI.GetPropertyHeight(prop);
@@ -33,6 +38,13 @@ public class AudioClipPropertyDrawer : PropertyDrawer
 
     public override void OnGUI(Rect position, SerializedProperty prop, GUIContent label)
     {
+        //AudioClip clip = prop.objectReferenceValue as AudioClip;
+        //if (clip.length >= MAX_TIME)
+        //{
+        //    EditorGUI.PropertyField(position, prop, true);
+        //    return;
+        //}
+
         EditorGUI.BeginProperty(position, label, prop);
 
         if (prop.objectReferenceValue != null)
@@ -68,9 +80,25 @@ public class AudioClipPropertyDrawer : PropertyDrawer
             Rect waveformRect = new Rect(position);
             waveformRect.x += 22;
             waveformRect.width -= 22;
-            Texture2D waveformTexture = AssetPreview.GetAssetPreview(prop.objectReferenceValue);
-            if (waveformTexture != null)
-                GUI.DrawTexture(waveformRect, waveformTexture);
+            if (clip.length <= MAX_TIME)
+            {
+                Texture2D waveformTexture = AssetPreview.GetAssetPreview(prop.objectReferenceValue);
+                if (waveformTexture != null)
+                    GUI.DrawTexture(waveformRect, waveformTexture);
+            }
+            else
+            {
+                Texture2D tex = new Texture2D(64, 64);
+                for (int x = 0; x < tex.width; x++)
+                {
+                    for (int y = 0; y < tex.height; y++)
+                    {
+                        tex.SetPixel(x, y, new Color(0.32f, 0.32f, 0.32f));
+                    }
+                }
+                tex.Apply();
+                GUI.DrawTexture(waveformRect, tex);
+            }
 
             bool isPlaying = AudioUtil.IsClipPlaying(clip) && (CurrentClip == prop.propertyPath);
             string buttonText = "";

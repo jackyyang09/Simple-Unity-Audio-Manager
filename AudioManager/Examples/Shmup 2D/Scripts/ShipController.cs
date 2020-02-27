@@ -101,7 +101,7 @@ public class ShipController : MonoBehaviour
                 // Have AudioManager loop the "Shooting" sound if it's not looping already
                 if (!am.IsSoundPlaying("Shooting", transform))
                 {
-                    AudioManager.instance.PlaySoundLoop("Shooting", transform);
+                    AudioManager.instance.PlaySoundLoop("Shooting", transform, true);
                 }
 
                 StartCoroutine(ShotCooldown());

@@ -32,7 +32,9 @@ namespace JSAM
                 EditorGUILayout.HelpBox("Choose a sound to play before running!", MessageType.Error);
             }
 
-            DrawDefaultInspector();
+            string[] excludedProperties = new string[] { "m_Script" };
+
+            DrawPropertiesExcluding(serializedObject, excludedProperties);
 
             GUIContent soundDesc = new GUIContent("Sound", "Sound that will be played when particles spawn/die");
 

@@ -11,15 +11,11 @@ namespace JSAM
         string music = "None";
 
         [SerializeField]
-        [Tooltip("Enables looping using the loop points defined in the music file")]
-        bool useLoopPoints = false;
-
-        [SerializeField]
         [Tooltip("Play Music in 3D space, will override Music Fading if true")]
         bool spatializeSound;
 
         [SerializeField]
-        [Tooltip("Play music starting from previous track's playback position, only works when musicFadeTime is greater than 0")]
+        [Tooltip("Play music starting from previous track's playback position, only works when Music Fade Time is greater than 0")]
         bool keepPlaybackPosition;
 
         [SerializeField]
@@ -29,24 +25,35 @@ namespace JSAM
         [SerializeField]
         float musicFadeTime = 0;
 
+        [Tooltip("If true, will restart playback when music reaches the end")]
         [SerializeField]
         bool loopMusic;
 
         [SerializeField]
+        [Tooltip("Enables looping using the loop points defined in the music file, can only be used loop point use is enabled in the music file")]
+        bool useLoopPoints = false;
+
+        [Tooltip("Plays the music when this component or the GameObject its attached is first created")]
+        [SerializeField]
         bool playOnStart;
 
+        [Tooltip("Plays the music when this component or the GameObject its attached to is enabled")]
         [SerializeField]
         bool playOnEnable;
 
+        [Tooltip("Stops the music when this component or the GameObject its attached to is disabled")]
         [SerializeField]
-        bool stopOnDisable = true;
+        bool stopOnDisable = false;
 
+        [Tooltip("Stops the music when this component or the GameObject its attached to is destroyed")]
         [SerializeField]
-        bool stopOnDestroy = true;
+        bool stopOnDestroy = false;
 
         [Tooltip("Overrides the \"Music\" parameter with an AudioClip if not null")]
         [SerializeField]
         AudioClip musicFile;
+
+        Coroutine playRoutine;
 
         // Start is called before the first frame update
         void Start()
@@ -81,6 +88,8 @@ namespace JSAM
             else
             {
                 if (am.IsMusicPlaying(music) && !restartOnReplay) return;
+
+                useLoopPoints = (useLoopPoints && AudioManager.instance.GetMusicFile(music).useLoopPoints);
 
                 if (spatializeSound)
                 {
@@ -132,11 +141,12 @@ namespace JSAM
         {
             if (playOnEnable)
             {
-                StartCoroutine(PlayOnEnable());
+                if (playRoutine != null) StopCoroutine(playRoutine);
+                playRoutine = StartCoroutine(PlayDelayed());
             }
         }
 
-        IEnumerator PlayOnEnable()
+        IEnumerator PlayDelayed()
         {
             while (!AudioManager.instance)
             {
@@ -147,6 +157,7 @@ namespace JSAM
                 yield return new WaitForEndOfFrame();
             }
 
+            playRoutine = null;
             Play();
         }
 

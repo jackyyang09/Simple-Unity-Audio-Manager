@@ -41,11 +41,12 @@ namespace JSAM
             AudioManager am = AudioManager.instance;
 
             Transform t = (spatialSound) ? transform : null;
+
             if (soundFile != null)
             {
                 if (loopSound)
                 {
-                    if (!am.IsSoundLooping(soundFile)) am.PlaySoundLoop(soundFile, transform, spatialSound, priority);
+                    /*if (!am.IsSoundLooping(soundFile)) */am.PlaySoundLoop(soundFile, transform, spatialSound, priority);
                 }
                 else am.PlaySoundOnce(soundFile, t, priority, pitchShift, delay);
             }
@@ -53,7 +54,7 @@ namespace JSAM
             {
                 if (loopSound)
                 {
-                    if (!am.IsSoundLooping(sound)) am.PlaySoundLoop(sound, transform, spatialSound, priority);
+                    /*if (!am.IsSoundLooping(sound)) */am.PlaySoundLoop(sound, transform, spatialSound, priority);
                 }
                 else am.PlaySoundOnce(sound, t, priority, pitchShift, delay);
             }

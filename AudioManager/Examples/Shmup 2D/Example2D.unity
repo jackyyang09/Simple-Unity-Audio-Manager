@@ -281,8 +281,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3425e4da79e6e0429c072edbacc1a3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 8
-  focusSpeed: 3
+  moveSpeed: 24
+  focusSpeed: 12
   shotCooldown: 0.025
   bulletSpawnZone: {fileID: 372230434}
   bulletPool: {fileID: 1702197542}
@@ -2077,7 +2077,7 @@ MonoBehaviour:
   file: {fileID: 8300000, guid: 4cd473ea326bb224499d94db7251c75c, type: 3}
   files: []
   useLibrary: 0
-  useLoopPoints: 1
+  useLoopPoints: 0
   loopStart: 47.989
   loopEnd: 95.991
   loopPointInputMode: 1
@@ -2594,16 +2594,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   music: Main Theme Combined
-  useLoopPoints: 1
   spatializeSound: 0
   keepPlaybackPosition: 0
   restartOnReplay: 0
   musicFadeTime: 0
   loopMusic: 1
+  useLoopPoints: 1
   playOnStart: 1
   playOnEnable: 0
-  stopOnDisable: 1
-  stopOnDestroy: 1
+  stopOnDisable: 0
+  stopOnDestroy: 0
   musicFile: {fileID: 0}
 --- !u!1 &1979273866
 GameObject:
@@ -2700,15 +2700,14 @@ MonoBehaviour:
   masterVolume: 1
   soundVolume: 1
   musicVolume: 1
-  audioSources: 32
   spatialSound: 0
+  audioSources: 16
+  disableConsoleLogs: 0
+  dontDestroyOnLoad: 1
+  dynamicSourceAllocation: 1
+  stopSoundsOnSceneLoad: 0
   spatializeLateUpdate: 0
   timeScaledSounds: 1
-  enableLoopPoints: 0
-  stopSoundsOnSceneLoad: 1
-  dontDestroyOnLoad: 1
-  dynamicSourceAllocation: 0
-  currentTrack: Side Theme
-  listener: {fileID: 0}
+  listener: {fileID: 519420029}
   sourcePrefab: {fileID: 3048837711066349602, guid: cf11aed7e0e56ae45afe7eaebe30a616,
     type: 3}
