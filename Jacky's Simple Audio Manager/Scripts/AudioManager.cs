@@ -1093,7 +1093,10 @@ namespace JSAM
             if (sounds[s].UsingLibrary())
             {
                 AudioClip[] library = sounds[s].GetFiles().ToArray();
-                a.clip = library[UnityEngine.Random.Range(0, library.Length)];
+                do
+                {
+                    a.clip = library[UnityEngine.Random.Range(0, library.Length)];
+                } while (a.clip == null); // If the user is a dingus and left a few null references in the library
             }
             else
             {
@@ -1178,7 +1181,10 @@ namespace JSAM
             if (sounds[s].UsingLibrary())
             {
                 AudioClip[] library = sounds[s].GetFiles().ToArray();
-                a.clip = library[UnityEngine.Random.Range(0, library.Length)];
+                do
+                {
+                    a.clip = library[UnityEngine.Random.Range(0, library.Length)];
+                } while (a.clip == null); // If the user is a dingus and left a few null references in the library
             }
             else
             {

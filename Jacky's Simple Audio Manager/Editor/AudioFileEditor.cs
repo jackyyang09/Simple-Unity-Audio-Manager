@@ -17,7 +17,7 @@ namespace JSAM
 
             EditorGUILayout.HelpBox("The name of this gameObject will be used to refer to audio in script", MessageType.None);
 
-            if (myScript.GetFile() == null)
+            if (myScript.GetFile() == null && myScript.IsLibraryEmpty())
             {
                 EditorGUILayout.HelpBox("Error! Add an audio file before running!", MessageType.Error);
             }
@@ -45,6 +45,13 @@ namespace JSAM
                         {
                             myScript.files[0] = myScript.file;
                         }
+                    }
+                }
+                else
+                {
+                    if (myScript.files.Count > 0 && myScript.file == null)
+                    {
+                        myScript.file = myScript.files[0];
                     }
                 }
                 myScript.useLibrary = newValue;

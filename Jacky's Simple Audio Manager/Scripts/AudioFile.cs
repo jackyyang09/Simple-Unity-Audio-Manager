@@ -25,6 +25,18 @@ public class AudioFile : MonoBehaviour
         return files;
     }
 
+    public bool IsLibraryEmpty()
+    {
+        foreach (AudioClip a in files)
+        {
+            if (a != null)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public bool HasAudioClip(AudioClip a)
     {
         return file == a || files.Contains(a);
