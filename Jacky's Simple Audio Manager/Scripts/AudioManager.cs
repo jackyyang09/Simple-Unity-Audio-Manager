@@ -1030,7 +1030,14 @@ namespace JSAM
                     {
                         if (sourcePositions.ContainsKey(sources[i]))
                         {
-                            sources[i].transform.position = sourcePositions[sources[i]].transform.position;
+                            if (sourcePositions[sources[i]] != null)
+                            {
+                                sources[i].transform.position = sourcePositions[sources[i]].transform.position;
+                            }
+                            else
+                            {
+                                sourcePositions.Remove(sources[i]);
+                            }
                         }
                         if (!sources[i].isPlaying) // However if it's not playing a sound
                         {
