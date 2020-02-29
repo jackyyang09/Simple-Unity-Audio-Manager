@@ -5466,8 +5466,7 @@ MonoBehaviour:
   keepPlaybackPosition: 0
   restartOnReplay: 0
   musicFadeTime: 0
-  loopMusic: 1
-  useLoopPoints: 0
+  loopMode: 1
   playOnStart: 1
   playOnEnable: 0
   stopOnDisable: 1
@@ -6149,11 +6148,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2094897751}
+  - component: {fileID: 2094897747}
   - component: {fileID: 2094897750}
   - component: {fileID: 2094897749}
-  - component: {fileID: 2094897747}
   - component: {fileID: 2094897748}
   - component: {fileID: 2094897752}
+  - component: {fileID: 2094897753}
   m_Layer: 0
   m_Name: Annoying Sound Cube
   m_TagString: Untagged
@@ -6170,7 +6170,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2094897746}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d2c6cfe8bfc0d31409a979c41b0c8d71, type: 3}
+  m_Script: {fileID: 11500000, guid: 79be77434973d0940a2698bb3ff7b1f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   spatialSound: 1
@@ -6178,12 +6178,9 @@ MonoBehaviour:
   priority: 128
   pitchShift: 1
   soundFile: {fileID: 0}
-  playOnStart: 1
-  playOnEnable: 0
-  delay: 0
-  stopOnDisable: 1
-  stopOnDestroy: 1
-  loopSound: 0
+  collidesWith:
+    serializedVersion: 2
+    m_Bits: 1
 --- !u!65 &2094897748
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6274,6 +6271,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &2094897753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2094897746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 217ae1f669d2d9e42a9aaf89f1d0adf6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  upWardsForce: 10
 --- !u!1 &10091424592462027
 GameObject:
   m_ObjectHideFlags: 0
