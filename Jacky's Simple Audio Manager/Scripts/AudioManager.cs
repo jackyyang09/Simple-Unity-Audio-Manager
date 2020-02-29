@@ -1269,7 +1269,7 @@ namespace JSAM
             if (!sounds.ContainsKey(s)) return;
             for (int i = 0; i < audioSources; i++)
             {
-                if (sources[i].clip == sounds[s])
+                if (sounds[s].HasAudioClip(sources[i].clip))
                 {
                     if (t != null)
                     {
