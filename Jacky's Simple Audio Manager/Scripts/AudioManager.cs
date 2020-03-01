@@ -293,7 +293,10 @@ namespace JSAM
         {
             if (listener == null)
             {
-                listener = Camera.main.GetComponent<AudioListener>();
+                if (Camera.main != null)
+                {
+                    listener = Camera.main.GetComponent<AudioListener>();
+                }
                 if (listener != null)
                 {
                     DebugLog("AudioManager located an AudioListener successfully!");
