@@ -1434,7 +1434,7 @@ namespace JSAM
         /// </summary>
         private void OnValidate()
         {
-            EstablishSingletonDominance();
+            EstablishSingletonDominance(false);
             GenerateAudioDictionarys();
             if (GetListener() == null) FindNewListener();
             if (!doneLoading) return;
@@ -1447,7 +1447,7 @@ namespace JSAM
         /// <summary>
         /// Ensures that the Audiomanager you think you're referring to actually exists in this scene
         /// </summary>
-        public void EstablishSingletonDominance()
+        public void EstablishSingletonDominance(bool killSelf = true)
         {
             if (instance == null)
             {
@@ -1460,7 +1460,7 @@ namespace JSAM
                 {
                     instance = this;
                 }
-                else
+                else if (killSelf)
                 {
                     Destroy(gameObject);
                 }
