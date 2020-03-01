@@ -34,7 +34,7 @@ If you'd like to see what parts of AudioManager I'm actively working on, you can
 ![Help1](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/Media/Media/audiomanager1.gif)
 5. Click on `Add New Sound File` to begin populating your sound library. From there, rename your sound and drag+drop an AudioClip into the `File` field so that it's ready to use
 ![Help2](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/Media/Media/audiomanager2.gif)
-6. When you're done adding sounds, go back to the Audio Manager and click `Re-generate Audio Libraries` so Audio Manager registers all the new sounds
+6. When you're done adding sounds, go back to the Audio Manager and click `Re-Generate Audio Library` so Audio Manager registers all the new sounds
 ![Help3](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/Media/Media/audiomanager3.gif)
 7. To play your newly added sound, you can add an `Audio Player` component to any object in the scene to have it play that sound automatically.
 To play sounds from anywhere in your scripts, just type the following.
