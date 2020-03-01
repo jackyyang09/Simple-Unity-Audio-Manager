@@ -37,7 +37,7 @@ If you'd like to see what parts of AudioManager I'm actively working on, you can
 6. When you're done adding sounds, go back to the Audio Manager and click `Re-Generate Audio Library` so Audio Manager registers all the new sounds
 ![Help3](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/Media/Media/audiomanager3.gif)
 7. To play your newly added sound, you can add an `Audio Player` component to any object in the scene to have it play that sound automatically.
-To play sounds from anywhere in your scripts, just type the following.
+Alternatively, you can play sounds from anywhere in your scripts, you just have to type the following.
 ```
 JSAM.AudioManager.instance.PlaySoundOnce("Shooting");
 ```
