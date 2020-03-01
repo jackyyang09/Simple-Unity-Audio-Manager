@@ -183,6 +183,7 @@ namespace JSAM
                 GameObject newManager = (GameObject)Instantiate(AssetDatabase.LoadAssetAtPath(assetPath, typeof(GameObject)));
                 newManager.name = newManager.name.Replace("(Clone)", string.Empty);
                 EditorGUIUtility.PingObject(newManager);
+                Selection.activeGameObject = newManager;
             }
             else
             {
