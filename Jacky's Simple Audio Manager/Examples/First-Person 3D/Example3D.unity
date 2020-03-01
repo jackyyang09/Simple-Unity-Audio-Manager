@@ -6926,7 +6926,7 @@ GameObject:
   - component: {fileID: 2094897752}
   - component: {fileID: 2094897753}
   m_Layer: 0
-  m_Name: Annoying Sound Cube
+  m_Name: Bouncing Sound Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7055,7 +7055,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 217ae1f669d2d9e42a9aaf89f1d0adf6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  upWardsForce: 10
+  upWardsForce: 500
 --- !u!1 &10091424592462027
 GameObject:
   m_ObjectHideFlags: 0
