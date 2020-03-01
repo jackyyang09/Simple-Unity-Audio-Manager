@@ -9,11 +9,9 @@ namespace JSAM
     [CanEditMultipleObjects]
     public class AudioPlayerEditor : Editor
     {
-        AudioManager am;
-
         public override void OnInspectorGUI()
         {
-            if (am == null) am = AudioManager.instance;
+            AudioManager am = AudioManager.instance;
 
             AudioPlayer myScript = (AudioPlayer)target;
 
