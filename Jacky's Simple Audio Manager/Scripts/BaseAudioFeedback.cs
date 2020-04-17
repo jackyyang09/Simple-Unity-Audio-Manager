@@ -4,15 +4,16 @@ using UnityEngine;
 
 namespace JSAM
 {
-    public class BaseAudioFeedback : MonoBehaviour
+    public abstract class BaseAudioFeedback : MonoBehaviour
     {
         [Header("Sound Settings")]
 
         [SerializeField]
         protected bool spatialSound = true;
 
+        [SerializeField]
         [HideInInspector]
-        public string sound;
+        public int sound;
 
         [SerializeField]
         protected Priority priority = Priority.Default;
@@ -20,12 +21,14 @@ namespace JSAM
         [SerializeField]
         protected Pitch pitchShift = Pitch.VeryLow;
 
-        [Header("Set your sound settings here")]
-
         [SerializeField]
+        [HideInInspector]
         [Tooltip("Overrides the \"Sound\" parameter with an AudioClip if not null")]
         protected AudioClip soundFile;
 
+        /// <summary>
+        /// Used as a shorthand for all sound functions that ask for a transform. Will set itself to null if spatialSound is set to null
+        /// </summary>
         protected Transform sTransform;
 
         // Start is called before the first frame update
@@ -38,10 +41,5 @@ namespace JSAM
         {
             return soundFile;
         }
-
-        //public void SetSound(string s)
-        //{
-        //    sound = s;
-        //}
     }
 }

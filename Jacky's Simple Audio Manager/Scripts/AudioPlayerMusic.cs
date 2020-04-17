@@ -8,7 +8,9 @@ namespace JSAM
     {
         [SerializeField]
         [HideInInspector]
-        string music = "None";
+        int music = 0;
+
+        [Header("Music Settings")]
 
         [SerializeField]
         [Tooltip("Play Music in 3D space, will override Music Fading if true")]

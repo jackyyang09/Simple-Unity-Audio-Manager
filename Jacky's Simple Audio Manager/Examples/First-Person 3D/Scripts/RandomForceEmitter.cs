@@ -9,6 +9,9 @@ namespace JSAM
         [SerializeField]
         float upWardsForce;
 
+        [SerializeField]
+        float jumpCooldown = 2.5f;
+
         Rigidbody rb;
 
         private void Awake()
@@ -19,7 +22,7 @@ namespace JSAM
         // Start is called before the first frame update
         void Start()
         {
-            InvokeRepeating("AddForceForNoReason", 0, 2.5f);
+            InvokeRepeating("AddForceForNoReason", 0, jumpCooldown);
         }
 
         void AddForceForNoReason()

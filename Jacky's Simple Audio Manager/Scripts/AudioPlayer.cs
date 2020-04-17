@@ -7,23 +7,23 @@ namespace JSAM
     public class AudioPlayer : BaseAudioFeedback
     {
         [SerializeField]
-        bool playOnStart;
-
-        [SerializeField]
-        bool playOnEnable;
+        bool loopSound = false;
 
         [Tooltip("Play sound after this long")]
         [SerializeField]
         float delay = 0;
 
         [SerializeField]
+        bool playOnStart;
+
+        [SerializeField]
+        bool playOnEnable;
+
+        [SerializeField]
         bool stopOnDisable = true;
 
         [SerializeField]
         bool stopOnDestroy = true;
-
-        [SerializeField]
-        bool loopSound = false;
 
         // Start is called before the first frame update
         protected override void Start()

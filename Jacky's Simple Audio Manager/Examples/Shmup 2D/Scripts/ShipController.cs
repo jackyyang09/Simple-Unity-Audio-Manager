@@ -40,8 +40,7 @@ public class ShipController : MonoBehaviour
 
     SpriteRenderer hitBox;
 
-    // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         // Set object references
         rb = GetComponent<Rigidbody2D>();
@@ -80,7 +79,7 @@ public class ShipController : MonoBehaviour
         }
 
         // Moves player based on input
-        rb.MovePosition((Vector2)transform.position + input.normalized * speed * Time.deltaTime);
+        rb.MovePosition((Vector2)transform.position + input.normalized * speed * Time.fixedDeltaTime);
 
         // Only do the following if the game is not paused
         if (Time.timeScale > 0)
@@ -99,16 +98,16 @@ public class ShipController : MonoBehaviour
                 bullet.SetActive(true);
 
                 // Have AudioManager loop the "Shooting" sound if it's not looping already
-                if (!am.IsSoundPlaying("Shooting", transform))
-                {
-                    AudioManager.instance.PlaySoundLoop("Shooting", transform, true);
+                if (!am.IsSoundLooping(SoundsExample2D.Shooting))
+                {   
+                    AudioManager.instance.PlaySoundLoop(SoundsExample2D.Shooting, transform, true);
                 }
 
                 StartCoroutine(ShotCooldown());
             }
             else if (!Input.GetKey(KeyCode.Z))
             {
-                am.StopSoundLoop("Shooting");
+                am.StopSoundLoop(SoundsExample2D.Shooting);
             }
         }
     }

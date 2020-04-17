@@ -11,39 +11,39 @@ namespace JSAM
     {
         public override void OnInspectorGUI()
         {
-            AudioManager am = AudioManager.instance;
-
             AudioPlayer myScript = (AudioPlayer)target;
 
             List<string> options = new List<string>();
 
-            options.Add("None");
-            foreach (string s in am.GetSoundDictionary().Keys)
+            System.Type enumType = AudioManager.instance.GetSceneSoundEnum();
+            if (enumType == null)
             {
-                options.Add(s);
-            }
-
-            string sound = serializedObject.FindProperty("sound").stringValue;
-
-            if (sound == "None" && myScript.GetAttachedSound() == null)
-            {
-                EditorGUILayout.HelpBox("Choose a sound to play before running!", MessageType.Error);
-            }
-
-            DrawDefaultInspector();
-
-            GUIContent soundDesc = new GUIContent("Sound", "Sound that will be played");
-
-            if (sound.Equals("") || !options.Contains(sound)) // Default to "None"
-            {
-                sound = options[EditorGUILayout.Popup(soundDesc, 0, options.ToArray())];
+                EditorGUILayout.HelpBox("Could not find Audio File info! Try regenerating Audio Files in AudioManager!", MessageType.Error);
             }
             else
             {
-                sound = options[EditorGUILayout.Popup(soundDesc, options.IndexOf(sound), options.ToArray())];
+                foreach (string s in System.Enum.GetNames(enumType))
+                {
+                    options.Add(s);
+                }
             }
 
-            serializedObject.FindProperty("sound").stringValue = sound;
+            EditorGUILayout.LabelField("Choose a Sound to Play", EditorStyles.boldLabel);
+
+            GUIContent soundDesc = new GUIContent("Sound", "Sound that will be played");
+
+            int sound = serializedObject.FindProperty("sound").intValue;
+
+            using (new EditorGUI.DisabledScope(myScript.GetAttachedSound() != null))
+            {
+                serializedObject.FindProperty("sound").intValue = EditorGUILayout.Popup(soundDesc, sound, options.ToArray());
+            }
+
+            GUIContent fileText = new GUIContent("Custom AudioClip", "Overrides the \"Sound\" parameter with an AudioClip if not null");
+            SerializedProperty customSound = serializedObject.FindProperty("soundFile");
+            EditorGUILayout.ObjectField(customSound, fileText);
+
+            DrawPropertiesExcluding(serializedObject, new[] { "m_Script", "soundFile" });
 
             serializedObject.ApplyModifiedProperties();
         }

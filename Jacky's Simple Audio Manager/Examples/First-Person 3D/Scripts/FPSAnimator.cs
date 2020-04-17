@@ -27,7 +27,7 @@ namespace JSAM
                 case 1:
                     if (Input.GetKeyDown(KeyCode.Mouse0))
                     {
-                        AudioManager.instance.PlaySoundOnce("Gunshot", transform, Priority.Default, Pitch.Low);
+                        AudioManager.instance.PlaySoundOnce(SoundsExample3D.Gunshot, transform, Priority.Default, Pitch.Low);
                         anim.SetTrigger("FireFinal");
                         bullets--;
                     }
@@ -35,7 +35,7 @@ namespace JSAM
                 default:
                     if (Input.GetKeyDown(KeyCode.Mouse0) && bullets > 1)
                     {
-                        AudioManager.instance.PlaySoundOnce("Gunshot", transform, Priority.Default, Pitch.Low);
+                        AudioManager.instance.PlaySoundOnce(SoundsExample3D.Gunshot, transform, Priority.Default, Pitch.Low);
                         anim.SetTrigger("Fire");
                         bullets--;
                     }

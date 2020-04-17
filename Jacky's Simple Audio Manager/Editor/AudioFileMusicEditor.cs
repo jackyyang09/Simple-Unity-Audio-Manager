@@ -134,6 +134,7 @@ namespace JSAM
                                 break;
                             case AudioFileMusic.LoopPointTool.BPMInput/*WithBeats*/:
                                 GUILayout.BeginHorizontal();
+                                Undo.RecordObject(myScript, "Modified song bpm");
                                 myScript.bpm = EditorGUILayout.IntField("Song BPM: ", myScript.bpm);
 
                                 GUILayout.Label("Song Duration (Beats): " + music.length / (60f / myScript.bpm));
@@ -341,7 +342,6 @@ namespace JSAM
                 }
             }
         }
-
 
         /// <summary>
         /// Code from these gents

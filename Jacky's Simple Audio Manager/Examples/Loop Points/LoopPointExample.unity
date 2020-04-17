@@ -121,6 +121,86 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &156189610
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 156189611}
+  - component: {fileID: 156189613}
+  - component: {fileID: 156189612}
+  m_Layer: 5
+  m_Name: Text (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &156189611
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 156189610}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1589790059}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 0, y: -892.51}
+  m_SizeDelta: {x: 72.69995, y: 21}
+  m_Pivot: {x: 0.5, y: 1}
+--- !u!114 &156189612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 156189610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.9607844, g: 0.9607844, b: 0.9607844, a: 1}
+  m_RaycastTarget: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_FontData:
+    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    m_FontSize: 50
+    m_FontStyle: 0
+    m_BestFit: 0
+    m_MinSize: 0
+    m_MaxSize: 108
+    m_Alignment: 1
+    m_AlignByGeometry: 0
+    m_RichText: 1
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
+    m_LineSpacing: 1
+  m_Text: 'Navigate to
+
+    Jacky''s Simple AudioManager/Examples/Loop Points/Audio
+    Folder/Intro+Loop.asset'
+--- !u!222 &156189613
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 156189610}
+  m_CullTransparentMesh: 0
 --- !u!1 &343520318
 GameObject:
   m_ObjectHideFlags: 0
@@ -204,52 +284,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1175953127
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1175953128}
-  - component: {fileID: 1175953129}
-  m_Layer: 0
-  m_Name: s
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1175953128
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1175953127}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 4378017388678271065}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1175953129
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1175953127}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5e4f07eb732153b41ae4bf364b486e87, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  file: {fileID: 8300000, guid: 6992658e5fb03354ea113982a3bf39e4, type: 3}
-  files: []
-  useLibrary: 0
 --- !u!1 &1589790055
 GameObject:
   m_ObjectHideFlags: 0
@@ -342,6 +376,7 @@ RectTransform:
   m_Children:
   - {fileID: 2056565225}
   - {fileID: 1892494261}
+  - {fileID: 156189611}
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -471,13 +506,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd13adbb36a3a614fafbec256720d4c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  music: Intro+Loop
-  useLoopPoints: 1
+  music: 0
   spatializeSound: 0
   keepPlaybackPosition: 0
   restartOnReplay: 0
   musicFadeTime: 0
-  loopMusic: 1
+  loopMode: 1
   playOnStart: 1
   playOnEnable: 0
   stopOnDisable: 1
@@ -579,8 +613,7 @@ MonoBehaviour:
     Modify
     loop points by checking out the Music File!
 
-    Expand AudioManager -> Music
-    Library -> Intro+Loop'
+'
 --- !u!222 &1892494263
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -825,7 +858,6 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 4378017388678271065}
   - {fileID: 4378017390028750913}
   m_Father: {fileID: 0}
   m_RootOrder: 5
@@ -859,52 +891,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7241a3e106230140bd9d59ff2d17ccd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  audioFileObjects: []
+  audioFileMusicObjects:
+  - {fileID: 11400000, guid: 8df32090689f69f4a9f77e408e1668bf, type: 2}
+  sceneSoundEnumName: JSAM.SoundsLoopPointExample
+  sceneMusicEnumName: JSAM.MusicLoopPointExample
   masterVolume: 1
+  masterMuted: 0
   soundVolume: 1
-  musicVolume: 0.138
-  audioSources: 32
+  soundMuted: 0
+  musicVolume: 0.14
+  musicMuted: 0
   spatialSound: 1
-  spatializeLateUpdate: 0
-  timeScaledSounds: 1
-  stopSoundsOnSceneLoad: 0
+  audioSources: 32
+  disableConsoleLogs: 1
   dontDestroyOnLoad: 0
   dynamicSourceAllocation: 0
-  disableConsoleLogs: 1
-  currentTrack: None
-  listener: {fileID: 0}
+  stopSoundsOnSceneLoad: 0
+  spatializeLateUpdate: 0
+  timeScaledSounds: 1
+  audioFolderLocation: Assets/Jacky's Simple Audio Manager/Examples/Loop Points/Audio
+    Folder
+  instancedEnums: 1
+  listener: {fileID: 343520319}
   sourcePrefab: {fileID: 3048837711066349602, guid: cf11aed7e0e56ae45afe7eaebe30a616,
     type: 3}
---- !u!1 &4378017388678271046
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4378017388678271065}
-  m_Layer: 0
-  m_Name: Sound Library
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4378017388678271065
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4378017388678271046}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 1175953128}
-  m_Father: {fileID: 197461656569289713}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4378017389769321498
 GameObject:
   m_ObjectHideFlags: 0
@@ -938,9 +949,10 @@ MonoBehaviour:
   files: []
   useLibrary: 0
   useLoopPoints: 1
+  clampBetweenLoopPoints: 0
   loopStart: 47.999985
   loopEnd: 95.991295
-  loopPointInputMode: 0
+  loopPointInputMode: 3
   bpm: 160
 --- !u!4 &4378017389769321501
 Transform:
@@ -969,7 +981,7 @@ Transform:
   m_Children:
   - {fileID: 4378017389769321501}
   m_Father: {fileID: 197461656569289713}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4378017390028750926
 GameObject:

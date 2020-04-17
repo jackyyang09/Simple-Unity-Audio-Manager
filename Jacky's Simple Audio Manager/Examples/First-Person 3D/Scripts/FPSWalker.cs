@@ -85,21 +85,21 @@ namespace JSAM
             switch (moveState)
             {
                 case MovementStates.Idle:
-                    am.StopSoundLoop("Walk", true, transform);
-                    am.StopSoundLoop("Running", true, transform);
+                    am.StopSoundLoop(SoundsExample3D.Walk, true, transform);
+                    am.StopSoundLoop(SoundsExample3D.Running, true, transform);
                     break;
                 case MovementStates.Walking:
-                    am.StopSoundLoop("Running", true, transform);
-                    if (!am.IsSoundLooping("Walk"))
+                    am.StopSoundLoop(SoundsExample3D.Running, true, transform);
+                    if (!am.IsSoundLooping(SoundsExample3D.Walk))
                     {
-                        am.PlaySoundLoop("Walk", transform, false, Priority.Default);
+                        am.PlaySoundLoop(SoundsExample3D.Walk, transform, false, Priority.Default);
                     }
                     break;
                 case MovementStates.Running:
-                    am.StopSoundLoop("Walk", true, transform);
-                    if (!am.IsSoundLooping("Running"))
+                    am.StopSoundLoop(SoundsExample3D.Walk, true, transform);
+                    if (!am.IsSoundLooping(SoundsExample3D.Running))
                     {
-                        am.PlaySoundLoop("Running", transform, false, Priority.Default);
+                        am.PlaySoundLoop(SoundsExample3D.Running, transform, false, Priority.Default);
                     }
                     break;
             }

@@ -14,58 +14,84 @@ namespace JSAM
     [RequireComponent(typeof(ParticleSystem))]
     public class AudioParticles : BaseAudioFeedback
     {
-        enum PlayCondition
+        enum ParticleEvent
         {
             ParticleEmitted,
             ParticleDeath
         }
 
-        [Header("Sounds")]
+        [Header("Particle Settings")]
 
         [SerializeField]
-        PlayCondition playSoundOn = PlayCondition.ParticleEmitted;
+        ParticleEvent playSoundOn = ParticleEvent.ParticleEmitted;
 
-        [SerializeField]
-        [Tooltip("Reduces particle lifetime by this much, used to keep track of particles and keep them from spawning/dying at the same time")]
-        [Range(0.01f, 0.1f)]
-        float lifeTimeOffset = 0.05f;
+        ParticleSystem partSys;
+        ParticleSystem.Particle[] particles;
+        float lowestLifetime = 99f;
 
-        ParticleSystem particles;
-
-        int prevParticleCount;
+        void Awake()
+        {
+            partSys = GetComponent<ParticleSystem>();
+            particles = new ParticleSystem.Particle[partSys.main.maxParticles];
+        }
 
         protected override void Start()
         {
             base.Start();
-            particles = GetComponent<ParticleSystem>();
-
-            ParticleSystem.MainModule main = particles.main;
-            float offset = main.startLifetime.constant - lifeTimeOffset;
-            main.startLifetime = offset;
         }
 
-        // Update is called once per frame
-        void Update()
+        public void PlaySound()
         {
-            AudioManager am = AudioManager.instance;
-
             switch (playSoundOn)
             {
-                case PlayCondition.ParticleEmitted:
-                    if (particles.particleCount > prevParticleCount)
-                    {
-                        AudioManager.instance.PlaySoundOnce(sound, sTransform, priority, pitchShift);
-                    }
+                case ParticleEvent.ParticleEmitted:
+                    AudioManager.instance.PlaySoundOnce(sound, sTransform, priority, pitchShift);
                     break;
-                case PlayCondition.ParticleDeath:
-                    if (particles.particleCount < prevParticleCount)
-                    {
-                        AudioManager.instance.PlaySoundOnce(sound, sTransform, priority, pitchShift);
-                    }
+                case ParticleEvent.ParticleDeath:
+                    AudioManager.instance.PlaySoundOnce(sound, sTransform, priority, pitchShift);
                     break;
             }
+        }
 
-            prevParticleCount = particles.particleCount;
+        void LateUpdate()
+        {
+            if (partSys.particleCount == 0)
+                return;
+
+            var numParticlesAlive = partSys.GetParticles(particles);
+
+            float youngestParticleLifetime;
+            var part = GetYoungestParticle(numParticlesAlive, particles, out youngestParticleLifetime);
+            if (lowestLifetime > youngestParticleLifetime)
+            {
+                PlaySound();
+            }
+
+            lowestLifetime = youngestParticleLifetime;
+        }
+
+        int GetYoungestParticle(int numPartAlive, ParticleSystem.Particle[] particles, out float lifetime)
+        {
+            int youngest = 0;
+
+            // Change only the particles that are alive
+            for (int i = 0; i < numPartAlive; i++)
+            {
+
+                if (i == 0)
+                {
+                    youngest = 0;
+                    continue;
+                }
+
+                if (particles[i].remainingLifetime > particles[youngest].remainingLifetime)
+                    youngest = i;
+            }
+
+            lifetime = particles[youngest].startLifetime - particles[youngest].remainingLifetime;
+
+            return youngest;
+
         }
     }
 }
