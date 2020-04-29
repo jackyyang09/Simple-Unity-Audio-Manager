@@ -83,12 +83,25 @@ namespace JSAM
             {
                 string prevPath = filePath;
                 filePath = EditorUtility.OpenFolderPanel("Specify folder to store JSAM's audio files", Application.dataPath, "Audio Files");
-            
-                if (filePath == "") filePath = prevPath; // If the user presses "cancel"
-            
-                // Fix path to be useable for AssetDatabase.FindAssets
-                filePath = filePath.Remove(0, filePath.IndexOf("Assets/"));
-                if (filePath[filePath.Length - 1] == '/') filePath = filePath.Remove(filePath.Length - 1, 1);
+
+                // If the user presses "cancel"
+                if (filePath == "")
+                {
+                    filePath = prevPath;
+                }
+                // or specifies something outside of this folder, reset filePath and don't proceed
+                else if (!filePath.Contains("Assets/"))
+                {
+                    EditorUtility.DisplayDialog("Folder Browsing Error!", "AudioManager is a Unity editor tool and can only " +
+                        "function inside the project's Assets folder. Please choose a different folder.", "OK");
+                    filePath = prevPath;
+                }
+                else // otherwise
+                {
+                    // Fix path to be useable for AssetDatabase.FindAssets
+                    filePath = filePath.Remove(0, filePath.IndexOf("Assets/"));
+                    if (filePath[filePath.Length - 1] == '/') filePath = filePath.Remove(filePath.Length - 1, 1);
+                }
             }
             serializedObject.FindProperty("audioFolderLocation").stringValue = filePath;
 
@@ -117,6 +130,36 @@ namespace JSAM
 
             EditorGUILayout.Space();
 
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("Add New Sound File"))
+            {
+                // Many thanks to mstevenson for having a reference on creating scriptable objects from code
+                // https://gist.github.com/mstevenson/4726563
+                var asset = CreateInstance<AudioFileObject>();
+                string savePath = EditorUtility.SaveFilePanel("Create new Audio File Object", filePath, "New Audio File Object", "asset");
+                if (savePath != "") // Make sure user didn't press "Cancel"
+                {
+                    savePath = savePath.Remove(0, savePath.IndexOf("Assets/"));
+                    AssetDatabase.CreateAsset(asset, savePath);
+                    EditorUtility.FocusProjectWindow();
+                    Selection.activeObject = asset;
+                }
+            }
+
+            if (GUILayout.Button("Add New Music File"))
+            {
+                var asset = CreateInstance<AudioFileObject>();
+                string savePath = EditorUtility.SaveFilePanel("Create new Audio File Music Object", filePath, "New Audio File Music Object", "asset");
+                if (savePath != "") // Make sure user didn't press "Cancel"
+                {
+                    savePath = savePath.Remove(0, savePath.IndexOf("Assets/"));
+                    AssetDatabase.CreateAsset(asset, savePath);
+                    EditorUtility.FocusProjectWindow();
+                    Selection.activeObject = asset;
+                }
+            }
+            EditorGUILayout.EndHorizontal();
+
             GUIContent blontent = new GUIContent("Re-Generate Audio Library", "Click this whenever you add new Audio Files, change the scene name, or encounter any issues");
             if (GUILayout.Button(blontent))
             {
@@ -144,9 +187,16 @@ namespace JSAM
                 {
                     EditorUtility.DisplayProgressBar("Re-Generating Audio Library", "Generating audio enum file...", 0.5f);
                     string safeSceneName = GenerateEnumFile(filePath, usingInstancedEnums);
-                    serializedObject.FindProperty("sceneSoundEnumName").stringValue = "JSAM.Sounds" + safeSceneName;
-                    serializedObject.FindProperty("sceneMusicEnumName").stringValue = "JSAM.Music" + safeSceneName;
-                    EditorUtility.DisplayProgressBar("Re-Generating Audio Library", "Done! Recompiling...", 0.95f);
+                    if (safeSceneName == "") // File generation has failed, abort
+                    {
+                        EditorUtility.ClearProgressBar();
+                    }
+                    else // Generation successful, proceed as usual
+                    {
+                        serializedObject.FindProperty("sceneSoundEnumName").stringValue = "JSAM.Sounds" + safeSceneName;
+                        serializedObject.FindProperty("sceneMusicEnumName").stringValue = "JSAM.Music" + safeSceneName;
+                        EditorUtility.DisplayProgressBar("Re-Generating Audio Library", "Done! Recompiling...", 0.95f);
+                    }
                 }
                 else
                 {
@@ -202,7 +252,7 @@ namespace JSAM
 
                 for (int i = 0; i < audioFiles.arraySize; i++)
                 {
-                    EditorGUILayout.BeginHorizontal();
+                    Rect clickArea = EditorGUILayout.BeginHorizontal();
                     SerializedProperty ao = audioFiles.GetArrayElementAtIndex(i);
                     GUIContent sName;
                     if (soundNames.Length == audioFiles.arraySize) // Additional check to prevent editor from breaking during regeneration
@@ -216,6 +266,15 @@ namespace JSAM
                     using (new EditorGUI.DisabledScope(true))
                     {
                         EditorGUILayout.ObjectField(ao, sName);
+                    }
+
+                    // Thank you JJCrawley https://answers.unity.com/questions/1326881/right-click-in-custom-editor.html
+                    if (clickArea.Contains(Event.current.mousePosition) && Event.current.type == EventType.ContextClick)
+                    {
+                        GenericMenu menu = new GenericMenu();
+
+                        menu.AddItem(new GUIContent("Copy Enum to Clipboard"), false, CopyToClipboard, sName.tooltip);
+                        menu.ShowAsContext();
                     }
                     EditorGUILayout.EndHorizontal();
                 }
@@ -296,7 +355,7 @@ namespace JSAM
         }
 
         /// <summary>
-        /// Just hide the fancy loading bar
+        /// Just hides the fancy loading bar lmao
         /// </summary>
         [UnityEditor.Callbacks.DidReloadScripts]
         private static void OnScriptsReloaded()
@@ -304,7 +363,16 @@ namespace JSAM
             EditorUtility.ClearProgressBar();
         }
 
-        [MenuItem("GameObject/Audio/Audio Manager", false, 0)]
+        /// <summary>
+        /// Copies the given string to your clipboard
+        /// </summary>
+        /// <param name="text"></param>
+        void CopyToClipboard(object text)
+        {
+            EditorGUIUtility.systemCopyBuffer = text.ToString();
+        }
+
+        [MenuItem("GameObject/Audio Manager", false, 0)]
         public static void AddAudioManager()
         {
             AudioManager existingAudioManager = FindObjectOfType<AudioManager>();
@@ -315,6 +383,7 @@ namespace JSAM
                 newManager.name = newManager.name.Replace("(Clone)", string.Empty);
                 EditorGUIUtility.PingObject(newManager);
                 Selection.activeGameObject = newManager;
+                Undo.RegisterCreatedObjectUndo(newManager, "Added new AudioManager");
             }
             else
             {
@@ -330,13 +399,72 @@ namespace JSAM
         /// </summary>
         public static string GenerateEnumFile(string filePath, bool usingInstancedEnums)
         {
+            // Evaluate potential enum names before writing to file
+            List<AudioFileObject> soundLibrary = AudioManager.instance.GetSoundLibrary();
+
+            List<string> soundNames = new List<string>();
+            foreach (var s in soundLibrary)
+            {
+                string newName = ConvertToAlphanumeric(s.name);
+
+                if (!soundNames.Contains(newName))
+                {
+                    soundNames.Add(newName);
+                }
+                else
+                {
+                    string problemString = soundLibrary[soundNames.IndexOf(newName)].name;
+                    EditorUtility.DisplayDialog("Audio Library Generation Error!", "\"" + s.name + "\" shares the same name with \"" + problemString + "\"! " +
+                        "When converting to Audio Enums, AudioManager strips away non Alphanumeric characters to ensure proper C# syntax and " +
+                        "in the process they've ended with the same name! Please make \"" + s.name + "\" more different and try again!", "OK");
+                    return "";
+                }
+            }
+
+            List<AudioFileMusicObject> musicLibrary = AudioManager.instance.GetMusicLibrary();
+
+            List<string> musicNames = new List<string>();
+            foreach (var m in musicLibrary)
+            {
+                string newName = ConvertToAlphanumeric(m.name);
+
+                if (!musicNames.Contains(newName))
+                {
+                    musicNames.Add(newName);
+                }
+                else
+                {
+                    string problemString = musicLibrary[musicNames.IndexOf(newName)].name;
+                    EditorUtility.DisplayDialog("Audio Library Generation Error!", "\"" + m.name + "\" shares the same name with \"" + problemString + "\"! " +
+                        "When converting to Audio Enums, AudioManager strips away non Alphanumeric characters to ensure proper C# syntax and " +
+                        "in the process they've ended with the same name! Please make \"" + m.name + "\" more different and try again!", "OK");
+                    return "";
+                }
+            }
+
+            // Now that we've gotten that over with, check for duplicate AudioEnums in this folder, because we can't trust the user to be organized
             string sceneName = AudioManager.instance.gameObject.scene.name;
             string safeSceneName = ConvertToAlphanumeric(sceneName);
-            
-            // Looking for AudioEnums
-            if (usingInstancedEnums) filePath += "\\AudioEnums - " + sceneName + ".cs";
-            else filePath += "\\AudioEnums.cs";
 
+            string fileName = (usingInstancedEnums) ? "\\AudioEnums - " + sceneName + ".cs" : filePath += "\\AudioEnums.cs";
+
+            // Looking for AudioEnums
+            string[] GUIDs = AssetDatabase.FindAssets("AudioEnums", new[] { filePath });
+            foreach (var p in GUIDs)
+            {
+                // Make the detected file match the format of expected filenames up above
+                string assetPath = AssetDatabase.GUIDToAssetPath(p);
+                string assetName = "\\" + assetPath.Remove(0, assetPath.LastIndexOf('/') + 1);
+                if (assetName == fileName) continue; // We're overwriting this anyway
+                if (EditorUtility.DisplayDialog("Duplicate AudioEnums file Found!", "Another instance of AudioEnums.cs was found in this folder. " +
+                    "Although they don't conflict, having both in the same place may create problems in the future. " +
+                    "Would you like to delete the existing AudioEnums file?)", "Yes", "No"))
+                {
+                    AssetDatabase.DeleteAsset(assetPath);
+                }
+            }
+
+            filePath += fileName;
             File.WriteAllText(filePath, string.Empty);
             StreamWriter writer = new StreamWriter(filePath, true);
             writer.WriteLine("namespace JSAM {");
@@ -346,7 +474,6 @@ namespace JSAM
             else
             writer.WriteLine("    public enum Sounds" + safeSceneName + "{");
 
-            List<AudioFileObject> soundLibrary = AudioManager.instance.GetSoundLibrary();
             if (soundLibrary != null)
             {
                 if (soundLibrary.Count > 0)
@@ -365,8 +492,6 @@ namespace JSAM
                 writer.WriteLine("    public enum Music {");
             else
                 writer.WriteLine("    public enum Music" + safeSceneName + "{");
-
-            List<AudioFileMusicObject> musicLibrary = AudioManager.instance.GetMusicLibrary();
 
             if (musicLibrary != null)
             {
@@ -397,7 +522,7 @@ namespace JSAM
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        static string ConvertToAlphanumeric(string input)
+        public static string ConvertToAlphanumeric(string input)
         {
             char[] arr = input.ToCharArray();
 
@@ -407,7 +532,7 @@ namespace JSAM
         }
         #endregion
 
-        #region GameObject Rename Code
+        #region GameObject Rename Code (Deprecated)
         /// <summary>
         /// Below code referenced by the lovely Unity Answers user vexe
         /// https://answers.unity.com/questions/644608/sending-a-rename-commandevent-to-the-hiearchy-almo.html

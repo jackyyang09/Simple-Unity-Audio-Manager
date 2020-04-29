@@ -11,6 +11,7 @@ namespace JSAM
     /// With help from these lovely gents
     /// </summary>
 
+    [AddComponentMenu("AudioManager/Audio Particles")]
     [RequireComponent(typeof(ParticleSystem))]
     public class AudioParticles : BaseAudioFeedback
     {

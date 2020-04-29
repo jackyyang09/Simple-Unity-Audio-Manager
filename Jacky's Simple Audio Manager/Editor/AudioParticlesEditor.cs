@@ -9,6 +9,7 @@ namespace JSAM
     [CanEditMultipleObjects]
     public class AudioParticlesEditor : Editor
     {
+        static bool showAudioClipSettings = false;
         static bool showHowTo;
 
         public override void OnInspectorGUI()
@@ -45,14 +46,30 @@ namespace JSAM
             SerializedProperty customSound = serializedObject.FindProperty("soundFile");
             EditorGUILayout.ObjectField(customSound, fileText);
 
-            DrawPropertiesExcluding(serializedObject, new[] { "m_Script" });
+            EditorGUILayout.Space();
+
+            GUIStyle boldFoldout = new GUIStyle(EditorStyles.foldout);
+            boldFoldout.fontStyle = FontStyle.Bold;
+
+            GUIContent fontent = new GUIContent("Custom AudioClip Settings", "These settings only apply if you input your own custom AudioClip rather than choosing from the generated Audio Library");
+            if (myScript.GetAttachedSound() == null)
+                showAudioClipSettings = EditorGUILayout.Foldout(showAudioClipSettings, fontent);
+            else
+                showAudioClipSettings = EditorGUILayout.Foldout(showAudioClipSettings, fontent, boldFoldout);
+            if (showAudioClipSettings)
+            {
+                using (new EditorGUI.DisabledScope(myScript.GetAttachedSound() == null))
+                {
+                    DrawPropertiesExcluding(serializedObject, new[] { "m_Script", "soundFile", "playOnStart", "playOnEnable",
+                        "stopOnDisable", "stopOnDestroy", "playSoundOn"});
+                }
+            }
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("playSoundOn"));
 
             serializedObject.ApplyModifiedProperties();
 
             EditorGUILayout.Space();
 
-            GUIStyle boldFoldout = EditorStyles.foldout;
-            boldFoldout.fontStyle = FontStyle.Bold;
             showHowTo = EditorGUILayout.Foldout(showHowTo, "Quick Reference Guide", boldFoldout);
             if (showHowTo)
             {

@@ -16,6 +16,7 @@ namespace JSAM
         bool loopClip = false;
 
         static bool showLoopPointTool = true;
+        static bool showHowTo;
 
         public override void OnInspectorGUI()
         {
@@ -23,7 +24,11 @@ namespace JSAM
 
             AudioFileMusicObject myScript = (AudioFileMusicObject)target;
 
-            EditorGUILayout.HelpBox("The name of this file used to refer to audio in script", MessageType.None);
+            EditorGUILayout.LabelField("Audio File Music Object", EditorStyles.boldLabel);
+
+            EditorGUILayout.LabelField("Name: " + AudioManagerEditor.ConvertToAlphanumeric(myScript.name));
+
+            EditorGUILayout.HelpBox("The name that AudioManager will use to reference this object with.", MessageType.None);
 
             if (myScript.GetFile() == null)
             {
@@ -34,7 +39,7 @@ namespace JSAM
                 EditorGUILayout.HelpBox("Warning! Change the name of this file to something different or things will break!", MessageType.Warning);
             }
 
-            List<string> propertiesToExclude = new List<string>();
+            List<string> propertiesToExclude = new List<string>() { "spatialSound", "loopSound", "priority", "pitchShift", "delay", "loopMode" };
             if (myScript.file == null)
             {
                 propertiesToExclude.AddRange(new List<string>() { "m_Script", "useLibrary", "files", "useLoopPoints" });
@@ -44,9 +49,12 @@ namespace JSAM
                 propertiesToExclude.AddRange(new List<string>() { "m_Script", "useLibrary", "files" });
             }
 
-            if (!myScript.useLoopPoints) propertiesToExclude.Add("clampBetweenLoopPoints");
-
             DrawPropertiesExcluding(serializedObject, propertiesToExclude.ToArray());
+            using (new EditorGUI.DisabledScope(!myScript.useLoopPoints))
+            {
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("loopMode"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("clampBetweenLoopPoints"));
+            }
 
             if (myScript.file != null)
             {
@@ -59,7 +67,7 @@ namespace JSAM
 
                         EditorGUILayout.LabelField("Customize where music will loop between", EditorStyles.boldLabel);
                         int option = (int)myScript.loopPointInputMode;
-                        option = EditorGUILayout.Popup("Loop Point Setting Mode", option, System.Enum.GetNames(typeof(AudioFileMusic.LoopPointTool)));
+                        option = EditorGUILayout.Popup("Loop Point Setting Mode", option, System.Enum.GetNames(typeof(AudioFileMusicObject.LoopPointTool)));
                         if (option != (int)myScript.loopPointInputMode)
                         {
                             Undo.RecordObject(myScript, "Modified loop point tool");
@@ -187,6 +195,35 @@ namespace JSAM
             }
 
             serializedObject.ApplyModifiedProperties();
+
+            EditorGUILayout.Space();
+
+            #region Quick Reference Guide
+            GUIStyle boldFoldout = new GUIStyle(EditorStyles.foldout);
+            boldFoldout.fontStyle = FontStyle.Bold;
+            showHowTo = EditorGUILayout.Foldout(showHowTo, "Quick Reference Guide", boldFoldout);
+            if (showHowTo)
+            {
+                EditorGUILayout.Space();
+
+                EditorGUILayout.LabelField("Overview", EditorStyles.boldLabel);
+                EditorGUILayout.HelpBox("Audio File Music Objects are a container that hold your music files to be read by Audio Manager."
+                    , MessageType.None);
+                EditorGUILayout.HelpBox("No matter the filename or folder location, this Audio File will be referred to as it's name above"
+                    , MessageType.None);
+
+                EditorGUILayout.Space();
+
+                EditorGUILayout.LabelField("Tips", EditorStyles.boldLabel);
+                EditorGUILayout.HelpBox("Before you cut up your music into an intro and looping portion, try using the loop point tools!"
+                    , MessageType.None);
+                EditorGUILayout.HelpBox("By designating your loop points in the loop point tools and setting your music's loop mode to " +
+                    "\"Loop with Loop Points\", you can easily get AudioManager to play your intro portion once and repeat the looping portion forever!"
+                    , MessageType.None);
+                EditorGUILayout.HelpBox("Using BPM input to set your loop points is strongly recommended!"
+                    , MessageType.None);
+            }
+            #endregion  
         }
 
         public static string TimeToString(float time)
@@ -407,7 +444,7 @@ namespace JSAM
         private PreviewRenderUtility m_PreviewUtility;
 
         // Any number of AudioClip inspectors can be docked in addition to the object browser, and they are all showing and modifying the same shared state.
-        static AudioFileMusicEditor m_PlayingInspector;
+        static AudioFileMusicObjectEditor m_PlayingInspector;
         static AudioClip m_PlayingClip;
         static bool playing { get { return m_PlayingClip != null && AudioUtil.IsClipPlaying(m_PlayingClip); } }
         static bool m_bAutoPlay;

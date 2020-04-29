@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace JSAM 
 {
+    [AddComponentMenu("AudioManager/Audio Trigger Feedback")]
     public class AudioTriggerFeedback : BaseAudioFeedback
     {
         enum TriggerEvent

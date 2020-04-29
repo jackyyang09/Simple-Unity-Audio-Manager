@@ -37,7 +37,7 @@ namespace JSAM
                 transform.localEulerAngles = new Vector3(rotationX, 0, 0);
             }
 
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;

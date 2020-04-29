@@ -490,10 +490,9 @@ namespace JSAM
                     {
                         musicSources[0].loop = true;
                     }
+                    clampBetweenLoopPoints = audioFileMusicObjects[t].clampBetweenLoopPoints;
                     break;
             }
-
-            clampBetweenLoopPoints = audioFileMusicObjects[t].clampBetweenLoopPoints;
 
             musicSources[0].spatialBlend = 0;
 
@@ -539,10 +538,9 @@ namespace JSAM
                     {
                         musicSources[0].loop = true;
                     }
+                    clampBetweenLoopPoints = audioFileMusicObjects[track].clampBetweenLoopPoints;
                     break;
             }
-
-            clampBetweenLoopPoints = audioFileMusicObjects[track].clampBetweenLoopPoints;
 
             musicSources[0].spatialBlend = 0;
 
@@ -939,12 +937,12 @@ namespace JSAM
         /// </summary>
         /// <param name="track">The name of the music track</param>
         /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
-        public void FadeMusic(AudioClip track, float time)
+        public void FadeMusic(AudioClip track, float time, bool loopTrack)
         {
             if (track.Equals("None")) return;
 
             musicSources[1].clip = track;
-            musicSources[1].loop = true;
+            musicSources[1].loop = loopTrack;
 
             AudioSource temp = musicSources[0];
             musicSources[0] = musicSources[1];
@@ -963,7 +961,8 @@ namespace JSAM
         }
 
         /// <summary>
-        /// Fade in a new track
+        /// Fade in a new track without affecting playback of any currently playing track. 
+        /// To fade the currently playing track out at the same time, use the FadeMusic function instead
         /// </summary>
         /// <param name="track">The name of the music track</param>
         /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
@@ -1023,7 +1022,8 @@ namespace JSAM
         }
 
         /// <summary>
-        /// Fade in a new track
+        /// Fade in a new track without affecting playback of any currently playing track.
+        /// To fade the currently playing track out at the same time, use the FadeMusic function instead
         /// </summary>
         /// <param name="track">The name of the music track</param>
         /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
@@ -1081,16 +1081,17 @@ namespace JSAM
         }
 
         /// <summary>
-        /// Fade in a new track
+        /// Fade in a new track without affecting playback of any currently playing track.
+        /// To fade the currently playing track out at the same time, use the FadeMusic function instead
         /// </summary>
         /// <param name="track">The name of the music track</param>
         /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
-        public void FadeMusicIn(AudioClip track, float time)
+        public void FadeMusicIn(AudioClip track, float time, bool loopTrack)
         {
             if (track.Equals("None")) return;
 
             musicSources[1].clip = track;
-            musicSources[1].loop = true;
+            musicSources[1].loop = loopTrack;
 
             AudioSource temp = musicSources[0];
             musicSources[0] = musicSources[1];
@@ -1269,12 +1270,12 @@ namespace JSAM
         /// <param name="track">The new track to fade to</param>
         /// <param name="time">How long the fade will last (between both tracks)</param>
         /// <param name="keepMusicTime">Carry the current playback time of current track over to the next track?</param>
-        public void CrossfadeMusic(AudioClip track, float time = 0, bool keepMusicTime = false)
+        public void CrossfadeMusic(AudioClip track, float time = 0, bool loopTrack = true, bool keepMusicTime = false)
         {
             if (track.Equals(null)) return;
 
             musicSources[1].clip = track;
-            musicSources[1].loop = true;
+            musicSources[1].loop = loopTrack;
 
             AudioSource temp = musicSources[0];
             musicSources[0] = musicSources[1];
@@ -1423,10 +1424,10 @@ namespace JSAM
         /// <param name="trans">The transform of the sound's source</param>
         /// <param name="p">The priority of the sound</param>
         /// <param name="pitchShift">If not None, randomizes the pitch of the sound, use AudioManager.Pitches for presets</param>
-        /// <param name="delay">Amount of seconds to wait before playing the sound</param>
+        /// <param name="delay">Amount of seconds to wait before playing the sound. Leave this field at -1 to use the value specified in the Audio File Object</param>
         /// <param name="ignoreTimeScale">If true, will not be paused by AudioManager when TimeScale is 0. To change this option for all sounds, check AudioManager's advanced settings</param>
         /// <returns>The AudioSource playing the sound</returns>
-        public AudioSource PlaySoundOnce<T>(T sound, Transform trans = null, Priority p = Priority.Default, Pitch pitchShift = Pitch.None, float delay = 0, bool ignoreTimeScale = false) where T : Enum
+        public AudioSource PlaySoundOnce<T>(T sound, Transform trans = null, Priority p = Priority.Default, Pitch pitchShift = Pitch.None, float delay = -1, bool ignoreTimeScale = false) where T : Enum
         {
             if (!Application.isPlaying) return null;
             AudioSource a = GetAvailableSource();
@@ -1487,7 +1488,9 @@ namespace JSAM
             }
             a.priority = (int)p;
             a.loop = false;
-            a.PlayDelayed(delay);
+
+            float theD = (delay == -1) ? audioFileObjects[s].delay : delay;
+            a.PlayDelayed(theD);
 
             return a;
         }
@@ -1560,7 +1563,8 @@ namespace JSAM
             }
             a.priority = (int)p;
             a.loop = false;
-            a.PlayDelayed(delay);
+            float theD = (delay == -1) ? audioFileObjects[s].delay : delay;
+            a.PlayDelayed(theD);
 
             return a;
         }

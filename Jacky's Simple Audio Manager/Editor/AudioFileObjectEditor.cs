@@ -9,13 +9,18 @@ namespace JSAM
     [CanEditMultipleObjects]
     public class AudioFileObjectEditor : Editor
     {
+        static bool showHowTo;
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
 
             AudioFileObject myScript = (AudioFileObject)target;
 
-            EditorGUILayout.HelpBox("The name of this file will be used to refer to audio in script", MessageType.None);
+            EditorGUILayout.LabelField("Audio File Object", EditorStyles.boldLabel);
+
+            EditorGUILayout.LabelField("Name: " + AudioManagerEditor.ConvertToAlphanumeric(myScript.name));
+
+            EditorGUILayout.HelpBox("The name that AudioManager will use to reference this object with.", MessageType.None);
 
             if (myScript.GetFile() == null && myScript.IsLibraryEmpty())
             {
@@ -28,7 +33,7 @@ namespace JSAM
 
             EditorGUILayout.Space();
 
-            GUIContent blontent = new GUIContent("Use Library", "If true, the single AudioFile will be changed to a list of AudioFiles. AudioManager will choose a random AudioClip from this list when you playback this sound");
+            GUIContent blontent = new GUIContent("Use Library", "If true, the single AudioFile will be changed to a list of AudioFiles. AudioManager will choose a random AudioClip from this list when you play this sound");
             bool oldValue = myScript.useLibrary;
             bool newValue = EditorGUILayout.Toggle(blontent, oldValue);
             if (newValue != oldValue) // If you clicked the toggle
@@ -67,6 +72,31 @@ namespace JSAM
             DrawPropertiesExcluding(serializedObject, excludedProperties);
 
             serializedObject.ApplyModifiedProperties();
+
+            EditorGUILayout.Space();
+
+            #region Quick Reference Guide
+            GUIStyle boldFoldout = new GUIStyle(EditorStyles.foldout);
+            boldFoldout.fontStyle = FontStyle.Bold;
+            showHowTo = EditorGUILayout.Foldout(showHowTo, "Quick Reference Guide", boldFoldout);
+            if (showHowTo)
+            {
+                EditorGUILayout.Space();
+
+                EditorGUILayout.LabelField("Overview", EditorStyles.boldLabel);
+                EditorGUILayout.HelpBox("Audio File Objects are a container that hold your sound files to be read by Audio Manager."
+                    , MessageType.None);
+                EditorGUILayout.HelpBox("No matter the filename or folder location, this Audio File will be referred to as it's name above" 
+                    , MessageType.None);
+
+                EditorGUILayout.Space();
+
+                EditorGUILayout.LabelField("Tips", EditorStyles.boldLabel);
+                EditorGUILayout.HelpBox("If your one sound has many different variations available, try enabling the \"Use Library\" option " +
+                    "just below the name field. This let's AudioManager play a random different sound whenever you choose to play from this audio file object."
+                    , MessageType.None);
+            }
+            #endregion  
         }
     }
 }

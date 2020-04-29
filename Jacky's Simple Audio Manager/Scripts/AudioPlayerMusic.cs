@@ -4,24 +4,34 @@ using UnityEngine;
 
 namespace JSAM
 {
+    public enum TransitionMode
+    {
+        None,
+        FadeFromSilence,
+        Crossfade
+    }
+
+    [AddComponentMenu("AudioManager/Audio Player Music")]
     public class AudioPlayerMusic : MonoBehaviour
     {
         [SerializeField]
         [HideInInspector]
         int music = 0;
 
-        [Header("Music Settings")]
-
-        [SerializeField]
         [Tooltip("Play Music in 3D space, will override Music Fading if true")]
+        [SerializeField]
         bool spatializeSound;
+
+        [Tooltip("Adds a transition effect for playing this music")]
+        [SerializeField]
+        TransitionMode transitionMode;
 
         [SerializeField]
         [Tooltip("Play music starting from previous track's playback position, only works when Music Fade Time is greater than 0")]
         bool keepPlaybackPosition;
 
         [SerializeField]
-        [Tooltip("If true, will restart playback of this music if the same music is being played right now")]
+        [Tooltip("If true, playing this audio file while its currently playing will restart playback from the start point. Otherwise, the call to Play the track will be ignored if it's currently playing.")]
         bool restartOnReplay = false;
 
         [SerializeField]
@@ -74,13 +84,20 @@ namespace JSAM
                 {
                     am.PlayMusic3D(musicFile, transform, loopMode > LoopMode.NoLooping);
                 }
-                else if (musicFadeTime > 0)
-                {
-                    am.CrossfadeMusic(musicFile, musicFadeTime, keepPlaybackPosition);
-                }
                 else
                 {
-                    am.PlayMusic(musicFile, loopMode > LoopMode.NoLooping);
+                    switch (transitionMode)
+                    {
+                        case TransitionMode.None:
+                            am.PlayMusic(musicFile, loopMode > LoopMode.NoLooping);
+                            break;
+                        case TransitionMode.FadeFromSilence:
+                            am.FadeMusic(musicFile, musicFadeTime, loopMode > LoopMode.NoLooping);
+                            break;
+                        case TransitionMode.Crossfade:
+                            am.CrossfadeMusic(musicFile, musicFadeTime, keepPlaybackPosition);
+                            break;
+                    }
                 }
             }
             else
@@ -91,13 +108,20 @@ namespace JSAM
                 {
                     am.PlayMusic3D(music, transform, loopMode);
                 }
-                else if (musicFadeTime > 0)
-                {
-                    am.CrossfadeMusic(music, musicFadeTime, LoopMode.LoopWithLoopPoints, keepPlaybackPosition);
-                }
                 else
                 {
-                    am.PlayMusic(music, loopMode);
+                    switch (transitionMode)
+                    {
+                        case TransitionMode.None:
+                            am.PlayMusic(music, loopMode);
+                            break;
+                        case TransitionMode.FadeFromSilence:
+                            am.FadeMusic(music, musicFadeTime, loopMode);
+                            break;
+                        case TransitionMode.Crossfade:
+                            am.CrossfadeMusic(music, musicFadeTime, loopMode, keepPlaybackPosition);
+                            break;
+                    }
                 }
             }
         }
@@ -176,6 +200,11 @@ namespace JSAM
         public AudioClip GetAttachedFile()
         {
             return musicFile;
+        }
+
+        public TransitionMode GetTransitionMode()
+        {
+            return transitionMode;
         }
     }
 }

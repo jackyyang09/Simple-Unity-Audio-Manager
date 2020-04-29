@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace JSAM
 {
+    [AddComponentMenu("AudioManager/Audio Collision Feedback")]
     public class AudioCollisionFeedback : BaseAudioFeedback
     {
         enum CollisionEvent

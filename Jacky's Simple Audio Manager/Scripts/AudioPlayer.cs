@@ -4,60 +4,71 @@ using UnityEngine;
 
 namespace JSAM
 {
+    [AddComponentMenu("AudioManager/Audio Player")]
     public class AudioPlayer : BaseAudioFeedback
     {
+        [Tooltip("Play the sound when the scene starts up")]
         [SerializeField]
-        bool loopSound = false;
+        bool playOnStart = true;
 
-        [Tooltip("Play sound after this long")]
+        [Tooltip("Play the sound both when the scene starts up and when the object this is attached to is created or set to active")]
         [SerializeField]
-        float delay = 0;
+        bool playOnEnable = false;
 
-        [SerializeField]
-        bool playOnStart;
-
-        [SerializeField]
-        bool playOnEnable;
-
+        [Tooltip("Stop the sound when the object this is attached to is destroyed or set to deactive")]
         [SerializeField]
         bool stopOnDisable = true;
 
+        [Tooltip("Stop the sound when the object this is attached to is destroyed")]
         [SerializeField]
-        bool stopOnDestroy = true;
+        bool stopOnDestroy = false;
+
+        /// <summary>
+        /// Boolean prevents the sound from being played multiple times when the Start and OnEnable callbacks intersect
+        /// </summary>
+        bool activated;
 
         // Start is called before the first frame update
         protected override void Start()
         {
             base.Start();
 
-            if (playOnStart)
+            if (playOnStart && !activated)
             {
+                activated = true;
                 Play();
             }
         }
 
-        public void Play()
+        public AudioSource Play()
         {
             AudioManager am = AudioManager.instance;
-
-            Transform t = (spatialSound) ? transform : null;
+            AudioSource source;
 
             if (soundFile != null)
             {
+                Transform t = (spatialSound) ? transform : null;
+
                 if (loopSound)
                 {
-                    /*if (!am.IsSoundLooping(soundFile)) */am.PlaySoundLoop(soundFile, transform, spatialSound, priority);
+                    /*if (!am.IsSoundLooping(soundFile)) */source = am.PlaySoundLoop(soundFile, sTransform, spatialSound, priority);
                 }
-                else am.PlaySoundOnce(soundFile, t, priority, pitchShift, delay);
+                else source = am.PlaySoundOnce(soundFile, sTransform, priority, pitchShift, delay);
             }
             else
             {
                 if (loopSound)
                 {
-                    /*if (!am.IsSoundLooping(sound)) */am.PlaySoundLoop(sound, transform, spatialSound, priority);
+                    /*if (!am.IsSoundLooping(sound)) */
+                    source = am.PlaySoundLoop(sound, sTransform, spatialSound, priority);
                 }
-                else am.PlaySoundOnce(sound, t, priority, pitchShift, delay);
+                else source = am.PlaySoundOnce(sound, sTransform, priority, pitchShift, delay);
             }
+
+            // Ready to play again later
+            activated = false;
+
+            return source;
         }
 
         /// <summary>
@@ -67,21 +78,20 @@ namespace JSAM
         {
             AudioManager am = AudioManager.instance;
 
-            Transform t = (spatialSound) ? transform : null;
             if (soundFile != null)
             {
                 if (!loopSound)
                 {
-                    if (am.IsSoundPlaying(soundFile, t))
+                    if (am.IsSoundPlaying(soundFile, sTransform))
                     {
-                        am.StopSound(soundFile, t);
+                        am.StopSound(soundFile, sTransform);
                     }
                 }
                 else
                 {
                     if (am.IsSoundLooping(soundFile))
                     {
-                        am.StopSoundLoop(sound, true, t);
+                        am.StopSoundLoop(sound, true, sTransform);
                     }
                 }
             }
@@ -89,16 +99,16 @@ namespace JSAM
             {
                 if (!loopSound)
                 {
-                    if (am.IsSoundPlaying(sound, t))
+                    if (am.IsSoundPlaying(sound, sTransform))
                     {
-                        am.StopSound(sound, t);
+                        am.StopSound(sound, sTransform);
                     }
                 }
                 else
                 {
                     if (am.IsSoundLooping(sound))
                     {
-                        am.StopSoundLoop(sound, true, t);
+                        am.StopSoundLoop(sound, true, sTransform);
                     }
                 }
             }
@@ -106,8 +116,9 @@ namespace JSAM
 
         private void OnEnable()
         {
-            if (playOnEnable)
+            if (playOnEnable && !activated)
             {
+                activated = true;
                 StartCoroutine(PlayOnEnable());
             }
         }

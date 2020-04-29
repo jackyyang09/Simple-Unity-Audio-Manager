@@ -15,3 +15,9 @@ MonoBehaviour:
   file: {fileID: 8300000, guid: 1a3ec11eedd102f4488b169670fcef28, type: 3}
   files: []
   useLibrary: 0
+  spatialize: 1
+  loopSound: 0
+  priority: 128
+  pitchShift: 1
+  delay: 0
+  ignoreTimeScale: 0

@@ -28,6 +28,7 @@ namespace JSAM
 
         CharacterController controller;
 
+        [SerializeField]
         Transform stand;
 
         AudioManager am;
@@ -36,7 +37,6 @@ namespace JSAM
         void Start()
         {
             controller = GetComponent<CharacterController>();
-            stand = Camera.main.transform;
 
             am = AudioManager.instance;
         }

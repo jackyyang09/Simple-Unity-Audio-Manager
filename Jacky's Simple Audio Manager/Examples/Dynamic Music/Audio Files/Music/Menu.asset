@@ -15,8 +15,14 @@ MonoBehaviour:
   file: {fileID: 8300000, guid: ae19c5fe7cf11ce45a2a774f2c29b31c, type: 3}
   files: []
   useLibrary: 0
+  spatialize: 0
+  loopSound: 0
+  priority: 128
+  pitchShift: 1
+  delay: 0
   useLoopPoints: 0
   clampBetweenLoopPoints: 0
+  loopMode: 0
   loopStart: 0
   loopEnd: 0
   loopPointInputMode: 0

@@ -1,5 +1,18 @@
 All assets used in the "First-Person 3D" example project can be used royalty-free provided that you abide by the terms of their respective licenses
 
+====Models====
+The following models are released under the Attribution 4.0 International license
+https://creativecommons.org/licenses/by/4.0/
+
+relolanimation_2.fbx
+
+Use of this model requires that you give appropriate credit to the author
+
+Do list their username and provide the corresponding links alongside the rest of your credits
+https://www.artstation.com/abraxocleaner - AbraxoCleaner
+https://sketchfab.com/Brogrammist/ - Brogrammist
+http://portfolio.ranon3d.com/hands.html - Ranon Sarono
+
 ====Sound====
 
 The following sounds are released under the CC0 1.0 Universal Public Domain Dedication license
@@ -11,6 +24,13 @@ walk (loop).wav
 391725__morganpurkis__battle-rifle.wav
 391847__morganpurkis__single-gunshot-5-4.wav
 390663__morganpurkis__submachine-gun.wav
+chamber.wav
+empty.wav
+equip.wav
+mag_grab.wav
+mag_insert.wav
+mag_remove.wav
+mag_tap.wav
 
 You are free to use these sounds however you wish
 
