@@ -25,16 +25,14 @@ public class ShipController : MonoBehaviour
     bool canShoot = true;
 
     [SerializeField]
-    Transform bulletSpawnZone;
+    Transform bulletSpawnZone = null;
 
     [Header("Object References")]
 
     [SerializeField]
-    ObjectPool bulletPool;
+    ObjectPool bulletPool = null;
 
     Rigidbody2D rb;
-
-    AudioManager am;
 
     Animator anim;
 
@@ -44,7 +42,6 @@ public class ShipController : MonoBehaviour
     {
         // Set object references
         rb = GetComponent<Rigidbody2D>();
-        am = AudioManager.instance;
         anim = GetComponentInChildren<Animator>();
         hitBox = transform.GetChild(0).GetComponent<SpriteRenderer>();
     }
@@ -98,16 +95,16 @@ public class ShipController : MonoBehaviour
                 bullet.SetActive(true);
 
                 // Have AudioManager loop the "Shooting" sound if it's not looping already
-                if (!am.IsSoundLooping(SoundsExample2D.Shooting))
+                if (!AudioManager.IsSoundLooping(SoundsExample2D.Shooting))
                 {   
-                    AudioManager.instance.PlaySoundLoop(SoundsExample2D.Shooting, transform, true);
+                    AudioManager.PlaySoundLoop(SoundsExample2D.Shooting, transform);
                 }
 
                 StartCoroutine(ShotCooldown());
             }
             else if (!Input.GetKey(KeyCode.Z))
             {
-                am.StopSoundLoop(SoundsExample2D.Shooting);
+                AudioManager.StopSoundLoop(SoundsExample2D.Shooting);
             }
         }
     }

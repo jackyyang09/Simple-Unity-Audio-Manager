@@ -7,7 +7,7 @@ namespace JSAM
     public class RandomForceEmitter : MonoBehaviour
     {
         [SerializeField]
-        float upWardsForce;
+        float upWardsForce = 1.0f;
 
         [SerializeField]
         float jumpCooldown = 2.5f;

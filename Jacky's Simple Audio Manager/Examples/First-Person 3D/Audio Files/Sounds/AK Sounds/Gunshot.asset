@@ -12,10 +12,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d15ae218647a2d4f85e14306846c10c, type: 3}
   m_Name: Gunshot
   m_EditorClassIdentifier: 
-  file: {fileID: 0}
+  file: {fileID: 8300000, guid: 8af8de40fcbdd684ba5d5ddbcd24738f, type: 3}
   files:
   - {fileID: 8300000, guid: 8af8de40fcbdd684ba5d5ddbcd24738f, type: 3}
   - {fileID: 8300000, guid: cb8f1be3ace675147b700ed30513d01d, type: 3}
   - {fileID: 8300000, guid: 397095441c4f1c64aaefd9a4ab72b146, type: 3}
   - {fileID: 8300000, guid: a2f331ceaeebb254aa600162e217214e, type: 3}
   useLibrary: 1
+  category: AK Sounds
+  relativeVolume: 1
+  spatialize: 0
+  priority: 128
+  pitchShift: 0.05
+  delay: 0
+  ignoreTimeScale: 0
+  fadeMode: 0
+  fadeInDuration: 0.15999997
+  fadeOutDuration: 1
+  safeName: Gunshot
+  lowPassFilter:
+    enabled: 1
+    cutoffFrequency: 14721
+    lowpassResonanceQ: 3.31
+  highPassFilter:
+    enabled: 1
+    cutoffFrequency: 5000
+    highpassResonanceQ: 1
+  distortionFilter:
+    enabled: 1
+    distortionLevel: 0.5

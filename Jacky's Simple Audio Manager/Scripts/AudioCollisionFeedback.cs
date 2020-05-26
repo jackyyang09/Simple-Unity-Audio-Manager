@@ -17,11 +17,11 @@ namespace JSAM
         [Header("Collision Settings")]
         [SerializeField]
         [Tooltip("Will only play sound on collision with another object these layers")]
-        LayerMask collidesWith;
+        LayerMask collidesWith = 0;
 
         [SerializeField]
         [Tooltip("The collision event that triggers the sound to play")]
-        CollisionEvent triggerEvent;
+        CollisionEvent triggerEvent = CollisionEvent.OnCollisionEnter;
 
         // Start is called before the first frame update
         protected override void Start()
@@ -33,13 +33,18 @@ namespace JSAM
         {
             if (Contains(collidesWith, collision.gameObject.layer))
             {
+                AudioSource source = null;
                 if (soundFile != null)
                 {
-                    AudioManager.instance.PlaySoundOnce(soundFile, sTransform, priority, pitchShift);
+                    source = AudioManager.instance.PlaySoundInternal(soundFile, sTransform, priority, pitchShift);
                 }
                 else
                 {
-                    AudioManager.instance.PlaySoundOnce(sound, sTransform, priority, pitchShift);
+                    source = AudioManager.instance.PlaySoundInternal(sound, sTransform);
+                }
+                if (spatialSound)
+                {
+                    source.gameObject.transform.position = collision.GetContact(0).point;
                 }
             }
         }
@@ -48,13 +53,18 @@ namespace JSAM
         {
             if (Contains(collidesWith, collision.gameObject.layer))
             {
+                AudioSource source = null;
                 if (soundFile != null)
                 {
-                    AudioManager.instance.PlaySoundOnce(soundFile, sTransform, priority, pitchShift);
+                    source = AudioManager.instance.PlaySoundInternal(soundFile, sTransform, priority, pitchShift);
                 }
                 else
                 {
-                    AudioManager.instance.PlaySoundOnce(sound, sTransform, priority, pitchShift);
+                    source = AudioManager.instance.PlaySoundInternal(sound, sTransform);
+                }
+                if (spatialSound)
+                {
+                    source.gameObject.transform.position = collision.GetContact(0).point;
                 }
             }
         }
@@ -90,7 +100,7 @@ namespace JSAM
         }
 
         /// <summary>
-        /// Extension method to check if a layer is in a layermask
+        /// Extension method to check if a layer is in a layer mask
         /// With help from these lads https://answers.unity.com/questions/50279/check-if-layer-is-in-layermask.html
         /// </summary>
         /// <param name="mask"></param>

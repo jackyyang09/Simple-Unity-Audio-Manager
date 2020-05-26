@@ -21,7 +21,7 @@ namespace JSAM
 
         [SerializeField]
         [Tooltip("The intersection event that triggers the sound to play")]
-        TriggerEvent triggerEvent;
+        TriggerEvent triggerEvent = TriggerEvent.OnTriggerEnter;
 
         // Start is called before the first frame update
         protected override void Start()
@@ -29,58 +29,46 @@ namespace JSAM
             base.Start();
         }
 
-        void TriggerSound(Collider collision)
+        void TriggerSound()
         {
             if (soundFile != null)
             {
-                AudioManager.instance.PlaySoundOnce(soundFile, sTransform, priority, pitchShift);
+                AudioManager.instance.PlaySoundInternal(soundFile, sTransform, priority, pitchShift);
             }
             else
             {
-                AudioManager.instance.PlaySoundOnce(sound, sTransform, priority, pitchShift);
-            }
-        }
-
-        void TriggerSound(Collider2D collision)
-        {
-            if (soundFile != null)
-            {
-                AudioManager.instance.PlaySoundOnce(soundFile, sTransform, priority, pitchShift);
-            }
-            else
-            {
-                AudioManager.instance.PlaySoundOnce(sound, sTransform, priority, pitchShift);
+                AudioManager.instance.PlaySoundInternal(sound, sTransform);
             }
         }
 
         private void OnTriggerEnter(Collider other)
         {
-            if (triggerEvent == TriggerEvent.OnTriggerEnter) TriggerSound(other);
+            if (triggerEvent == TriggerEvent.OnTriggerEnter) TriggerSound();
         }
 
         private void OnTriggerStay(Collider other)
         {
-            if (triggerEvent == TriggerEvent.OnTriggerStay) TriggerSound(other);
+            if (triggerEvent == TriggerEvent.OnTriggerStay) TriggerSound();
         }
 
         private void OnTriggerExit(Collider other)
         {
-            if (triggerEvent == TriggerEvent.OnTriggerExit) TriggerSound(other);
+            if (triggerEvent == TriggerEvent.OnTriggerExit) TriggerSound();
         }
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (triggerEvent == TriggerEvent.OnTriggerEnter) TriggerSound(collision);
+            if (triggerEvent == TriggerEvent.OnTriggerEnter) TriggerSound();
         }
 
         private void OnTriggerStay2D(Collider2D collision)
         {
-            if (triggerEvent == TriggerEvent.OnTriggerStay) TriggerSound(collision);
+            if (triggerEvent == TriggerEvent.OnTriggerStay) TriggerSound();
         }
 
         private void OnTriggerExit2D(Collider2D collision)
         {
-            if (triggerEvent == TriggerEvent.OnTriggerExit) TriggerSound(collision);
+            if (triggerEvent == TriggerEvent.OnTriggerExit) TriggerSound();
         }
     }
 }

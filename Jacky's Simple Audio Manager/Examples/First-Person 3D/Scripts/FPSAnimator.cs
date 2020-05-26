@@ -11,33 +11,45 @@ namespace JSAM
         {
             Idle,
             Shooting,
-            Reloading
+            Reloading,
+            Running
         }
 
+        [Header("Explore me for examples of playing basic sounds!")]
         [SerializeField]
-        ShooterStates currentState;
+        ShooterStates currentState = ShooterStates.Idle;
 
         [SerializeField]
         int magSize = 30;
-        int bullets;
+        int bullets = 0;
 
         [SerializeField]
-        float timeBetweenShots;
+        float timeBetweenShots = 1;
         [SerializeField]
-        bool canShoot;
+        bool canShoot = true;
 
         [SerializeField]
-        float aimDownSightsTime;
-        float adsProgress;
+        float aimDownSightsTime = 1;
+        float adsProgress = 0;
+
+        [Header("Example of AudioEvents being used when player crouches")]
+        [SerializeField]
+        UnityEngine.Events.UnityEvent onCrouch = null;
 
         bool reloading;
 
         Animator anim;
+        FPSWalker walker;
+
+        private void Awake()
+        {
+            anim = GetComponent<Animator>();
+            walker = GetComponentInParent<FPSWalker>();
+        }
 
         // Start is called before the first frame update
         void Start()
         {
-            anim = GetComponent<Animator>();
             bullets = magSize;
             canShoot = true;
         }
@@ -45,6 +57,19 @@ namespace JSAM
         // Update is called once per frame
         void Update()
         {
+            if (currentState == ShooterStates.Idle || currentState == ShooterStates.Running)
+            {
+                if (walker.GetCurrentState() == MovementStates.Running)
+                {
+                    anim.SetBool("Sprint", true);
+                    currentState = ShooterStates.Running;
+                }
+                else
+                {
+                    anim.SetBool("Sprint", false);
+                    currentState = ShooterStates.Idle;
+                }
+            }
             switch (currentState)
             {
                 case ShooterStates.Idle:
@@ -55,7 +80,7 @@ namespace JSAM
                         {
                             if (bullets > 1)
                             {
-                                AudioManager.instance.PlaySoundOnce(SoundsExample3D.Gunshot, transform, Priority.Default, Pitch.Low);
+                                AudioManager.PlaySound(SoundsExample3D.Gunshot);
                                 StartCoroutine(ShootDelay());
                                 anim.SetTrigger("Fire");
                                 bullets--;
@@ -65,14 +90,13 @@ namespace JSAM
                                 anim.SetTrigger("FireFinal");
                                 StartCoroutine(ShootDelay());
                                 bullets--;
-                                AudioManager.instance.PlaySoundOnce(SoundsExample3D.AKDryFire, transform, Priority.Default, Pitch.Low);
+                                AudioManager.PlaySound(SoundsExample3D.AKDryFire);
                             }
                         }
                         else if (Input.GetKeyUp(KeyCode.Mouse0))
                         {
                             anim.SetTrigger("FireStop");
                         }
-                        
                     }
                     if (Input.GetMouseButton(1))
                     {
@@ -88,13 +112,18 @@ namespace JSAM
                     break;
                 case ShooterStates.Reloading:
                     break;
-                    
             }
             if (!Input.GetMouseButton(1))
             {
                 adsProgress = Mathf.Clamp(adsProgress - Time.deltaTime, 0, aimDownSightsTime);
             }
             anim.SetFloat("AimDownSights", adsProgress / aimDownSightsTime);
+        }
+
+        public void InvokeOnCrouch(bool crouching)
+        {
+            anim.SetBool("Crouch", crouching);
+            onCrouch.Invoke();
         }
 
         IEnumerator ShootDelay()

@@ -13,6 +13,7 @@ namespace JSAM
         [HideInInspector]
         public int sound;
 
+        [Tooltip("If true, sound will keep playing in a loop according to it's settings until you make it stop")]
         [SerializeField]
         protected bool loopSound = false;
 
@@ -20,11 +21,14 @@ namespace JSAM
         protected Priority priority = Priority.Default;
 
         [SerializeField]
-        protected Pitch pitchShift = Pitch.VeryLow;
+        protected float pitchShift = 0;
 
         [Tooltip("Play sound after this long")]
         [SerializeField]
         protected float delay = 0;
+
+        [SerializeField]
+        protected bool ignoreTimeScale = false;
 
         [SerializeField]
         [HideInInspector]
@@ -49,7 +53,7 @@ namespace JSAM
                 priority = audioObject.priority;
                 pitchShift = audioObject.pitchShift;
                 delay = audioObject.delay;
-                loopSound = audioObject.loopSound;
+                ignoreTimeScale = audioObject.ignoreTimeScale;
             }
 
             sTransform = (spatialSound) ? transform : null;

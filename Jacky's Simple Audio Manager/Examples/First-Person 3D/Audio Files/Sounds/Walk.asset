@@ -13,5 +13,17 @@ MonoBehaviour:
   m_Name: Walk
   m_EditorClassIdentifier: 
   file: {fileID: 8300000, guid: 6992658e5fb03354ea113982a3bf39e4, type: 3}
-  files: []
-  useLibrary: 0
+  files:
+  - {fileID: 8300000, guid: 6992658e5fb03354ea113982a3bf39e4, type: 3}
+  useLibrary: 1
+  category: 
+  relativeVolume: 1
+  spatialize: 0
+  priority: 128
+  pitchShift: 0.05
+  delay: 0
+  ignoreTimeScale: 0
+  fadeMode: 0
+  fadeInDuration: 0.306
+  fadeOutDuration: 0.694
+  safeName: 

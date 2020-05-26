@@ -48,14 +48,11 @@ namespace JSAM
 
             EditorGUILayout.Space();
 
-            GUIStyle boldFoldout = new GUIStyle(EditorStyles.foldout);
-            boldFoldout.fontStyle = FontStyle.Bold;
-
             GUIContent fontent = new GUIContent("Custom AudioClip Settings", "These settings only apply if you input your own custom AudioClip rather than choosing from the generated Audio Library");
             if (myScript.GetAttachedSound() == null)
                 showAudioClipSettings = EditorGUILayout.Foldout(showAudioClipSettings, fontent);
             else
-                showAudioClipSettings = EditorGUILayout.Foldout(showAudioClipSettings, fontent, boldFoldout);
+                showAudioClipSettings = EditorGUILayout.BeginFoldoutHeaderGroup(showAudioClipSettings, fontent);
             if (showAudioClipSettings)
             {
                 using (new EditorGUI.DisabledScope(myScript.GetAttachedSound() == null))
@@ -64,13 +61,15 @@ namespace JSAM
                         "stopOnDisable", "stopOnDestroy", "playSoundOn"});
                 }
             }
+            if (myScript.GetAttachedSound() != null)
+                EditorGUILayout.EndFoldoutHeaderGroup();
             EditorGUILayout.PropertyField(serializedObject.FindProperty("playSoundOn"));
 
             serializedObject.ApplyModifiedProperties();
 
             EditorGUILayout.Space();
 
-            showHowTo = EditorGUILayout.Foldout(showHowTo, "Quick Reference Guide", boldFoldout);
+            showHowTo = EditorGUILayout.BeginFoldoutHeaderGroup(showHowTo, "Quick Reference Guide");
             if (showHowTo)
             {
                 EditorGUILayout.Space();
@@ -89,6 +88,7 @@ namespace JSAM
                     " Particle System plays sounds on both instantiation and destruction!"
                     , MessageType.None);
             }
+            EditorGUILayout.EndFoldoutHeaderGroup();
         }
     }
 }

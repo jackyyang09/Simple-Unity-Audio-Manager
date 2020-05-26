@@ -24,11 +24,11 @@ namespace JSAM
 
         [Tooltip("Adds a transition effect for playing this music")]
         [SerializeField]
-        TransitionMode transitionMode;
+        TransitionMode transitionMode = TransitionMode.None;
 
         [SerializeField]
         [Tooltip("Play music starting from previous track's playback position, only works when Music Fade Time is greater than 0")]
-        bool keepPlaybackPosition;
+        bool keepPlaybackPosition = true;
 
         [SerializeField]
         [Tooltip("If true, playing this audio file while its currently playing will restart playback from the start point. Otherwise, the call to Play the track will be ignored if it's currently playing.")]
@@ -43,11 +43,11 @@ namespace JSAM
 
         [Tooltip("Plays the music when this component or the GameObject its attached is first created")]
         [SerializeField]
-        bool playOnStart;
+        bool playOnStart = true;
 
         [Tooltip("Plays the music when this component or the GameObject its attached to is enabled")]
         [SerializeField]
-        bool playOnEnable;
+        bool playOnEnable = false;
 
         [Tooltip("Stops the music when this component or the GameObject its attached to is disabled")]
         [SerializeField]
@@ -55,17 +55,28 @@ namespace JSAM
 
         [Tooltip("Stops the music when this component or the GameObject its attached to is destroyed")]
         [SerializeField]
-        bool stopOnDestroy = false;
+        bool stopOnDestroy = true;
 
         [Tooltip("Overrides the \"Music\" parameter with an AudioClip if not null")]
         [SerializeField]
-        AudioClip musicFile;
+        AudioClip musicFile = null;
+        AudioFileMusicObject audioObject;
+
+        AudioSource sourceBeingUsed;
 
         Coroutine playRoutine;
 
         // Start is called before the first frame update
         void Start()
         {
+            if (musicFile == null)
+            {
+                audioObject = AudioManager.instance.GetMusicLibrary()[music];
+
+                loopMode = audioObject.loopMode;
+                spatializeSound = audioObject.spatialize;
+            }
+
             if (playOnStart)
             {
                 Play();
@@ -78,48 +89,48 @@ namespace JSAM
 
             if (musicFile != null)
             {
-                if (am.IsMusicPlaying(musicFile) && !restartOnReplay) return;
+                if (am.IsMusicPlayingInternal(musicFile) && !restartOnReplay) return;
 
                 if (spatializeSound)
                 {
-                    am.PlayMusic3D(musicFile, transform, loopMode > LoopMode.NoLooping);
+                    sourceBeingUsed = am.PlayMusic3DInternal(musicFile, transform, loopMode > LoopMode.NoLooping);
                 }
                 else
                 {
                     switch (transitionMode)
                     {
                         case TransitionMode.None:
-                            am.PlayMusic(musicFile, loopMode > LoopMode.NoLooping);
+                            sourceBeingUsed = am.PlayMusicInternal(musicFile, loopMode > LoopMode.NoLooping);
                             break;
                         case TransitionMode.FadeFromSilence:
-                            am.FadeMusic(musicFile, musicFadeTime, loopMode > LoopMode.NoLooping);
+                            sourceBeingUsed = am.FadeMusic(musicFile, musicFadeTime, loopMode > LoopMode.NoLooping);
                             break;
                         case TransitionMode.Crossfade:
-                            am.CrossfadeMusic(musicFile, musicFadeTime, keepPlaybackPosition);
+                            sourceBeingUsed = am.CrossfadeMusicInternal(musicFile, musicFadeTime, keepPlaybackPosition);
                             break;
                     }
                 }
             }
             else
             {
-                if (am.IsMusicPlaying(music) && !restartOnReplay) return;
+                if (am.IsMusicPlayingInternal(music) && !restartOnReplay) return;
 
                 if (spatializeSound)
                 {
-                    am.PlayMusic3D(music, transform, loopMode);
+                    sourceBeingUsed = am.PlayMusic3DInternal(music, transform, loopMode);
                 }
                 else
                 {
                     switch (transitionMode)
                     {
                         case TransitionMode.None:
-                            am.PlayMusic(music, loopMode);
+                            sourceBeingUsed = am.PlayMusicInternal(music, loopMode);
                             break;
                         case TransitionMode.FadeFromSilence:
-                            am.FadeMusic(music, musicFadeTime, loopMode);
+                            sourceBeingUsed = am.FadeMusicInternal(music, musicFadeTime, loopMode);
                             break;
                         case TransitionMode.Crossfade:
-                            am.CrossfadeMusic(music, musicFadeTime, loopMode, keepPlaybackPosition);
+                            sourceBeingUsed = am.CrossfadeMusicInternal(music, musicFadeTime, loopMode, keepPlaybackPosition);
                             break;
                     }
                 }
@@ -132,12 +143,14 @@ namespace JSAM
 
             if (musicFile != null)
             {
-                am.StopMusic(musicFile);
+                am.StopMusicInternal(musicFile);
             }
             else
             {
-                am.StopMusic(music);
+                am.StopMusicInternal(music);
             }
+
+            sourceBeingUsed = null;
         }
 
         /// <summary>
@@ -145,7 +158,7 @@ namespace JSAM
         /// </summary>
         public void FadeIn(float time)
         {
-            AudioManager.instance.FadeMusicIn(music, time);
+            sourceBeingUsed = AudioManager.instance.FadeMusicInInternal(music, time);
         }
 
         /// <summary>
@@ -154,7 +167,8 @@ namespace JSAM
         /// <param name="time"></param>
         public void FadeOut(float time)
         {
-            AudioManager.instance.FadeMusicOut(time);
+            AudioManager.instance.FadeMusicOutInternal(time);
+            sourceBeingUsed = null;
         }
 
         private void OnEnable()
@@ -195,6 +209,11 @@ namespace JSAM
             {
                 Stop();
             }
+        }
+
+        public AudioSource GetAudioSource()
+        {
+            return sourceBeingUsed;
         }
 
         public AudioClip GetAttachedFile()

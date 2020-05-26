@@ -13,6 +13,12 @@ namespace JSAM
     [CustomEditor(typeof(AudioManager))]
     public class AudioManagerEditor : Editor
     {
+        struct SPandName
+        {
+            public SerializedProperty sp;
+            public string name;
+        }
+
         static bool showVolumeSettings = true;
         static bool showAdvancedSettings;
         static bool showSoundLibrary;
@@ -20,17 +26,14 @@ namespace JSAM
 
         static bool showHowTo;
 
+        static Dictionary<string, bool> categories = new Dictionary<string, bool>();
+        static Dictionary<string, bool> categoriesMusic = new Dictionary<string, bool>();
+
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
 
             AudioManager myScript = (AudioManager)target;
-
-            string editorMessage = myScript.GetEditorMessage();
-            if (editorMessage != "")
-            {
-                EditorGUILayout.HelpBox(editorMessage, MessageType.Info);
-            }
 
             List<string> excludedProperties = new List<string> { "m_Script" };
 
@@ -42,15 +45,15 @@ namespace JSAM
                 {
                     "m_Script", "audioSources",
                     "spatializeLateUpdate", "timeScaledSounds",
-                    "stopSoundsOnSceneLoad", "dontDestroyOnLoad",
+                    "stopOnSceneLoad", "dontDestroyOnLoad",
                     "dynamicSourceAllocation", "disableConsoleLogs"
                 });
 
-                content = new GUIContent("Show Advanced Settings", "Toggle this if you're an experienced Unity user");
+                content = new GUIContent("↓ Show Advanced Settings ↓", "Toggle this if you're an experienced Unity user");
             }
             else
             {
-                content = new GUIContent("Hide Advanced Settings", "Toggle this if you're an experienced Unity user");
+                content = new GUIContent("↑ Hide Advanced Settings ↑", "Toggle this if you're an experienced Unity user");
             }
             excludedProperties.AddRange(new List<string> { "listener", "sourcePrefab" });
 
@@ -61,17 +64,17 @@ namespace JSAM
 
             EditorGUILayout.Space();
 
-            GUIStyle boldFoldout = new GUIStyle(EditorStyles.foldout);
-            boldFoldout.fontStyle = FontStyle.Bold;
             content = new GUIContent("Volume Controls", "Change the volume levels of all AudioManager-controlled audio channels here");
-            showVolumeSettings = EditorGUILayout.Foldout(showVolumeSettings, content, boldFoldout);
+            showVolumeSettings = EditorGUILayout.BeginFoldoutHeaderGroup(showVolumeSettings, content);
             if (showVolumeSettings)
             {
                 DrawAdvancedVolumeControls(myScript);
             }
+            EditorGUILayout.EndFoldoutHeaderGroup();
 
             DrawPropertiesExcluding(serializedObject, excludedProperties.ToArray());
 
+            #region Folder Browser
             EditorGUILayout.BeginHorizontal();
 
             GUIContent pathContent = new GUIContent("Audio Assets Folder", "This folder and all sub-folders will be searched for Audio File Objects, AudioManager-generated files will be stored in this location as well");
@@ -98,7 +101,7 @@ namespace JSAM
                 }
                 else // otherwise
                 {
-                    // Fix path to be useable for AssetDatabase.FindAssets
+                    // Fix path to be usable for AssetDatabase.FindAssets
                     filePath = filePath.Remove(0, filePath.IndexOf("Assets/"));
                     if (filePath[filePath.Length - 1] == '/') filePath = filePath.Remove(filePath.Length - 1, 1);
                 }
@@ -106,6 +109,7 @@ namespace JSAM
             serializedObject.FindProperty("audioFolderLocation").stringValue = filePath;
 
             EditorGUILayout.EndHorizontal();
+            #endregion
 
             SerializedProperty instancedEnums = serializedObject.FindProperty("instancedEnums");
             SerializedProperty wasInstancedBefore = serializedObject.FindProperty("wasInstancedBefore");
@@ -113,7 +117,7 @@ namespace JSAM
 
             if (showAdvancedSettings)
             {
-                GUIContent longTent = new GUIContent("Enable Instanced Audio Enums", "By default, AudioManager assumes that your project will share all sounds and will have them all ready to be called using a single Enum list. " +
+                GUIContent longTent = new GUIContent("Instanced Audio Enums", "By default, AudioManager assumes that your project will share all sounds and will have them all ready to be called using a single Enum list. " +
                     "However, you may also choose to have different instances of AudioManager per-scene with different Audio Files loaded in each. " +
                     "In that case, AudioManager will generate Enums specific to your scene and will be able to differentiate between them.");
                 EditorGUILayout.PropertyField(instancedEnums, longTent);
@@ -123,24 +127,86 @@ namespace JSAM
             {
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("listener"));
             }
-            if (!myScript.SourcePrefabExists() || showAdvancedSettings)
+
+            #region Source Prefab Helper
+            if (!myScript.SourcePrefabExists())
+            {
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("sourcePrefab"));
+
+                EditorGUILayout.HelpBox("Reference to Source Prefab is missing! This prefab is required to make " +
+                        "AudioManager function. Click the button below to have AudioManager reapply the default reference.", MessageType.Warning);
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("Reapply Default AudioSource Prefab"))
+                {
+                    string[] GUIDs = AssetDatabase.FindAssets("Audio Channel t:GameObject");
+
+                    GameObject fallback = null;
+
+                    foreach (string s in GUIDs)
+                    {
+                        GameObject theObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(s), typeof(GameObject)) as GameObject;
+                        if (theObject.GetComponent<AudioSource>())
+                        {
+                            fallback = theObject;
+                            break;
+                        }
+                    }
+                    if (fallback != null) // Check has succeeded in finding the default reference
+                    {
+                        serializedObject.FindProperty("sourcePrefab").objectReferenceValue = fallback;
+                    }
+                    else // Check has failed to turn up results
+                    {
+                        GameObject newPrefab = new GameObject("Audio Channel");
+                        AudioSource theSource = newPrefab.AddComponent<AudioSource>();
+                        theSource.rolloffMode = AudioRolloffMode.Logarithmic;
+                        theSource.minDistance = 0.5f;
+                        theSource.maxDistance = 7;
+                        newPrefab.AddComponent<AudioChannelHelper>();
+
+                        // Look for AudioManager so we can put the new prefab next to it
+                        string assetPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("Audio Manager t:GameObject")[0]);
+                        assetPath = assetPath.Substring(0, assetPath.LastIndexOf("/") + 1);
+                        assetPath += "Audio Channel.prefab";
+                        bool success = false;
+                        PrefabUtility.SaveAsPrefabAsset(newPrefab, assetPath, out success);
+                        if (success)
+                        {
+                            serializedObject.FindProperty("sourcePrefab").objectReferenceValue = newPrefab;
+                            EditorUtility.DisplayDialog("Success", "AudioManager's default source prefab was missing. So a new one was recreated in it's place. " +
+                                "If AudioManager doesn't immediately update with the Audio Source prefab in place, click the button again or recompile your code.", "OK");
+                        }
+                        DestroyImmediate(newPrefab);
+                    }
+                }
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+            }
+            else if (myScript.SourcePrefabExists() && showAdvancedSettings)
             {
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("sourcePrefab"));
             }
+            #endregion
 
             EditorGUILayout.Space();
 
+            #region Audio Library Buttons
             EditorGUILayout.BeginHorizontal();
+
             if (GUILayout.Button("Add New Sound File"))
             {
                 // Many thanks to mstevenson for having a reference on creating scriptable objects from code
                 // https://gist.github.com/mstevenson/4726563
-                var asset = CreateInstance<AudioFileObject>();
-                string savePath = EditorUtility.SaveFilePanel("Create new Audio File Object", filePath, "New Audio File Object", "asset");
+                GameObject asset = new GameObject("New Audio File Object");
+                asset.AddComponent<AudioFileObject>();
+                string savePath = EditorUtility.SaveFilePanel("Create new Audio File Object", filePath, "New Audio File Object", "prefab");
                 if (savePath != "") // Make sure user didn't press "Cancel"
                 {
                     savePath = savePath.Remove(0, savePath.IndexOf("Assets/"));
-                    AssetDatabase.CreateAsset(asset, savePath);
+                    bool success = false;
+                    PrefabUtility.SaveAsPrefabAsset(asset, savePath, out success);
+                    DestroyImmediate(asset);
                     EditorUtility.FocusProjectWindow();
                     Selection.activeObject = asset;
                 }
@@ -148,8 +214,9 @@ namespace JSAM
 
             if (GUILayout.Button("Add New Music File"))
             {
-                var asset = CreateInstance<AudioFileObject>();
-                string savePath = EditorUtility.SaveFilePanel("Create new Audio File Music Object", filePath, "New Audio File Music Object", "asset");
+                GameObject asset = new GameObject("New Audio Music File Object");
+                asset.AddComponent<AudioFileMusicObject>();
+                string savePath = EditorUtility.SaveFilePanel("Create new Audio File Music Object", filePath, "New Audio File Music Object", "prefab");
                 if (savePath != "") // Make sure user didn't press "Cancel"
                 {
                     savePath = savePath.Remove(0, savePath.IndexOf("Assets/"));
@@ -175,6 +242,8 @@ namespace JSAM
                 {
                     AudioFileObject theObject = (AudioFileObject)AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(s), typeof(AudioFileObject));
 
+                    theObject.safeName = ConvertToAlphanumeric(theObject.name);
+
                     // Is this actually a music object?
                     if (!theObject.GetType().IsAssignableFrom(typeof(AudioFileObject)))
                     {
@@ -183,6 +252,9 @@ namespace JSAM
                     else audioFiles.Add(theObject);
                 }
 
+                AudioFileComparer afc = new AudioFileComparer();
+                audioFiles.Sort(afc);
+                musicFiles.Sort(afc);
                 if (myScript.GenerateAudioDictionarys(audioFiles, musicFiles) || wasInstancedBefore.boolValue == usingInstancedEnums)
                 {
                     EditorUtility.DisplayProgressBar("Re-Generating Audio Library", "Generating audio enum file...", 0.5f);
@@ -193,8 +265,17 @@ namespace JSAM
                     }
                     else // Generation successful, proceed as usual
                     {
-                        serializedObject.FindProperty("sceneSoundEnumName").stringValue = "JSAM.Sounds" + safeSceneName;
-                        serializedObject.FindProperty("sceneMusicEnumName").stringValue = "JSAM.Music" + safeSceneName;
+                        if (instancedEnums.boolValue)
+                        {
+                            serializedObject.FindProperty("sceneSoundEnumName").stringValue = "JSAM.Sounds" + safeSceneName;
+                            serializedObject.FindProperty("sceneMusicEnumName").stringValue = "JSAM.Music" + safeSceneName;
+                        }
+                        else
+                        {
+                            serializedObject.FindProperty("sceneSoundEnumName").stringValue = "JSAM.Sounds";
+                            serializedObject.FindProperty("sceneMusicEnumName").stringValue = "JSAM.Music";
+                        }
+                        
                         EditorUtility.DisplayProgressBar("Re-Generating Audio Library", "Done! Recompiling...", 0.95f);
                     }
                 }
@@ -205,6 +286,7 @@ namespace JSAM
             }
 
             wasInstancedBefore.boolValue = usingInstancedEnums;
+            #endregion
 
             serializedObject.ApplyModifiedProperties();
 
@@ -222,7 +304,7 @@ namespace JSAM
                 }
                 else
                 {
-                    EditorGUILayout.HelpBox("When using AudioManager in code, refer to the enums in " + sceneNameSpecial + " and " + sceneNameSpecialMusic + " for your list of available Audio Files", MessageType.Info);
+                    EditorGUILayout.HelpBox("When using AudioManager in code, refer to the enums in " + sceneNameSpecial + " and " + sceneNameSpecialMusic + " for your list of available Audio Files", MessageType.None);
                 }
             }
             else
@@ -239,88 +321,211 @@ namespace JSAM
 
             EditorGUILayout.Space();
 
+            #region Library Foldouts and Categories
             content = new GUIContent("Sound Library", "Library of all sounds loaded into AudioManager's Sound Dictionary. Mouse over each entry to see the full name in script.");
 
-            showSoundLibrary = EditorGUILayout.Foldout(showSoundLibrary, content, boldFoldout);
+            showSoundLibrary = EditorGUILayout.BeginFoldoutHeaderGroup(showSoundLibrary, content);
             if (showSoundLibrary)
             {
                 string enumName = serializedObject.FindProperty("sceneSoundEnumName").stringValue;
 
-                string[] soundNames = System.Enum.GetNames(myScript.GetSceneSoundEnum());
+                System.Type soundType = myScript.GetSceneSoundEnum();
+                string[] soundNames = new string[0];
+                if (soundType != null)
+                {
+                    soundNames = System.Enum.GetNames(soundType);
+                }
 
                 SerializedProperty audioFiles = serializedObject.FindProperty("audioFileObjects");
 
-                for (int i = 0; i < audioFiles.arraySize; i++)
+                if (audioFiles.arraySize > 0)
                 {
-                    Rect clickArea = EditorGUILayout.BeginHorizontal();
-                    SerializedProperty ao = audioFiles.GetArrayElementAtIndex(i);
-                    GUIContent sName;
-                    if (soundNames.Length == audioFiles.arraySize) // Additional check to prevent editor from breaking during regeneration
+                    EditorGUILayout.LabelField("You can right click a field to copy the enum to your clipboard");
+                }
+
+                // Make sure AudioManager didn't break during regeneration
+                if (soundNames.Length != audioFiles.arraySize)
+                {
+                    EditorGUILayout.HelpBox("Something may have interrupted AudioManager while it was generating the Audio Library. " +
+                        "Try regenerating the library one more time by clicking the button above.", MessageType.Info);
+                }
+                else
+                {
+                    // Fill the dictionary of categories
+                    foreach (string c in myScript.GetCategories())
                     {
-                        sName = new GUIContent(soundNames[i], enumName + "." + soundNames[i]);
+                        // Instantiate a new category entry if not found
+                        if (!categories.ContainsKey(c))
+                        {
+                            categories[c] = false;
+                        }
                     }
-                    else
+                    if (!categories.ContainsKey("Uncategorized")) categories["Uncategorized"] = false;
+
+                    Dictionary<string, List<SPandName>> audioSPs = new Dictionary<string, List<SPandName>>();
+                    List<AudioFileObject> audioRef = myScript.GetSoundLibrary();
+                    for (int i = 0; i < audioRef.Count; i++)
                     {
-                        sName = new GUIContent("");
-                    }
-                    using (new EditorGUI.DisabledScope(true))
-                    {
-                        EditorGUILayout.ObjectField(ao, sName);
+                        SerializedProperty ao = audioFiles.GetArrayElementAtIndex(i);
+                        SPandName newPair = new SPandName();
+                        newPair.name = soundNames[i];
+                        newPair.sp = ao;
+                        if (audioRef[i].category == "")
+                        {
+                            if (!audioSPs.ContainsKey("Uncategorized"))
+                            {
+                                audioSPs["Uncategorized"] = new List<SPandName>();
+                            }
+                            audioSPs["Uncategorized"].Add(newPair);
+                        }
+                        else
+                        {
+                            if (!audioSPs.ContainsKey(audioRef[i].category))
+                            {
+                                audioSPs[audioRef[i].category] = new List<SPandName>();
+                            }
+                            audioSPs[audioRef[i].category].Add(newPair);
+                        }
                     }
 
-                    // Thank you JJCrawley https://answers.unity.com/questions/1326881/right-click-in-custom-editor.html
-                    if (clickArea.Contains(Event.current.mousePosition) && Event.current.type == EventType.ContextClick)
+                    GUIStyle foldoutGroup = new GUIStyle(EditorStyles.foldoutHeader);
+                    foldoutGroup.fontStyle = FontStyle.Normal;
+                    string[] keys = new string[categories.Keys.Count];
+                    categories.Keys.CopyTo(keys, 0);
+                    List<string> keysList = new List<string>();
+                    keysList.AddRange(keys);
+                    foreach (string k in keys)
                     {
-                        GenericMenu menu = new GenericMenu();
-
-                        menu.AddItem(new GUIContent("Copy Enum to Clipboard"), false, CopyToClipboard, sName.tooltip);
-                        menu.ShowAsContext();
+                        if (k == "Uncategorized") continue;
+                        categories[k] = EditorGUILayout.Foldout(categories[k], k, foldoutGroup);
+                        EditorGUI.indentLevel++;
+                        if (categories[k])
+                        {
+                            for (int i = 0; i < audioSPs[k].Count; i++)
+                            {
+                                RenderAudioFileListing(audioSPs[k][i].sp, audioSPs[k][i].name, enumName);
+                            }
+                        }
+                        EditorGUI.indentLevel--;
                     }
-                    EditorGUILayout.EndHorizontal();
+
+                    if (keysList.Contains("Uncategorized"))
+                    {
+                        for (int i = 0; i < audioSPs["Uncategorized"].Count; i++)
+                        {
+                            RenderAudioFileListing(audioSPs["Uncategorized"][i].sp, audioSPs["Uncategorized"][i].name, enumName);
+                        }
+                    }
                 }
             }
+            EditorGUILayout.EndFoldoutHeaderGroup();
 
             content = new GUIContent("Music Library", "Library of all music loaded into AudioManager's Music Dictionary. Mouse over each entry to see the full name in script.");
 
-            showMusicLibrary = EditorGUILayout.Foldout(showMusicLibrary, content, boldFoldout);
+            showMusicLibrary = EditorGUILayout.BeginFoldoutHeaderGroup(showMusicLibrary, content);
             if (showMusicLibrary)
             {
                 string enumName = serializedObject.FindProperty("sceneMusicEnumName").stringValue;
 
-                string[] musicNames = System.Enum.GetNames(myScript.GetSceneMusicEnum());
+                System.Type musicType = myScript.GetSceneMusicEnum();
+                string[] musicNames = new string[0];
+                if (musicType != null)
+                {
+                    musicNames = System.Enum.GetNames(musicType);
+                }
 
                 SerializedProperty audioFiles = serializedObject.FindProperty("audioFileMusicObjects");
 
-                for (int i = 0; i < audioFiles.arraySize; i++)
+                if (audioFiles.arraySize > 0)
                 {
-                    EditorGUILayout.BeginHorizontal();
-                    SerializedProperty ao = audioFiles.GetArrayElementAtIndex(i);
-                    GUIContent mName;
-                    if (musicNames.Length == audioFiles.arraySize) // Additional check to prevent editor from breaking during regeneration
+                    EditorGUILayout.LabelField("You can right click a field to copy the enum to your clipboard");
+                }
+
+                if (musicNames.Length != audioFiles.arraySize)
+                {
+                    EditorGUILayout.HelpBox("Something may have interrupted AudioManager while it was generating the Audio Library. " +
+                        "Try regenerating the library one more time by clicking the button above.", MessageType.Info);
+                }
+                else
+                {
+                    // Fill the dictionary of categories
+                    foreach (string c in myScript.GetMusicCategories())
                     {
-                        mName = new GUIContent(musicNames[i], enumName + "." + musicNames[i]);
+                        // Instantiate a new category entry if not found
+                        if (!categoriesMusic.ContainsKey(c))
+                        {
+                            categoriesMusic[c] = false;
+                        }
                     }
-                    else
+                    if (!categoriesMusic.ContainsKey("Uncategorized")) categoriesMusic["Uncategorized"] = false;
+
+                    Dictionary<string, List<SPandName>> audioSPs = new Dictionary<string, List<SPandName>>();
+                    List<AudioFileMusicObject> audioRef = myScript.GetMusicLibrary();
+                    for (int i = 0; i < audioRef.Count; i++)
                     {
-                        mName = new GUIContent("");
+                        SerializedProperty ao = audioFiles.GetArrayElementAtIndex(i);
+                        SPandName newPair = new SPandName();
+                        newPair.name = musicNames[i];
+                        newPair.sp = ao;
+                        if (audioRef[i].category == "")
+                        {
+                            if (!audioSPs.ContainsKey("Uncategorized"))
+                            {
+                                audioSPs["Uncategorized"] = new List<SPandName>();
+                            }
+                            audioSPs["Uncategorized"].Add(newPair);
+                        }
+                        else
+                        {
+                            if (!audioSPs.ContainsKey(audioRef[i].category))
+                            {
+                                audioSPs[audioRef[i].category] = new List<SPandName>();
+                            }
+                            audioSPs[audioRef[i].category].Add(newPair);
+                        }
                     }
-                    using (new EditorGUI.DisabledScope(true))
+
+                    GUIStyle foldoutGroup = new GUIStyle(EditorStyles.foldoutHeader);
+                    foldoutGroup.fontStyle = FontStyle.Normal;
+                    string[] keys = new string[categoriesMusic.Keys.Count];
+                    categoriesMusic.Keys.CopyTo(keys, 0);
+                    List<string> keysList = new List<string>();
+                    keysList.AddRange(keys);
+                    foreach (string k in keys)
                     {
-                        EditorGUILayout.ObjectField(ao, mName);
+                        if (k == "Uncategorized") continue;
+                        categoriesMusic[k] = EditorGUILayout.Foldout(categoriesMusic[k], k, foldoutGroup);
+                        EditorGUI.indentLevel++;
+                        if (categoriesMusic[k])
+                        {
+                            for (int i = 0; i < audioSPs[k].Count; i++)
+                            {
+                                RenderAudioFileListing(audioSPs[k][i].sp, audioSPs[k][i].name, enumName);
+                            }
+                        }
+                        EditorGUI.indentLevel--;
                     }
-                    EditorGUILayout.EndHorizontal();
+
+                    if (keysList.Contains("Uncategorized"))
+                    {
+                        for (int i = 0; i < audioSPs["Uncategorized"].Count; i++)
+                        {
+                            RenderAudioFileListing(audioSPs["Uncategorized"][i].sp, audioSPs["Uncategorized"][i].name, enumName);
+                        }
+                    }
                 }
             }
+            EditorGUILayout.EndFoldoutHeaderGroup();
+#endregion
 
-            if (myScript.GetMasterVolume() == 0) EditorGUILayout.HelpBox("Note: Master Volume is MUTED!", MessageType.Info);
-            if (myScript.GetSoundVolume() == 0) EditorGUILayout.HelpBox("Note: Sound is MUTED!", MessageType.Info);
-            if (myScript.GetMusicVolume() == 0) EditorGUILayout.HelpBox("Note: Music is MUTED!", MessageType.Info);
+            if (myScript.GetMasterVolumeInternal() == 0) EditorGUILayout.HelpBox("Note: Master Volume is set to 0!", MessageType.Info);
+            if (myScript.GetSoundVolumeInternal() == 0) EditorGUILayout.HelpBox("Note: Sound is set to 0!", MessageType.Info);
+            if (myScript.GetMusicVolumeInternal() == 0) EditorGUILayout.HelpBox("Note: Music is set to 0!", MessageType.Info);
 
             EditorGUILayout.Space();
 
             #region Quick Reference Guide
-            boldFoldout.fontStyle = FontStyle.Bold;
-            showHowTo = EditorGUILayout.Foldout(showHowTo, "Quick Reference Guide", boldFoldout);
+            showHowTo = EditorGUILayout.BeginFoldoutHeaderGroup(showHowTo, "Quick Reference Guide");
             if (showHowTo)
             {
                 EditorGUILayout.Space();
@@ -345,13 +550,47 @@ namespace JSAM
                 EditorGUILayout.Space();
 
                 EditorGUILayout.LabelField("Tips", EditorStyles.boldLabel);
+
+                EditorGUILayout.HelpBox("AudioManager uses Unity's AudioSources as a basis for all audio playing. As such, spatialized 3D sound " +
+                    "will play within a distance of 7 units from the listener before fading completely. If you want to change the way sounds are " +
+                    "spatialized, you can either locate the Audio Channel prefab and modify the settings there " +
+                    "or replace the existing prefab with your own."
+                    , MessageType.None);
+
                 EditorGUILayout.HelpBox("AudioManager works best as a global system where each scene's AudioManager draws from the same AudioFiles." +
                     " However, if you want scenes to draw from separate groups of Audio Files, you can select the option to enable instanced Audio Enums under" +
                     " AudioManager's advanced settings and regenerate the Audio Library. This let's AudioManager use it's own designated Audio Files separate to ones" +
-                    " used in other scenes."
+                    " used in other scenes. It's with this system that allows AudioManager to hold many different example projects as sub folders!"
                     , MessageType.None);
             }
+            EditorGUILayout.EndFoldoutHeaderGroup();
             #endregion  
+        }
+
+        private void OnEnable()
+        {
+            categories = new Dictionary<string, bool>();
+        }
+
+        void RenderAudioFileListing(SerializedProperty ao, string soundName, string enumName)
+        {
+            GUIContent sName;
+            Rect clickArea = EditorGUILayout.BeginHorizontal();
+            sName = new GUIContent(soundName, enumName + "." + soundName);
+            using (new EditorGUI.DisabledScope(true))
+            {
+                EditorGUILayout.ObjectField(ao, sName);
+            }
+
+            // Thank you JJCrawley https://answers.unity.com/questions/1326881/right-click-in-custom-editor.html
+            if (clickArea.Contains(Event.current.mousePosition) && Event.current.type == EventType.ContextClick)
+            {
+                GenericMenu menu = new GenericMenu();
+
+                menu.AddItem(new GUIContent("Copy \"" + sName.tooltip + "\" to Clipboard"), false, CopyToClipboard, sName.tooltip);
+                menu.ShowAsContext();
+            }
+            EditorGUILayout.EndHorizontal();
         }
 
         /// <summary>
@@ -369,7 +608,9 @@ namespace JSAM
         /// <param name="text"></param>
         void CopyToClipboard(object text)
         {
-            EditorGUIUtility.systemCopyBuffer = text.ToString();
+            string s = text.ToString();
+            EditorGUIUtility.systemCopyBuffer = s;
+            AudioManager.instance.DebugLog("Copied " + s + " to clipboard!");
         }
 
         [MenuItem("GameObject/Audio Manager", false, 0)]
@@ -378,7 +619,7 @@ namespace JSAM
             AudioManager existingAudioManager = FindObjectOfType<AudioManager>();
             if (!existingAudioManager)
             {
-                string assetPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("Manager t:GameObject")[0]);
+                string assetPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("Audio Manager t:GameObject")[0]);
                 GameObject newManager = (GameObject)Instantiate(AssetDatabase.LoadAssetAtPath(assetPath, typeof(GameObject)));
                 newManager.name = newManager.name.Replace("(Clone)", string.Empty);
                 EditorGUIUtility.PingObject(newManager);
@@ -405,7 +646,7 @@ namespace JSAM
             List<string> soundNames = new List<string>();
             foreach (var s in soundLibrary)
             {
-                string newName = ConvertToAlphanumeric(s.name);
+                string newName = s.safeName;
 
                 if (!soundNames.Contains(newName))
                 {
@@ -426,7 +667,7 @@ namespace JSAM
             List<string> musicNames = new List<string>();
             foreach (var m in musicLibrary)
             {
-                string newName = ConvertToAlphanumeric(m.name);
+                string newName = m.safeName;
 
                 if (!musicNames.Contains(newName))
                 {
@@ -446,7 +687,7 @@ namespace JSAM
             string sceneName = AudioManager.instance.gameObject.scene.name;
             string safeSceneName = ConvertToAlphanumeric(sceneName);
 
-            string fileName = (usingInstancedEnums) ? "\\AudioEnums - " + sceneName + ".cs" : filePath += "\\AudioEnums.cs";
+            string fileName = (usingInstancedEnums) ? "\\AudioEnums - " + sceneName + ".cs" : "\\AudioEnums.cs";
 
             // Looking for AudioEnums
             string[] GUIDs = AssetDatabase.FindAssets("AudioEnums", new[] { filePath });
@@ -527,7 +768,7 @@ namespace JSAM
             char[] arr = input.ToCharArray();
 
             arr = System.Array.FindAll<char>(arr, (c => (char.IsLetterOrDigit(c)
-                                              || c == '-')));
+                                              || c == '-' || c == '_')));
             return new string(arr);
         }
         #endregion
@@ -585,13 +826,13 @@ namespace JSAM
                 GUILayout.Label(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false), GUILayout.MaxWidth(90) });
                 buttonRect.x += 95;
                 buttonRect.width = 50;
-                GUIContent bContent = new GUIContent(myScript.IsMasterVolumeMuted() ? "OFF" : "ON", "Turns the channel's audio output ON/OFF");
+                GUIContent bContent = new GUIContent(myScript.IsMasterMutedInternal() ? "OFF" : "ON", "Turns the channel's audio output ON/OFF");
                 if (GUI.Button(buttonRect, bContent))
                 {
                     Undo.RecordObject(myScript, "Toggled master volume mute state");
-                    myScript.MuteMasterVolume(!myScript.IsMasterVolumeMuted());
+                    myScript.SetMasterChannelMuteInternal(!myScript.IsMasterMutedInternal());
                 }
-                using (new EditorGUI.DisabledScope(myScript.IsMasterVolumeMuted()))
+                using (new EditorGUI.DisabledScope(myScript.IsMasterMutedInternal()))
                 {
                     Rect sliderRect = new Rect(rect);
                     sliderRect.xMin = buttonRect.xMax + 7.5f;
@@ -600,19 +841,19 @@ namespace JSAM
                     textRect.x = Mathf.Abs(textRect.width - (rect.width + 17.5f));
                     sliderRect.xMax = textRect.xMin - 5;
 
-                    int sliderVolume = Mathf.RoundToInt(GUI.HorizontalSlider(sliderRect, myScript.GetMasterVolumeAsInt(), 0f, 100f));
-                    if (sliderVolume != myScript.GetMasterVolumeAsInt())
+                    int sliderVolume = Mathf.RoundToInt(GUI.HorizontalSlider(sliderRect, myScript.GetMasterVolumeAsIntInternal(), 0f, 100f));
+                    if (sliderVolume != myScript.GetMasterVolumeAsIntInternal())
                     {
                         Undo.RecordObject(myScript, "Changed master channel volume");
                         serializedObject.FindProperty("masterVolume").floatValue = (float)sliderVolume / 100;
-                        myScript.SetMasterVolume(sliderVolume);
+                        myScript.SetMasterVolumeInternal(sliderVolume);
                     }
 
                     GUI.SetNextControlName("textMaster");
                     masterText = GUI.TextField(textRect, masterText);
                     if (!GUI.GetNameOfFocusedControl().Equals("textMaster"))
                     {
-                        masterText = myScript.GetMasterVolumeAsInt().ToString();
+                        masterText = myScript.GetMasterVolumeAsIntInternal().ToString();
                     }
                     float resultF = 0;
                     if (!float.TryParse(masterText, out resultF))
@@ -622,7 +863,7 @@ namespace JSAM
 
                     Undo.RecordObject(myScript, "Changed master channel volume");
                     serializedObject.FindProperty("masterVolume").floatValue = resultF / 100f;
-                    myScript.SetMasterVolume((int)resultF);
+                    myScript.SetMasterVolumeInternal((int)resultF);
 
                     EditorGUILayout.EndHorizontal();
                 }
@@ -636,13 +877,13 @@ namespace JSAM
                 GUILayout.Label(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false), GUILayout.MaxWidth(90) });
                 buttonRect.x += 95;
                 buttonRect.width = 50;
-                GUIContent bContent = new GUIContent(myScript.IsSoundVolumeMuted() ? "OFF" : "ON", "Turns the channel's audio output ON/OFF");
+                GUIContent bContent = new GUIContent(myScript.IsSoundMutedInternal() ? "OFF" : "ON", "Turns the channel's audio output ON/OFF");
                 if (GUI.Button(buttonRect, bContent))
                 {
                     Undo.RecordObject(myScript, "Toggled sound volume mute state");
-                    myScript.MuteSoundVolume(!myScript.IsSoundVolumeMuted());
+                    myScript.SetSoundChannelMuteInternal(!myScript.IsSoundMutedInternal());
                 }
-                using (new EditorGUI.DisabledScope(myScript.IsSoundVolumeMuted()))
+                using (new EditorGUI.DisabledScope(myScript.IsSoundMutedInternal()))
                 {
                     Rect sliderRect = new Rect(rect);
                     sliderRect.xMin = buttonRect.xMax + 7.5f;
@@ -651,19 +892,19 @@ namespace JSAM
                     textRect.x = Mathf.Abs(textRect.width - (rect.width + 17.5f));
                     sliderRect.xMax = textRect.xMin - 5;
 
-                    int sliderVolume = Mathf.RoundToInt(GUI.HorizontalSlider(sliderRect, myScript.GetSoundVolumeAsInt(), 0f, 100f));
-                    if (sliderVolume != myScript.GetSoundVolumeAsInt())
+                    int sliderVolume = Mathf.RoundToInt(GUI.HorizontalSlider(sliderRect, myScript.GetSoundVolumeAsIntInternal(), 0f, 100f));
+                    if (sliderVolume != myScript.GetSoundVolumeAsIntInternal())
                     {
                         Undo.RecordObject(myScript, "Changed sound channel volume");
                         serializedObject.FindProperty("soundVolume").floatValue = (float)sliderVolume / 100;
-                        myScript.SetSoundVolume(sliderVolume);
+                        myScript.SetSoundVolumeInternal(sliderVolume);
                     }
 
                     GUI.SetNextControlName("textSound");
                     soundText = GUI.TextField(textRect, soundText);
                     if (!GUI.GetNameOfFocusedControl().Equals("textSound"))
                     {
-                        soundText = myScript.GetSoundVolumeAsInt().ToString();
+                        soundText = myScript.GetSoundVolumeAsIntInternal().ToString();
                     }
                     float resultF = 0;
                     if (!float.TryParse(soundText, out resultF))
@@ -673,7 +914,7 @@ namespace JSAM
 
                     Undo.RecordObject(myScript, "Changed sound channel volume");
                     serializedObject.FindProperty("soundVolume").floatValue = resultF / 100f;
-                    myScript.SetSoundVolume((int)resultF);
+                    myScript.SetSoundVolumeInternal((int)resultF);
 
                     EditorGUILayout.EndHorizontal();
                 }
@@ -687,13 +928,13 @@ namespace JSAM
                 GUILayout.Label(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false), GUILayout.MaxWidth(90) });
                 buttonRect.x += 95;
                 buttonRect.width = 50;
-                GUIContent bContent = new GUIContent(myScript.IsMusicVolumeMuted() ? "OFF" : "ON", "Turns the channel's audio output ON/OFF");
+                GUIContent bContent = new GUIContent(myScript.IsMusicMutedInternal() ? "OFF" : "ON", "Turns the channel's audio output ON/OFF");
                 if (GUI.Button(buttonRect, bContent))
                 {
                     Undo.RecordObject(myScript, "Toggled music volume mute state");
-                    myScript.MuteMusicVolume(!myScript.IsMusicVolumeMuted());
+                    myScript.SetMusicChannelMuteInternal(!myScript.IsMusicMutedInternal());
                 }
-                using (new EditorGUI.DisabledScope(myScript.IsMusicVolumeMuted()))
+                using (new EditorGUI.DisabledScope(myScript.IsMusicMutedInternal()))
                 {
                     Rect sliderRect = new Rect(rect);
                     sliderRect.xMin = buttonRect.xMax + 7.5f;
@@ -702,19 +943,19 @@ namespace JSAM
                     textRect.x = Mathf.Abs(textRect.width - (rect.width + 17.5f));
                     sliderRect.xMax = textRect.xMin - 5;
 
-                    int sliderVolume = Mathf.RoundToInt(GUI.HorizontalSlider(sliderRect, myScript.GetMusicVolumeAsInt(), 0f, 100f));
-                    if (sliderVolume != myScript.GetMusicVolumeAsInt())
+                    int sliderVolume = Mathf.RoundToInt(GUI.HorizontalSlider(sliderRect, myScript.GetMusicVolumeAsIntInternal(), 0f, 100f));
+                    if (sliderVolume != myScript.GetMusicVolumeAsIntInternal())
                     {
                         Undo.RecordObject(myScript, "Changed music channel volume");
                         serializedObject.FindProperty("musicVolume").floatValue = (float)sliderVolume / 100;
-                        myScript.SetMusicVolume(sliderVolume);
+                        myScript.SetMusicVolumeInternal(sliderVolume);
                     }
 
                     GUI.SetNextControlName("textMusic");
                     musicText = GUI.TextField(textRect, musicText);
                     if (!GUI.GetNameOfFocusedControl().Equals("textMusic"))
                     {
-                        musicText = myScript.GetMusicVolumeAsInt().ToString();
+                        musicText = myScript.GetMusicVolumeAsIntInternal().ToString();
                     }
                     float resultF = 0;
                     if (!float.TryParse(musicText, out resultF))
@@ -724,17 +965,12 @@ namespace JSAM
 
                     Undo.RecordObject(myScript, "Changed music channel volume");
                     serializedObject.FindProperty("musicVolume").floatValue = resultF / 100f;
-                    myScript.SetMusicVolume((int)resultF);
+                    myScript.SetMusicVolumeInternal((int)resultF);
 
                     EditorGUILayout.EndHorizontal();
                 }
             }
         }
-        //
-        //bool EnterKeyPressed()
-        //{
-        //    return (Event.current.keyCode == KeyCode.Return || Event.current.keyCode == KeyCode.KeypadEnter);
-        //}
         #endregion
 
         /// <summary>
@@ -754,6 +990,19 @@ namespace JSAM
                     return type;
             }
             return null;
+        }
+    }
+
+    class AudioFileComparer : IComparer<AudioFileObject>
+    {
+        public int Compare(AudioFileObject x, AudioFileObject y)
+        {
+            if (x == null || y == null)
+            {
+                return 0;
+            }
+
+            return x.Compare(x, y);
         }
     }
 }

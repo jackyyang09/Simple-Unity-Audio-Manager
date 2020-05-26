@@ -363,8 +363,9 @@ MonoBehaviour:
   audioFolderLocation: Assets/Jacky's Simple Audio Manager/Examples/Dynamic Music/Audio
     Files
   instancedEnums: 1
+  wasInstancedBefore: 1
   listener: {fileID: 551383800}
-  sourcePrefab: {fileID: 3048837711066349602, guid: cf11aed7e0e56ae45afe7eaebe30a616,
+  sourcePrefab: {fileID: 3048837711066349604, guid: cf11aed7e0e56ae45afe7eaebe30a616,
     type: 3}
 --- !u!4 &884360480
 Transform:
@@ -578,6 +579,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   music: 0
   spatializeSound: 0
+  transitionMode: 0
   keepPlaybackPosition: 0
   restartOnReplay: 0
   musicFadeTime: 0

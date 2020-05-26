@@ -48,14 +48,11 @@ namespace JSAM
 
             EditorGUILayout.Space();
 
-            GUIStyle boldFoldout = new GUIStyle(EditorStyles.foldout);
-            boldFoldout.fontStyle = FontStyle.Bold;
-
             GUIContent fontent = new GUIContent("Custom AudioClip Settings", "These settings only apply if you input your own custom AudioClip rather than choosing from the generated Audio Library");
             if (myScript.GetAttachedFile() == null)
                 showAudioClipSettings = EditorGUILayout.Foldout(showAudioClipSettings, fontent);
             else
-                showAudioClipSettings = EditorGUILayout.Foldout(showAudioClipSettings, fontent, boldFoldout);
+                showAudioClipSettings = EditorGUILayout.BeginFoldoutHeaderGroup(showAudioClipSettings, fontent);
             if (showAudioClipSettings)
             {
                 using (new EditorGUI.DisabledScope(myScript.GetAttachedFile() == null))
@@ -64,6 +61,8 @@ namespace JSAM
                         "stopOnDisable", "stopOnDestroy", "keepPlaybackPosition", "restartOnReplay", "musicFadeTime", "transitionMode" });
                 }
             }
+            if (myScript.GetAttachedFile() != null)
+                EditorGUILayout.EndFoldoutHeaderGroup();
 
             EditorGUILayout.Space();
 
@@ -89,7 +88,7 @@ namespace JSAM
             EditorGUILayout.Space();
 
             #region Quick Reference Guide
-            showHowTo = EditorGUILayout.Foldout(showHowTo, "Quick Reference Guide", boldFoldout);
+            showHowTo = EditorGUILayout.BeginFoldoutHeaderGroup(showHowTo, "Quick Reference Guide");
             if (showHowTo)
             {
                 EditorGUILayout.Space();
@@ -99,7 +98,7 @@ namespace JSAM
                     "This component allows you to easily play music anywhere in the scene."
                     , MessageType.None);
                 EditorGUILayout.HelpBox(
-                    "To get started, choose your music to play from the dropdown at the top. " +
+                    "To get started, choose your music to play from the drop-down at the top. " +
                     "Make sure you've generated your Audio Libraries in your Audio Manager. "
                     , MessageType.None);
 
@@ -116,6 +115,7 @@ namespace JSAM
                 //    , MessageType.None);
 
             }
+            EditorGUILayout.Space();
             #endregion  
         }
     }

@@ -45,7 +45,7 @@ namespace JSAM
             if (Input.GetKeyDown(KeyCode.Escape))
             {
                 Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = false;
+                Cursor.visible = true;
             }
         }
     }

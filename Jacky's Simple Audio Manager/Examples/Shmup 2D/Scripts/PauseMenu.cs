@@ -6,9 +6,9 @@ using JSAM;
 public class PauseMenu : MonoBehaviour
 {
     /// <summary>
-    /// Button used to toggle the pause menu, incomptabile with Unity's new input manager
+    /// Button used to toggle the pause menu, incompatible with Unity's new input manager
     /// </summary>
-    [Tooltip("Button used to toggle the pause menu, incomptabile with Unity's new input manager")]
+    [Tooltip("Button used to toggle the pause menu, incompatible with Unity's new input manager")]
     [SerializeField]
     KeyCode toggleButton = KeyCode.Escape;
 
@@ -26,8 +26,22 @@ public class PauseMenu : MonoBehaviour
         if (Input.GetKeyDown(toggleButton))
         {
             pauseMenu.enabled = !pauseMenu.enabled;
-            if (pauseMenu.enabled) Time.timeScale = 0;
+            if (pauseMenu.enabled)
+            {
+                Time.timeScale = 0;
+            }
             else Time.timeScale = 1;
+        }
+
+        if (pauseMenu.enabled)
+        {
+            if (Input.GetKeyDown(KeyCode.Mouse0) || Input.GetKeyDown(KeyCode.Mouse1))
+            {
+                Time.timeScale = 0;
+                // Sometimes the user has custom cursor locking code
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
         }
     }
 
@@ -41,11 +55,11 @@ public class PauseMenu : MonoBehaviour
 
     public void UpdateSoundVolume(UnityEngine.UI.Slider uiElement)
     {
-        AudioManager.instance.SetSoundVolume(uiElement.value);
+        AudioManager.SetSoundVolume(uiElement.value);
     }
 
     public void UpdateMusicVolume(UnityEngine.UI.Slider uiElement)
     {
-        AudioManager.instance.SetMusicVolume(uiElement.value);
+        AudioManager.SetMusicVolume(uiElement.value);
     }
 }

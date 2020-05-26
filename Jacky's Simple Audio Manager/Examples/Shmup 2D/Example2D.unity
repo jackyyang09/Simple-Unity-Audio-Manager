@@ -2330,6 +2330,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   music: 0
   spatializeSound: 0
+  transitionMode: 0
   keepPlaybackPosition: 0
   restartOnReplay: 0
   musicFadeTime: 0
@@ -2410,5 +2411,5 @@ MonoBehaviour:
   instancedEnums: 1
   wasInstancedBefore: 1
   listener: {fileID: 519420029}
-  sourcePrefab: {fileID: 3048837711066349602, guid: cf11aed7e0e56ae45afe7eaebe30a616,
+  sourcePrefab: {fileID: 3048837711066349604, guid: cf11aed7e0e56ae45afe7eaebe30a616,
     type: 3}

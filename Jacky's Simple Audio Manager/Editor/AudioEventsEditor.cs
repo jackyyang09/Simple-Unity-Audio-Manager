@@ -5,8 +5,8 @@ using UnityEditor;
 
 namespace JSAM
 {
-    [CustomEditor(typeof(AudioAnimatorEvents))]
-    public class AudioAnimatorEventsEditor : Editor
+    [CustomEditor(typeof(AudioEvents))]
+    public class AudioEventsEditor : Editor
     {
         static bool showHowTo;
 
@@ -15,20 +15,20 @@ namespace JSAM
             DrawPropertiesExcluding(serializedObject, new[] { "m_Script" });
 
             #region Quick Reference Guide
-            GUIStyle boldFoldout = new GUIStyle(EditorStyles.foldout);
-            boldFoldout.fontStyle = FontStyle.Bold;
-            showHowTo = EditorGUILayout.Foldout(showHowTo, "Quick Reference Guide", boldFoldout);
+            showHowTo = EditorGUILayout.BeginFoldoutHeaderGroup(showHowTo, "Quick Reference Guide");
             if (showHowTo)
             {
                 EditorGUILayout.Space();
 
                 EditorGUILayout.LabelField("Overview", EditorStyles.boldLabel);
                 EditorGUILayout.HelpBox(
-                    "This component is specifically meant to be used with Unity's Animator component and must be attached " +
-                    "to the same GameObject that holds the Animator."
+                    "This component is specifically meant to be used as a companion component to various Event handling components."
                     , MessageType.None);
                 EditorGUILayout.HelpBox(
-                    "This component contains some helpful methods meant to be called by Unity's animation events."
+                    "This includes things like UnityEvents and Unity Animation Events, among other things."
+                    , MessageType.None);
+                EditorGUILayout.HelpBox(
+                    "This component contains some helpful methods meant to be called by these Event systems."
                     , MessageType.None);
 
                 EditorGUILayout.Space();
@@ -40,7 +40,7 @@ namespace JSAM
                 EditorGUILayout.HelpBox("Takes the name of the Audio enum sound to be played as a string and plays it in the world", MessageType.None);
 
                 EditorGUILayout.LabelField("public void PlayAudioPlayer (AudioPlayer player)");
-                EditorGUILayout.HelpBox("Pass the name of the Audio enum sound to be played as a string", MessageType.None);
+                EditorGUILayout.HelpBox("Pass the AudioPlayer to play it's contents", MessageType.None);
 
                 EditorGUILayout.Space();
 
@@ -58,6 +58,7 @@ namespace JSAM
                     Application.OpenURL("https://docs.unity3d.com/Manual/AnimationEventsOnImportedClips.html");
                 }
             }
+            EditorGUILayout.EndFoldoutHeaderGroup();
             #endregion  
         }
     }

@@ -8,10 +8,12 @@ namespace JSAM {
         AKMagInsert,
         AKMagRemove,
         AKMagTap,
+        Crouch,
         Gunshot,
         Running,
         Walk
     }
     public enum MusicExample3D{
+        BGM
     }
 }

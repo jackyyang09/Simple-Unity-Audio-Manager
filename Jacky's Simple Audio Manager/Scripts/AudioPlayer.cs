@@ -15,7 +15,7 @@ namespace JSAM
         [SerializeField]
         bool playOnEnable = false;
 
-        [Tooltip("Stop the sound when the object this is attached to is destroyed or set to deactive")]
+        [Tooltip("Stop the sound when the object this is attached to is destroyed or set to in-active")]
         [SerializeField]
         bool stopOnDisable = true;
 
@@ -51,18 +51,17 @@ namespace JSAM
 
                 if (loopSound)
                 {
-                    /*if (!am.IsSoundLooping(soundFile)) */source = am.PlaySoundLoop(soundFile, sTransform, spatialSound, priority);
+                    source = am.PlaySoundLoopInternal(soundFile, sTransform, spatialSound, priority, delay, ignoreTimeScale);
                 }
-                else source = am.PlaySoundOnce(soundFile, sTransform, priority, pitchShift, delay);
+                else source = am.PlaySoundInternal(soundFile, sTransform, priority, pitchShift, delay, ignoreTimeScale);
             }
             else
             {
                 if (loopSound)
                 {
-                    /*if (!am.IsSoundLooping(sound)) */
-                    source = am.PlaySoundLoop(sound, sTransform, spatialSound, priority);
+                    source = am.PlaySoundLoopInternal(sound, sTransform);
                 }
-                else source = am.PlaySoundOnce(sound, sTransform, priority, pitchShift, delay);
+                else source = am.PlaySoundInternal(sound, sTransform);
             }
 
             // Ready to play again later
@@ -82,16 +81,16 @@ namespace JSAM
             {
                 if (!loopSound)
                 {
-                    if (am.IsSoundPlaying(soundFile, sTransform))
+                    if (am.IsSoundPlayingInternal(soundFile, sTransform))
                     {
-                        am.StopSound(soundFile, sTransform);
+                        am.StopSoundInternal(soundFile, sTransform);
                     }
                 }
                 else
                 {
-                    if (am.IsSoundLooping(soundFile))
+                    if (am.IsSoundLoopingInternal(soundFile))
                     {
-                        am.StopSoundLoop(sound, true, sTransform);
+                        am.StopSoundLoopInternal(sound, true, sTransform);
                     }
                 }
             }
@@ -99,16 +98,16 @@ namespace JSAM
             {
                 if (!loopSound)
                 {
-                    if (am.IsSoundPlaying(sound, sTransform))
+                    if (am.IsSoundPlayingInternal(sound, sTransform))
                     {
-                        am.StopSound(sound, sTransform);
+                        am.StopSoundInternal(sound, sTransform);
                     }
                 }
                 else
                 {
-                    if (am.IsSoundLooping(sound))
+                    if (am.IsSoundLoopingInternal(sound))
                     {
-                        am.StopSoundLoop(sound, true, sTransform);
+                        am.StopSoundLoopInternal(sound, true, sTransform);
                     }
                 }
             }

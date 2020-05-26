@@ -48,14 +48,11 @@ namespace JSAM
 
             EditorGUILayout.Space();
 
-            GUIStyle boldFoldout = new GUIStyle(EditorStyles.foldout);
-            boldFoldout.fontStyle = FontStyle.Bold;
-
             GUIContent fontent = new GUIContent("Custom AudioClip Settings", "These settings only apply if you input your own custom AudioClip rather than choosing from the generated Audio Library");
             if (myScript.GetAttachedSound() == null)
                 showAudioClipSettings = EditorGUILayout.Foldout(showAudioClipSettings, fontent);
             else
-                showAudioClipSettings = EditorGUILayout.Foldout(showAudioClipSettings, fontent, boldFoldout);
+                showAudioClipSettings = EditorGUILayout.BeginFoldoutHeaderGroup(showAudioClipSettings, fontent);
             if (showAudioClipSettings)
             {
                 using (new EditorGUI.DisabledScope(myScript.GetAttachedSound() == null))
@@ -64,6 +61,8 @@ namespace JSAM
                         "stopOnDisable", "stopOnDestroy", "collidesWith", "triggerEvent"});
                 }
             }
+            if (myScript.GetAttachedSound() != null)
+                EditorGUILayout.EndFoldoutHeaderGroup();
             EditorGUILayout.PropertyField(serializedObject.FindProperty("collidesWith"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("triggerEvent"));
 
@@ -71,7 +70,7 @@ namespace JSAM
 
             EditorGUILayout.Space();
 
-            showHowTo = EditorGUILayout.Foldout(showHowTo, "Quick Reference Guide", boldFoldout);
+            showHowTo = EditorGUILayout.BeginFoldoutHeaderGroup(showHowTo, "Quick Reference Guide");
             if (showHowTo)
             {
                 EditorGUILayout.Space();
@@ -79,8 +78,8 @@ namespace JSAM
                 EditorGUILayout.LabelField("Overview", EditorStyles.boldLabel);
                 EditorGUILayout.HelpBox("This component is meant to be attached to a physics-enabled object." +
                     " When something collides with that physics-enabled object, this component will play a sound." +
-                    " You can choose to change the collision event that plays the sound by using the Collision Event dropdown." +
-                    " You can select a sound to play using the dropdown at the top of the component."
+                    " You can choose to change the collision event that plays the sound by using the Collision Event drop-down." +
+                    " You can select a sound to play using the drop-down at the top of the component."
                     , MessageType.None);
                 EditorGUILayout.HelpBox("This component should be placed on the same GameObject that holds the physics object's Rigidbody"
                     , MessageType.None);
@@ -97,6 +96,7 @@ namespace JSAM
                 EditorGUILayout.HelpBox("Feel free to use multiple different AudioCollisionFeedback components on the same GameObject!"
                     , MessageType.None);
             }
+            EditorGUILayout.EndFoldoutHeaderGroup();
         }
     }
 }

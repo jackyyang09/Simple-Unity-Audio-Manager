@@ -9,16 +9,19 @@ namespace JSAM
     {
         Idle,
         Walking,
-        Running
+        Running,
     }
 
     public class FPSWalker : MonoBehaviour
     {
+        [Header("Explore me for examples of sound looping!")]
         [SerializeField]
         float moveSpeed = 5;
 
         [SerializeField]
         float runSpeedMultiplier = 3;
+        [SerializeField]
+        float crouchSpeedMultiplier = 0.75f;
 
         [SerializeField]
         Vector3 gravity = new Vector3(0, -9.81f, 0);
@@ -26,19 +29,21 @@ namespace JSAM
         [SerializeField]
         MovementStates moveState;
 
+        [SerializeField]
+        bool crouching;
+        bool canToggleCrouch = true;
+
         CharacterController controller;
 
         [SerializeField]
-        Transform stand;
+        Transform stand = null;
 
-        AudioManager am;
+        FPSAnimator animator = null;
 
-        // Start is called before the first frame update
-        void Start()
+        void Awake()
         {
             controller = GetComponent<CharacterController>();
-
-            am = AudioManager.instance;
+            animator = GetComponentInChildren<FPSAnimator>();
         }
 
         // Update is called once per frame
@@ -50,7 +55,11 @@ namespace JSAM
 
             moveState = MovementStates.Idle;
 
-            if (Input.GetKey(KeyCode.LeftShift))
+            if (crouching)
+            {
+                theSpeed *= crouchSpeedMultiplier;
+            }
+            else if (Input.GetKey(KeyCode.LeftShift))
             {
                 theSpeed *= runSpeedMultiplier;
                 moveState = MovementStates.Running;
@@ -73,6 +82,16 @@ namespace JSAM
                 movement += stand.transform.right * theSpeed;
             }
 
+            if (Input.GetKeyDown(KeyCode.C) && canToggleCrouch)
+            {
+                StartCoroutine(CrouchCooldown());
+            }
+            // Un-crouch just by sprinting
+            else if (crouching && Input.GetKey(KeyCode.LeftShift) && canToggleCrouch)
+            {
+                StartCoroutine(CrouchCooldown());
+            }
+
             if (movement.magnitude > 0 && moveState != MovementStates.Running) moveState = MovementStates.Walking;
 
             controller.Move((movement + gravity) * Time.deltaTime);
@@ -85,24 +104,50 @@ namespace JSAM
             switch (moveState)
             {
                 case MovementStates.Idle:
-                    am.StopSoundLoop(SoundsExample3D.Walk, true, transform);
-                    am.StopSoundLoop(SoundsExample3D.Running, true, transform);
+                    if (AudioManager.IsSoundLooping(SoundsExample3D.Walk))
+                    {
+                        AudioManager.StopSoundLoop(SoundsExample3D.Walk, true, transform);
+                    }
+                    if (AudioManager.IsSoundLooping(SoundsExample3D.Running))
+                    {
+                        AudioManager.StopSoundLoop(SoundsExample3D.Running, true, transform);
+                    }
                     break;
                 case MovementStates.Walking:
-                    am.StopSoundLoop(SoundsExample3D.Running, true, transform);
-                    if (!am.IsSoundLooping(SoundsExample3D.Walk))
+                    if (AudioManager.IsSoundLooping(SoundsExample3D.Running))
                     {
-                        am.PlaySoundLoop(SoundsExample3D.Walk, transform, false, Priority.Default);
+                        AudioManager.StopSoundLoop(SoundsExample3D.Running, true, transform);
+                    }
+                    if (!AudioManager.IsSoundLooping(SoundsExample3D.Walk))
+                    {
+                        AudioManager.PlaySoundLoop(SoundsExample3D.Walk, transform);
                     }
                     break;
                 case MovementStates.Running:
-                    am.StopSoundLoop(SoundsExample3D.Walk, true, transform);
-                    if (!am.IsSoundLooping(SoundsExample3D.Running))
+                    if (AudioManager.IsSoundLooping(SoundsExample3D.Walk))
                     {
-                        am.PlaySoundLoop(SoundsExample3D.Running, transform, false, Priority.Default);
+                        AudioManager.StopSoundLoop(SoundsExample3D.Walk, true, transform);
+                    }
+                    if (!AudioManager.IsSoundLooping(SoundsExample3D.Running))
+                    {
+                        AudioManager.PlaySoundLoop(SoundsExample3D.Running, transform);
                     }
                     break;
             }
+        }
+
+        IEnumerator CrouchCooldown()
+        {
+            crouching = !crouching;
+            animator.InvokeOnCrouch(crouching);
+            canToggleCrouch = false;
+            yield return new WaitForSeconds(0.15f);
+            canToggleCrouch = true;
+        }
+
+        public MovementStates GetCurrentState()
+        {
+            return moveState;
         }
 
         public Vector3 Gravity()

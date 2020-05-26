@@ -15,9 +15,14 @@ MonoBehaviour:
   file: {fileID: 8300000, guid: 42f211e8d68e33941ad2f8c969326171, type: 3}
   files: []
   useLibrary: 0
+  category: AK Sounds
+  relativeVolume: 1
   spatialize: 0
-  loopSound: 0
   priority: 128
-  pitchShift: 1
+  pitchShift: 0.05
   delay: 0
   ignoreTimeScale: 0
+  fadeMode: 0
+  fadeInDuration: 1
+  fadeOutDuration: 1
+  safeName: 

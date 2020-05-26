@@ -15,3 +15,14 @@ MonoBehaviour:
   file: {fileID: 8300000, guid: 4a78a46e20946844db297869c9b819fa, type: 3}
   files: []
   useLibrary: 0
+  category: 
+  relativeVolume: 0.5
+  spatialize: 0
+  priority: 128
+  pitchShift: 0.05
+  delay: 0
+  ignoreTimeScale: 0
+  fadeMode: 0
+  fadeInDuration: 0
+  fadeOutDuration: 0
+  safeName: Running
