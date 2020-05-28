@@ -112,21 +112,56 @@ namespace JSAM
         //    }
         //}
 
-        AudioLowPassFilter lowPassFilter;
+        AudioChorusFilter chorusFilter;
+        AudioDistortionFilter distortionFilter;
+        AudioEchoFilter echoFilter;
         AudioHighPassFilter highPassFilter;
+        AudioLowPassFilter lowPassFilter;
+        AudioReverbFilter reverbFilter;
 
         public void ApplyEffects()
         {
-            if (audioFile.lowPassFilter.enabled)
+            if (audioFile.chorusFilter.enabled)
             {
-                if (!lowPassFilter)
+                if (!chorusFilter)
                 {
-                    lowPassFilter = gameObject.AddComponent<AudioLowPassFilter>();
+                    chorusFilter = gameObject.AddComponent<AudioChorusFilter>();
                 }
-                lowPassFilter.cutoffFrequency = audioFile.lowPassFilter.cutoffFrequency;
-                lowPassFilter.lowpassResonanceQ = audioFile.lowPassFilter.lowpassResonanceQ;
+                chorusFilter.enabled = true;
+                chorusFilter.dryMix = audioFile.chorusFilter.dryMix;
+                chorusFilter.wetMix1 = audioFile.chorusFilter.wetMix1;
+                chorusFilter.wetMix2 = audioFile.chorusFilter.wetMix2;
+                chorusFilter.wetMix3 = audioFile.chorusFilter.wetMix3;
+                chorusFilter.delay = audioFile.chorusFilter.delay;
+                chorusFilter.rate = audioFile.chorusFilter.rate;
+                chorusFilter.depth = audioFile.chorusFilter.depth;
             }
-            else if (lowPassFilter) lowPassFilter.enabled = false;
+            else if (!audioFile.chorusFilter.enabled && chorusFilter) chorusFilter.enabled = false;
+
+            if (audioFile.distortionFilter.enabled)
+            {
+                if (!distortionFilter)
+                {
+                    distortionFilter = gameObject.AddComponent<AudioDistortionFilter>();
+                }
+                distortionFilter.enabled = true;
+                distortionFilter.distortionLevel = audioFile.distortionFilter.distortionLevel;
+            }
+            else if (!audioFile.distortionFilter.enabled && distortionFilter) distortionFilter.enabled = false;
+
+            if (audioFile.echoFilter.enabled)
+            {
+                if (!echoFilter)
+                {
+                    echoFilter = gameObject.AddComponent<AudioEchoFilter>();
+                }
+                echoFilter.enabled = true;
+                echoFilter.delay = audioFile.echoFilter.delay;
+                echoFilter.decayRatio = audioFile.echoFilter.decayRatio;
+                echoFilter.wetMix = audioFile.echoFilter.wetMix;
+                echoFilter.dryMix = audioFile.echoFilter.dryMix;
+            }
+            else if (!audioFile.echoFilter.enabled && echoFilter) echoFilter.enabled = false;
 
             if (audioFile.highPassFilter.enabled)
             {
@@ -134,10 +169,48 @@ namespace JSAM
                 {
                     highPassFilter = gameObject.AddComponent<AudioHighPassFilter>();
                 }
+                highPassFilter.enabled = true;
                 highPassFilter.cutoffFrequency = audioFile.highPassFilter.cutoffFrequency;
                 highPassFilter.highpassResonanceQ = audioFile.highPassFilter.highpassResonanceQ;
             }
-            else if (highPassFilter) highPassFilter.enabled = false;
+            else if (!audioFile.highPassFilter.enabled && highPassFilter) highPassFilter.enabled = false;
+
+            if (audioFile.lowPassFilter.enabled)
+            {
+                if (!lowPassFilter)
+                {
+                    lowPassFilter = gameObject.AddComponent<AudioLowPassFilter>();
+                }
+                lowPassFilter.enabled = true;
+                lowPassFilter.cutoffFrequency = audioFile.lowPassFilter.cutoffFrequency;
+                lowPassFilter.lowpassResonanceQ = audioFile.lowPassFilter.lowpassResonanceQ;
+            }
+            else if (!audioFile.lowPassFilter.enabled && lowPassFilter) lowPassFilter.enabled = false;
+
+            if (audioFile.reverbFilter.enabled)
+            {
+                if (!reverbFilter)
+                {
+                    reverbFilter = gameObject.AddComponent<AudioReverbFilter>();
+                }
+                reverbFilter.enabled = true;
+                reverbFilter.reverbPreset = audioFile.reverbFilter.reverbPreset;
+                reverbFilter.dryLevel = audioFile.reverbFilter.dryLevel;
+                reverbFilter.room = audioFile.reverbFilter.room;
+                reverbFilter.roomHF = audioFile.reverbFilter.roomHF;
+                reverbFilter.roomLF = audioFile.reverbFilter.roomLF;
+                reverbFilter.decayTime = audioFile.reverbFilter.decayTime;
+                reverbFilter.decayHFRatio = audioFile.reverbFilter.decayHFRatio;
+                reverbFilter.reflectionsLevel = audioFile.reverbFilter.reflectionsLevel;
+                reverbFilter.reflectionsDelay = audioFile.reverbFilter.reflectionsDelay;
+                reverbFilter.reverbLevel = audioFile.reverbFilter.reverbLevel;
+                reverbFilter.reverbDelay = audioFile.reverbFilter.reverbDelay;
+                reverbFilter.hfReference = audioFile.reverbFilter.hFReference;
+                reverbFilter.lfReference = audioFile.reverbFilter.lFReference;
+                reverbFilter.diffusion = audioFile.reverbFilter.diffusion;
+                reverbFilter.density = audioFile.reverbFilter.density;
+            }
+            else if (!audioFile.reverbFilter.enabled && reverbFilter) reverbFilter.enabled = false;
         }
 
         IEnumerator FadeIn(bool queueFadeout)

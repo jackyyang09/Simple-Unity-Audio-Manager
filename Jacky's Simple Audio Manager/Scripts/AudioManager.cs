@@ -3206,9 +3206,24 @@ namespace JSAM
             return newPitch;
         }
 
-        public AudioListener GetListener()
+        /// <summary>
+        /// Returns the Audio Listener in the scene. 
+        /// You can use this to apply Audio Effects globally
+        /// </summary>
+        /// <returns></returns>
+        public static AudioListener GetListener()
         {
-            return listener;
+            return instance.listener;
+        }
+
+        /// <summary>
+        /// This method can be shortened to AudioManager.GetListener(). 
+        /// You can use this to apply Audio Effects globally
+        /// </summary>
+        /// <returns></returns>
+        public AudioListener GetListenerInternal()
+        {
+            return instance.listener;
         }
 
 #if UNITY_EDITOR

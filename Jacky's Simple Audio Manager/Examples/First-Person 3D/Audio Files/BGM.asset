@@ -26,19 +26,51 @@ MonoBehaviour:
   fadeInDuration: 0
   fadeOutDuration: 0
   safeName: BGM
-  lowPassFilter:
+  chorusFilter:
     enabled: 0
-    cutoffFrequency: 0
-    lowpassResonanceQ: 0
-  highPassFilter:
-    enabled: 0
-    cutoffFrequency: 0
-    highpassResonanceQ: 0
+    dryMix: 0.5
+    wetMix1: 0.5
+    wetMix2: 0.5
+    wetMix3: 0.5
+    delay: 40
+    rate: 0.8
+    depth: 0.03
   distortionFilter:
     enabled: 0
-    distortionLevel: 0
+    distortionLevel: 0.5
+  echoFilter:
+    enabled: 0
+    delay: 500
+    decayRatio: 0.5
+    wetMix: 1
+    dryMix: 1
+  lowPassFilter:
+    enabled: 0
+    cutoffFrequency: 8198
+    lowpassResonanceQ: 1
+  highPassFilter:
+    enabled: 0
+    cutoffFrequency: 5000
+    highpassResonanceQ: 1
+  reverbFilter:
+    enabled: 0
+    reverbPreset: 1
+    dryLevel: 0
+    room: 0
+    roomHF: 0
+    roomLF: 0
+    decayTime: 1
+    decayHFRatio: 0.5
+    reflectionsLevel: -10000
+    reflectionsDelay: 0
+    reverbLevel: 0
+    reverbDelay: 0.04
+    hFReference: 5000
+    lFReference: 250
+    diffusion: 100
+    density: 100
   clampToLoopPoints: 0
-  loopMode: 2
+  loopMode: 0
   loopStart: 0
   loopEnd: 12.8
   bpm: 160

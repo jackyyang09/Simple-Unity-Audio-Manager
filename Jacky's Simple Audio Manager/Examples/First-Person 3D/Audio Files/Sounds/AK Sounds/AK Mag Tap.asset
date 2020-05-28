@@ -22,11 +22,33 @@ MonoBehaviour:
   pitchShift: 0.05
   delay: 0
   ignoreTimeScale: 0
-  fadeMode: 3
+  fadeMode: 0
   fadeInDuration: 0.264
   fadeOutDuration: 0.678
   safeName: 
+  chorusFilter:
+    enabled: 0
+    dryMix: 0.5
+    wetMix1: 0.5
+    wetMix2: 0.5
+    wetMix3: 0.5
+    delay: 40
+    rate: 0.8
+    depth: 0.03
+  distortionFilter:
+    enabled: 0
+    distortionLevel: 0
+  echoFilter:
+    enabled: 0
+    delay: 0
+    decayRatio: 0
+    wetMix: 0
+    dryMix: 0
   lowPassFilter:
-    enabled: 1
+    enabled: 0
     cutoffFrequency: 15676
     lowpassResonanceQ: 4.36
+  highPassFilter:
+    enabled: 0
+    cutoffFrequency: 0
+    highpassResonanceQ: 0

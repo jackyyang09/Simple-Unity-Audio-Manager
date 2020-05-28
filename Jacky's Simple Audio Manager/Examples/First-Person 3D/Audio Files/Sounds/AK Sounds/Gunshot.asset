@@ -26,18 +26,50 @@ MonoBehaviour:
   pitchShift: 0.05
   delay: 0
   ignoreTimeScale: 0
-  fadeMode: 0
+  fadeMode: 2
   fadeInDuration: 0.15999997
   fadeOutDuration: 1
   safeName: Gunshot
+  chorusFilter:
+    enabled: 0
+    dryMix: 0.5
+    wetMix1: 0.5
+    wetMix2: 0.5
+    wetMix3: 0.5
+    delay: 40
+    rate: 0.8
+    depth: 0.03
+  distortionFilter:
+    enabled: 0
+    distortionLevel: 0.344
+  echoFilter:
+    enabled: 0
+    delay: 500
+    decayRatio: 0.5
+    wetMix: 1
+    dryMix: 1
   lowPassFilter:
-    enabled: 1
-    cutoffFrequency: 14721
-    lowpassResonanceQ: 3.31
+    enabled: 0
+    cutoffFrequency: 5000
+    lowpassResonanceQ: 1
   highPassFilter:
-    enabled: 1
+    enabled: 0
     cutoffFrequency: 5000
     highpassResonanceQ: 1
-  distortionFilter:
-    enabled: 1
-    distortionLevel: 0.5
+  reverbFilter:
+    enabled: 0
+    reverbPreset: 1
+    dryLevel: 0
+    room: 0
+    roomHF: 0
+    roomLF: 0
+    decayTime: 1
+    decayHFRatio: 0.5
+    reflectionsLevel: -10000
+    reflectionsDelay: 0
+    reverbLevel: 0
+    reverbDelay: 0.04
+    hFReference: 5000
+    lFReference: 250
+    diffusion: 100
+    density: 100

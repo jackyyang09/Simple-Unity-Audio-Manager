@@ -5,21 +5,51 @@ namespace JSAM
 {
     #region Effect Structs
     [System.Serializable]
-    public struct AudioLowPassFilterObj
+    public struct AudioChorusObj
     {
         public bool enabled;
-        /// <summary>
-        /// Ranges from 10 to 22000
-        /// </summary>
-        public float cutoffFrequency;
-        /// <summary>
-        /// Ranges from 1 to 10
-        /// </summary>
-        public float lowpassResonanceQ;
+        /// <summary>Clamped between 0 to 1</summary>
+        public float dryMix;
+        /// <summary>Clamped between 0 to 1</summary>
+        public float wetMix1;
+        /// <summary>Clamped between 0 to 1</summary>
+        public float wetMix2;
+        /// <summary>Clamped between 0 to 1</summary>
+        public float wetMix3;
+        /// <summary>Clamped between 0 to 100</summary>
+        public float delay;
+        /// <summary>Clamped between 0 to 20</summary>
+        public float rate;
+        /// <summary>Clamped between 0 to 1</summary>
+        public float depth;
     }
 
     [System.Serializable]
-    public struct AudioHighPassFilterObj
+    public struct AudioDistortionObj
+    {
+        public bool enabled;
+        /// <summary>
+        /// Ranges from 0 to 1
+        /// </summary>
+        public float distortionLevel;
+    }
+
+    [System.Serializable]
+    public struct AudioEchoObj
+    {
+        public bool enabled;
+        /// <summary>Clamped between 10 to 5000</summary>
+        public float delay;
+        /// <summary>Clamped between 0 to 1</summary>
+        public float decayRatio;
+        /// <summary>Clamped between 0 to 1</summary>
+        public float wetMix;
+        /// <summary>Clamped between 0 to 1</summary>
+        public float dryMix;
+    }
+
+    [System.Serializable]
+    public struct AudioHighPassObj
     {
         public bool enabled;
         /// <summary>
@@ -33,18 +63,58 @@ namespace JSAM
     }
 
     [System.Serializable]
-    public struct AudioDistortionObj
+    public struct AudioLowPassObj
     {
         public bool enabled;
         /// <summary>
-        /// Ranges from 0 to 1
+        /// Ranges from 10 to 22000
         /// </summary>
-        public float distortionLevel;
+        public float cutoffFrequency;
+        /// <summary>
+        /// Ranges from 1 to 10
+        /// </summary>
+        public float lowpassResonanceQ;
     }
+
+    [System.Serializable]
+    public struct AudioReverbObj
+    {
+        public bool enabled;
+        public AudioReverbPreset reverbPreset;
+        /// <summary>Clamped between –10000 to 0</summary>
+        public float dryLevel;
+        /// <summary>Clamped between –10000 to 0</summary>
+        public float room;
+        /// <summary>Clamped between –10000 to 0</summary>
+        public float roomHF;
+        /// <summary>Clamped between –10000 to 0</summary>
+        public float roomLF;
+        /// <summary>Clamped between 0.1 to 20</summary>
+        public float decayTime;
+        /// <summary>Clamped between 0.1 to 20</summary>
+        public float decayHFRatio;
+        /// <summary>Clamped between -10000 to 1000</summary>
+        public float reflectionsLevel;
+        /// <summary>Clamped between 0 to 0.3</summary>
+        public float reflectionsDelay;
+        /// <summary>Clamped between -10000 to 2000</summary>
+        public float reverbLevel;
+        /// <summary>Clamped between 0.0 to 0.1</summary>
+        public float reverbDelay;
+        /// <summary>Clamped between 1000 to 20000</summary>
+        public float hFReference;
+        /// <summary>Clamped between 1000 to 20000</summary>
+        public float lFReference;
+        /// <summary>Clamped between 0 to 100</summary>
+        public float diffusion;
+        /// <summary>Clamped between 0 to 100</summary>
+        public float density;
+    }
+
     #endregion
 
     [CreateAssetMenu(fileName = "New Audio File", menuName = "AudioManager/New Audio File Object", order = 1)]
-    public class AudioFileObject : MonoBehaviour, IComparer<AudioFileObject>
+    public class AudioFileObject : ScriptableObject, IComparer<AudioFileObject>
     {
         [Header("Attach audio file here to use")]
         [SerializeField]
@@ -105,9 +175,12 @@ namespace JSAM
         [HideInInspector]
         public string safeName = "";
 
-        [SerializeField, HideInInspector] public AudioLowPassFilterObj lowPassFilter;
-        [SerializeField, HideInInspector] public AudioHighPassFilterObj highPassFilter;
+        [SerializeField, HideInInspector] public AudioChorusObj chorusFilter;
         [SerializeField, HideInInspector] public AudioDistortionObj distortionFilter;
+        [SerializeField, HideInInspector] public AudioEchoObj echoFilter;
+        [SerializeField, HideInInspector] public AudioLowPassObj lowPassFilter;
+        [SerializeField, HideInInspector] public AudioHighPassObj highPassFilter;
+        [SerializeField, HideInInspector] public AudioReverbObj reverbFilter;
 
         public AudioClip GetFile()
         {

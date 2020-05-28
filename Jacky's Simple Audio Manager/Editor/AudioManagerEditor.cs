@@ -123,7 +123,7 @@ namespace JSAM
                 EditorGUILayout.PropertyField(instancedEnums, longTent);
             }
 
-            if (myScript.GetListener() == null || showAdvancedSettings)
+            if (myScript.GetListenerInternal() == null || showAdvancedSettings)
             {
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("listener"));
             }
@@ -198,15 +198,12 @@ namespace JSAM
             {
                 // Many thanks to mstevenson for having a reference on creating scriptable objects from code
                 // https://gist.github.com/mstevenson/4726563
-                GameObject asset = new GameObject("New Audio File Object");
-                asset.AddComponent<AudioFileObject>();
-                string savePath = EditorUtility.SaveFilePanel("Create new Audio File Object", filePath, "New Audio File Object", "prefab");
+                var asset = CreateInstance<AudioFileObject>();
+                string savePath = EditorUtility.SaveFilePanel("Create new Audio File Object", filePath, "New Audio File Object", "asset");
                 if (savePath != "") // Make sure user didn't press "Cancel"
                 {
                     savePath = savePath.Remove(0, savePath.IndexOf("Assets/"));
-                    bool success = false;
-                    PrefabUtility.SaveAsPrefabAsset(asset, savePath, out success);
-                    DestroyImmediate(asset);
+                    AssetDatabase.CreateAsset(asset, savePath);
                     EditorUtility.FocusProjectWindow();
                     Selection.activeObject = asset;
                 }
@@ -214,9 +211,8 @@ namespace JSAM
 
             if (GUILayout.Button("Add New Music File"))
             {
-                GameObject asset = new GameObject("New Audio Music File Object");
-                asset.AddComponent<AudioFileMusicObject>();
-                string savePath = EditorUtility.SaveFilePanel("Create new Audio File Music Object", filePath, "New Audio File Music Object", "prefab");
+                var asset = CreateInstance<AudioFileObject>();
+                string savePath = EditorUtility.SaveFilePanel("Create new Audio File Music Object", filePath, "New Audio File Music Object", "asset");
                 if (savePath != "") // Make sure user didn't press "Cancel"
                 {
                     savePath = savePath.Remove(0, savePath.IndexOf("Assets/"));

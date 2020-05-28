@@ -135,7 +135,7 @@ namespace JSAM
                     blontent = new GUIContent("Loop Point Tools", "Customize where music will loop between. " +
                         "Loops may not appear to be seamless in the inspector but rest assured, they will be seamless in-game!");
                     showLoopPointTool = EditorGUILayout.BeginFoldoutHeaderGroup(showLoopPointTool, blontent);
-                    if (showLoopPointTool)
+                    if (showLoopPointTool && myScript.loopMode == LoopMode.LoopWithLoopPoints)
                     {
                         GUIContent[] contents = new GUIContent[] { new GUIContent("Slider"), new GUIContent("Time"), new GUIContent("Samples"), new GUIContent("BPM") };
                         EditorGUILayout.BeginHorizontal();
@@ -157,8 +157,6 @@ namespace JSAM
                                 GUILayout.Label("Song Duration Samples: " + music.samples);
                                 EditorGUILayout.MinMaxSlider(ref loopStart, ref loopEnd, 0, music.length);
 
-                                //GUIStyle timeStyle = new GUIStyle(EditorStyles.label);
-                                //timeStyle.font = 
                                 GUILayout.BeginHorizontal();
                                 GUILayout.Label("Loop Point Start: " + TimeToString(loopStart), new GUILayoutOption[] { GUILayout.Width(180) });
                                 GUILayout.FlexibleSpace();
@@ -328,6 +326,8 @@ namespace JSAM
             }
             #endregion
 
+            DrawAudioEffectTools(myScript);
+
             if (serializedObject.hasModifiedProperties)
             {
                 forceRepaint = true;
@@ -450,8 +450,7 @@ namespace JSAM
                     clipPlaying = !clipPlaying;
                     if (clipPlaying)
                     {
-                        helperSource.volume = myScript.relativeVolume;
-                        helperSource.Play();
+                        helperHelper.PlayDebug(myScript);
                         // Perhaps make resetting the position optional?
                         helperSource.timeSamples = 0;
                         if (clipPaused) helperSource.Pause();
@@ -630,6 +629,16 @@ namespace JSAM
             EditorApplication.update += Update;
             Undo.undoRedoPerformed += OnUndoRedo;
             CreateAudioHelper();
+            Undo.postprocessModifications += ApplyHelperEffects;
+        }
+
+        public UndoPropertyModification[] ApplyHelperEffects(UndoPropertyModification[] modifications)
+        {
+            if (helperSource.isPlaying)
+            {
+                helperHelper.ApplyEffects();
+            }
+            return modifications;
         }
 
         void OnDisable()
@@ -637,6 +646,7 @@ namespace JSAM
             EditorApplication.update -= Update;
             Undo.undoRedoPerformed -= OnUndoRedo;
             DestroyAudioHelper();
+            Undo.postprocessModifications -= ApplyHelperEffects;
         }
 
         void OnUndoRedo()
@@ -646,6 +656,7 @@ namespace JSAM
 
         GameObject helperObject;
         AudioSource helperSource;
+        AudioChannelHelper helperHelper;
 
         void CreateAudioHelper()
         {
@@ -658,6 +669,8 @@ namespace JSAM
                 helperObject.hideFlags = HideFlags.HideAndDontSave;
                 helperSource.clip = ((AudioFileMusicObject)target).GetFile();
                 helperSource.time = 0;
+                helperHelper = helperObject.AddComponent<AudioChannelHelper>();
+                helperHelper.Init();
             }
         }
 
@@ -774,5 +787,376 @@ namespace JSAM
             int milliseconds = (int)time - minutes * 60000 - 1000 * seconds;
             return string.Format("{0:00}:{1:00}:{2:000}", minutes, seconds, milliseconds);
         }
+
+        #region Audio Effect Rendering
+        static bool showAudioEffects;
+        static bool chorusFoldout;
+        static bool distortionFoldout;
+        static bool echoFoldout;
+        static bool highPassFoldout;
+        static bool lowPassFoldout;
+        static bool reverbFoldout;
+
+        void DrawAudioEffectTools(AudioFileMusicObject myScript)
+        {
+            GUIContent blontent = new GUIContent("Audio Effects Stack", "");
+            showAudioEffects = EditorGUILayout.BeginFoldoutHeaderGroup(showAudioEffects, blontent);
+            if (showAudioEffects)
+            {
+                if (myScript.chorusFilter.enabled)
+                {
+                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                    string arrow = (chorusFoldout) ? "▼" : "▶";
+                    blontent = new GUIContent("    " + arrow + " Chorus Filter", "Applies a Chorus Filter to the sound when its played. " +
+                        "The Audio Chorus Filter takes an Audio Clip and processes it creating a chorus effect. " +
+                        "The output sounds like there are multiple sources emitting the same sound with slight variations (resembling a choir).");
+                    EditorGUILayout.BeginHorizontal();
+                    chorusFoldout = EditorGUILayout.Foldout(chorusFoldout, blontent, EditorStyles.boldLabel);
+                    blontent = new GUIContent("x", "Remove this filter");
+                    if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
+                    {
+                        Undo.RecordObject(myScript, "Removed Chorus Filter");
+                        myScript.chorusFilter.enabled = false;
+                    }
+                    EditorGUILayout.EndHorizontal();
+                    if (chorusFoldout)
+                    {
+                        Undo.RecordObject(myScript, "Modified Distortion Filter");
+                        blontent = new GUIContent("Dry Mix", "Volume of original signal to pass to output");
+                        myScript.chorusFilter.dryMix =
+                            EditorGUILayout.Slider(blontent, myScript.chorusFilter.dryMix, 0, 1);
+                        blontent = new GUIContent("Wet Mix 1", "Volume of 1st chorus tap");
+                        myScript.chorusFilter.wetMix1 =
+                            EditorGUILayout.Slider(blontent, myScript.chorusFilter.wetMix1, 0, 1);
+                        blontent = new GUIContent("Wet Mix 2", "Volume of 2nd chorus tap");
+                        myScript.chorusFilter.wetMix2 =
+                            EditorGUILayout.Slider(blontent, myScript.chorusFilter.wetMix2, 0, 1);
+                        blontent = new GUIContent("Wet Mix 3", "Volume of 2nd chorus tap");
+                        myScript.chorusFilter.wetMix3 =
+                            EditorGUILayout.Slider(blontent, myScript.chorusFilter.wetMix3, 0, 1);
+                        blontent = new GUIContent("Delay", "Chorus delay in ms");
+                        myScript.chorusFilter.delay =
+                            EditorGUILayout.Slider(blontent, myScript.chorusFilter.delay, 0, 100);
+                        blontent = new GUIContent("Rate", "Chorus modulation rate in hertz");
+                        myScript.chorusFilter.rate =
+                            EditorGUILayout.Slider(blontent, myScript.chorusFilter.rate, 0, 20);
+                        blontent = new GUIContent("Depth", "Chorus modulation depth");
+                        myScript.chorusFilter.depth =
+                            EditorGUILayout.Slider(blontent, myScript.chorusFilter.depth, 0, 1);
+                    }
+                    EditorGUILayout.EndVertical();
+                }
+                if (myScript.distortionFilter.enabled)
+                {
+                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                    string arrow = (distortionFoldout) ? "▼" : "▶";
+                    blontent = new GUIContent("    " + arrow + " Distortion Filter", "Distorts the sound when its played.");
+                    EditorGUILayout.BeginHorizontal();
+                    distortionFoldout = EditorGUILayout.Foldout(distortionFoldout, blontent, EditorStyles.boldLabel);
+                    blontent = new GUIContent("x", "Remove this filter");
+                    if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
+                    {
+                        Undo.RecordObject(myScript, "Removed Distortion Filter");
+                        myScript.distortionFilter.enabled = false;
+                    }
+                    EditorGUILayout.EndHorizontal();
+                    if (distortionFoldout)
+                    {
+                        blontent = new GUIContent("Distortion Level", "Amount of distortion to apply");
+                        float cf = myScript.highPassFilter.cutoffFrequency;
+                        cf = EditorGUILayout.Slider(
+                            blontent, myScript.distortionFilter.distortionLevel, 0, 1);
+
+                        if (cf != myScript.distortionFilter.distortionLevel)
+                        {
+                            Undo.RecordObject(myScript, "Modified Distortion Filter");
+                            myScript.distortionFilter.distortionLevel = cf;
+                        }
+                    }
+                    EditorGUILayout.EndVertical();
+                }
+                if (myScript.echoFilter.enabled)
+                {
+                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                    string arrow = (echoFoldout) ? "▼" : "▶";
+                    blontent = new GUIContent("    " + arrow + " Echo Filter", "Repeats a sound after a given Delay, attenuating the repetitions based on the Decay Ratio");
+                    EditorGUILayout.BeginHorizontal();
+                    echoFoldout = EditorGUILayout.Foldout(echoFoldout, blontent, EditorStyles.boldLabel);
+                    blontent = new GUIContent("x", "Remove this filter");
+                    if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
+                    {
+                        Undo.RecordObject(myScript, "Removed Echo Filter");
+                        myScript.echoFilter.enabled = false;
+                    }
+                    EditorGUILayout.EndHorizontal();
+                    if (echoFoldout)
+                    {
+                        Undo.RecordObject(myScript, "Modified Echo Filter");
+                        blontent = new GUIContent("Delay", "Echo delay in ms");
+                        myScript.echoFilter.delay =
+                            EditorGUILayout.Slider(blontent, myScript.echoFilter.delay, 10, 5000);
+
+                        blontent = new GUIContent("Decay Ratio", "Echo decay per delay");
+                        myScript.echoFilter.decayRatio =
+                            EditorGUILayout.Slider(blontent, myScript.echoFilter.decayRatio, 0, 1);
+
+                        blontent = new GUIContent("Wet Mix", "Volume of echo signal to pass to output");
+                        myScript.echoFilter.wetMix =
+                            EditorGUILayout.Slider(blontent, myScript.echoFilter.wetMix, 0, 1);
+
+                        blontent = new GUIContent("Dry Mix", "Volume of original signal to pass to output");
+                        myScript.echoFilter.dryMix =
+                            EditorGUILayout.Slider(blontent, myScript.echoFilter.dryMix, 0, 1);
+
+                        EditorGUILayout.HelpBox("Note: Echoes are best tested during runtime as they do not behave properly in-editor.", MessageType.None);
+                    }
+                    EditorGUILayout.EndVertical();
+                }
+                if (myScript.lowPassFilter.enabled)
+                {
+                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                    string arrow = (lowPassFoldout) ? "▼" : "▶";
+                    blontent = new GUIContent("    " + arrow + " Low Pass Filter", "Filters the audio to let lower frequencies pass while removing frequencies higher than the cutoff");
+                    EditorGUILayout.BeginHorizontal();
+                    lowPassFoldout = EditorGUILayout.Foldout(lowPassFoldout, blontent, EditorStyles.boldLabel);
+                    blontent = new GUIContent("x", "Remove this filter");
+                    if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
+                    {
+                        Undo.RecordObject(myScript, "Removed Low Pass Filter");
+                        myScript.lowPassFilter.enabled = false;
+                    }
+                    EditorGUILayout.EndHorizontal();
+                    if (lowPassFoldout)
+                    {
+                        blontent = new GUIContent("Cutoff Frequency", "Low-pass cutoff frequency in hertz");
+                        float cf = myScript.lowPassFilter.cutoffFrequency;
+                        cf = EditorGUILayout.Slider(
+                            blontent, myScript.lowPassFilter.cutoffFrequency, 10, 22000);
+
+                        blontent = new GUIContent("Low Pass Resonance Q", "Determines how much the filter's self-resonance is dampened");
+                        float q = myScript.lowPassFilter.lowpassResonanceQ;
+                        q = EditorGUILayout.Slider(
+                            blontent, myScript.lowPassFilter.lowpassResonanceQ, 1, 10);
+
+                        if (cf != myScript.lowPassFilter.cutoffFrequency || q != myScript.lowPassFilter.lowpassResonanceQ)
+                        {
+                            Undo.RecordObject(myScript, "Modified Low Pass Filter");
+                            myScript.lowPassFilter.cutoffFrequency = cf;
+                            myScript.lowPassFilter.lowpassResonanceQ = q;
+                        }
+                    }
+                    EditorGUILayout.EndVertical();
+                }
+                if (myScript.highPassFilter.enabled)
+                {
+                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                    string arrow = (highPassFoldout) ? "▼" : "▶";
+                    blontent = new GUIContent("    " + arrow + " High Pass Filter", "Filters the audio to let higher frequencies pass while removing frequencies lower than the cutoff");
+                    EditorGUILayout.BeginHorizontal();
+                    highPassFoldout = EditorGUILayout.Foldout(highPassFoldout, blontent, EditorStyles.boldLabel);
+                    blontent = new GUIContent("x", "Remove this filter");
+                    if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
+                    {
+                        Undo.RecordObject(myScript, "Removed High Pass Filter");
+                        myScript.highPassFilter.enabled = false;
+                    }
+                    EditorGUILayout.EndHorizontal();
+                    if (highPassFoldout)
+                    {
+                        blontent = new GUIContent("Cutoff Frequency", "High-pass cutoff frequency in hertz");
+                        float cf = myScript.highPassFilter.cutoffFrequency;
+                        cf = EditorGUILayout.Slider(
+                            blontent, myScript.highPassFilter.cutoffFrequency, 10, 22000);
+
+                        blontent = new GUIContent("High Pass Resonance Q", "Determines how much the filter's self-resonance is dampened");
+                        float q = myScript.highPassFilter.highpassResonanceQ;
+                        q = EditorGUILayout.Slider(
+                            blontent, myScript.highPassFilter.highpassResonanceQ, 1, 10);
+
+                        if (cf != myScript.highPassFilter.cutoffFrequency || q != myScript.highPassFilter.highpassResonanceQ)
+                        {
+                            Undo.RecordObject(myScript, "Modified High Pass Filter");
+                            myScript.highPassFilter.cutoffFrequency = cf;
+                            myScript.highPassFilter.highpassResonanceQ = q;
+                        }
+                    }
+                    EditorGUILayout.EndVertical();
+                }
+                if (myScript.reverbFilter.enabled)
+                {
+                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                    string arrow = (reverbFoldout) ? "▼" : "▶";
+                    blontent = new GUIContent("    " + arrow + " Reverb Filter", "Modifies the sound to make it feel like it's reverberating around a room");
+                    EditorGUILayout.BeginHorizontal();
+                    reverbFoldout = EditorGUILayout.Foldout(reverbFoldout, blontent, EditorStyles.boldLabel);
+                    blontent = new GUIContent("x", "Remove this filter");
+                    if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
+                    {
+                        Undo.RecordObject(myScript, "Removed Reverb Filter");
+                        myScript.reverbFilter.enabled = false;
+                    }
+                    EditorGUILayout.EndHorizontal();
+                    if (reverbFoldout)
+                    {
+                        Undo.RecordObject(myScript, "Modified Reverb Filter");
+                        blontent = new GUIContent("Reverb Preset", "Custom reverb presets, select \"User\" to create your own customized reverb effects. You are highly recommended to use a preset.");
+                        myScript.reverbFilter.reverbPreset = (AudioReverbPreset)EditorGUILayout.EnumPopup(
+                            blontent, myScript.reverbFilter.reverbPreset);
+
+                        using (new EditorGUI.DisabledScope(myScript.reverbFilter.reverbPreset != AudioReverbPreset.User))
+                        {
+                            blontent = new GUIContent("Dry Level", "Mix level of dry signal in output in mB");
+                            myScript.reverbFilter.dryLevel = EditorGUILayout.Slider(
+                                blontent, myScript.reverbFilter.dryLevel, -10000, 0);
+                            blontent = new GUIContent("Room", "Room effect level at low frequencies in mB");
+                            myScript.reverbFilter.room = EditorGUILayout.Slider(
+                                blontent, myScript.reverbFilter.room, -10000, 0);
+                            blontent = new GUIContent("Room HF", "Room effect high-frequency level in mB");
+                            myScript.reverbFilter.roomHF = EditorGUILayout.Slider(
+                                blontent, myScript.reverbFilter.roomHF, -10000, 0);
+                            blontent = new GUIContent("Room LF", "Room effect low-frequency level in mB");
+                            myScript.reverbFilter.roomLF = EditorGUILayout.Slider(
+                                blontent, myScript.reverbFilter.roomLF, -10000, 0);
+                            blontent = new GUIContent("Decay Time", "Reverberation decay time at low-frequencies in seconds");
+                            myScript.reverbFilter.decayTime = EditorGUILayout.Slider(
+                                blontent, myScript.reverbFilter.decayTime, 0.1f, 20);
+                            blontent = new GUIContent("Decay HFRatio", "Decay HF Ratio : High-frequency to low-frequency decay time ratio");
+                            myScript.reverbFilter.decayHFRatio = EditorGUILayout.Slider(
+                                blontent, myScript.reverbFilter.decayHFRatio, 0.1f, 20);
+                            blontent = new GUIContent("Reflections Level", "Early reflections level relative to room effect in mB");
+                            myScript.reverbFilter.reflectionsLevel = EditorGUILayout.Slider(
+                                blontent, myScript.reverbFilter.reflectionsLevel, -10000, 1000);
+                            blontent = new GUIContent("Reflections Delay", "Early reflections delay time relative to room effect in mB");
+                            myScript.reverbFilter.reflectionsDelay = EditorGUILayout.Slider(
+                                blontent, myScript.reverbFilter.reflectionsDelay, 0, 0.3f);
+                            blontent = new GUIContent("Reverb Level", "Late reverberation level relative to room effect in mB");
+                            myScript.reverbFilter.reverbLevel = EditorGUILayout.Slider(
+                                blontent, myScript.reverbFilter.reverbLevel, -10000, 2000);
+                            blontent = new GUIContent("Reverb Delay", "Late reverberation delay time relative to first reflection in seconds");
+                            myScript.reverbFilter.reverbDelay = EditorGUILayout.Slider(
+                                blontent, myScript.reverbFilter.reverbDelay, 0, 0.1f);
+                            blontent = new GUIContent("HFReference", "Reference high frequency in Hz");
+                            myScript.reverbFilter.hFReference = EditorGUILayout.Slider(
+                                blontent, myScript.reverbFilter.hFReference, 1000, 20000);
+                            blontent = new GUIContent("LFReference", "Reference low frequency in Hz");
+                            myScript.reverbFilter.lFReference = EditorGUILayout.Slider(
+                                blontent, myScript.reverbFilter.lFReference, 20, 1000);
+                            blontent = new GUIContent("Diffusion", "Reverberation diffusion (echo density) in percent");
+                            myScript.reverbFilter.diffusion = EditorGUILayout.Slider(
+                                blontent, myScript.reverbFilter.diffusion, 0, 100);
+                            blontent = new GUIContent("Density", "Reverberation density (modal density) in percent");
+                            myScript.reverbFilter.density = EditorGUILayout.Slider(
+                                blontent, myScript.reverbFilter.density, 0, 100);
+                        }
+                    }
+                    EditorGUILayout.EndVertical();
+                }
+
+                #region Add New Effect Button
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("Add New Effect", new GUILayoutOption[] { GUILayout.MaxWidth(200) }))
+                {
+                    GenericMenu menu = new GenericMenu();
+                    blontent = new GUIContent("Chorus Filter");
+                    if (myScript.chorusFilter.enabled) menu.AddDisabledItem(blontent);
+                    else menu.AddItem(blontent, false, EnableChorus);
+                    blontent = new GUIContent("Distortion Filter");
+                    if (myScript.distortionFilter.enabled) menu.AddDisabledItem(blontent);
+                    else menu.AddItem(blontent, false, EnableDistortion);
+                    blontent = new GUIContent("Echo Filter");
+                    if (myScript.echoFilter.enabled) menu.AddDisabledItem(blontent);
+                    else menu.AddItem(blontent, false, EnableEcho);
+                    blontent = new GUIContent("High Pass Filter");
+                    if (myScript.highPassFilter.enabled) menu.AddDisabledItem(blontent);
+                    else menu.AddItem(blontent, false, EnableHighPass);
+                    blontent = new GUIContent("Low Pass Filter");
+                    if (myScript.lowPassFilter.enabled) menu.AddDisabledItem(blontent);
+                    else menu.AddItem(blontent, false, EnableLowPass);
+                    blontent = new GUIContent("Reverb Filter");
+                    if (myScript.reverbFilter.enabled) menu.AddDisabledItem(blontent);
+                    else menu.AddItem(blontent, false, EnableReverb);
+                    menu.ShowAsContext();
+                }
+                GUILayout.FlexibleSpace();
+                EditorGUILayout.EndHorizontal();
+                #endregion
+            }
+            EditorGUILayout.EndFoldoutHeaderGroup();
+        }
+
+        void EnableChorus()
+        {
+            AudioFileMusicObject myScript = (AudioFileMusicObject)target;
+            Undo.RecordObject(myScript, "Added Effect");
+            myScript.chorusFilter.enabled = true;
+            myScript.chorusFilter.dryMix = 0.5f;
+            myScript.chorusFilter.wetMix1 = 0.5f;
+            myScript.chorusFilter.wetMix2 = 0.5f;
+            myScript.chorusFilter.wetMix3 = 0.5f;
+            myScript.chorusFilter.delay = 40;
+            myScript.chorusFilter.rate = 0.8f;
+            myScript.chorusFilter.depth = 0.03f;
+        }
+
+        void EnableDistortion()
+        {
+            AudioFileMusicObject myScript = (AudioFileMusicObject)target;
+            Undo.RecordObject(myScript, "Added Effect");
+            myScript.distortionFilter.enabled = true;
+            myScript.distortionFilter.distortionLevel = 0.5f;
+        }
+
+        void EnableEcho()
+        {
+            AudioFileMusicObject myScript = (AudioFileMusicObject)target;
+            Undo.RecordObject(myScript, "Added Effect");
+            myScript.echoFilter.enabled = true;
+            myScript.echoFilter.delay = 500;
+            myScript.echoFilter.decayRatio = 0.5f;
+            myScript.echoFilter.wetMix = 1;
+            myScript.echoFilter.dryMix = 1;
+        }
+
+        void EnableHighPass()
+        {
+            AudioFileMusicObject myScript = (AudioFileMusicObject)target;
+            Undo.RecordObject(myScript, "Added Effect");
+            myScript.highPassFilter.enabled = true;
+            myScript.highPassFilter.cutoffFrequency = 5000;
+            myScript.highPassFilter.highpassResonanceQ = 1;
+        }
+
+        void EnableLowPass()
+        {
+            AudioFileMusicObject myScript = (AudioFileMusicObject)target;
+            Undo.RecordObject(myScript, "Added Effect");
+            myScript.lowPassFilter.enabled = true;
+            myScript.lowPassFilter.cutoffFrequency = 5000;
+            myScript.lowPassFilter.lowpassResonanceQ = 1;
+        }
+
+        void EnableReverb()
+        {
+            AudioFileMusicObject myScript = (AudioFileMusicObject)target;
+            Undo.RecordObject(myScript, "Added Effect");
+            myScript.reverbFilter.enabled = true;
+            myScript.reverbFilter.reverbPreset = AudioReverbPreset.Generic;
+            myScript.reverbFilter.dryLevel = 0;
+            myScript.reverbFilter.room = 0;
+            myScript.reverbFilter.roomHF = 0;
+            myScript.reverbFilter.roomLF = 0;
+            myScript.reverbFilter.decayTime = 1;
+            myScript.reverbFilter.decayHFRatio = 0.5f;
+            myScript.reverbFilter.reflectionsLevel = -10000.0f;
+            myScript.reverbFilter.reflectionsDelay = 0;
+            myScript.reverbFilter.reverbLevel = 0;
+            myScript.reverbFilter.reverbDelay = 0.04f;
+            myScript.reverbFilter.hFReference = 5000;
+            myScript.reverbFilter.lFReference = 250;
+            myScript.reverbFilter.diffusion = 100;
+            myScript.reverbFilter.density = 100;
+        }
+        #endregion
     }
 }
