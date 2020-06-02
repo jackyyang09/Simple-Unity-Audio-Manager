@@ -129,6 +129,8 @@ namespace JSAM
 
         [HideInInspector]
         public string category = "";
+        public static Dictionary<string, int> projectCategories = new Dictionary<string, int>();
+        public static Dictionary<string, int> projectMusicCategories = new Dictionary<string, int>();
 
         [SerializeField]
         [Range(0, 1)]
@@ -143,10 +145,18 @@ namespace JSAM
         [SerializeField]
         public Priority priority = Priority.Default;
 
+        [Tooltip("The frequency that the sound plays at by default. \"Pitch shift\" is added to this value additively to get the final pitch. Negative \"pitches\" result in the audio being played backwards")]
+        [Range(0, 3), SerializeField]
+        public float startingPitch = 1;
+
         [Tooltip("Amount of random variance to the sound's frequency to be applied (both positive and negative) when this sound is played. Keep below 0.2 for best results.")]
         [SerializeField]
         [Range(0, 0.5f)]
         public float pitchShift = 0.05f;
+
+        [Tooltip("If true, takes the pitch settings and applies them to the frequency as negative values, making the sound playback in reverse")]
+        [SerializeField]
+        public bool playReversed = false;
 
         [Tooltip("Adds a delay in seconds before this sound is played. If the sound loops, delay is only added to when the sound is first played before the first loop.")]
         [SerializeField]
@@ -260,6 +270,93 @@ namespace JSAM
             }
 
             return x.safeName.CompareTo(y.safeName);
+        }
+
+        /// <summary>
+        /// May need to be optimized
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> GetCategories()
+        {
+            List<AudioFileObject> files = new List<AudioFileObject>();
+            foreach (string guid in UnityEditor.AssetDatabase.FindAssets("t:AudioFileObject"))
+            {
+                files.Add((AudioFileObject)UnityEditor.AssetDatabase.LoadAssetAtPath(UnityEditor.AssetDatabase.GUIDToAssetPath(guid), typeof(AudioFileObject)));
+            }
+            // Reset count
+            if (projectCategories.Keys.Count > 0) projectCategories.Clear();
+            // Increment categories based on use
+            foreach (AudioFileObject file in files)
+            {
+                if (file.category == "" || file.category == "Hidden") continue;
+                else if (projectCategories.ContainsKey(file.category))
+                {
+                    projectCategories[file.category]++;
+                }
+                else
+                {
+                    projectCategories.Add(file.category, 1);
+                }
+            }
+            // Prune unused categories
+            foreach (string key in projectCategories.Keys)
+            {
+                if (projectCategories[key] == 0)
+                {
+                    projectCategories.Remove(key);
+                }
+            }
+
+            string[] newArray = new string[projectCategories.Count];
+            projectCategories.Keys.CopyTo(newArray, 0);
+            List<string> newList = new List<string>(newArray);
+            newList.Sort();
+
+            return newList;
+        }
+
+        //public void SetCategoriesDirty()
+        //{
+        //
+        //}
+
+        public static List<string> GetMusicCategories()
+        {
+            List<AudioFileObject> files = new List<AudioFileObject>();
+            foreach (string guid in UnityEditor.AssetDatabase.FindAssets("t:AudioFileMusicObject"))
+            {
+                files.Add((AudioFileObject)UnityEditor.AssetDatabase.LoadAssetAtPath(UnityEditor.AssetDatabase.GUIDToAssetPath(guid), typeof(AudioFileObject)));
+            }
+            // Reset count
+            if (projectCategories.Keys.Count > 0) projectCategories.Clear();
+            // Increment categories based on use
+            foreach (AudioFileObject file in files)
+            {
+                if (file.category == "" || file.category == "Hidden") continue;
+                else if (projectCategories.ContainsKey(file.category))
+                {
+                    projectCategories[file.category]++;
+                }
+                else
+                {
+                    projectCategories.Add(file.category, 1);
+                }
+            }
+            // Prune unused categories
+            foreach (string key in projectCategories.Keys)
+            {
+                if (projectCategories[key] == 0)
+                {
+                    projectCategories.Remove(key);
+                }
+            }
+
+            string[] newArray = new string[projectCategories.Count];
+            projectCategories.Keys.CopyTo(newArray, 0);
+            List<string> newList = new List<string>(newArray);
+            newList.Sort();
+
+            return newList;
         }
     }
 #endif

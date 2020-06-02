@@ -58,10 +58,10 @@ MonoBehaviour:
   disableConsoleLogs: 0
   dontDestroyOnLoad: 1
   dynamicSourceAllocation: 1
-  stopSoundsOnSceneLoad: 1
+  stopOnSceneLoad: 0
   spatializeLateUpdate: 0
   timeScaledSounds: 1
-  audioFolderLocation: Assets
+  audioFolderLocation: Assets/Audio Files
   instancedEnums: 0
   wasInstancedBefore: 0
   listener: {fileID: 0}

@@ -23,10 +23,12 @@ MonoBehaviour:
   relativeVolume: 1
   spatialize: 0
   priority: 128
+  startingPitch: 1
   pitchShift: 0.05
+  playReversed: 1
   delay: 0
   ignoreTimeScale: 0
-  fadeMode: 2
+  fadeMode: 0
   fadeInDuration: 0.15999997
   fadeOutDuration: 1
   safeName: Gunshot

@@ -9740,13 +9740,13 @@ MonoBehaviour:
   stopOnSceneLoad: 0
   spatializeLateUpdate: 0
   timeScaledSounds: 1
-  audioFolderLocation: Assets/Jacky's Simple Audio Manager/Examples/First-Person
-    3D/Audio Files
   instancedEnums: 1
   wasInstancedBefore: 1
   listener: {fileID: 773699220}
   sourcePrefab: {fileID: 3048837711066349604, guid: cf11aed7e0e56ae45afe7eaebe30a616,
     type: 3}
+  audioFolderLocation: Assets/Jacky's Simple Audio Manager/Examples/First-Person
+    3D/Audio Files
 --- !u!4 &4502563657454752320
 Transform:
   m_ObjectHideFlags: 0

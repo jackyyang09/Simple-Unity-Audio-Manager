@@ -34,6 +34,10 @@ namespace JSAM
             StopAllCoroutines();
             aSource.Stop();
             enabled = true; // Enable updates on the script
+            if (file.playReversed)
+            {
+                aSource.time = aSource.clip.length - 0.01f;
+            }
             aSource.PlayDelayed(delay);
             audioFile = file;
             looping = loop;
@@ -55,7 +59,10 @@ namespace JSAM
         public void PlayDebug(AudioFileObject file)
         {
             aSource.Stop();
+            if (file.playReversed) aSource.time = aSource.clip.length - AudioManager.EPSILON;
+            else aSource.timeSamples = 0;
             aSource.Play();
+            aSource.pitch = AudioManager.GetRandomPitch(file);
             audioFile = file;
             ApplyVolumeChanges();
             ApplyEffects();

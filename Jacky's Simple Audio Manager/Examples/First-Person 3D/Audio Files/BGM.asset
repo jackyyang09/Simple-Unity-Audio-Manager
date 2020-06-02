@@ -15,11 +15,13 @@ MonoBehaviour:
   file: {fileID: 8300000, guid: fe06d48e659b1434ba98e89445a43760, type: 3}
   files: []
   useLibrary: 0
-  category: 
-  relativeVolume: 1
+  category: Looping
+  relativeVolume: 0.4
   spatialize: 0
   priority: 128
+  startingPitch: 1
   pitchShift: 1
+  playReversed: 0
   delay: 0
   ignoreTimeScale: 0
   fadeMode: 0
@@ -70,7 +72,7 @@ MonoBehaviour:
     diffusion: 100
     density: 100
   clampToLoopPoints: 0
-  loopMode: 0
+  loopMode: 1
   loopStart: 0
-  loopEnd: 12.8
+  loopEnd: 12.800001
   bpm: 160

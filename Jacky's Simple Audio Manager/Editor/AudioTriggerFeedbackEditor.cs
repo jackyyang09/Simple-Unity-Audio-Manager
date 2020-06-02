@@ -44,7 +44,6 @@ namespace JSAM
 
             GUIContent fileText = new GUIContent("Custom AudioClip", "Overrides the \"Sound\" parameter with an AudioClip if not null");
             SerializedProperty customSound = serializedObject.FindProperty("soundFile");
-            EditorGUILayout.ObjectField(customSound, fileText);
 
             EditorGUILayout.Space();
 
@@ -55,6 +54,7 @@ namespace JSAM
                 showAudioClipSettings = EditorGUILayout.BeginFoldoutHeaderGroup(showAudioClipSettings, fontent);
             if (showAudioClipSettings)
             {
+                EditorGUILayout.ObjectField(customSound, fileText);
                 using (new EditorGUI.DisabledScope(myScript.GetAttachedSound() == null))
                 {
                     DrawPropertiesExcluding(serializedObject, new[] { "m_Script", "soundFile", "playOnStart", "playOnEnable",

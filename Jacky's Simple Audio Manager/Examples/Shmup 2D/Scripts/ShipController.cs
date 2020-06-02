@@ -102,7 +102,7 @@ public class ShipController : MonoBehaviour
 
                 StartCoroutine(ShotCooldown());
             }
-            else if (!Input.GetKey(KeyCode.Z))
+            else if (!Input.GetKey(KeyCode.Z) && AudioManager.IsSoundLooping(SoundsExample2D.Shooting))
             {
                 AudioManager.StopSoundLoop(SoundsExample2D.Shooting);
             }

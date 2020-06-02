@@ -53,8 +53,6 @@ namespace JSAM
 
             Vector3 movement = Vector3.zero;
 
-            moveState = MovementStates.Idle;
-
             if (crouching)
             {
                 theSpeed *= crouchSpeedMultiplier;
@@ -62,7 +60,6 @@ namespace JSAM
             else if (Input.GetKey(KeyCode.LeftShift))
             {
                 theSpeed *= runSpeedMultiplier;
-                moveState = MovementStates.Running;
             }
 
             if (Input.GetKey(KeyCode.W))
@@ -92,7 +89,9 @@ namespace JSAM
                 StartCoroutine(CrouchCooldown());
             }
 
-            if (movement.magnitude > 0 && moveState != MovementStates.Running) moveState = MovementStates.Walking;
+            if (Input.GetKey(KeyCode.LeftShift) && moveState == MovementStates.Walking) moveState = MovementStates.Running;
+            else if (!Input.GetKey(KeyCode.LeftShift) && movement.magnitude > 0) moveState = MovementStates.Walking;
+            else if (movement.magnitude == 0) moveState = MovementStates.Idle;
 
             controller.Move((movement + gravity) * Time.deltaTime);
 

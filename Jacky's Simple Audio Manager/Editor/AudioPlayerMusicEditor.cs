@@ -18,16 +18,25 @@ namespace JSAM
 
             List<string> options = new List<string>();
 
-            System.Type enumType = AudioManager.instance.GetSceneMusicEnum();
-            if (enumType == null)
+            System.Type enumType = null;
+            if (!AudioManager.instance)
             {
-                EditorGUILayout.HelpBox("Could not find Audio File info! Try regenerating Audio Files in AudioManager!", MessageType.Error);
+                EditorGUILayout.HelpBox("Could not find Audio Manager in the scene! This component needs AudioManager " +
+                    "in order to function!", MessageType.Error);
             }
             else
             {
-                foreach (string s in System.Enum.GetNames(enumType))
+                enumType = AudioManager.instance.GetSceneSoundEnum();
+                if (enumType == null)
                 {
-                    options.Add(s);
+                    EditorGUILayout.HelpBox("Could not find Audio File info! Try regenerating Audio Files in AudioManager!", MessageType.Error);
+                }
+                else
+                {
+                    foreach (string s in System.Enum.GetNames(enumType))
+                    {
+                        options.Add(s);
+                    }
                 }
             }
 
@@ -44,7 +53,6 @@ namespace JSAM
 
             GUIContent fileText = new GUIContent("Custom AudioClip", "Overrides the \"Music\" parameter with an AudioClip if not null");
             SerializedProperty customSound = serializedObject.FindProperty("musicFile");
-            EditorGUILayout.ObjectField(customSound, fileText);
 
             EditorGUILayout.Space();
 
@@ -55,6 +63,7 @@ namespace JSAM
                 showAudioClipSettings = EditorGUILayout.BeginFoldoutHeaderGroup(showAudioClipSettings, fontent);
             if (showAudioClipSettings)
             {
+                EditorGUILayout.ObjectField(customSound, fileText);
                 using (new EditorGUI.DisabledScope(myScript.GetAttachedFile() == null))
                 {
                     DrawPropertiesExcluding(serializedObject, new[] { "m_Script", "musicFile", "playOnStart", "playOnEnable",
@@ -117,6 +126,16 @@ namespace JSAM
             }
             EditorGUILayout.Space();
             #endregion  
+        }
+
+        [MenuItem("GameObject/JSAM/Audio Player Music", false, 1)]
+        public static void AddAudioPlayerMusic()
+        {
+            GameObject newPlayer = new GameObject("Audio Player Music");
+            newPlayer.AddComponent<AudioPlayerMusic>();
+            EditorGUIUtility.PingObject(newPlayer);
+            Selection.activeGameObject = newPlayer;
+            Undo.RegisterCreatedObjectUndo(newPlayer, "Added new AudioPlayerMusic");
         }
     }
 }

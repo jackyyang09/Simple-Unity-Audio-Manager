@@ -27,6 +27,8 @@ namespace JSAM
 
         static bool testBool;
 
+        bool registered = false;
+
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
@@ -43,13 +45,16 @@ namespace JSAM
             GUIContent blontent = new GUIContent("Category", "An optional field that lets you further sort your AudioFileObjects for better organization in AudioManager's library view.");
             string newCategory = EditorGUILayout.DelayedTextField(blontent, myScript.category);
             List<string> categories = new List<string>();
-            // Check if we're modifying this AudioFileObject in a valid scene
-            if (AudioManager.instance != null)
-            {
-                categories.AddRange(AudioManager.instance.GetCategories());
-            }
             if (EditorGUILayout.DropdownButton(GUIContent.none, FocusType.Keyboard, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
             {
+                GUI.FocusControl(null);
+                // Check if we're modifying this AudioFileObject in a valid scene
+                if (AudioManager.instance != null)
+                {
+                    //categories.AddRange(AudioManager.instance.GetCategories());
+                    categories.AddRange(AudioFileObject.GetCategories());
+                    
+                }
                 AudioManager.instance.InitializeCategories();
                 GenericMenu newMenu = new GenericMenu();
                 int i = 0;
@@ -80,6 +85,12 @@ namespace JSAM
             }
             EditorGUILayout.EndHorizontal();
             #endregion
+
+            if (registered)
+            {
+                EditorGUILayout.HelpBox("This Audio File Object has yet to be added to AudioManager's library. Do make sure to " +
+                    "click on \"Re-generate Audio Library\" in AudioManager before playing!", MessageType.Warning);
+            }
 
             List<string> excludedProperties = new List<string>() { "m_Script", "file", "files" };
 
@@ -128,7 +139,8 @@ namespace JSAM
 
             if (noFiles)
             {
-                excludedProperties.AddRange(new List<string>() { "relativeVolume", "spatialize", "loopSound", "priority", "pitchShift", "delay", "ignoreTimeScale", "fadeMode" });
+                excludedProperties.AddRange(new List<string>() { "relativeVolume", "spatialize", "loopSound",
+                    "priority", "startingPitch", "pitchShift", "playReversed", "delay", "ignoreTimeScale", "fadeMode" });
             }
 
             DrawPropertiesExcluding(serializedObject, excludedProperties.ToArray());
@@ -197,12 +209,19 @@ namespace JSAM
             }
             #endregion
 
-            DrawAudioEffectTools(myScript);
+            if (!noFiles) DrawAudioEffectTools(myScript);
 
             if (serializedObject.hasModifiedProperties)
             {
                 forceRepaint = true;
                 serializedObject.ApplyModifiedProperties();
+
+                // Manually fix variables
+                if (myScript.delay < 0)
+                {
+                    myScript.delay = 0;
+                    Undo.RecordObject(myScript, "Fixed negative delay");
+                }
             }
 
             #region Quick Reference Guide
@@ -225,6 +244,12 @@ namespace JSAM
                     , MessageType.None);
                 EditorGUILayout.HelpBox("Relative volume only helps to reduce how loud a sound is. To increase how loud an individual sound is, you'll have to " +
                     "edit it using a sound editor."
+                    , MessageType.None);
+                EditorGUILayout.HelpBox("You can always check what audio file objects you have loaded in AudioManager's library by selecting the AudioManager " +
+                    "in the inspector and clicking on the drop-down near the bottom."
+                    , MessageType.None);
+                EditorGUILayout.HelpBox("If you want to better organize your audio file objects in AudioManager's library, you can assign a " +
+                    "category to this audio file object. Use the \"Hidden\" category to hide your audio file object from the library list completely."
                     , MessageType.None);
             }
             EditorGUILayout.EndFoldoutHeaderGroup();
@@ -312,17 +337,21 @@ namespace JSAM
             }
             playingClip = theClip;
             playingRandom = true;
+            forceRepaint = true;
         }
 
         void Update()
         {
-            if (playingClip != null)
+            AudioFileObject myScript = (AudioFileObject)target;
+            if (myScript == null) return; // This can happen on the same frame it's deleted
+            AudioClip clip = myScript.GetFirstAvailableFile();
+            if (playingClip != null && clip != null)
             {
-                AudioFileObject myScript = (AudioFileObject)target;
-                if (playingClip != cachedClip)
+                if (clip != cachedClip)
                 {
                     forceRepaint = true;
                     cachedClip = myScript.GetFirstAvailableFile();
+                    playingClip = cachedClip;
                 }
 
                 if (!clipPlaying && playingRandom)
@@ -345,6 +374,7 @@ namespace JSAM
             Undo.undoRedoPerformed += OnUndoRedo;
             CreateAudioHelper();
             Undo.postprocessModifications += ApplyHelperEffects;
+            CheckIfRegistered();
         }
 
         void OnDisable()
@@ -367,6 +397,29 @@ namespace JSAM
                 helperHelper.ApplyEffects();
             }
             return modifications;
+        }
+
+        public void CheckIfRegistered()
+        {
+            if (AudioManager.instance)
+            {
+                if (AudioManager.instance.IsUsingInstancedEnums())
+                {
+                    Debug.Log(AssetDatabase.GetAssetPath((AudioFileObject)target));
+                    // Check if this file is actually relevant to the AudioManager
+                    if (AssetDatabase.GetAssetPath((AudioFileObject)target).Contains(AudioManager.instance.GetAudioFolderLocation()))
+                    {
+                        if (!AudioManager.instance.GetSoundLibrary().Contains((AudioFileObject)target))
+                        {
+                            registered = true;
+                        }
+                    }
+                }
+                else
+                {
+                    if (!AudioManager.instance.GetSoundLibrary().Contains((AudioFileObject)target)) registered = true;
+                }
+            }
         }
 
         FadeMode fadeMode;
@@ -414,6 +467,7 @@ namespace JSAM
                                 helperSource.volume = Mathf.Lerp(0, myScript.relativeVolume, helperSource.time / fadeInTime);
                             }
                         }
+                        else helperSource.volume = myScript.relativeVolume;
                         break;
                     case FadeMode.FadeOut:
                         if (helperSource.time >= playingClip.length - fadeOutTime)
@@ -466,7 +520,6 @@ namespace JSAM
             if (fadeInTime == 0) fadeInTime = float.Epsilon;
             if (fadeOutTime == 0) fadeOutTime = float.Epsilon;
             helperSource.clip = playingClip;
-            helperSource.pitch = 1 + Random.Range(-myScript.pitchShift, myScript.pitchShift);
             helperHelper.PlayDebug(myScript);
         }
 

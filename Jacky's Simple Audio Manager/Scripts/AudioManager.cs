@@ -180,10 +180,6 @@ namespace JSAM
         [Tooltip("Changes the pitch of sounds according to Time.timeScale. When Time.timeScale is set to 0, pauses all sounds instead")]
         bool timeScaledSounds = true;
 
-        [SerializeField]
-        [HideInInspector]
-        string audioFolderLocation = "";
-
         /// <summary>
         /// If true, enums are generated to be unique to scenes.
         /// Otherwise, enums are generated to be global across the project
@@ -226,6 +222,11 @@ namespace JSAM
         Coroutine fadeOutRoutine;
 
         float prevTimeScale = 1;
+
+        /// <summary>
+        /// A bit like float Epsilon, but large enough for the purpose of pushing the playback position of AudioSources just far enough to not throw an error
+        /// </summary>
+        public static float EPSILON = 0.000001f;
 
         // Use this for initialization
         void Awake()
@@ -371,7 +372,7 @@ namespace JSAM
                         musicSources[0].Play();
                     }
 #if UNITY_EDITOR
-                    if (loopStartTime - loopEndTime < 1)
+                    if (Mathf.Abs(loopStartTime - loopEndTime) < 1)
                     {
                         Debug.LogWarning("AudioManager Warning! The difference in time in your loop start/end points is less than 1 second! " +
                             "Are you sure you meant to enable loop points in your music?");
@@ -444,15 +445,19 @@ namespace JSAM
                     {
                         if (ignoringTimeScale.Contains(a)) continue;
                         float offset = a.pitch - prevTimeScale;
+                        bool reversed = a.pitch < 0;
                         a.pitch = Time.timeScale;
                         a.pitch += offset;
+                        if (reversed) a.pitch = -Mathf.Abs(a.pitch);
                     }
                     foreach (AudioSource a in musicSources)
                     {
                         if (ignoringTimeScale.Contains(a)) continue;
                         float offset = a.pitch - prevTimeScale;
+                        bool reversed = a.pitch < 0;
                         a.pitch = Time.timeScale;
                         a.pitch += offset;
+                        if (reversed) a.pitch = -Mathf.Abs(a.pitch);
                     }
                 }
                 prevTimeScale = Time.timeScale;
@@ -528,6 +533,30 @@ namespace JSAM
 
             musicSources[0].spatialBlend = 0;
 
+            bool ignoreTimeScale = audioFileMusicObjects[t].ignoreTimeScale;
+            if (timeScaledSounds && !ignoreTimeScale)
+            {
+                if (Time.timeScale == 0)
+                {
+                    musicSources[0].Pause(); // If game is paused, pause the sound too
+                }
+            }
+            if (ignoreTimeScale)
+            {
+                ignoringTimeScale.Add(musicSources[0]);
+            }
+            else
+            {
+                if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
+            }
+
+            musicSources[0].pitch = audioFileMusicObjects[t].startingPitch;
+            if (audioFileMusicObjects[t].playReversed)
+            {
+                musicSources[0].pitch = -Mathf.Abs(musicSources[0].pitch);
+                musicSources[0].time = musicSources[0].clip.length - EPSILON;
+            }
+            else musicSources[0].time = 0;
             musicSources[0].Stop();
             musicHelpers[0].Play(audioFileMusicObjects[t].delay, audioFileMusicObjects[t]);
 
@@ -581,6 +610,31 @@ namespace JSAM
 
             musicSources[0].spatialBlend = 0;
 
+            bool ignoreTimeScale = audioFileMusicObjects[t].ignoreTimeScale;
+            if (timeScaledSounds && !ignoreTimeScale)
+            {
+                if (Time.timeScale == 0)
+                {
+                    musicSources[0].Pause(); // If game is paused, pause the sound too
+                }
+            }
+            if (ignoreTimeScale)
+            {
+                ignoringTimeScale.Add(musicSources[0]);
+            }
+            else
+            {
+                if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
+            }
+
+            musicSources[0].pitch = audioFileMusicObjects[t].startingPitch;
+            if (audioFileMusicObjects[t].playReversed)
+            {
+                musicSources[0].pitch = -Mathf.Abs(musicSources[0].pitch);
+                musicSources[0].time = musicSources[0].clip.length - EPSILON;
+            }
+            else musicSources[0].time = 0;
+
             musicSources[0].Stop();
             musicHelpers[0].Play(audioFileMusicObjects[t].delay, audioFileMusicObjects[t]);
 
@@ -622,6 +676,31 @@ namespace JSAM
 
             musicSources[0].spatialBlend = 0;
 
+            bool ignoreTimeScale = audioFileMusicObjects[track].ignoreTimeScale;
+            if (timeScaledSounds && !ignoreTimeScale)
+            {
+                if (Time.timeScale == 0)
+                {
+                    musicSources[0].Pause(); // If game is paused, pause the sound too
+                }
+            }
+            if (ignoreTimeScale)
+            {
+                ignoringTimeScale.Add(musicSources[0]);
+            }
+            else
+            {
+                if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
+            }
+
+            musicSources[0].pitch = audioFileMusicObjects[track].startingPitch;
+            if (audioFileMusicObjects[track].playReversed)
+            {
+                musicSources[0].pitch = -Mathf.Abs(musicSources[0].pitch);
+                musicSources[0].time = musicSources[0].clip.length - EPSILON;
+            }
+            else musicSources[0].time = 0;
+
             musicSources[0].Stop();
             musicHelpers[0].Play(audioFileMusicObjects[track].delay, audioFileMusicObjects[track]);
 
@@ -650,10 +729,11 @@ namespace JSAM
         {
             if (track.Equals("None")) return null;
 
+            if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
             musicSources[0].clip = track;
             musicSources[0].loop = loopTrack;
             musicSources[0].spatialBlend = 0;
-
+            musicSources[0].pitch = 1;
             musicSources[0].Play();
 
             return musicSources[0];
@@ -712,6 +792,31 @@ namespace JSAM
 
             clampBetweenLoopPoints = audioFileMusicObjects[t].clampToLoopPoints;
 
+            bool ignoreTimeScale = audioFileMusicObjects[t].ignoreTimeScale;
+            if (timeScaledSounds && !ignoreTimeScale)
+            {
+                if (Time.timeScale == 0)
+                {
+                    musicSources[2].Pause(); // If game is paused, pause the sound too
+                }
+            }
+            if (ignoreTimeScale)
+            {
+                ignoringTimeScale.Add(musicSources[2]);
+            }
+            else
+            {
+                if (ignoringTimeScale.Contains(musicSources[2])) ignoringTimeScale.Remove(musicSources[2]);
+            }
+
+            musicSources[2].pitch = audioFileMusicObjects[t].startingPitch;
+            if (audioFileMusicObjects[t].playReversed)
+            {
+                musicSources[2].pitch = -Mathf.Abs(musicSources[2].pitch);
+                musicSources[2].time = musicSources[2].clip.length - EPSILON;
+            }
+            else musicSources[2].time = 0;
+
             musicHelpers[2].Play(audioFileMusicObjects[t].delay, audioFileMusicObjects[t]);
 
             return musicSources[2];
@@ -754,6 +859,31 @@ namespace JSAM
 
             clampBetweenLoopPoints = audioFileMusicObjects[track].clampToLoopPoints;
 
+            bool ignoreTimeScale = audioFileMusicObjects[track].ignoreTimeScale;
+            if (timeScaledSounds && !ignoreTimeScale)
+            {
+                if (Time.timeScale == 0)
+                {
+                    musicSources[2].Pause(); // If game is paused, pause the sound too
+                }
+            }
+            if (ignoreTimeScale)
+            {
+                ignoringTimeScale.Add(musicSources[2]);
+            }
+            else
+            {
+                if (ignoringTimeScale.Contains(musicSources[2])) ignoringTimeScale.Remove(musicSources[2]);
+            }
+
+            musicSources[2].pitch = audioFileMusicObjects[track].startingPitch;
+            if (audioFileMusicObjects[track].playReversed)
+            {
+                musicSources[2].pitch = -Mathf.Abs(musicSources[2].pitch);
+                musicSources[2].time = musicSources[2].clip.length - EPSILON;
+            }
+            else musicSources[2].time = 0;
+
             musicHelpers[2].Play(audioFileMusicObjects[track].delay, audioFileMusicObjects[track]);
 
             return musicSources[2];
@@ -787,7 +917,7 @@ namespace JSAM
 
             musicSources[2].clip = track;
             musicSources[2].loop = loopTrack;
-
+            musicSources[2].pitch = 1;
             musicSources[2].Play();
 
             return musicSources[2];
@@ -1053,6 +1183,31 @@ namespace JSAM
                     break;
             }
 
+            bool ignoreTimeScale = audioFileMusicObjects[t].ignoreTimeScale;
+            if (timeScaledSounds && !ignoreTimeScale)
+            {
+                if (Time.timeScale == 0)
+                {
+                    musicSources[0].Pause(); // If game is paused, pause the sound too
+                }
+            }
+            if (ignoreTimeScale)
+            {
+                ignoringTimeScale.Add(musicSources[0]);
+            }
+            else
+            {
+                if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
+            }
+
+            musicSources[0].pitch = audioFileMusicObjects[t].startingPitch;
+            if (audioFileMusicObjects[t].playReversed)
+            {
+                musicSources[0].pitch = -Mathf.Abs(musicSources[0].pitch);
+                musicSources[0].time = musicSources[0].clip.length - EPSILON;
+            }
+            else musicSources[0].time = 0;
+
             clampBetweenLoopPoints = audioFileMusicObjects[t].clampToLoopPoints;
 
             if (time > 0)
@@ -1107,6 +1262,31 @@ namespace JSAM
                     loopTrackAfterStopping = true;
                     break;
             }
+
+            bool ignoreTimeScale = audioFileMusicObjects[track].ignoreTimeScale;
+            if (timeScaledSounds && !ignoreTimeScale)
+            {
+                if (Time.timeScale == 0)
+                {
+                    musicSources[0].Pause(); // If game is paused, pause the sound too
+                }
+            }
+            if (ignoreTimeScale)
+            {
+                ignoringTimeScale.Add(musicSources[0]);
+            }
+            else
+            {
+                if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
+            }
+
+            musicSources[0].pitch = audioFileMusicObjects[track].startingPitch;
+            if (audioFileMusicObjects[track].playReversed)
+            {
+                musicSources[0].pitch = -Mathf.Abs(musicSources[0].pitch);
+                musicSources[0].time = musicSources[0].clip.length - EPSILON;
+            }
+            else musicSources[0].time = 0;
 
             clampBetweenLoopPoints = audioFileMusicObjects[track].clampToLoopPoints;
 
@@ -1228,6 +1408,32 @@ namespace JSAM
                     break;
             }
 
+            bool ignoreTimeScale = audioFileMusicObjects[t].ignoreTimeScale;
+            if (timeScaledSounds && !ignoreTimeScale)
+            {
+                if (Time.timeScale == 0)
+                {
+                    musicSources[0].Pause(); // If game is paused, pause the sound too
+                }
+            }
+            if (ignoreTimeScale)
+            {
+                ignoringTimeScale.Add(musicSources[0]);
+            }
+            else
+            {
+                if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
+            }
+
+            musicSources[0].pitch = audioFileMusicObjects[t].startingPitch;
+
+            if (audioFileMusicObjects[t].playReversed)
+            {
+                musicSources[0].pitch = -Mathf.Abs(musicSources[0].pitch);
+                musicSources[0].time = musicSources[0].clip.length - EPSILON;
+            }
+            else musicSources[0].time = 0;
+
             clampBetweenLoopPoints = audioFileMusicObjects[t].clampToLoopPoints;
 
             if (time > 0)
@@ -1283,6 +1489,32 @@ namespace JSAM
                     }
                     break;
             }
+
+            bool ignoreTimeScale = audioFileMusicObjects[track].ignoreTimeScale;
+            if (timeScaledSounds && !ignoreTimeScale)
+            {
+                if (Time.timeScale == 0)
+                {
+                    musicSources[0].Pause(); // If game is paused, pause the sound too
+                }
+            }
+            if (ignoreTimeScale)
+            {
+                ignoringTimeScale.Add(musicSources[0]);
+            }
+            else
+            {
+                if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
+            }
+
+            musicSources[0].pitch = audioFileMusicObjects[track].startingPitch;
+
+            if (audioFileMusicObjects[track].playReversed)
+            {
+                musicSources[0].pitch = -Mathf.Abs(musicSources[0].pitch);
+                musicSources[0].time = musicSources[0].clip.length - EPSILON;
+            }
+            else musicSources[0].time = 0;
 
             clampBetweenLoopPoints = audioFileMusicObjects[track].clampToLoopPoints;
 
@@ -1442,6 +1674,32 @@ namespace JSAM
                     break;
             }
 
+            bool ignoreTimeScale = audioFileMusicObjects[t].ignoreTimeScale;
+            if (timeScaledSounds && !ignoreTimeScale)
+            {
+                if (Time.timeScale == 0)
+                {
+                    musicSources[0].Pause(); // If game is paused, pause the sound too
+                }
+            }
+            if (ignoreTimeScale)
+            {
+                ignoringTimeScale.Add(musicSources[0]);
+            }
+            else
+            {
+                if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
+            }
+
+            musicSources[0].pitch = audioFileMusicObjects[t].startingPitch;
+
+            if (audioFileMusicObjects[t].playReversed)
+            {
+                musicSources[0].pitch = -Mathf.Abs(musicSources[0].pitch);
+                musicSources[0].time = musicSources[0].clip.length - EPSILON;
+            }
+            else musicSources[0].time = 0;
+
             clampBetweenLoopPoints = audioFileMusicObjects[t].clampToLoopPoints;
 
             musicSources[0].volume = 0;
@@ -1504,6 +1762,32 @@ namespace JSAM
                     loopTrackAfterStopping = true;
                     break;
             }
+
+            bool ignoreTimeScale = audioFileMusicObjects[track].ignoreTimeScale;
+            if (timeScaledSounds && !ignoreTimeScale)
+            {
+                if (Time.timeScale == 0)
+                {
+                    musicSources[0].Pause(); // If game is paused, pause the sound too
+                }
+            }
+            if (ignoreTimeScale)
+            {
+                ignoringTimeScale.Add(musicSources[0]);
+            }
+            else
+            {
+                if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
+            }
+
+            musicSources[0].pitch = audioFileMusicObjects[track].startingPitch;
+
+            if (audioFileMusicObjects[track].playReversed)
+            {
+                musicSources[0].pitch = -Mathf.Abs(musicSources[0].pitch);
+                musicSources[0].time = musicSources[0].clip.length - EPSILON;
+            }
+            else musicSources[0].time = 0;
 
             clampBetweenLoopPoints = audioFileMusicObjects[track].clampToLoopPoints;
 
@@ -1768,24 +2052,16 @@ namespace JSAM
                 }
             }
 
-            float pitch = audioFileObjects[s].pitchShift;
+            a.pitch = GetRandomPitch(audioFileObjects[s]);
 
             bool ignoreTimeScale = audioFileObjects[s].ignoreTimeScale;
             if (timeScaledSounds && !ignoreTimeScale)
             {
-                a.pitch = Time.timeScale;
                 if (Time.timeScale == 0)
                 {
                     a.Pause(); // If game is paused, pause the sound too
                 }
             }
-            else a.pitch = 1;
-            //This is the base unchanged pitch
-            if (pitch > 0)
-            {
-                a.pitch += UnityEngine.Random.Range(-pitch, pitch);
-            }
-
             if (ignoreTimeScale)
             {
                 ignoringTimeScale.Add(a);
@@ -1794,6 +2070,15 @@ namespace JSAM
             {
                 if (ignoringTimeScale.Contains(a)) ignoringTimeScale.Remove(a);
             }
+
+            //This is the base unchanged pitch
+            if (audioFileObjects[s].playReversed)
+            {
+                a.pitch = -Mathf.Abs(a.pitch);
+                a.time = a.clip.length - -EPSILON;
+            }
+            else a.time = 0;
+
             a.priority = (int)audioFileObjects[s].priority;
             a.loop = false;
             helpers[sourceIndex].Play(audioFileObjects[s].delay, audioFileObjects[s]);
@@ -1941,6 +2226,18 @@ namespace JSAM
             }
 
             bool ignoreTimeScale = audioFileObjects[s].ignoreTimeScale;
+
+            a.spatialBlend = (spatialSound && audioFileObjects[s].spatialize) ? 1 : 0;
+            a.priority = (int)audioFileObjects[s].priority;
+
+            if (timeScaledSounds && !ignoreTimeScale)
+            {
+                if (Time.timeScale == 0)
+                {
+                    a.Pause(); // If game is paused, pause the sound too
+                }
+            }
+
             if (ignoreTimeScale)
             {
                 ignoringTimeScale.Add(a);
@@ -1950,17 +2247,12 @@ namespace JSAM
                 if (ignoringTimeScale.Contains(a)) ignoringTimeScale.Remove(a);
             }
 
-            a.spatialBlend = (spatialSound && audioFileObjects[s].spatialize) ? 1 : 0;
-            a.priority = (int)audioFileObjects[s].priority;
-            if (timeScaledSounds && !ignoreTimeScale)
+            if (audioFileObjects[s].playReversed)
             {
-                a.pitch = Time.timeScale;
-                if (Time.timeScale == 0)
-                {
-                    a.Pause(); // If game is paused, pause the sound too
-                }
+                a.pitch = -Mathf.Abs(a.pitch);
+                a.time = a.clip.length - EPSILON;
             }
-            else a.pitch = 1;
+            else a.time = 0;
             a.loop = true;
             helpers[sourceIndex].Play(audioFileObjects[s].delay, audioFileObjects[s], true);
 
@@ -3192,17 +3484,24 @@ namespace JSAM
         public static float GetRandomPitch(AudioFileObject audioFile)
         {
             float pitch = audioFile.pitchShift;
-            float newPitch = 1;
+            float newPitch = audioFile.startingPitch;
             bool ignoreTimeScale = audioFile.ignoreTimeScale;
             if (instance.timeScaledSounds && !ignoreTimeScale)
             {
                 newPitch = Time.timeScale;
+                if (Time.timeScale == 0)
+                {
+                    return 0;
+                }
             }
             //This is the base unchanged pitch
             if (pitch > 0)
             {
                 newPitch += UnityEngine.Random.Range(-pitch, pitch);
+                newPitch = Mathf.Clamp(newPitch, 0, 3);
             }
+            if (audioFile.playReversed) newPitch = -Mathf.Abs(newPitch);
+
             return newPitch;
         }
 
@@ -3227,6 +3526,9 @@ namespace JSAM
         }
 
 #if UNITY_EDITOR
+        [SerializeField, HideInInspector]
+        string audioFolderLocation = "";
+
         List<string> categories = new List<string>();
         List<string> categoriesMusic = new List<string>();
         bool initialCategoryCheck = false;
@@ -3319,7 +3621,7 @@ namespace JSAM
             }
         }
 
-        bool IsUsingInstancedEnums()
+        public bool IsUsingInstancedEnums()
         {
             return instancedEnums;
         }
@@ -3327,6 +3629,11 @@ namespace JSAM
         bool WasInstancedBefore()
         {
             return wasInstancedBefore;
+        }
+
+        public string GetAudioFolderLocation()
+        {
+            return audioFolderLocation;
         }
 
         [UnityEditor.Callbacks.DidReloadScripts]

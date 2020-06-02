@@ -79,7 +79,7 @@ namespace JSAM
 
             GUIContent pathContent = new GUIContent("Audio Assets Folder", "This folder and all sub-folders will be searched for Audio File Objects, AudioManager-generated files will be stored in this location as well");
             string filePath = serializedObject.FindProperty("audioFolderLocation").stringValue;
-            filePath = EditorGUILayout.TextField(pathContent, filePath);
+            filePath = EditorGUILayout.DelayedTextField(pathContent, filePath);
 
             GUIContent buttonContent = new GUIContent("Browse", "Designate a new folder to store JSAM's audio files");
             if (GUILayout.Button(buttonContent, new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.MaxWidth(55) }))
@@ -109,6 +109,13 @@ namespace JSAM
             serializedObject.FindProperty("audioFolderLocation").stringValue = filePath;
 
             EditorGUILayout.EndHorizontal();
+            if (filePath == "" || filePath == "Assets")
+            {
+                EditorGUILayout.HelpBox("You may want to consider setting your Audio Assets Folder to a more narrow path and " +
+                    "saving your Audio File Objects there. Otherwise, AudioManager will search your entire project for Audio " +
+                    "Files and enums and it can lead to false positives. Consider putting your files in \"Assets/Audio Files\"",
+                    MessageType.Warning);
+            }
             #endregion
 
             SerializedProperty instancedEnums = serializedObject.FindProperty("instancedEnums");
@@ -191,35 +198,44 @@ namespace JSAM
 
             EditorGUILayout.Space();
 
-            #region Audio Library Buttons
+            #region New Sound/Music Buttons
             EditorGUILayout.BeginHorizontal();
 
             if (GUILayout.Button("Add New Sound File"))
             {
-                // Many thanks to mstevenson for having a reference on creating scriptable objects from code
-                // https://gist.github.com/mstevenson/4726563
-                var asset = CreateInstance<AudioFileObject>();
-                string savePath = EditorUtility.SaveFilePanel("Create new Audio File Object", filePath, "New Audio File Object", "asset");
-                if (savePath != "") // Make sure user didn't press "Cancel"
+                GenerateFolderStructure(filePath);
+                if (AssetDatabase.IsValidFolder(filePath))
                 {
-                    savePath = savePath.Remove(0, savePath.IndexOf("Assets/"));
-                    AssetDatabase.CreateAsset(asset, savePath);
-                    EditorUtility.FocusProjectWindow();
-                    Selection.activeObject = asset;
+                    // Many thanks to mstevenson for having a reference on creating scriptable objects from code
+                    // https://gist.github.com/mstevenson/4726563
+                    var asset = CreateInstance<AudioFileObject>();
+                    string savePath = EditorUtility.SaveFilePanel("Create new Audio File Object", filePath, "New Audio File Object", "asset");
+                    if (savePath != "") // Make sure user didn't press "Cancel"
+                    {
+                        savePath = savePath.Remove(0, savePath.IndexOf("Assets/"));
+                        AssetDatabase.CreateAsset(asset, savePath);
+                        EditorUtility.FocusProjectWindow();
+                        Selection.activeObject = asset;
+                    }
                 }
             }
 
             if (GUILayout.Button("Add New Music File"))
             {
-                var asset = CreateInstance<AudioFileObject>();
-                string savePath = EditorUtility.SaveFilePanel("Create new Audio File Music Object", filePath, "New Audio File Music Object", "asset");
-                if (savePath != "") // Make sure user didn't press "Cancel"
+                GenerateFolderStructure(filePath);
+                if (AssetDatabase.IsValidFolder(filePath))
                 {
-                    savePath = savePath.Remove(0, savePath.IndexOf("Assets/"));
-                    AssetDatabase.CreateAsset(asset, savePath);
-                    EditorUtility.FocusProjectWindow();
-                    Selection.activeObject = asset;
+                    var asset = CreateInstance<AudioFileObject>();
+                    string savePath = EditorUtility.SaveFilePanel("Create new Audio File Music Object", filePath, "New Audio File Music Object", "asset");
+                    if (savePath != "") // Make sure user didn't press "Cancel"
+                    {
+                        savePath = savePath.Remove(0, savePath.IndexOf("Assets/"));
+                        AssetDatabase.CreateAsset(asset, savePath);
+                        EditorUtility.FocusProjectWindow();
+                        Selection.activeObject = asset;
+                    }
                 }
+                
             }
             EditorGUILayout.EndHorizontal();
 
@@ -284,7 +300,18 @@ namespace JSAM
             wasInstancedBefore.boolValue = usingInstancedEnums;
             #endregion
 
-            serializedObject.ApplyModifiedProperties();
+            if (serializedObject.hasModifiedProperties)
+            {
+                // Final check on the file path
+                bool fix = false;
+                if (filePath.Length < 6) fix = true;
+                else if (filePath.Substring(0, 6) != "Assets") fix = true;
+                if (fix) serializedObject.FindProperty("audioFolderLocation").stringValue = "Assets/Audio Files";
+                if (filePath[filePath.Length - 1] == '/')
+                    serializedObject.FindProperty("audioFolderLocation").stringValue = filePath.Remove(filePath.Length - 1);
+
+                serializedObject.ApplyModifiedProperties();
+            }
 
             if (usingInstancedEnums)
             {
@@ -360,56 +387,60 @@ namespace JSAM
 
                     Dictionary<string, List<SPandName>> audioSPs = new Dictionary<string, List<SPandName>>();
                     List<AudioFileObject> audioRef = myScript.GetSoundLibrary();
-                    for (int i = 0; i < audioRef.Count; i++)
+                    // If there are new AudioFiles being added and the SoundLibrary foldout is open
+                    if (audioRef.Count == audioFiles.arraySize)
                     {
-                        SerializedProperty ao = audioFiles.GetArrayElementAtIndex(i);
-                        SPandName newPair = new SPandName();
-                        newPair.name = soundNames[i];
-                        newPair.sp = ao;
-                        if (audioRef[i].category == "")
+                        for (int i = 0; i < audioRef.Count; i++)
                         {
-                            if (!audioSPs.ContainsKey("Uncategorized"))
+                            SerializedProperty ao = audioFiles.GetArrayElementAtIndex(i);
+                            SPandName newPair = new SPandName();
+                            newPair.name = soundNames[i];
+                            newPair.sp = ao;
+                            if (audioRef[i].category == "")
                             {
-                                audioSPs["Uncategorized"] = new List<SPandName>();
+                                if (!audioSPs.ContainsKey("Uncategorized"))
+                                {
+                                    audioSPs["Uncategorized"] = new List<SPandName>();
+                                }
+                                audioSPs["Uncategorized"].Add(newPair);
                             }
-                            audioSPs["Uncategorized"].Add(newPair);
-                        }
-                        else
-                        {
-                            if (!audioSPs.ContainsKey(audioRef[i].category))
+                            else
                             {
-                                audioSPs[audioRef[i].category] = new List<SPandName>();
+                                if (!audioSPs.ContainsKey(audioRef[i].category))
+                                {
+                                    audioSPs[audioRef[i].category] = new List<SPandName>();
+                                }
+                                audioSPs[audioRef[i].category].Add(newPair);
                             }
-                            audioSPs[audioRef[i].category].Add(newPair);
                         }
-                    }
 
-                    GUIStyle foldoutGroup = new GUIStyle(EditorStyles.foldoutHeader);
-                    foldoutGroup.fontStyle = FontStyle.Normal;
-                    string[] keys = new string[categories.Keys.Count];
-                    categories.Keys.CopyTo(keys, 0);
-                    List<string> keysList = new List<string>();
-                    keysList.AddRange(keys);
-                    foreach (string k in keys)
-                    {
-                        if (k == "Uncategorized") continue;
-                        categories[k] = EditorGUILayout.Foldout(categories[k], k, foldoutGroup);
-                        EditorGUI.indentLevel++;
-                        if (categories[k])
+                        GUIStyle foldoutGroup = new GUIStyle(EditorStyles.foldoutHeader);
+                        foldoutGroup.fontStyle = FontStyle.Normal;
+                        string[] keys = new string[categories.Keys.Count];
+                        categories.Keys.CopyTo(keys, 0);
+                        List<string> keysList = new List<string>();
+                        keysList.AddRange(keys);
+                        foreach (string k in keys)
                         {
-                            for (int i = 0; i < audioSPs[k].Count; i++)
+                            if (k == "Uncategorized") continue;
+                            categories[k] = EditorGUILayout.Foldout(categories[k], k, foldoutGroup);
+                            EditorGUI.indentLevel++;
+                            if (categories[k])
                             {
-                                RenderAudioFileListing(audioSPs[k][i].sp, audioSPs[k][i].name, enumName);
+                                for (int i = 0; i < audioSPs[k].Count; i++)
+                                {
+                                    RenderAudioFileListing(audioSPs[k][i].sp, audioSPs[k][i].name, enumName);
+                                }
                             }
+                            EditorGUI.indentLevel--;
                         }
-                        EditorGUI.indentLevel--;
-                    }
 
-                    if (keysList.Contains("Uncategorized"))
-                    {
-                        for (int i = 0; i < audioSPs["Uncategorized"].Count; i++)
+                        if (audioSPs.ContainsKey("Uncategorized"))
                         {
-                            RenderAudioFileListing(audioSPs["Uncategorized"][i].sp, audioSPs["Uncategorized"][i].name, enumName);
+                            for (int i = 0; i < audioSPs["Uncategorized"].Count; i++)
+                            {
+                                RenderAudioFileListing(audioSPs["Uncategorized"][i].sp, audioSPs["Uncategorized"][i].name, enumName);
+                            }
                         }
                     }
                 }
@@ -457,56 +488,60 @@ namespace JSAM
 
                     Dictionary<string, List<SPandName>> audioSPs = new Dictionary<string, List<SPandName>>();
                     List<AudioFileMusicObject> audioRef = myScript.GetMusicLibrary();
-                    for (int i = 0; i < audioRef.Count; i++)
+                    // If there are new AudioFiles being added and the SoundLibrary foldout is open
+                    if (audioRef.Count == audioFiles.arraySize)
                     {
-                        SerializedProperty ao = audioFiles.GetArrayElementAtIndex(i);
-                        SPandName newPair = new SPandName();
-                        newPair.name = musicNames[i];
-                        newPair.sp = ao;
-                        if (audioRef[i].category == "")
+                        for (int i = 0; i < audioRef.Count; i++)
                         {
-                            if (!audioSPs.ContainsKey("Uncategorized"))
+                            SerializedProperty ao = audioFiles.GetArrayElementAtIndex(i);
+                            SPandName newPair = new SPandName();
+                            newPair.name = musicNames[i];
+                            newPair.sp = ao;
+                            if (audioRef[i].category == "")
                             {
-                                audioSPs["Uncategorized"] = new List<SPandName>();
+                                if (!audioSPs.ContainsKey("Uncategorized"))
+                                {
+                                    audioSPs["Uncategorized"] = new List<SPandName>();
+                                }
+                                audioSPs["Uncategorized"].Add(newPair);
                             }
-                            audioSPs["Uncategorized"].Add(newPair);
-                        }
-                        else
-                        {
-                            if (!audioSPs.ContainsKey(audioRef[i].category))
+                            else
                             {
-                                audioSPs[audioRef[i].category] = new List<SPandName>();
+                                if (!audioSPs.ContainsKey(audioRef[i].category))
+                                {
+                                    audioSPs[audioRef[i].category] = new List<SPandName>();
+                                }
+                                audioSPs[audioRef[i].category].Add(newPair);
                             }
-                            audioSPs[audioRef[i].category].Add(newPair);
                         }
-                    }
 
-                    GUIStyle foldoutGroup = new GUIStyle(EditorStyles.foldoutHeader);
-                    foldoutGroup.fontStyle = FontStyle.Normal;
-                    string[] keys = new string[categoriesMusic.Keys.Count];
-                    categoriesMusic.Keys.CopyTo(keys, 0);
-                    List<string> keysList = new List<string>();
-                    keysList.AddRange(keys);
-                    foreach (string k in keys)
-                    {
-                        if (k == "Uncategorized") continue;
-                        categoriesMusic[k] = EditorGUILayout.Foldout(categoriesMusic[k], k, foldoutGroup);
-                        EditorGUI.indentLevel++;
-                        if (categoriesMusic[k])
+                        GUIStyle foldoutGroup = new GUIStyle(EditorStyles.foldoutHeader);
+                        foldoutGroup.fontStyle = FontStyle.Normal;
+                        string[] keys = new string[categoriesMusic.Keys.Count];
+                        categoriesMusic.Keys.CopyTo(keys, 0);
+                        List<string> keysList = new List<string>();
+                        keysList.AddRange(keys);
+                        foreach (string k in keys)
                         {
-                            for (int i = 0; i < audioSPs[k].Count; i++)
+                            if (k == "Uncategorized") continue;
+                            categoriesMusic[k] = EditorGUILayout.Foldout(categoriesMusic[k], k, foldoutGroup);
+                            EditorGUI.indentLevel++;
+                            if (categoriesMusic[k])
                             {
-                                RenderAudioFileListing(audioSPs[k][i].sp, audioSPs[k][i].name, enumName);
+                                for (int i = 0; i < audioSPs[k].Count; i++)
+                                {
+                                    RenderAudioFileListing(audioSPs[k][i].sp, audioSPs[k][i].name, enumName);
+                                }
                             }
+                            EditorGUI.indentLevel--;
                         }
-                        EditorGUI.indentLevel--;
-                    }
 
-                    if (keysList.Contains("Uncategorized"))
-                    {
-                        for (int i = 0; i < audioSPs["Uncategorized"].Count; i++)
+                        if (audioSPs.ContainsKey("Uncategorized"))
                         {
-                            RenderAudioFileListing(audioSPs["Uncategorized"][i].sp, audioSPs["Uncategorized"][i].name, enumName);
+                            for (int i = 0; i < audioSPs["Uncategorized"].Count; i++)
+                            {
+                                RenderAudioFileListing(audioSPs["Uncategorized"][i].sp, audioSPs["Uncategorized"][i].name, enumName);
+                            }
                         }
                     }
                 }
@@ -542,6 +577,16 @@ namespace JSAM
                 EditorGUILayout.HelpBox("Remember to mouse over the settings in this and other windows to learn more about them!", MessageType.None);
                 EditorGUILayout.HelpBox("Please ensure that you don't have multiple AudioManagers in one scene."
                     , MessageType.None);
+                EditorGUILayout.HelpBox("If you have any questions, suggestions or bug reports, feel free to open a new issue " +
+                    "on Github repository's Issues page.", MessageType.None);
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("Report a Bug", new GUILayoutOption[] { GUILayout.MaxWidth(100) }))
+                {
+                    Application.OpenURL("https://github.com/jackyyang09/Simple-Unity-Audio-Manager/issues");
+                }
+                GUILayout.FlexibleSpace();
+                EditorGUILayout.EndHorizontal();
 
                 EditorGUILayout.Space();
 
@@ -566,17 +611,35 @@ namespace JSAM
         private void OnEnable()
         {
             categories = new Dictionary<string, bool>();
+            if (AudioManager.instance)
+            {
+                AudioManager.instance.UpdateAudioFileMusicObjectCategories();
+                AudioManager.instance.UpdateAudioFileObjectCategories();
+            }
+            Application.logMessageReceived += UnityDebugLog;
+        }
+
+        private void OnDisable()
+        {
+            Application.logMessageReceived -= UnityDebugLog;
+        }
+
+        static void UnityDebugLog(string message, string stackTrace, LogType logType)
+        {
+            // Code from this steffen-itterheim
+            // https://answers.unity.com/questions/482765/detect-compilation-errors-in-editor-script.html
+            // if we receive a Debug.LogError we can assume that compilation failed
+            if (logType == LogType.Error)
+                EditorUtility.ClearProgressBar();
         }
 
         void RenderAudioFileListing(SerializedProperty ao, string soundName, string enumName)
         {
-            GUIContent sName;
+            GUIContent sName = new GUIContent(soundName, enumName + "." + soundName);
             Rect clickArea = EditorGUILayout.BeginHorizontal();
-            sName = new GUIContent(soundName, enumName + "." + soundName);
-            using (new EditorGUI.DisabledScope(true))
-            {
-                EditorGUILayout.ObjectField(ao, sName);
-            }
+            GUI.enabled = false;
+            EditorGUILayout.ObjectField(ao, sName);
+            GUI.enabled = true;
 
             // Thank you JJCrawley https://answers.unity.com/questions/1326881/right-click-in-custom-editor.html
             if (clickArea.Contains(Event.current.mousePosition) && Event.current.type == EventType.ContextClick)
@@ -609,7 +672,7 @@ namespace JSAM
             AudioManager.instance.DebugLog("Copied " + s + " to clipboard!");
         }
 
-        [MenuItem("GameObject/Audio Manager", false, 0)]
+        [MenuItem("GameObject/JSAM/Audio Manager", false, 1)]
         public static void AddAudioManager()
         {
             AudioManager existingAudioManager = FindObjectOfType<AudioManager>();
@@ -685,6 +748,7 @@ namespace JSAM
 
             string fileName = (usingInstancedEnums) ? "\\AudioEnums - " + sceneName + ".cs" : "\\AudioEnums.cs";
 
+            bool overwriting = false;
             // Looking for AudioEnums
             string[] GUIDs = AssetDatabase.FindAssets("AudioEnums", new[] { filePath });
             foreach (var p in GUIDs)
@@ -692,12 +756,52 @@ namespace JSAM
                 // Make the detected file match the format of expected filenames up above
                 string assetPath = AssetDatabase.GUIDToAssetPath(p);
                 string assetName = "\\" + assetPath.Remove(0, assetPath.LastIndexOf('/') + 1);
-                if (assetName == fileName) continue; // We're overwriting this anyway
+                if (assetName == fileName)
+                {
+                    overwriting = true;
+                    continue; // We're overwriting this anyway
+                }
                 if (EditorUtility.DisplayDialog("Duplicate AudioEnums file Found!", "Another instance of AudioEnums.cs was found in this folder. " +
                     "Although they don't conflict, having both in the same place may create problems in the future. " +
                     "Would you like to delete the existing AudioEnums file?)", "Yes", "No"))
                 {
                     AssetDatabase.DeleteAsset(assetPath);
+                }
+            }
+
+            // Check for existing Enums of the same name
+            if (!overwriting)
+            {
+                if (usingInstancedEnums)
+                {
+                    if (GetEnumType("JSAM.Sounds" + safeSceneName) != null)
+                    {
+                        if (EditorUtility.DisplayDialog("Duplicate Enum Type Found!", "An existing script in the project already " +
+                            "contains an Enum called \"JSAM.Sounds" + safeSceneName + "\"! AudioManager cannot regenerate the library " +
+                            "until the scene name is changed to something different or the existing enum name is modified!", "OK"))
+                        {
+                            return "";
+                        }
+                    }
+                    else if (GetEnumType("JSAM.Music" + safeSceneName) != null)
+                    {
+                        if (EditorUtility.DisplayDialog("Duplicate Enum Type Found!", "An existing script in the project already " +
+                            "contains an Enum called \"JSAM.Music" + safeSceneName + "\"! AudioManager cannot regenerate the library " +
+                            "until the scene name is changed to something different or the existing enum name is modified!", "OK"))
+                        {
+                            return "";
+                        }
+                    }
+                }
+                else if (GetEnumType("JSAM.Sounds") != null)
+                {
+                    if (EditorUtility.DisplayDialog("Duplicate Enum Type Found!", "An existing script in the project already " +
+                        "contains an Enum called \"JSAM.Sounds\"! Is there an existing AudioEnums script in your project? Check to " +
+                        "make sure your Audio Assets folder isn't just in the root Assets folder. Otherwise, you may " +
+                        "want to consider using Instanced Enums in AudioManager's advanced settings.", "OK"))
+                    {
+                        return "";
+                    }
                 }
             }
 
@@ -968,6 +1072,35 @@ namespace JSAM
             }
         }
         #endregion
+
+        public static void GenerateFolderStructure(string filePath)
+        {
+            if (!AssetDatabase.IsValidFolder(filePath))
+            {
+                string existingPath = "Assets";
+                string unknownPath = filePath.Remove(0, existingPath.Length + 1); // Remove the Assets/ at the start of the path name
+                string folderName = (unknownPath.Contains("/")) ? unknownPath.Substring(0, (unknownPath.IndexOf("/"))) : unknownPath;
+                do
+                {
+                    // Begin checking down the file path to see if it's valid
+                    if (EditorUtility.DisplayDialog("Path does not exist!", "The Audio Assets Folder \"" + folderName +
+                        "\" at \"" + existingPath +
+                        "\" does not exist! Would you like to create this folder?", "Yes", "No"))
+                    {
+                        AssetDatabase.CreateFolder(existingPath, folderName);
+                    }
+                    else break;
+                    existingPath += "/" + folderName;
+                    // Full path still doesn't exist
+                    if (existingPath != filePath)
+                    {
+                        unknownPath = unknownPath.Remove(0, folderName.Length + 1);
+                        folderName = (unknownPath.Contains("/")) ? unknownPath.Substring(0, (unknownPath.IndexOf("/"))) : unknownPath;
+                    }
+                }
+                while (!AssetDatabase.IsValidFolder(filePath));
+            }
+        }
 
         /// <summary>
         /// Returns an enum type given it's name as a string

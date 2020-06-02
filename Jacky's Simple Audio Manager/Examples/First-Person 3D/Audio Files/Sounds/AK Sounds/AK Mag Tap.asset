@@ -19,13 +19,14 @@ MonoBehaviour:
   relativeVolume: 1
   spatialize: 0
   priority: 128
+  startingPitch: 1
   pitchShift: 0.05
   delay: 0
   ignoreTimeScale: 0
   fadeMode: 0
   fadeInDuration: 0.264
   fadeOutDuration: 0.678
-  safeName: 
+  safeName: AKMagTap
   chorusFilter:
     enabled: 0
     dryMix: 0.5
@@ -52,3 +53,20 @@ MonoBehaviour:
     enabled: 0
     cutoffFrequency: 0
     highpassResonanceQ: 0
+  reverbFilter:
+    enabled: 0
+    reverbPreset: 0
+    dryLevel: 0
+    room: 0
+    roomHF: 0
+    roomLF: 0
+    decayTime: 0
+    decayHFRatio: 0
+    reflectionsLevel: 0
+    reflectionsDelay: 0
+    reverbLevel: 0
+    reverbDelay: 0
+    hFReference: 0
+    lFReference: 0
+    diffusion: 0
+    density: 0
