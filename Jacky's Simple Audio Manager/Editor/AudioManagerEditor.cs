@@ -672,7 +672,7 @@ namespace JSAM
             AudioManager.instance.DebugLog("Copied " + s + " to clipboard!");
         }
 
-        [MenuItem("GameObject/JSAM/Audio Manager", false, 1)]
+        [MenuItem("GameObject/Audio/JSAM/Audio Manager", false, 1)]
         public static void AddAudioManager()
         {
             AudioManager existingAudioManager = FindObjectOfType<AudioManager>();
@@ -744,6 +744,14 @@ namespace JSAM
 
             // Now that we've gotten that over with, check for duplicate AudioEnums in this folder, because we can't trust the user to be organized
             string sceneName = AudioManager.instance.gameObject.scene.name;
+            // User is working in a completely new, unsaved scene, better remind them what's up
+            if (sceneName == "")
+            {
+                EditorUtility.DisplayDialog("Audio Library Generation Error!", "It seems like you're working in a completely  " +
+                    "new scene! AudioManager requires that your scene is saved to file in order to keep a proper Audio Library. " +
+                    "It's also good to ensure all your work isn't lost forever!", "OK");
+                return "";
+            }
             string safeSceneName = ConvertToAlphanumeric(sceneName);
 
             string fileName = (usingInstancedEnums) ? "\\AudioEnums - " + sceneName + ".cs" : "\\AudioEnums.cs";

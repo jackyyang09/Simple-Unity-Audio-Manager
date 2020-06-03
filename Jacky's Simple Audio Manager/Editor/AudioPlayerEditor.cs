@@ -118,7 +118,7 @@ namespace JSAM
             #endregion  
         }
 
-        [MenuItem("GameObject/JSAM/Audio Player", false, 1)]
+        [MenuItem("GameObject/Audio/JSAM/Audio Player", false, 1)]
         public static void AddAudioPlayer()
         {
             GameObject newPlayer = new GameObject("Audio Player");

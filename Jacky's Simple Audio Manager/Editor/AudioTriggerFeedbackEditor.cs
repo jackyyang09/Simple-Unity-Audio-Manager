@@ -18,16 +18,25 @@ namespace JSAM
 
             List<string> options = new List<string>();
 
-            System.Type enumType = AudioManager.instance.GetSceneSoundEnum();
-            if (enumType == null)
+            System.Type enumType = null;
+            if (!AudioManager.instance)
             {
-                EditorGUILayout.HelpBox("Could not find Audio File info! Try regenerating Audio Files in AudioManager!", MessageType.Error);
+                EditorGUILayout.HelpBox("Could not find Audio Manager in the scene! This component needs AudioManager " +
+                    "in order to function!", MessageType.Error);
             }
             else
             {
-                foreach (string s in System.Enum.GetNames(enumType))
+                enumType = AudioManager.instance.GetSceneSoundEnum();
+                if (enumType == null)
                 {
-                    options.Add(s);
+                    EditorGUILayout.HelpBox("Could not find Audio File info! Try regenerating Audio Files in AudioManager!", MessageType.Error);
+                }
+                else
+                {
+                    foreach (string s in System.Enum.GetNames(enumType))
+                    {
+                        options.Add(s);
+                    }
                 }
             }
 
