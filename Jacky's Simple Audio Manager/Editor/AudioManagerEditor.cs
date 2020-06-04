@@ -225,7 +225,7 @@ namespace JSAM
                 GenerateFolderStructure(filePath);
                 if (AssetDatabase.IsValidFolder(filePath))
                 {
-                    var asset = CreateInstance<AudioFileObject>();
+                    var asset = CreateInstance<AudioFileMusicObject>();
                     string savePath = EditorUtility.SaveFilePanel("Create new Audio File Music Object", filePath, "New Audio File Music Object", "asset");
                     if (savePath != "") // Make sure user didn't press "Cancel"
                     {
@@ -570,7 +570,7 @@ namespace JSAM
                 GUILayout.FlexibleSpace();
                 if (GUILayout.Button("Github", new GUILayoutOption[]{ GUILayout.MinWidth(100) }))
                 {
-                    Application.OpenURL("https://github.com/jackyyang09/Simple-Unity-Audio-Manager");
+                    Application.OpenURL("https://github.com/jackyyang09/Simple-Unity-Audio-Manager/wiki");
                 }
                 GUILayout.FlexibleSpace();
                 EditorGUILayout.EndHorizontal();

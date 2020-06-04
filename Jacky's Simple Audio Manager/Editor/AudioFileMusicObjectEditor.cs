@@ -44,7 +44,12 @@ namespace JSAM
         bool forceRepaint;
         AudioClip cachedClip;
 
-        bool registered = false;
+        bool unregistered = false;
+        bool relevant = false;
+        string myName = "";
+        string cachedName = "";
+        bool nameChanged = false;
+
 
         public override void OnInspectorGUI()
         {
@@ -54,8 +59,7 @@ namespace JSAM
 
             EditorGUILayout.LabelField("Audio File Music Object", EditorStyles.boldLabel);
 
-            string theName = AudioManagerEditor.ConvertToAlphanumeric(myScript.name);
-            EditorGUILayout.LabelField(new GUIContent("Name: ", "This is the name that AudioManager will use to reference this object with."), new GUIContent(theName));
+            EditorGUILayout.LabelField(new GUIContent("Name: ", "This is the name that AudioManager will use to reference this object with."), new GUIContent(myName));
 
             #region Category Inspector
             EditorGUILayout.BeginHorizontal();
@@ -102,10 +106,24 @@ namespace JSAM
             EditorGUILayout.EndHorizontal();
             #endregion
 
-            if (registered)
+            if (unregistered)
             {
                 EditorGUILayout.HelpBox("This Audio File Object has yet to be added to AudioManager's library. Do make sure to " +
                     "click on \"Re-generate Audio Library\" in AudioManager before playing!", MessageType.Warning);
+            }
+            else if (relevant)
+            {
+                if (cachedName != target.name)
+                {
+                    CheckIfNameChanged();
+                    cachedName = target.name;
+                }
+
+                if (nameChanged)
+                {
+                    EditorGUILayout.HelpBox("This Audio File Object's name differs from it's corresponding enum name! " +
+                        "No error will come of this, but you may want to regenerate AudioManager's audio libraries again for clarity.", MessageType.Info);
+                }
             }
 
             List<string> propertiesToExclude = new List<string>() { "spatialSound", "loopSound", "priority",
@@ -114,7 +132,7 @@ namespace JSAM
             {
                 propertiesToExclude.AddRange(new List<string>() { "m_Script", "useLibrary", "files",
                 "fadeMode", "clampBetweenLoopPoints", "startingPitch", "playReversed", "spatialize", "ignoreTimeScale",
-                    "relativeVolume" });
+                    "relativeVolume", "delay" });
             }
             else
             {
@@ -605,35 +623,38 @@ namespace JSAM
                 if (loopClip)
                 {
                     EditorApplication.QueuePlayerLoopUpdate();
-                    if (!helperSource.isPlaying && clipPlaying)
+                    if (myScript.loopMode == LoopMode.LoopWithLoopPoints)
                     {
-                        if (freePlay)
+                        if (!helperSource.isPlaying && clipPlaying)
                         {
-                            helperSource.Play();
+                            if (freePlay)
+                            {
+                                helperSource.Play();
+                            }
+                            else
+                            {
+                                helperSource.Play();
+                                helperSource.timeSamples = Mathf.CeilToInt(myScript.loopStart * music.frequency);
+                            }
+                            freePlay = false;
                         }
-                        else
+                        else if (myScript.clampToLoopPoints || !firstPlayback)
                         {
-                            helperSource.Play();
-                            helperSource.timeSamples = Mathf.CeilToInt(myScript.loopStart * music.frequency);
+                            if (clipPos < myScript.loopStart || clipPos > myScript.loopEnd)
+                            {
+                                // CeilToInt to guarantee clip position stays within loop bounds
+                                helperSource.timeSamples = Mathf.CeilToInt(myScript.loopStart * music.frequency);
+                                firstPlayback = false;
+                            }
                         }
-                        freePlay = false;
-                    }
-                    else if (myScript.clampToLoopPoints || !firstPlayback)
-                    {
-                        if (clipPos < myScript.loopStart || clipPos > myScript.loopEnd)
+                        else if (clipPos >= myScript.loopEnd)
                         {
-                            // CeilToInt to guarantee clip position stays within loop bounds
                             helperSource.timeSamples = Mathf.CeilToInt(myScript.loopStart * music.frequency);
                             firstPlayback = false;
                         }
                     }
-                    else if (clipPos >= myScript.loopEnd)
-                    {
-                        helperSource.timeSamples = Mathf.CeilToInt(myScript.loopStart * music.frequency);
-                        firstPlayback = false;
-                    }
                 }
-                else if (!loopClip)
+                else if (!loopClip && myScript.loopMode == LoopMode.LoopWithLoopPoints)
                 {
                     if (!helperSource.isPlaying || clipPos > myScript.loopEnd)
                     {
@@ -643,6 +664,22 @@ namespace JSAM
                     else if (myScript.clampToLoopPoints && clipPos < myScript.loopStart)
                     {
                         helperSource.timeSamples = Mathf.CeilToInt(myScript.loopStart * music.frequency);
+                    }
+                }
+            }
+
+            if (myScript.loopMode != LoopMode.LoopWithLoopPoints)
+            {
+                if (!helperSource.isPlaying && !clipPaused)
+                {
+                    helperSource.time = 0;
+                    if (loopClip)
+                    {
+                        helperSource.Play();
+                    }
+                    else
+                    {
+                        clipPlaying = false;
                     }
                 }
             }
@@ -656,6 +693,7 @@ namespace JSAM
             CreateAudioHelper();
             Undo.postprocessModifications += ApplyHelperEffects;
             CheckIfRegistered();
+            myName = AudioManagerEditor.ConvertToAlphanumeric(target.name);
         }
 
         public UndoPropertyModification[] ApplyHelperEffects(UndoPropertyModification[] modifications)
@@ -684,23 +722,29 @@ namespace JSAM
         {
             if (AudioManager.instance)
             {
-                if (AudioManager.instance.IsUsingInstancedEnums())
+                // Check if this file is actually relevant to the AudioManager
+                if (AssetDatabase.GetAssetPath(target).Contains(AudioManager.instance.GetAudioFolderLocation()))
                 {
-                    Debug.Log(AssetDatabase.GetAssetPath((AudioFileObject)target));
-                    // Check if this file is actually relevant to the AudioManager
-                    if (AssetDatabase.GetAssetPath((AudioFileObject)target).Contains(AudioManager.instance.GetAudioFolderLocation()))
+                    relevant = true;
+                    if (!AudioManager.instance.GetMusicLibrary().Contains((AudioFileMusicObject)target))
                     {
-                        if (!AudioManager.instance.GetSoundLibrary().Contains((AudioFileObject)target))
-                        {
-                            registered = true;
-                        }
+                        unregistered = true;
                     }
                 }
-                else
-                {
-                    if (!AudioManager.instance.GetSoundLibrary().Contains((AudioFileObject)target)) registered = true;
-                }
             }
+        }
+
+        public void CheckIfNameChanged()
+        {
+            myName = AudioManagerEditor.ConvertToAlphanumeric(target.name);
+
+            List<string> names = new List<string>();
+            names.AddRange(AudioManager.instance.GetSceneMusicEnum().GetEnumNames());
+            if (!names.Contains(myName))
+            {
+                nameChanged = true;
+            }
+            else nameChanged = false;
         }
 
         GameObject helperObject;
@@ -752,17 +796,30 @@ namespace JSAM
 
             AudioFileMusicObject myScript = (AudioFileMusicObject)target;
 
-            for (int x = 0; x < width; x++)
+            if (myScript.loopMode == LoopMode.LoopWithLoopPoints)
             {
-                // Here we limit the scope of the area based on loop points
-                if (x < waveform.Length * (myScript.loopStart / audio.length) || x > waveform.Length * (myScript.loopEnd / audio.length))
+                for (int x = 0; x < width; x++)
                 {
-                    for (int y = 0; y < height; y++)
+                    // Here we limit the scope of the area based on loop points
+                    if (x < waveform.Length * (myScript.loopStart / audio.length) || x > waveform.Length * (myScript.loopEnd / audio.length))
                     {
-                        tex.SetPixel(x, y, Color.black);
+                        for (int y = 0; y < height; y++)
+                        {
+                            tex.SetPixel(x, y, Color.black);
+                        }
+                    }
+                    else
+                    {
+                        for (int y = 0; y < height; y++)
+                        {
+                            tex.SetPixel(x, y, new Color(0.3f, 0.3f, 0.3f));
+                        }
                     }
                 }
-                else
+            }
+            else
+            {
+                for (int x = 0; x < width; x++)
                 {
                     for (int y = 0; y < height; y++)
                     {
@@ -770,6 +827,7 @@ namespace JSAM
                     }
                 }
             }
+            
 
             for (int x = 0; x < waveform.Length; x++)
             {

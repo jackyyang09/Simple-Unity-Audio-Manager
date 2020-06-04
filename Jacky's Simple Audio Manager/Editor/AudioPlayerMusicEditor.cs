@@ -26,7 +26,7 @@ namespace JSAM
             }
             else
             {
-                enumType = AudioManager.instance.GetSceneSoundEnum();
+                enumType = AudioManager.instance.GetSceneMusicEnum();
                 if (enumType == null)
                 {
                     EditorGUILayout.HelpBox("Could not find Audio File info! Try regenerating Audio Files in AudioManager!", MessageType.Error);

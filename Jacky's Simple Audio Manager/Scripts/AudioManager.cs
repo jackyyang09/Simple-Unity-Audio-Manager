@@ -2488,8 +2488,6 @@ namespace JSAM
                     int index = sources.IndexOf(loopingSources[i]);
                     if (sourcePositions.ContainsKey(loopingSources[i])) // Check if the t field matters
                     {
-                        print(sound.ToString() + "is here");
-
                         if (t != sourcePositions[sources[index]])
                             continue;
                         sourcePositions.Remove(loopingSources[i]);
@@ -3563,6 +3561,7 @@ namespace JSAM
             categories = new List<string>();
             foreach (AudioFileObject a in audioFileObjects)
             {
+                if (a == null) audioFileObjects.Remove(a); // May as well remove it if it's missing
                 if (a.category != "" && a.category != "Hidden")
                 {
                     if (categories.Contains(a.category)) continue;
@@ -3577,6 +3576,7 @@ namespace JSAM
             categoriesMusic = new List<string>();
             foreach (AudioFileMusicObject a in audioFileMusicObjects)
             {
+                if (a == null) audioFileMusicObjects.Remove(a); // May as well remove it if it's missing
                 if (a.category != "" && a.category != "Hidden")
                 {
                     if (categoriesMusic.Contains(a.category)) continue;

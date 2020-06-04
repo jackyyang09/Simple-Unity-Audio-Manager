@@ -87,7 +87,7 @@ namespace JSAM
             EditorGUILayout.Space();
 
             #region Quick Reference Guide
-            showHowTo = EditorGUILayout.Foldout(showHowTo, "Quick Reference Guide");
+            showHowTo = EditorGUILayout.BeginFoldoutHeaderGroup(showHowTo, "Quick Reference Guide");
             if (showHowTo)
             {
                 EditorGUILayout.Space();
