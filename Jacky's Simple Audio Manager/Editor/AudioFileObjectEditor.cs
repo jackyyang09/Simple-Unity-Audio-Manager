@@ -809,6 +809,9 @@ namespace JSAM
             showAudioEffects = EditorGUILayout.BeginFoldoutHeaderGroup(showAudioEffects, blontent);
             if (showAudioEffects)
             {
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("bypassEffects"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("bypassListenerEffects"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("bypassReverbZones"));
                 if (myScript.chorusFilter.enabled)
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
@@ -817,7 +820,7 @@ namespace JSAM
                         "The Audio Chorus Filter takes an Audio Clip and processes it creating a chorus effect. " +
                         "The output sounds like there are multiple sources emitting the same sound with slight variations (resembling a choir).");
                     EditorGUILayout.BeginHorizontal();
-                    chorusFoldout = EditorGUILayout.Foldout(chorusFoldout, blontent, EditorStyles.boldLabel);
+                    chorusFoldout = EditorGUILayout.Foldout(chorusFoldout, blontent, true, EditorStyles.boldLabel);
                     blontent = new GUIContent("x", "Remove this filter");
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {
@@ -858,7 +861,7 @@ namespace JSAM
                     string arrow = (distortionFoldout) ? "▼" : "▶";
                     blontent = new GUIContent("    " + arrow + " Distortion Filter", "Distorts the sound when its played.");
                     EditorGUILayout.BeginHorizontal();
-                    distortionFoldout = EditorGUILayout.Foldout(distortionFoldout, blontent, EditorStyles.boldLabel);
+                    distortionFoldout = EditorGUILayout.Foldout(distortionFoldout, blontent, true, EditorStyles.boldLabel);
                     blontent = new GUIContent("x", "Remove this filter");
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {
@@ -887,7 +890,7 @@ namespace JSAM
                     string arrow = (echoFoldout) ? "▼" : "▶";
                     blontent = new GUIContent("    " + arrow + " Echo Filter", "Repeats a sound after a given Delay, attenuating the repetitions based on the Decay Ratio");
                     EditorGUILayout.BeginHorizontal();
-                    echoFoldout = EditorGUILayout.Foldout(echoFoldout, blontent, EditorStyles.boldLabel);
+                    echoFoldout = EditorGUILayout.Foldout(echoFoldout, blontent, true, EditorStyles.boldLabel);
                     blontent = new GUIContent("x", "Remove this filter");
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {
@@ -924,7 +927,7 @@ namespace JSAM
                     string arrow = (lowPassFoldout) ? "▼" : "▶";
                     blontent = new GUIContent("    " + arrow + " Low Pass Filter", "Filters the audio to let lower frequencies pass while removing frequencies higher than the cutoff");
                     EditorGUILayout.BeginHorizontal();
-                    lowPassFoldout = EditorGUILayout.Foldout(lowPassFoldout, blontent, EditorStyles.boldLabel);
+                    lowPassFoldout = EditorGUILayout.Foldout(lowPassFoldout, blontent, true, EditorStyles.boldLabel);
                     blontent = new GUIContent("x", "Remove this filter");
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {
@@ -959,7 +962,7 @@ namespace JSAM
                     string arrow = (highPassFoldout) ? "▼" : "▶";
                     blontent = new GUIContent("    " + arrow + " High Pass Filter", "Filters the audio to let higher frequencies pass while removing frequencies lower than the cutoff");
                     EditorGUILayout.BeginHorizontal();
-                    highPassFoldout = EditorGUILayout.Foldout(highPassFoldout, blontent, EditorStyles.boldLabel);
+                    highPassFoldout = EditorGUILayout.Foldout(highPassFoldout, blontent, true, EditorStyles.boldLabel);
                     blontent = new GUIContent("x", "Remove this filter");
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {
@@ -994,7 +997,7 @@ namespace JSAM
                     string arrow = (reverbFoldout) ? "▼" : "▶";
                     blontent = new GUIContent("    " + arrow + " Reverb Filter", "Modifies the sound to make it feel like it's reverberating around a room");
                     EditorGUILayout.BeginHorizontal();
-                    reverbFoldout = EditorGUILayout.Foldout(reverbFoldout, blontent, EditorStyles.boldLabel);
+                    reverbFoldout = EditorGUILayout.Foldout(reverbFoldout, blontent, true, EditorStyles.boldLabel);
                     blontent = new GUIContent("x", "Remove this filter");
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {

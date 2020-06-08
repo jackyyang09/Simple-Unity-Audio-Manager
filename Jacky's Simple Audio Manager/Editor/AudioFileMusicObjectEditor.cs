@@ -131,8 +131,7 @@ namespace JSAM
             if (myScript.GetFile() == null)
             {
                 propertiesToExclude.AddRange(new List<string>() { "m_Script", "useLibrary", "files",
-                "fadeMode", "clampBetweenLoopPoints", "startingPitch", "playReversed", "spatialize", "ignoreTimeScale",
-                    "relativeVolume", "delay" });
+                "fadeMode", "clampBetweenLoopPoints", "startingPitch", "playReversed", "spatialize", "ignoreTimeScale" });
             }
             else
             {
@@ -604,6 +603,7 @@ namespace JSAM
         void Update()
         {
             AudioFileMusicObject myScript = (AudioFileMusicObject)target;
+            if (myScript == null) return;
             AudioClip music = myScript.GetFile();
             if (music != cachedClip)
             {
@@ -910,6 +910,9 @@ namespace JSAM
             showAudioEffects = EditorGUILayout.BeginFoldoutHeaderGroup(showAudioEffects, blontent);
             if (showAudioEffects)
             {
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("bypassEffects"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("bypassListenerEffects"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("bypassReverbZones"));
                 if (myScript.chorusFilter.enabled)
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);

@@ -126,7 +126,7 @@ namespace JSAM
             {
                 GUIContent longTent = new GUIContent("Instanced Audio Enums", "By default, AudioManager assumes that your project will share all sounds and will have them all ready to be called using a single Enum list. " +
                     "However, you may also choose to have different instances of AudioManager per-scene with different Audio Files loaded in each. " +
-                    "In that case, AudioManager will generate Enums specific to your scene and will be able to differentiate between them.");
+                    "In that case, enabling this option will make AudioManager generate Enums specific to your scene and will allow it to differentiate between them.");
                 EditorGUILayout.PropertyField(instancedEnums, longTent);
             }
 
@@ -242,58 +242,62 @@ namespace JSAM
             GUIContent blontent = new GUIContent("Re-Generate Audio Library", "Click this whenever you add new Audio Files, change the scene name, or encounter any issues");
             if (GUILayout.Button(blontent))
             {
-                EditorUtility.DisplayProgressBar("Re-Generating Audio Library", "Finding audio files...", 0);
-                string[] paths = new string[] { filePath };
-
-                // Search for AudioFileObjects, music included
-                string[] GUIDs = AssetDatabase.FindAssets("t:JSAM.AudioFileObject", paths);
-
-                List<AudioFileObject> audioFiles = new List<AudioFileObject>();
-                List<AudioFileMusicObject> musicFiles = new List<AudioFileMusicObject>();
-                foreach (var s in GUIDs)
+                GenerateFolderStructure(filePath);
+                if (AssetDatabase.IsValidFolder(filePath))
                 {
-                    AudioFileObject theObject = (AudioFileObject)AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(s), typeof(AudioFileObject));
+                    EditorUtility.DisplayProgressBar("Re-Generating Audio Library", "Finding audio files...", 0);
+                    string[] paths = new string[] { filePath };
 
-                    theObject.safeName = ConvertToAlphanumeric(theObject.name);
+                    // Search for AudioFileObjects, music included
+                    string[] GUIDs = AssetDatabase.FindAssets("t:JSAM.AudioFileObject", paths);
 
-                    // Is this actually a music object?
-                    if (!theObject.GetType().IsAssignableFrom(typeof(AudioFileObject)))
+                    List<AudioFileObject> audioFiles = new List<AudioFileObject>();
+                    List<AudioFileMusicObject> musicFiles = new List<AudioFileMusicObject>();
+                    foreach (var s in GUIDs)
                     {
-                        musicFiles.Add((AudioFileMusicObject)theObject);
-                    } 
-                    else audioFiles.Add(theObject);
-                }
+                        AudioFileObject theObject = (AudioFileObject)AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(s), typeof(AudioFileObject));
 
-                AudioFileComparer afc = new AudioFileComparer();
-                audioFiles.Sort(afc);
-                musicFiles.Sort(afc);
-                if (myScript.GenerateAudioDictionarys(audioFiles, musicFiles) || wasInstancedBefore.boolValue == usingInstancedEnums)
-                {
-                    EditorUtility.DisplayProgressBar("Re-Generating Audio Library", "Generating audio enum file...", 0.5f);
-                    string safeSceneName = GenerateEnumFile(filePath, usingInstancedEnums);
-                    if (safeSceneName == "") // File generation has failed, abort
+                        theObject.safeName = ConvertToAlphanumeric(theObject.name);
+
+                        // Is this actually a music object?
+                        if (!theObject.GetType().IsAssignableFrom(typeof(AudioFileObject)))
+                        {
+                            musicFiles.Add((AudioFileMusicObject)theObject);
+                        }
+                        else audioFiles.Add(theObject);
+                    }
+
+                    AudioFileComparer afc = new AudioFileComparer();
+                    audioFiles.Sort(afc);
+                    musicFiles.Sort(afc);
+                    if (myScript.GenerateAudioDictionarys(audioFiles, musicFiles) || wasInstancedBefore.boolValue == usingInstancedEnums)
+                    {
+                        EditorUtility.DisplayProgressBar("Re-Generating Audio Library", "Generating audio enum file...", 0.5f);
+                        string safeSceneName = GenerateEnumFile(filePath, usingInstancedEnums);
+                        if (safeSceneName == "") // File generation has failed, abort
+                        {
+                            EditorUtility.ClearProgressBar();
+                        }
+                        else // Generation successful, proceed as usual
+                        {
+                            if (instancedEnums.boolValue)
+                            {
+                                serializedObject.FindProperty("sceneSoundEnumName").stringValue = "JSAM.Sounds" + safeSceneName;
+                                serializedObject.FindProperty("sceneMusicEnumName").stringValue = "JSAM.Music" + safeSceneName;
+                            }
+                            else
+                            {
+                                serializedObject.FindProperty("sceneSoundEnumName").stringValue = "JSAM.Sounds";
+                                serializedObject.FindProperty("sceneMusicEnumName").stringValue = "JSAM.Music";
+                            }
+
+                            EditorUtility.DisplayProgressBar("Re-Generating Audio Library", "Done! Recompiling...", 0.95f);
+                        }
+                    }
+                    else
                     {
                         EditorUtility.ClearProgressBar();
                     }
-                    else // Generation successful, proceed as usual
-                    {
-                        if (instancedEnums.boolValue)
-                        {
-                            serializedObject.FindProperty("sceneSoundEnumName").stringValue = "JSAM.Sounds" + safeSceneName;
-                            serializedObject.FindProperty("sceneMusicEnumName").stringValue = "JSAM.Music" + safeSceneName;
-                        }
-                        else
-                        {
-                            serializedObject.FindProperty("sceneSoundEnumName").stringValue = "JSAM.Sounds";
-                            serializedObject.FindProperty("sceneMusicEnumName").stringValue = "JSAM.Music";
-                        }
-                        
-                        EditorUtility.DisplayProgressBar("Re-Generating Audio Library", "Done! Recompiling...", 0.95f);
-                    }
-                }
-                else
-                {
-                    EditorUtility.ClearProgressBar();
                 }
             }
 
@@ -423,7 +427,7 @@ namespace JSAM
                         foreach (string k in keys)
                         {
                             if (k == "Uncategorized") continue;
-                            categories[k] = EditorGUILayout.Foldout(categories[k], k, foldoutGroup);
+                            categories[k] = EditorGUILayout.Foldout(categories[k], k, true, foldoutGroup);
                             EditorGUI.indentLevel++;
                             if (categories[k])
                             {
@@ -524,7 +528,7 @@ namespace JSAM
                         foreach (string k in keys)
                         {
                             if (k == "Uncategorized") continue;
-                            categoriesMusic[k] = EditorGUILayout.Foldout(categoriesMusic[k], k, foldoutGroup);
+                            categoriesMusic[k] = EditorGUILayout.Foldout(categoriesMusic[k], k, true, foldoutGroup);
                             EditorGUI.indentLevel++;
                             if (categoriesMusic[k])
                             {
@@ -745,7 +749,7 @@ namespace JSAM
             // Now that we've gotten that over with, check for duplicate AudioEnums in this folder, because we can't trust the user to be organized
             string sceneName = AudioManager.instance.gameObject.scene.name;
             // User is working in a completely new, unsaved scene, better remind them what's up
-            if (sceneName == "")
+            if (sceneName == "" || sceneName == null)
             {
                 EditorUtility.DisplayDialog("Audio Library Generation Error!", "It seems like you're working in a completely  " +
                     "new scene! AudioManager requires that your scene is saved to file in order to keep a proper Audio Library. " +

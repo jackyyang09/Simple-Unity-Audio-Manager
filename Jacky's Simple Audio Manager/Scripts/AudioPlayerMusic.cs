@@ -124,13 +124,13 @@ namespace JSAM
                     switch (transitionMode)
                     {
                         case TransitionMode.None:
-                            sourceBeingUsed = am.PlayMusicInternal(music, loopMode);
+                            sourceBeingUsed = am.PlayMusicInternal(music);
                             break;
                         case TransitionMode.FadeFromSilence:
-                            sourceBeingUsed = am.FadeMusicInternal(music, musicFadeTime, loopMode);
+                            sourceBeingUsed = am.FadeMusicInternal(music, musicFadeTime);
                             break;
                         case TransitionMode.Crossfade:
-                            sourceBeingUsed = am.CrossfadeMusicInternal(music, musicFadeTime, loopMode, keepPlaybackPosition);
+                            sourceBeingUsed = am.CrossfadeMusicInternal(music, musicFadeTime, keepPlaybackPosition);
                             break;
                     }
                 }

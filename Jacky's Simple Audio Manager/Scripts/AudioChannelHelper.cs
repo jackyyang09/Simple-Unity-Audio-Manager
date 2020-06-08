@@ -28,6 +28,36 @@ namespace JSAM
             audioFile = file;
         }
 
+        public void Play(float delay)
+        {
+            StopAllCoroutines();
+            aSource.Stop();
+            aSource.PlayDelayed(delay);
+            audioFile = null;
+            looping = false;
+            aSource.bypassEffects = false;
+            aSource.bypassListenerEffects = false;
+            aSource.bypassReverbZones = false;
+            ClearEffects();
+        }
+
+        public void Play(AudioFileMusicObject file)
+        {
+            // Make sure no remnants from a previous sound remain
+            StopAllCoroutines();
+            if (file.playReversed)
+            {
+                aSource.time = aSource.clip.length - 0.01f;
+            }
+            aSource.Play();
+            audioFile = file;
+            looping = false;
+            aSource.bypassEffects = file.bypassEffects;
+            aSource.bypassListenerEffects = file.bypassListenerEffects;
+            aSource.bypassReverbZones = file.bypassReverbZones;
+            ApplyEffects();
+        }
+
         public void Play(float delay, AudioFileObject file, bool loop = false)
         {
             // Make sure no remnants from a previous sound remain
@@ -41,6 +71,9 @@ namespace JSAM
             aSource.PlayDelayed(delay);
             audioFile = file;
             looping = loop;
+            aSource.bypassEffects = file.bypassEffects;
+            aSource.bypassListenerEffects = file.bypassListenerEffects;
+            aSource.bypassReverbZones = file.bypassReverbZones;
             switch (file.fadeMode)
             {
                 case FadeMode.FadeIn:
@@ -63,6 +96,9 @@ namespace JSAM
             else aSource.timeSamples = 0;
             aSource.Play();
             aSource.pitch = AudioManager.GetRandomPitch(file);
+            aSource.bypassEffects = file.bypassEffects;
+            aSource.bypassListenerEffects = file.bypassListenerEffects;
+            aSource.bypassReverbZones = file.bypassReverbZones;
             audioFile = file;
             ApplyVolumeChanges();
             ApplyEffects();
@@ -218,6 +254,40 @@ namespace JSAM
                 reverbFilter.density = audioFile.reverbFilter.density;
             }
             else if (!audioFile.reverbFilter.enabled && reverbFilter) reverbFilter.enabled = false;
+        }
+
+        public void ClearEffects()
+        {
+            {
+                AudioChorusFilter component;
+                TryGetComponent(out component);
+                if (component) component.enabled = false;
+            }
+            {
+                AudioDistortionFilter component;
+                TryGetComponent(out component);
+                if (component) component.enabled = false;
+            }
+            {
+                AudioEchoFilter component;
+                TryGetComponent(out component);
+                if (component) component.enabled = false;
+            }
+            {
+                AudioHighPassFilter component;
+                TryGetComponent(out component);
+                if (component) component.enabled = false;
+            }
+            {
+                AudioLowPassFilter component;
+                TryGetComponent(out component);
+                if (component) component.enabled = false;
+            }
+            {
+                AudioReverbFilter component;
+                TryGetComponent(out component);
+                if (component) component.enabled = false;
+            }
         }
 
         IEnumerator FadeIn(bool queueFadeout)

@@ -21,7 +21,7 @@ MonoBehaviour:
   priority: 128
   startingPitch: 1
   pitchShift: 0.05
-  playReversed: 1
+  playReversed: 0
   delay: 0
   ignoreTimeScale: 0
   fadeMode: 0

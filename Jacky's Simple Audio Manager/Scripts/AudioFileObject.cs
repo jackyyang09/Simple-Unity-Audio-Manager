@@ -138,14 +138,14 @@ namespace JSAM
         public float relativeVolume = 1;
 
         [SerializeField]
-        [Tooltip("If true, playback will be affected based on distance and direction from listener")]
+        [Tooltip("If true, playback will be affected based on distance and direction from listener.")]
         public bool spatialize;
 
         [Tooltip("If there are several sounds playing at once, sounds with higher priority will be culled by Unity's sound system later than sounds with lower priority. \"Music\" has the absolute highest priority and \"Spam\" has the lowest.")]
         [SerializeField]
         public Priority priority = Priority.Default;
 
-        [Tooltip("The frequency that the sound plays at by default. \"Pitch shift\" is added to this value additively to get the final pitch. Negative \"pitches\" result in the audio being played backwards")]
+        [Tooltip("The frequency that the sound plays at by default. \"Pitch shift\" is added to this value additively to get the final pitch. Negative \"pitches\" result in the audio being played backwards.")]
         [Range(0, 3), SerializeField]
         public float startingPitch = 1;
 
@@ -154,7 +154,7 @@ namespace JSAM
         [Range(0, 0.5f)]
         public float pitchShift = 0.05f;
 
-        [Tooltip("If true, takes the pitch settings and applies them to the frequency as negative values, making the sound playback in reverse")]
+        [Tooltip("If true, takes the pitch settings and applies them to the frequency as negative values, making the sound playback in reverse.")]
         [SerializeField]
         public bool playReversed = false;
 
@@ -166,18 +166,28 @@ namespace JSAM
         [SerializeField]
         public bool ignoreTimeScale = false;
 
-        [Tooltip("Add fade to your sound. Set the details of this fade using the FadeMode tools")]
+        [Tooltip("Add fade to your sound. Set the details of this fade using the FadeMode tools.")]
         [SerializeField]
         public FadeMode fadeMode;
-        [HideInInspector]
         [Tooltip("The percentage of time the sound takes to fade-in relative to it's total length.")]
-        [SerializeField]
+        [SerializeField, HideInInspector]
         public float fadeInDuration;
 
-        [HideInInspector]
-        [SerializeField]
         [Tooltip("The percentage of time the sound takes to fade-out relative to it's total length.")]
+        [SerializeField, HideInInspector]
         public float fadeOutDuration;
+
+        [Tooltip("If true, this audio file ignore effects applied in the Audio Effects stack and any effects applied to the Audio Listener.")]
+        [SerializeField, HideInInspector]
+        public bool bypassEffects;
+
+        [Tooltip("If true, this audio file will ignore any effects applied to the Audio Listener.")]
+        [SerializeField, HideInInspector]
+        public bool bypassListenerEffects;
+
+        [Tooltip("If true, this audio file will ignore reverb effects created when the Audio Listener enters a reverb zone")]
+        [SerializeField, HideInInspector]
+        public bool bypassReverbZones;
 
         /// <summary>
         /// Don't touch this unless you're modifying AudioManager functionality
@@ -261,7 +271,6 @@ namespace JSAM
             return useLibrary;
         }
 
-#if UNITY_EDITOR
         public int Compare(AudioFileObject x, AudioFileObject y)
         {
             if (x == null || y == null)
@@ -272,6 +281,7 @@ namespace JSAM
             return x.safeName.CompareTo(y.safeName);
         }
 
+#if UNITY_EDITOR
         /// <summary>
         /// May need to be optimized
         /// </summary>
@@ -358,6 +368,6 @@ namespace JSAM
 
             return newList;
         }
-    }
 #endif
+    }
 }

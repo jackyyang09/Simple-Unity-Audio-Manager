@@ -27,6 +27,9 @@ MonoBehaviour:
   fadeMode: 0
   fadeInDuration: 0
   fadeOutDuration: 0
+  bypassEffects: 0
+  bypassListenerEffects: 0
+  bypassReverbZones: 0
   safeName: BGM
   chorusFilter:
     enabled: 0
@@ -73,6 +76,6 @@ MonoBehaviour:
     density: 100
   clampToLoopPoints: 0
   loopMode: 1
-  loopStart: 0
+  loopStart: 3.820408
   loopEnd: 12.800001
   bpm: 160

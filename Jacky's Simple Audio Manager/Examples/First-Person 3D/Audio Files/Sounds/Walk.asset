@@ -28,6 +28,9 @@ MonoBehaviour:
   fadeMode: 0
   fadeInDuration: 0.01
   fadeOutDuration: 0.694
+  bypassEffects: 0
+  bypassListenerEffects: 0
+  bypassReverbZones: 0
   safeName: Walk
   chorusFilter:
     enabled: 0

@@ -21,12 +21,15 @@ MonoBehaviour:
   priority: 128
   startingPitch: 1
   pitchShift: 0.05
-  playReversed: 1
+  playReversed: 0
   delay: 0
   ignoreTimeScale: 0
   fadeMode: 1
   fadeInDuration: 0
   fadeOutDuration: 0.097
+  bypassEffects: 0
+  bypassListenerEffects: 0
+  bypassReverbZones: 0
   safeName: Crouch
   chorusFilter:
     enabled: 0

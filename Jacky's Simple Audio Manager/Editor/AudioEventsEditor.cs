@@ -34,10 +34,7 @@ namespace JSAM
                 EditorGUILayout.Space();
 
                 EditorGUILayout.LabelField("public void PlaySoundByEnum (string enumName)");
-                EditorGUILayout.HelpBox("Takes the name of the Audio enum sound to be played as a string and plays it without any spatialization", MessageType.None);
-
-                EditorGUILayout.LabelField("public void PlaySpatializedSoundByEnum (string enumName)");
-                EditorGUILayout.HelpBox("Takes the name of the Audio enum sound to be played as a string and plays it in the world", MessageType.None);
+                EditorGUILayout.HelpBox("Takes the name of the Audio enum sound to be played as a string and plays it according to the settings specified in the Audio File Object", MessageType.None);
 
                 EditorGUILayout.LabelField("public void PlayAudioPlayer (AudioPlayer player)");
                 EditorGUILayout.HelpBox("Pass the AudioPlayer to play it's contents", MessageType.None);

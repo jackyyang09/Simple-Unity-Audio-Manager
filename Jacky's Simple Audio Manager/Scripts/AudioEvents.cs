@@ -33,24 +33,5 @@ namespace JSAM
                 AudioManager.instance.PlaySoundInternal(index, transform);
             }
         }
-
-        public void PlaySpatializedSoundByEnum(string enumName)
-        {
-            string name = enumName;
-            if (enumName.Contains("."))
-            {
-                name = enumName.Remove(0, enumName.LastIndexOf('.'));
-            }
-
-            List<string> enums = new List<string>();
-            System.Type enumType = AudioManager.instance.GetSceneSoundEnum();
-            enums.AddRange(System.Enum.GetNames(enumType));
-            int index = enums.IndexOf(name);
-
-            if (index > 0)
-            {
-                AudioManager.instance.PlaySoundInternal(index, transform);
-            }
-        }
     }
 }

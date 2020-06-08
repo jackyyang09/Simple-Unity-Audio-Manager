@@ -28,6 +28,9 @@ MonoBehaviour:
   fadeMode: 1
   fadeInDuration: 0
   fadeOutDuration: 0
+  bypassEffects: 0
+  bypassListenerEffects: 0
+  bypassReverbZones: 0
   safeName: AbstractPop
   chorusFilter:
     enabled: 0
@@ -40,7 +43,7 @@ MonoBehaviour:
     depth: 0
   distortionFilter:
     enabled: 0
-    distortionLevel: 0
+    distortionLevel: 0.5
   echoFilter:
     enabled: 0
     delay: 0
@@ -57,18 +60,18 @@ MonoBehaviour:
     highpassResonanceQ: 0
   reverbFilter:
     enabled: 0
-    reverbPreset: 0
+    reverbPreset: 1
     dryLevel: 0
     room: 0
     roomHF: 0
     roomLF: 0
-    decayTime: 0
-    decayHFRatio: 0
-    reflectionsLevel: 0
+    decayTime: 1
+    decayHFRatio: 0.5
+    reflectionsLevel: -10000
     reflectionsDelay: 0
     reverbLevel: 0
-    reverbDelay: 0
-    hFReference: 0
-    lFReference: 0
-    diffusion: 0
-    density: 0
+    reverbDelay: 0.04
+    hFReference: 5000
+    lFReference: 250
+    diffusion: 100
+    density: 100
