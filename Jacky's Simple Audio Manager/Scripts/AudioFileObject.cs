@@ -141,6 +141,10 @@ namespace JSAM
         [Tooltip("If true, playback will be affected based on distance and direction from listener.")]
         public bool spatialize;
 
+        [SerializeField]
+        [Tooltip("If set above 0, sound can be heard from up to this distance before finally fading away. Good for ambient sounds. Only works if \"spatialize\" is set to true.")]
+        public float maxDistance;
+
         [Tooltip("If there are several sounds playing at once, sounds with higher priority will be culled by Unity's sound system later than sounds with lower priority. \"Music\" has the absolute highest priority and \"Spam\" has the lowest.")]
         [SerializeField]
         public Priority priority = Priority.Default;

@@ -223,6 +223,8 @@ namespace JSAM
 
         float prevTimeScale = 1;
 
+        float defaultSoundDistance = 7;
+
         /// <summary>
         /// A bit like float Epsilon, but large enough for the purpose of pushing the playback position of AudioSources just far enough to not throw an error
         /// </summary>
@@ -290,6 +292,8 @@ namespace JSAM
                 musicSources[2].playOnAwake = false;
                 musicHelpers.Add(musicSources[2].GetComponent<AudioChannelHelper>());
                 musicHelpers[2].Init(true);
+
+                defaultSoundDistance = sourcePrefab.maxDistance;
 
                 //Set sources properties based on current settings
                 ApplyVolumeGlobal();
@@ -507,74 +511,32 @@ namespace JSAM
         public AudioSource PlayMusicInternal<T>(T track) where T : Enum
         {
             int t = Convert.ToInt32(track);
-            musicSources[0].clip = audioFileMusicObjects[t].GetFile();
-
-            switch (audioFileMusicObjects[t].loopMode)
-            {
-                case LoopMode.NoLooping:
-                    enableLoopPoints = false;
-                    musicSources[0].loop = false;
-                    loopTrackAfterStopping = false;
-                    break;
-                case LoopMode.Looping:
-                    enableLoopPoints = false;
-                    musicSources[0].loop = true;
-                    loopTrackAfterStopping = false;
-                    break;
-                case LoopMode.LoopWithLoopPoints:
-                    enableLoopPoints = true;
-                    loopStartTime = audioFileMusicObjects[t].loopStart * musicSources[0].clip.frequency;
-                    loopEndTime = audioFileMusicObjects[t].loopEnd * musicSources[0].clip.frequency;
-                    musicSources[0].loop = false;
-                    loopTrackAfterStopping = true;
-                    clampBetweenLoopPoints = audioFileMusicObjects[t].clampToLoopPoints;
-                    break;
-            }
-
-            musicSources[0].spatialBlend = 0;
-
-            bool ignoreTimeScale = audioFileMusicObjects[t].ignoreTimeScale;
-            if (timeScaledSounds && !ignoreTimeScale)
-            {
-                if (Time.timeScale == 0)
-                {
-                    musicSources[0].Pause(); // If game is paused, pause the sound too
-                }
-            }
-            if (ignoreTimeScale)
-            {
-                ignoringTimeScale.Add(musicSources[0]);
-            }
-            else
-            {
-                if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
-            }
-
-            musicSources[0].pitch = audioFileMusicObjects[t].startingPitch;
-            if (audioFileMusicObjects[t].playReversed)
-            {
-                musicSources[0].pitch = -Mathf.Abs(musicSources[0].pitch);
-                musicSources[0].time = musicSources[0].clip.length - EPSILON;
-            }
-            else musicSources[0].time = 0;
-            musicSources[0].Stop();
-            musicHelpers[0].Play(audioFileMusicObjects[t]);
-
-            return musicSources[0];
+            return PlayMusicInternal(audioFileMusicObjects[t]);
         }
 
         /// <summary>
+        /// This method can be shortened to AudioManager.PlayMusic. 
         /// Swaps the current music track with the new music track,
-        /// music is played globally and does not change volume
+        /// music is played globally and does not change volume with the listener's position
+        /// </summary>
+        /// <param name="track">Enum value for the music to be played. Check AudioManager for the appropriate value to use</param>
+
+        public AudioSource PlayMusicInternal(int track)
+        {
+            return PlayMusicInternal(audioFileMusicObjects[track]);
+        }
+
+        /// <summary>
+        /// If you are an advanced user and prefer to skip right to passing an AudioFileObject, then you are welcome to do so
         /// </summary>
         /// <param name="track">Index of the music</param>
         /// <param name="loopTrack">Does the music play forever?</param>
         /// <param name="loopMode">Does the track loop from start to finish? Does the track loop between loop points?</param>
-        public AudioSource PlayMusicInternal(int track)
+        public AudioSource PlayMusicInternal(AudioFileMusicObject track)
         {
-            musicSources[0].clip = audioFileMusicObjects[track].GetFile();
+            musicSources[0].clip = track.GetFile();
 
-            switch (audioFileMusicObjects[track].loopMode)
+            switch (track.loopMode)
             {
                 case LoopMode.NoLooping:
                     enableLoopPoints = false;
@@ -588,17 +550,17 @@ namespace JSAM
                     break;
                 case LoopMode.LoopWithLoopPoints:
                     enableLoopPoints = true;
-                    loopStartTime = audioFileMusicObjects[track].loopStart * musicSources[0].clip.frequency;
-                    loopEndTime = audioFileMusicObjects[track].loopEnd * musicSources[0].clip.frequency;
+                    loopStartTime = track.loopStart * musicSources[0].clip.frequency;
+                    loopEndTime = track.loopEnd * musicSources[0].clip.frequency;
                     musicSources[0].loop = false;
                     loopTrackAfterStopping = true;
-                    clampBetweenLoopPoints = audioFileMusicObjects[track].clampToLoopPoints;
+                    clampBetweenLoopPoints = track.clampToLoopPoints;
                     break;
             }
 
             musicSources[0].spatialBlend = 0;
 
-            bool ignoreTimeScale = audioFileMusicObjects[track].ignoreTimeScale;
+            bool ignoreTimeScale = track.ignoreTimeScale;
             if (timeScaledSounds && !ignoreTimeScale)
             {
                 if (Time.timeScale == 0)
@@ -615,8 +577,8 @@ namespace JSAM
                 if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
             }
 
-            musicSources[0].pitch = audioFileMusicObjects[track].startingPitch;
-            if (audioFileMusicObjects[track].playReversed)
+            musicSources[0].pitch = track.startingPitch;
+            if (track.playReversed)
             {
                 musicSources[0].pitch = -Mathf.Abs(musicSources[0].pitch);
                 musicSources[0].time = musicSources[0].clip.length - EPSILON;
@@ -624,7 +586,7 @@ namespace JSAM
             else musicSources[0].time = 0;
 
             musicSources[0].Stop();
-            musicHelpers[0].Play(audioFileMusicObjects[track]);
+            musicHelpers[0].Play(track);
 
             return musicSources[0];
         }
@@ -686,67 +648,13 @@ namespace JSAM
         public AudioSource PlayMusic3DInternal<T>(T track, Transform trans, LoopMode loopMode = LoopMode.LoopWithLoopPoints) where T : Enum
         {
             int t = Convert.ToInt32(track);
-
-            sourcePositions[musicSources[2]] = trans;
-
-            musicSources[2].clip = audioFileMusicObjects[t].GetFile();
-
-            switch (loopMode)
-            {
-                case LoopMode.NoLooping:
-                    enableLoopPoints = false;
-                    musicSources[2].loop = false;
-                    loopTrackAfterStopping = false;
-                    break;
-                case LoopMode.Looping:
-                    enableLoopPoints = false;
-                    musicSources[2].loop = true;
-                    loopTrackAfterStopping = false;
-                    break;
-                case LoopMode.LoopWithLoopPoints:
-                    enableLoopPoints = true;
-                    loopStartTime = audioFileMusicObjects[t].loopStart * musicSources[2].clip.frequency;
-                    loopEndTime = audioFileMusicObjects[t].loopEnd * musicSources[2].clip.frequency;
-                    musicSources[2].loop = false;
-                    loopTrackAfterStopping = true;
-                    break;
-            }
-
-            clampBetweenLoopPoints = audioFileMusicObjects[t].clampToLoopPoints;
-
-            bool ignoreTimeScale = audioFileMusicObjects[t].ignoreTimeScale;
-            if (timeScaledSounds && !ignoreTimeScale)
-            {
-                if (Time.timeScale == 0)
-                {
-                    musicSources[2].Pause(); // If game is paused, pause the sound too
-                }
-            }
-            if (ignoreTimeScale)
-            {
-                ignoringTimeScale.Add(musicSources[2]);
-            }
-            else
-            {
-                if (ignoringTimeScale.Contains(musicSources[2])) ignoringTimeScale.Remove(musicSources[2]);
-            }
-
-            musicSources[2].pitch = audioFileMusicObjects[t].startingPitch;
-            if (audioFileMusicObjects[t].playReversed)
-            {
-                musicSources[2].pitch = -Mathf.Abs(musicSources[2].pitch);
-                musicSources[2].time = musicSources[2].clip.length - EPSILON;
-            }
-            else musicSources[2].time = 0;
-
-            musicHelpers[2].Play(audioFileMusicObjects[t].delay, audioFileMusicObjects[t]);
-
-            return musicSources[2];
+            return PlayMusic3DInternal(audioFileMusicObjects[t], trans, loopMode);
         }
 
         /// <summary>
-        /// Music is played in the scene and becomes quieter as you move away from the source.
-        /// 3D music source is independent from the main music source, they can overlap if you let them
+        /// This method can be shortened to AudioManager.PlayMusic3D. 
+        /// Music is played in the scene and becomes quieter as the listener moves away from the source. 
+        /// 3D music is independent from regular music, they can overlap if you let them
         /// </summary>
         /// <param name="track">Index of the music</param>
         /// <param name="trans">The transform of the gameobject playing the music</param>
@@ -754,9 +662,21 @@ namespace JSAM
         /// <returns>The AudioSource playing the sound</returns>
         public AudioSource PlayMusic3DInternal(int track, Transform trans, LoopMode loopMode = LoopMode.LoopWithLoopPoints)
         {
+            return PlayMusic3DInternal(audioFileMusicObjects[track], trans, loopMode);
+        }
+
+        /// <summary>
+        /// If you are an advanced user and prefer to skip right to passing an AudioFileObject, then you are welcome to do so
+        /// </summary>
+        /// <param name="track">Index of the music</param>
+        /// <param name="trans">The transform of the gameobject playing the music</param>
+        /// <param name="loopMode">Does the track loop from start to finish? Does the track loop between loop points?</param>
+        /// <returns>The AudioSource playing the sound</returns>
+        public AudioSource PlayMusic3DInternal(AudioFileMusicObject track, Transform trans, LoopMode loopMode = LoopMode.LoopWithLoopPoints)
+        {
             sourcePositions[musicSources[2]] = trans;
 
-            musicSources[2].clip = audioFileMusicObjects[track].GetFile();
+            musicSources[2].clip = track.GetFile();
 
             switch (loopMode)
             {
@@ -772,16 +692,16 @@ namespace JSAM
                     break;
                 case LoopMode.LoopWithLoopPoints:
                     enableLoopPoints = true;
-                    loopStartTime = audioFileMusicObjects[track].loopStart * musicSources[2].clip.frequency;
-                    loopEndTime = audioFileMusicObjects[track].loopEnd * musicSources[2].clip.frequency;
+                    loopStartTime = track.loopStart * musicSources[2].clip.frequency;
+                    loopEndTime = track.loopEnd * musicSources[2].clip.frequency;
                     musicSources[2].loop = false;
                     loopTrackAfterStopping = true;
                     break;
             }
 
-            clampBetweenLoopPoints = audioFileMusicObjects[track].clampToLoopPoints;
+            clampBetweenLoopPoints = track.clampToLoopPoints;
 
-            bool ignoreTimeScale = audioFileMusicObjects[track].ignoreTimeScale;
+            bool ignoreTimeScale = track.ignoreTimeScale;
             if (timeScaledSounds && !ignoreTimeScale)
             {
                 if (Time.timeScale == 0)
@@ -798,15 +718,15 @@ namespace JSAM
                 if (ignoringTimeScale.Contains(musicSources[2])) ignoringTimeScale.Remove(musicSources[2]);
             }
 
-            musicSources[2].pitch = audioFileMusicObjects[track].startingPitch;
-            if (audioFileMusicObjects[track].playReversed)
+            musicSources[2].pitch = track.startingPitch;
+            if (track.playReversed)
             {
                 musicSources[2].pitch = -Mathf.Abs(musicSources[2].pitch);
                 musicSources[2].time = musicSources[2].clip.length - EPSILON;
             }
             else musicSources[2].time = 0;
 
-            musicHelpers[2].Play(audioFileMusicObjects[track].delay, audioFileMusicObjects[track]);
+            musicHelpers[2].Play(track.delay, track);
 
             return musicSources[2];
         }
@@ -1073,90 +993,29 @@ namespace JSAM
         public AudioSource FadeMusicInternal<T>(T track, float time) where T : Enum
         {
             int t = Convert.ToInt32(track);
-
-            musicSources[1].clip = audioFileMusicObjects[t].GetFile();
-            musicSources[1].loop = true;
-
-            AudioSource temp = musicSources[0];
-            AudioChannelHelper tempHelper = musicHelpers[0];
-            musicSources[0] = musicSources[1];
-            musicSources[1] = temp;
-            musicHelpers[0] = musicHelpers[1];
-            musicHelpers[1] = tempHelper;
-
-            musicSources[0].clip = audioFileMusicObjects[t].GetFile();
-            musicSources[0].loop = true;
-
-            switch (audioFileMusicObjects[t].loopMode)
-            {
-                case LoopMode.NoLooping:
-                    enableLoopPoints = false;
-                    musicSources[0].loop = false;
-                    musicSources[1].loop = false;
-                    loopTrackAfterStopping = false;
-                    break;
-                case LoopMode.Looping:
-                    enableLoopPoints = false;
-                    loopTrackAfterStopping = false;
-                    break;
-                case LoopMode.LoopWithLoopPoints:
-                    enableLoopPoints = true;
-                    loopStartTime = audioFileMusicObjects[t].loopStart * musicSources[0].clip.frequency;
-                    loopEndTime = audioFileMusicObjects[t].loopEnd * musicSources[0].clip.frequency;
-                    musicSources[0].loop = false;
-                    loopTrackAfterStopping = true;
-                    break;
-            }
-
-            bool ignoreTimeScale = audioFileMusicObjects[t].ignoreTimeScale;
-            if (timeScaledSounds && !ignoreTimeScale)
-            {
-                if (Time.timeScale == 0)
-                {
-                    musicSources[0].Pause(); // If game is paused, pause the sound too
-                }
-            }
-            if (ignoreTimeScale)
-            {
-                ignoringTimeScale.Add(musicSources[0]);
-            }
-            else
-            {
-                if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
-            }
-
-            musicSources[0].pitch = audioFileMusicObjects[t].startingPitch;
-            if (audioFileMusicObjects[t].playReversed)
-            {
-                musicSources[0].pitch = -Mathf.Abs(musicSources[0].pitch);
-                musicSources[0].time = musicSources[0].clip.length - EPSILON;
-            }
-            else musicSources[0].time = 0;
-
-            clampBetweenLoopPoints = audioFileMusicObjects[t].clampToLoopPoints;
-
-            if (time > 0)
-            {
-                float stepTime = time / 2;
-
-                if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
-                fadeOutRoutine = StartCoroutine(FadeOutMusic(stepTime, ignoreTimeScale));
-
-                if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
-                fadeInRoutine = StartCoroutine(FadeInMusicRoutine(stepTime, ignoreTimeScale, audioFileMusicObjects[t]));
-            }
-
-            return musicSources[0];
+            return FadeMusicInternal(audioFileMusicObjects[t], time);
         }
 
         /// <summary>
+        /// This method can be shortened to AudioManager.FadeMusic. 
         /// Fade out the current track to silence, and then fade in a new track
+        /// </summary>
+        /// <param name="track">The music track</param>
+        /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
+        /// <param name="loopMode">Does the track loop from start to finish? Does the track loop between loop points?</param>
+        public AudioSource FadeMusicInternal(int track, float time)
+        {
+            return FadeMusicInternal(audioFileMusicObjects[track], time);
+        }
+
+        /// <summary>
+        /// If you are an advanced user and prefer to skip right to passing an AudioFileObject, then you are welcome to do so
         /// </summary>
         /// <param name="track">The name of the music track</param>
         /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
-        public AudioSource FadeMusicInternal(int track, float time)
+        public AudioSource FadeMusicInternal(AudioFileMusicObject track, float time)
         {
-            musicSources[1].clip = audioFileMusicObjects[track].GetFile();
+            musicSources[1].clip = track.GetFile();
             musicSources[1].loop = true;
 
             AudioSource temp = musicSources[0];
@@ -1166,10 +1025,10 @@ namespace JSAM
             musicHelpers[0] = musicHelpers[1];
             musicHelpers[1] = tempHelper;
 
-            musicSources[0].clip = audioFileMusicObjects[track].GetFile();
+            musicSources[0].clip = track.GetFile();
             musicSources[0].loop = true;
 
-            switch (audioFileMusicObjects[track].loopMode)
+            switch (track.loopMode)
             {
                 case LoopMode.NoLooping:
                     enableLoopPoints = false;
@@ -1183,14 +1042,14 @@ namespace JSAM
                     break;
                 case LoopMode.LoopWithLoopPoints:
                     enableLoopPoints = true;
-                    loopStartTime = audioFileMusicObjects[track].loopStart * musicSources[0].clip.frequency;
-                    loopEndTime = audioFileMusicObjects[track].loopEnd * musicSources[0].clip.frequency;
+                    loopStartTime = track.loopStart * musicSources[0].clip.frequency;
+                    loopEndTime = track.loopEnd * musicSources[0].clip.frequency;
                     musicSources[0].loop = false;
                     loopTrackAfterStopping = true;
                     break;
             }
 
-            bool ignoreTimeScale = audioFileMusicObjects[track].ignoreTimeScale;
+            bool ignoreTimeScale = track.ignoreTimeScale;
             if (timeScaledSounds && !ignoreTimeScale)
             {
                 if (Time.timeScale == 0)
@@ -1207,15 +1066,15 @@ namespace JSAM
                 if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
             }
 
-            musicSources[0].pitch = audioFileMusicObjects[track].startingPitch;
-            if (audioFileMusicObjects[track].playReversed)
+            musicSources[0].pitch = track.startingPitch;
+            if (track.playReversed)
             {
                 musicSources[0].pitch = -Mathf.Abs(musicSources[0].pitch);
                 musicSources[0].time = musicSources[0].clip.length - EPSILON;
             }
             else musicSources[0].time = 0;
 
-            clampBetweenLoopPoints = audioFileMusicObjects[track].clampToLoopPoints;
+            clampBetweenLoopPoints = track.clampToLoopPoints;
 
             if (time > 0)
             {
@@ -1225,11 +1084,11 @@ namespace JSAM
                 fadeOutRoutine = StartCoroutine(FadeOutMusic(stepTime, ignoreTimeScale));
 
                 if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
-                fadeInRoutine = StartCoroutine(FadeInMusicRoutine(stepTime, ignoreTimeScale, audioFileMusicObjects[track]));
+                fadeInRoutine = StartCoroutine(FadeInMusicRoutine(stepTime, ignoreTimeScale, track));
             }
             else // Handle our user's incompetence somehow
             {
-                musicHelpers[0].Play(audioFileMusicObjects[track]);
+                musicHelpers[0].Play(track);
                 musicHelpers[1].Stop();
                 Debug.LogWarning("AudioManager Warning! Your music fade duration should be set above 0 seconds. Consider using a non-fade otherwise.");
             }
@@ -1314,90 +1173,12 @@ namespace JSAM
         public AudioSource FadeMusicInInternal<T>(T track, float time, bool playFromStartPoint = false) where T : Enum
         {
             int t = Convert.ToInt32(track);
-
-            musicSources[1].clip = audioFileMusicObjects[t].GetFile();
-            musicSources[1].loop = true;
-
-            AudioSource temp = musicSources[0];
-            AudioChannelHelper tempHelper = musicHelpers[0];
-            musicSources[0] = musicSources[1];
-            musicSources[1] = temp;
-            musicHelpers[0] = musicHelpers[1];
-            musicHelpers[1] = tempHelper;
-
-            musicSources[0].clip = audioFileMusicObjects[t].GetFile();
-            musicSources[0].loop = true;
-
-            switch (audioFileMusicObjects[t].loopMode)
-            {
-                case LoopMode.NoLooping:
-                    enableLoopPoints = false;
-                    loopTrackAfterStopping = false;
-                    musicSources[0].loop = false;
-                    musicSources[1].loop = false;
-                    break;
-                case LoopMode.Looping:
-                    enableLoopPoints = false;
-                    loopTrackAfterStopping = false;
-                    break;
-                case LoopMode.LoopWithLoopPoints:
-                    enableLoopPoints = true;
-                    loopStartTime = audioFileMusicObjects[t].loopStart * musicSources[0].clip.frequency;
-                    loopEndTime = audioFileMusicObjects[t].loopEnd * musicSources[0].clip.frequency;
-                    musicSources[0].loop = false;
-                    loopTrackAfterStopping = true;
-                    if (playFromStartPoint)
-                    {
-                        musicSources[0].timeSamples = (int)loopStartTime;
-                    }
-                    break;
-            }
-
-            bool ignoreTimeScale = audioFileMusicObjects[t].ignoreTimeScale;
-            if (timeScaledSounds && !ignoreTimeScale)
-            {
-                if (Time.timeScale == 0)
-                {
-                    musicSources[0].Pause(); // If game is paused, pause the sound too
-                }
-            }
-            if (ignoreTimeScale)
-            {
-                ignoringTimeScale.Add(musicSources[0]);
-            }
-            else
-            {
-                if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
-            }
-
-            musicSources[0].pitch = audioFileMusicObjects[t].startingPitch;
-
-            if (audioFileMusicObjects[t].playReversed)
-            {
-                musicSources[0].pitch = -Mathf.Abs(musicSources[0].pitch);
-                musicSources[0].time = musicSources[0].clip.length - EPSILON;
-            }
-            else musicSources[0].time = 0;
-
-            clampBetweenLoopPoints = audioFileMusicObjects[t].clampToLoopPoints;
-
-            if (time > 0)
-            {
-                if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
-                fadeInRoutine = StartCoroutine(FadeInMusicRoutine(time, ignoreTimeScale, audioFileMusicObjects[t]));
-            }
-            else // Handle our user's incompetence somehow
-            {
-                musicHelpers[0].Play(audioFileMusicObjects[t]);
-                musicHelpers[1].Stop();
-                Debug.LogWarning("AudioManager Warning! Your music fade duration should be set above 0 seconds. Consider using a non-fade otherwise.");
-            }
-
-            return musicSources[0];
+            return FadeMusicInInternal(audioFileMusicObjects[t], time, playFromStartPoint);
         }
 
         /// <summary>
-        /// Fade in a new track without affecting playback of any currently playing track.
+        /// This method can be shortened to AudioManager.FadeMusicIn. 
+        /// Fade in a new track without affecting playback of any currently playing track. 
         /// To fade the currently playing track out at the same time, use the FadeMusic function instead
         /// </summary>
         /// <param name="track">The name of the music track</param>
@@ -1406,7 +1187,19 @@ namespace JSAM
         /// <param name="playFromStartPoint">Start track playback from starting loop point, only works if loopMode is set to LoopWithLoopPoints</param>
         public AudioSource FadeMusicInInternal(int track, float time, bool playFromStartPoint = false)
         {
-            musicSources[1].clip = audioFileMusicObjects[track].GetFile();
+            return FadeMusicInInternal(audioFileMusicObjects[track], time, playFromStartPoint);
+        }
+
+        /// <summary>
+        /// If you are an advanced user and prefer to skip right to passing an AudioFileObject, then you are welcome to do so
+        /// </summary>
+        /// <param name="track">The name of the music track</param>
+        /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
+        /// <param name="loopMode">Does the track loop from start to finish? Does the track loop between loop points?</param>
+        /// <param name="playFromStartPoint">Start track playback from starting loop point, only works if loopMode is set to LoopWithLoopPoints</param>
+        public AudioSource FadeMusicInInternal(AudioFileMusicObject track, float time, bool playFromStartPoint = false)
+        {
+            musicSources[1].clip = track.GetFile();
             musicSources[1].loop = true;
 
             AudioSource temp = musicSources[0];
@@ -1416,10 +1209,10 @@ namespace JSAM
             musicHelpers[0] = musicHelpers[1];
             musicHelpers[1] = tempHelper;
 
-            musicSources[0].clip = audioFileMusicObjects[track].GetFile();
+            musicSources[0].clip = track.GetFile();
             musicSources[0].loop = true;
 
-            switch (audioFileMusicObjects[track].loopMode)
+            switch (track.loopMode)
             {
                 case LoopMode.NoLooping:
                     enableLoopPoints = false;
@@ -1433,8 +1226,8 @@ namespace JSAM
                     break;
                 case LoopMode.LoopWithLoopPoints:
                     enableLoopPoints = true;
-                    loopStartTime = audioFileMusicObjects[track].loopStart * musicSources[0].clip.frequency;
-                    loopEndTime = audioFileMusicObjects[track].loopEnd * musicSources[0].clip.frequency;
+                    loopStartTime = track.loopStart * musicSources[0].clip.frequency;
+                    loopEndTime = track.loopEnd * musicSources[0].clip.frequency;
                     musicSources[0].loop = false;
                     loopTrackAfterStopping = true;
                     if (playFromStartPoint)
@@ -1444,7 +1237,7 @@ namespace JSAM
                     break;
             }
 
-            bool ignoreTimeScale = audioFileMusicObjects[track].ignoreTimeScale;
+            bool ignoreTimeScale = track.ignoreTimeScale;
             if (timeScaledSounds && !ignoreTimeScale)
             {
                 if (Time.timeScale == 0)
@@ -1461,25 +1254,25 @@ namespace JSAM
                 if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
             }
 
-            musicSources[0].pitch = audioFileMusicObjects[track].startingPitch;
+            musicSources[0].pitch = track.startingPitch;
 
-            if (audioFileMusicObjects[track].playReversed)
+            if (track.playReversed)
             {
                 musicSources[0].pitch = -Mathf.Abs(musicSources[0].pitch);
                 musicSources[0].time = musicSources[0].clip.length - EPSILON;
             }
             else musicSources[0].time = 0;
 
-            clampBetweenLoopPoints = audioFileMusicObjects[track].clampToLoopPoints;
+            clampBetweenLoopPoints = track.clampToLoopPoints;
 
             if (time > 0)
             {
                 if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
-                fadeInRoutine = StartCoroutine(FadeInMusicRoutine(time, ignoreTimeScale, audioFileMusicObjects[track]));
+                fadeInRoutine = StartCoroutine(FadeInMusicRoutine(time, ignoreTimeScale, track));
             }
             else // Handle our user's incompetence somehow
             {
-                musicHelpers[0].Play(audioFileMusicObjects[track]);
+                musicHelpers[0].Play(track);
                 musicHelpers[1].Stop();
                 Debug.LogWarning("AudioManager Warning! Your music fade duration should be set above 0 seconds. Consider using a non-fade otherwise.");
             }
@@ -1597,107 +1390,24 @@ namespace JSAM
         public AudioSource CrossfadeMusicInternal<T>(T track, float time, bool keepMusicTime = false) where T : Enum
         {
             int t = Convert.ToInt32(track);
+            return CrossfadeMusicInternal(audioFileMusicObjects[t], time, keepMusicTime);
+        }
 
-            musicSources[1].clip = audioFileMusicObjects[t].GetFile();
-            musicSources[1].loop = true;
-
-            AudioSource temp = musicSources[0];
-            AudioChannelHelper tempHelper = musicHelpers[0];
-            musicSources[0] = musicSources[1];
-            musicSources[1] = temp;
-            musicHelpers[0] = musicHelpers[1];
-            musicHelpers[1] = tempHelper;
-
-            musicSources[0].clip = audioFileMusicObjects[t].GetFile();
-            musicSources[0].loop = true;
-
-            switch (audioFileMusicObjects[t].loopMode)
-            {
-                case LoopMode.NoLooping:
-                    enableLoopPoints = false;
-                    loopTrackAfterStopping = false;
-                    musicSources[0].loop = false;
-                    musicSources[1].loop = false;
-                    break;
-                case LoopMode.Looping:
-                    enableLoopPoints = false;
-                    loopTrackAfterStopping = false;
-                    break;
-                case LoopMode.LoopWithLoopPoints:
-                    enableLoopPoints = true;
-                    loopStartTime = audioFileMusicObjects[t].loopStart * musicSources[0].clip.frequency;
-                    loopEndTime = audioFileMusicObjects[t].loopEnd * musicSources[0].clip.frequency;
-                    musicSources[0].loop = false;
-                    loopTrackAfterStopping = true;
-                    break;
-            }
-
-            bool ignoreTimeScale = audioFileMusicObjects[t].ignoreTimeScale;
-            if (timeScaledSounds && !ignoreTimeScale)
-            {
-                if (Time.timeScale == 0)
-                {
-                    musicSources[0].Pause(); // If game is paused, pause the sound too
-                }
-            }
-            if (ignoreTimeScale)
-            {
-                ignoringTimeScale.Add(musicSources[0]);
-            }
-            else
-            {
-                if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
-            }
-
-            musicSources[0].pitch = audioFileMusicObjects[t].startingPitch;
-
-            if (audioFileMusicObjects[t].playReversed)
-            {
-                musicSources[0].pitch = -Mathf.Abs(musicSources[0].pitch);
-                musicSources[0].time = musicSources[0].clip.length - EPSILON;
-            }
-            else musicSources[0].time = 0;
-
-            clampBetweenLoopPoints = audioFileMusicObjects[t].clampToLoopPoints;
-
-            musicHelpers[0].Play(audioFileMusicObjects[t]);
-
-            musicSources[0].volume = 0;
-
-            if (keepMusicTime)
-            {
-                SetMusicPlaybackPosition(musicSources[1].timeSamples);
-            }
-
-            if (time > 0)
-            {
-                if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
-                fadeInRoutine = StartCoroutine(FadeInMusic(time, ignoreTimeScale, audioFileMusicObjects[t]));
-
-                if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
-                fadeOutRoutine = StartCoroutine(FadeOutMusic(time, ignoreTimeScale));
-            }
-            else // Handle our user's incompetence somehow
-            {
-                musicHelpers[0].Play(audioFileMusicObjects[t]);
-                musicSources[0].volume = GetTrueMusicVolumeInternal() * audioFileMusicObjects[t].relativeVolume;
-                musicHelpers[1].Stop();
-                Debug.LogWarning("AudioManager Warning! Your music fade duration should be set above 0 seconds. Consider using a non-fade otherwise.");
-            }
-
-            return musicSources[0];
+        public AudioSource CrossfadeMusicInternal(int track, float time = 0, bool keepMusicTime = false)
+        {
+            return CrossfadeMusicInternal(audioFileMusicObjects[track], time, keepMusicTime);
         }
 
         /// <summary>
-        /// Cross-fade music from the previous track to the new track specified
+        /// If you are an advanced user and prefer to skip right to passing an AudioFileObject, then you are welcome to do so
         /// </summary>
         /// <param name="track">The new track to fade to</param>
         /// <param name="time">How long the fade will last (between both tracks)</param>
         /// <param name="loopMode">Does the track loop from start to finish? Does the track loop between loop points?</param>
         /// <param name="keepMusicTime">Carry the current playback time of current track over to the next track?</param>
-        public AudioSource CrossfadeMusicInternal(int track, float time = 0, bool keepMusicTime = false)
+        public AudioSource CrossfadeMusicInternal(AudioFileMusicObject track, float time = 0, bool keepMusicTime = false)
         {
-            musicSources[1].clip = audioFileMusicObjects[track].GetFile();
+            musicSources[1].clip = track.GetFile();
             musicSources[1].loop = true;
 
             AudioSource temp = musicSources[0];
@@ -1707,10 +1417,10 @@ namespace JSAM
             musicHelpers[0] = musicHelpers[1];
             musicHelpers[1] = tempHelper;
 
-            musicSources[0].clip = audioFileMusicObjects[track].GetFile();
+            musicSources[0].clip = track.GetFile();
             musicSources[0].loop = true;
 
-            switch (audioFileMusicObjects[track].loopMode)
+            switch (track.loopMode)
             {
                 case LoopMode.NoLooping:
                     enableLoopPoints = false;
@@ -1724,14 +1434,14 @@ namespace JSAM
                     break;
                 case LoopMode.LoopWithLoopPoints:
                     enableLoopPoints = true;
-                    loopStartTime = audioFileMusicObjects[track].loopStart * musicSources[0].clip.frequency;
-                    loopEndTime = audioFileMusicObjects[track].loopEnd * musicSources[0].clip.frequency;
+                    loopStartTime = track.loopStart * musicSources[0].clip.frequency;
+                    loopEndTime = track.loopEnd * musicSources[0].clip.frequency;
                     musicSources[0].loop = false;
                     loopTrackAfterStopping = true;
                     break;
             }
 
-            bool ignoreTimeScale = audioFileMusicObjects[track].ignoreTimeScale;
+            bool ignoreTimeScale = track.ignoreTimeScale;
             if (timeScaledSounds && !ignoreTimeScale)
             {
                 if (Time.timeScale == 0)
@@ -1748,18 +1458,18 @@ namespace JSAM
                 if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
             }
 
-            musicSources[0].pitch = audioFileMusicObjects[track].startingPitch;
+            musicSources[0].pitch = track.startingPitch;
 
-            if (audioFileMusicObjects[track].playReversed)
+            if (track.playReversed)
             {
                 musicSources[0].pitch = -Mathf.Abs(musicSources[0].pitch);
                 musicSources[0].time = musicSources[0].clip.length - EPSILON;
             }
             else musicSources[0].time = 0;
 
-            clampBetweenLoopPoints = audioFileMusicObjects[track].clampToLoopPoints;
+            clampBetweenLoopPoints = track.clampToLoopPoints;
 
-            musicHelpers[0].Play(audioFileMusicObjects[track]);
+            musicHelpers[0].Play(track);
 
             musicSources[0].volume = 0;
 
@@ -1771,15 +1481,15 @@ namespace JSAM
             if (time > 0)
             {
                 if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
-                fadeInRoutine = StartCoroutine(FadeInMusic(time, ignoreTimeScale, audioFileMusicObjects[track]));
+                fadeInRoutine = StartCoroutine(FadeInMusic(time, ignoreTimeScale, track));
 
                 if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
                 fadeOutRoutine = StartCoroutine(FadeOutMusic(time, ignoreTimeScale));
             }
             else // Handle our user's incompetence somehow
             {
-                musicHelpers[0].Play(audioFileMusicObjects[track]);
-                musicSources[0].volume = GetTrueMusicVolumeInternal() * audioFileMusicObjects[track].relativeVolume;
+                musicHelpers[0].Play(track);
+                musicSources[0].volume = GetTrueMusicVolumeInternal() * track.relativeVolume;
                 musicHelpers[1].Stop();
                 Debug.LogWarning("AudioManager Warning! Your music fade duration should be set above 0 seconds. Consider using a non-fade otherwise.");
             }
@@ -1934,26 +1644,24 @@ namespace JSAM
         public void StopMusicInternal<T>(T track) where T : Enum
         {
             int t = Convert.ToInt32(track);
-            for (int i = 0; i < musicSources.Length; i++)
-            {
-                if (musicSources[i] == null) continue; // Sometimes AudioPlayerMusic calls StopMusic on scene stop
-                if (musicSources[i].clip == audioFileMusicObjects[t].GetFile())
-                {
-                    musicHelpers[i].Stop();
-                }
-            }
+            StopMusicInternal(audioFileMusicObjects[t]);
+        }
+
+        public void StopMusicInternal(int track)
+        {
+            StopMusicInternal(audioFileMusicObjects[track]);
         }
 
         /// <summary>
         /// Stops playback of the specified track
         /// </summary>
         /// <param name="track">The name of the track in question</param>
-        public void StopMusicInternal(int track)
+        public void StopMusicInternal(AudioFileMusicObject track)
         {
             for (int i = 0; i < musicSources.Length; i++)
             {
                 if (musicSources[i] == null) continue; // Sometimes AudioPlayerMusic calls StopMusic on scene stop
-                if (musicSources[i].clip == audioFileMusicObjects[track].GetFile())
+                if (musicSources[i].clip == track.GetFile())
                 {
                     musicHelpers[i].Stop();
                 }
@@ -2026,7 +1734,7 @@ namespace JSAM
         public static AudioSource PlaySound<T>(T sound, Transform trans = null) where T : Enum
         {
             int s = Convert.ToInt32(sound);
-            return instance.PlaySoundInternal(s, trans);
+            return instance.PlaySoundInternal(instance.audioFileObjects[s], trans);
         }
 
         /// <summary>
@@ -2038,13 +1746,30 @@ namespace JSAM
         /// <returns>The AudioSource playing the sound</returns>
         public AudioSource PlaySoundInternal(int s, Transform trans = null)
         {
+            return PlaySoundInternal(audioFileObjects[s], trans);
+        }
+
+        /// <summary>
+        /// If you are an advanced user and prefer to skip right to passing an AudioFileObject, then you are welcome to do so
+        /// </summary>
+        /// <param name="s">The AudioFileobject you want AudioManager to play</param>
+        /// <param name="trans">The transform of the sound's source</param>
+        /// <returns>The AudioSource playing the sound</returns>
+        public AudioSource PlaySoundInternal(AudioFileObject s, Transform trans = null)
+        {
             if (!Application.isPlaying) return null;
             int sourceIndex = GetAvailableSource();
             AudioSource a = sources[sourceIndex];
 
-            if (audioFileObjects[s].UsingLibrary())
+            if (s == null)
             {
-                AudioClip[] library = audioFileObjects[s].GetFiles().ToArray();
+                Debug.LogWarning("AudioManager warning! AudioFileObject supplied to PlaySoundInternal is null!");
+                return null;
+            }
+
+            if (s.UsingLibrary())
+            {
+                AudioClip[] library = s.GetFiles().ToArray();
                 do
                 {
                     a.clip = library[UnityEngine.Random.Range(0, library.Length)];
@@ -2052,11 +1777,11 @@ namespace JSAM
             }
             else
             {
-                a.clip = audioFileObjects[s].GetFile();
+                a.clip = s.GetFile();
             }
 
             if (sourcePositions.ContainsKey(a)) sourcePositions.Remove(a);
-            if (trans != null && audioFileObjects[s].spatialize)
+            if (trans != null && s.spatialize)
             {
                 sourcePositions[a] = trans;
                 a.transform.position = trans.position;
@@ -2064,6 +1789,11 @@ namespace JSAM
                 {
                     a.spatialBlend = 1;
                 }
+                if (s.maxDistance != 0)
+                {
+                    a.maxDistance = s.maxDistance;
+                }
+                else a.maxDistance = defaultSoundDistance;
             }
             else
             {
@@ -2074,9 +1804,9 @@ namespace JSAM
                 }
             }
 
-            a.pitch = GetRandomPitch(audioFileObjects[s]);
+            a.pitch = GetRandomPitch(s);
 
-            bool ignoreTimeScale = audioFileObjects[s].ignoreTimeScale;
+            bool ignoreTimeScale = s.ignoreTimeScale;
             if (timeScaledSounds && !ignoreTimeScale)
             {
                 if (Time.timeScale == 0)
@@ -2094,16 +1824,16 @@ namespace JSAM
             }
 
             //This is the base unchanged pitch
-            if (audioFileObjects[s].playReversed)
+            if (s.playReversed)
             {
                 a.pitch = -Mathf.Abs(a.pitch);
                 a.time = a.clip.length - -EPSILON;
             }
             else a.time = 0;
 
-            a.priority = (int)audioFileObjects[s].priority;
+            a.priority = (int)s.priority;
             a.loop = false;
-            helpers[sourceIndex].Play(audioFileObjects[s].delay, audioFileObjects[s]);
+            helpers[sourceIndex].Play(s.delay, s);
 
             return a;
         }
@@ -2140,7 +1870,7 @@ namespace JSAM
             AudioSource a = sources[GetAvailableSource()];
 
             if (sourcePositions.ContainsKey(a)) sourcePositions.Remove(a);
-            if (trans != null)
+            if (trans != null && spatialSound)
             {
                 sourcePositions[a] = trans;
                 a.transform.position = trans.position;
@@ -2148,6 +1878,7 @@ namespace JSAM
                 {
                     a.spatialBlend = 1;
                 }
+                a.maxDistance = defaultSoundDistance;
             }
             else
             {
@@ -2203,7 +1934,7 @@ namespace JSAM
         public static AudioSource PlaySoundLoop<T>(T sound, Transform trans = null) where T : Enum
         {
             int s = Convert.ToInt32(sound);
-            return instance.PlaySoundLoopInternal(s, trans);
+            return instance.PlaySoundLoopInternal(instance.audioFileObjects[s], trans);
         }
 
         /// <summary>
@@ -2218,14 +1949,25 @@ namespace JSAM
         /// <returns>The AudioSource playing the sound</returns>
         public AudioSource PlaySoundLoopInternal(int s, Transform trans = null)
         {
+            return PlaySoundLoopInternal(audioFileObjects[s], trans);
+        }
+
+        /// <summary>
+        /// If you are an advanced user and prefer to skip right to passing an AudioFileObject, then you are welcome to do so
+        /// </summary>
+        /// <param name="s">The AudioFileobject you want AudioManager to play</param>
+        /// <param name="trans">The transform of the sound's source</param>
+        /// <returns>The AudioSource playing the sound</returns>
+        public AudioSource PlaySoundLoopInternal(AudioFileObject s, Transform trans = null)
+        {
             if (!Application.isPlaying) return null;
             int sourceIndex = GetAvailableSource();
             AudioSource a = sources[sourceIndex];
             loopingSources.Add(a);
 
-            if (audioFileObjects[s].UsingLibrary())
+            if (s.UsingLibrary())
             {
-                AudioClip[] library = audioFileObjects[s].GetFiles().ToArray();
+                AudioClip[] library = s.GetFiles().ToArray();
                 do
                 {
                     a.clip = library[UnityEngine.Random.Range(0, library.Length)];
@@ -2233,24 +1975,29 @@ namespace JSAM
             }
             else
             {
-                a.clip = audioFileObjects[s].GetFile();
+                a.clip = s.GetFile();
             }
 
             if (sourcePositions.ContainsKey(a)) sourcePositions.Remove(a);
-            if (trans != null && audioFileObjects[s].spatialize)
+            if (trans != null && s.spatialize)
             {
                 sourcePositions[a] = trans;
                 a.transform.position = trans.position;
+                if (s.maxDistance != 0)
+                {
+                    a.maxDistance = s.maxDistance;
+                }
+                else a.maxDistance = defaultSoundDistance;
             }
             else
             {
                 a.transform.position = listener.transform.position;
             }
 
-            bool ignoreTimeScale = audioFileObjects[s].ignoreTimeScale;
+            bool ignoreTimeScale = s.ignoreTimeScale;
 
-            a.spatialBlend = (spatialSound && audioFileObjects[s].spatialize) ? 1 : 0;
-            a.priority = (int)audioFileObjects[s].priority;
+            a.spatialBlend = (spatialSound && s.spatialize) ? 1 : 0;
+            a.priority = (int)s.priority;
 
             if (timeScaledSounds && !ignoreTimeScale)
             {
@@ -2269,14 +2016,14 @@ namespace JSAM
                 if (ignoringTimeScale.Contains(a)) ignoringTimeScale.Remove(a);
             }
 
-            if (audioFileObjects[s].playReversed)
+            if (s.playReversed)
             {
                 a.pitch = -Mathf.Abs(a.pitch);
                 a.time = a.clip.length - EPSILON;
             }
             else a.time = 0;
             a.loop = true;
-            helpers[sourceIndex].Play(audioFileObjects[s].delay, audioFileObjects[s], true);
+            helpers[sourceIndex].Play(s.delay, s, true);
 
             return a;
         }
@@ -2320,6 +2067,7 @@ namespace JSAM
                 {
                     a.spatialBlend = 1;
                 }
+                a.maxDistance = defaultSoundDistance;
             }
             else
             {
@@ -2394,32 +2142,8 @@ namespace JSAM
         /// <param name="trans">For sources, helps with duplicate sounds</param>
         public static void StopSound<T>(T sound, Transform trans = null) where T : Enum
         {
-            instance.StopSoundInternal(sound, trans);
-        }
-
-        /// <summary>
-        /// This method can be shortened to AudioManager.StopSound.
-        /// Stops any sound playing through PlaySound it's variants immediately. 
-        /// For looping sounds, you are recommend to use StopSoundLoop
-        /// </summary>
-        /// <param name="s">The sound to be stopped</param>
-        /// <param name="trans">For sources, helps with duplicate sounds</param>
-        public void StopSoundInternal<T>(T sound, Transform trans = null) where T : Enum
-        {
             int s = Convert.ToInt32(sound);
-            for (int i = 0; i < sources.Count; i++)
-            {
-                if (audioFileObjects[s].HasAudioClip(sources[i].clip))
-                {
-                    if (trans != null)
-                    {
-                        if (sourcePositions[sources[i]] != trans) continue;
-                    }
-                    sources[i].Stop();
-                    helpers[i].Stop();
-                    return;
-                }
-            }
+            instance.StopSoundInternal(instance.audioFileObjects[s], trans);
         }
 
         /// <summary>
@@ -2429,9 +2153,19 @@ namespace JSAM
         /// <param name="t">For sources, helps with duplicate sounds</param>
         public void StopSoundInternal(int s, Transform t = null)
         {
+            StopSoundLoopInternal(audioFileObjects[s], t);
+        }
+
+        /// <summary>
+        /// Stops any sound playing through PlaySoundOnce and it's variants immediately 
+        /// </summary>
+        /// <param name="s">The sound to be stopped</param>
+        /// <param name="t">For sources, helps with duplicate sounds</param>
+        public void StopSoundInternal(AudioFileObject s, Transform t = null)
+        {
             for (int i = 0; i < sources.Count; i++)
             {
-                if (audioFileObjects[s].HasAudioClip(sources[i].clip))
+                if (s.HasAudioClip(sources[i].clip))
                 {
                     if (t != null)
                     {
@@ -2488,40 +2222,8 @@ namespace JSAM
         /// <param name="trans">Transform of the object playing the looping sound</param>
         public static void StopSoundLoop<T>(T sound, bool stopInstantly = false, Transform trans = null) where T : Enum
         {
-            instance.StopSoundLoopInternal(sound, stopInstantly, trans);
-        }
-
-        /// <summary>
-        /// This method can be shortened to AudioManager.StopSoundLoop. 
-        /// Stops a looping sound played using PlaySoundLoop and it's variants. 
-        /// To stop a basic a sound that was played through PlaySound and it's variants, use StopSound instead
-        /// </summary>
-        /// <param name="sound">The enum value for the sound in question. Check AudioManager for the proper value</param>
-        /// <param name="stopInstantly">Stops sound instantly if true</param>
-        /// <param name="t">Transform of the object playing the looping sound</param>
-        public void StopSoundLoopInternal<T>(T sound, bool stopInstantly = false, Transform t = null) where T : Enum
-        {
             int s = Convert.ToInt32(sound);
-            for (int i = 0; i < loopingSources.Count; i++)
-            {
-                if (loopingSources[i] == null) continue;
-                if (audioFileObjects[s].HasAudioClip(loopingSources[i].clip))
-                {
-                    int index = sources.IndexOf(loopingSources[i]);
-                    if (sourcePositions.ContainsKey(loopingSources[i])) // Check if the t field matters
-                    {
-                        if (t != sourcePositions[sources[index]])
-                            continue;
-                        sourcePositions.Remove(loopingSources[i]);
-                    }
-                    if (stopInstantly) loopingSources[i].Stop();
-                    loopingSources[i].GetComponent<AudioChannelHelper>().Stop(stopInstantly);
-                    loopingSources[i].loop = false;
-                    loopingSources.RemoveAt(i);
-                    return;
-                }
-            }
-            Debug.LogWarning("AudioManager Warning: Failed to stop sound " + sound.ToString() + "!");
+            instance.StopSoundLoopInternal(instance.audioFileObjects[s], stopInstantly, trans);
         }
 
         /// <summary>
@@ -2532,11 +2234,22 @@ namespace JSAM
         /// <param name="t">Transform of the object playing the looping sound</param>
         public void StopSoundLoopInternal(int s, bool stopInstantly = false, Transform t = null)
         {
+            StopSoundLoopInternal(audioFileObjects[s], stopInstantly, t);
+        }
+
+        /// <summary>
+        /// If you are an advanced user and prefer to skip right to passing an AudioFileObject, then you are welcome to do so
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="stopInstantly"></param>
+        /// <param name="t"></param>
+        public void StopSoundLoopInternal(AudioFileObject s, bool stopInstantly = false, Transform t = null)
+        {
             for (int i = 0; i < loopingSources.Count; i++)
             {
                 if (loopingSources[i] == null) continue;
 
-                if (audioFileObjects[s].HasAudioClip(loopingSources[i].clip))
+                if (s.HasAudioClip(loopingSources[i].clip))
                 {
                     int index = sources.IndexOf(loopingSources[i]);
                     if (sourcePositions.ContainsKey(loopingSources[i])) // Check if the t field matters
@@ -3160,22 +2873,7 @@ namespace JSAM
         public bool IsSoundPlayingInternal<T>(T sound, Transform trans = null) where T : Enum
         {
             int s = Convert.ToInt32(sound);
-            for (int i = 0; i < sources.Count; i++) // Loop through all sources
-            {
-                if (sources[i] == null) continue;
-                if (audioFileObjects[s].HasAudioClip(sources[i].clip) && sources[i].isPlaying) // If this source is playing the clip
-                {
-                    if (trans != null)
-                    {
-                        if (trans != sourcePositions[sources[i]]) // Continue if this isn't the specified source position
-                        {
-                            continue;
-                        }
-                    }
-                    return true;
-                }
-            }
-            return false;
+            return IsSoundPlayingInternal(s, trans);
         }
 
         /// <summary>
@@ -3188,10 +2886,21 @@ namespace JSAM
         /// <returns></returns>
         public bool IsSoundPlayingInternal(int s, Transform trans = null)
         {
+            return IsSoundPlayingInternal(s, trans);
+        }
+
+        /// <summary>
+        /// If you are an advanced user and prefer to skip right to passing an AudioFileObject, then you are welcome to do so
+        /// </summary>
+        /// <param name="sound">The enum value for the sound in question. Check AudioManager to see what Enum you should use</param>
+        /// <param name="trans">Specify is the sound is playing from that transform</param>
+        /// <returns></returns>
+        public bool IsSoundPlayingInternal(AudioFileObject s, Transform trans = null)
+        {
             for (int i = 0; i < sources.Count; i++) // Loop through all sources
             {
                 if (sources[i] == null) continue;
-                if (audioFileObjects[s].HasAudioClip(sources[i].clip) && sources[i].isPlaying) // If this source is playing the clip
+                if (s.HasAudioClip(sources[i].clip) && sources[i].isPlaying) // If this source is playing the clip
                 {
                     if (trans != null)
                     {
@@ -3264,14 +2973,7 @@ namespace JSAM
         public bool IsMusicPlayingInternal<T>(T music) where T : Enum
         {
             int a = Convert.ToInt32(music);
-            foreach (AudioSource m in musicSources)
-            {
-                if (m.clip == audioFileMusicObjects[a] && m.isPlaying)
-                {
-                    return true;
-                }
-            }
-            return false;
+            return IsMusicPlayingInternal(a);
         }
 
         /// <summary>
@@ -3282,9 +2984,19 @@ namespace JSAM
         /// <returns></returns>
         public bool IsMusicPlayingInternal(int a)
         {
+            return IsMusicPlayingInternal(audioFileMusicObjects[a]);
+        }
+
+        /// <summary>
+        /// If you are an advanced user and prefer to skip right to passing an AudioFileObject, then you are welcome to do so
+        /// </summary>
+        /// <param name="a">The enum of the music in question, check AudioManager to see what enums you can use</param>
+        /// <returns></returns>
+        public bool IsMusicPlayingInternal(AudioFileMusicObject a)
+        {
             foreach (AudioSource m in musicSources)
             {
-                if (m.clip == audioFileMusicObjects[a] && m.isPlaying)
+                if (m.clip == a.GetFile() && m.isPlaying)
                 {
                     return true;
                 }
@@ -3341,15 +3053,7 @@ namespace JSAM
         public bool IsSoundLoopingInternal<T>(T sound) where T : Enum
         {
             int s = Convert.ToInt32(sound);
-            foreach (AudioSource c in loopingSources)
-            {
-                if (c == null) continue;
-                if (audioFileObjects[s].HasAudioClip(c.clip))
-                {
-                    return true;
-                }
-            }
-            return false;
+            return IsSoundLoopingInternal(s);
         }
 
         /// <summary>
@@ -3360,10 +3064,15 @@ namespace JSAM
         /// <returns></returns>
         public bool IsSoundLoopingInternal(int sound)
         {
+            return IsSoundLoopingInternal(audioFileObjects[sound]);
+        }
+
+        public bool IsSoundLoopingInternal(AudioFileObject sound)
+        {
             foreach (AudioSource c in loopingSources)
             {
                 if (c == null) continue;
-                if (audioFileObjects[sound].HasAudioClip(c.clip))
+                if (sound.HasAudioClip(c.clip))
                 {
                     return true;
                 }

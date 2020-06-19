@@ -44,11 +44,13 @@ namespace JSAM
 
             GUIContent soundDesc = new GUIContent("Sound", "Sound that will be played");
 
-            int sound = serializedObject.FindProperty("sound").intValue;
+            string sound = serializedObject.FindProperty("sound").stringValue;
 
             using (new EditorGUI.DisabledScope(myScript.GetAttachedSound() != null))
             {
-                serializedObject.FindProperty("sound").intValue = EditorGUILayout.Popup(soundDesc, sound, options.ToArray());
+                int selected = options.IndexOf(sound);
+                if (selected == -1) selected = 0;
+                serializedObject.FindProperty("sound").stringValue = options[EditorGUILayout.Popup(soundDesc, selected, options.ToArray())];
             }
 
             GUIContent fileText = new GUIContent("Custom AudioClip", "Overrides the \"Sound\" parameter with an AudioClip if not null");
@@ -123,6 +125,11 @@ namespace JSAM
         {
             GameObject newPlayer = new GameObject("Audio Player");
             newPlayer.AddComponent<AudioPlayer>();
+            if (Selection.activeTransform != null)
+            {
+                newPlayer.transform.parent = Selection.activeTransform;
+                newPlayer.transform.localPosition = Vector3.zero;
+            }
             EditorGUIUtility.PingObject(newPlayer);
             Selection.activeGameObject = newPlayer;
             Undo.RegisterCreatedObjectUndo(newPlayer, "Added new Audio Player");

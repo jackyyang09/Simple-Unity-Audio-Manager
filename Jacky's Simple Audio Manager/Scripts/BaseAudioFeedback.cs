@@ -11,7 +11,7 @@ namespace JSAM
 
         [SerializeField]
         [HideInInspector]
-        public int sound;
+        public string sound;
 
         [Tooltip("If true, sound will keep playing in a loop according to it's settings until you make it stop")]
         [SerializeField]
@@ -45,10 +45,9 @@ namespace JSAM
         protected virtual void Start()
         {
             // Applies settings from the Audio File Object
-            if (soundFile == null)
+            if (soundFile == null && audioObject == null)
             {
-                audioObject = AudioManager.instance.GetSoundLibrary()[sound];
-
+                DesignateSound();
                 spatialSound = audioObject.spatialize;
                 priority = audioObject.priority;
                 pitchShift = audioObject.pitchShift;
@@ -63,5 +62,33 @@ namespace JSAM
         {
             return soundFile;
         }
+
+        void DesignateSound()
+        {
+            if (soundFile == null && sound != "")
+            {
+                if (!AudioManager.instance) return;
+                foreach (AudioFileObject a in AudioManager.instance.GetSoundLibrary())
+                {
+                    if (a.safeName == sound)
+                    {
+                        audioObject = a;
+                        return;
+                    }
+                }
+            }
+            if (audioObject == null)
+            {
+                audioObject = AudioManager.instance.GetSoundLibrary()[0];
+                if (audioObject != null) sound = audioObject.safeName;
+            }
+        }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (AudioManager.instance) DesignateSound();
+        }
+#endif
     }
 }

@@ -40,7 +40,7 @@ namespace JSAM
                 }
                 else
                 {
-                    source = AudioManager.instance.PlaySoundInternal(sound, sTransform);
+                    source = AudioManager.instance.PlaySoundInternal(audioObject, sTransform);
                 }
                 if (spatialSound)
                 {
@@ -60,7 +60,7 @@ namespace JSAM
                 }
                 else
                 {
-                    source = AudioManager.instance.PlaySoundInternal(sound, sTransform);
+                    source = AudioManager.instance.PlaySoundInternal(audioObject, sTransform);
                 }
                 if (spatialSound)
                 {

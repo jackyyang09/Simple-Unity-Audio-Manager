@@ -59,15 +59,20 @@ namespace JSAM
             {
                 if (loopSound)
                 {
-                    source = am.PlaySoundLoopInternal(sound, sTransform);
+                    source = am.PlaySoundLoopInternal(audioObject, sTransform);
                 }
-                else source = am.PlaySoundInternal(sound, sTransform);
+                else source = am.PlaySoundInternal(audioObject, sTransform);
             }
 
             // Ready to play again later
             activated = false;
 
             return source;
+        }
+
+        public void PlaySound()
+        {
+            Play();
         }
 
         /// <summary>
@@ -90,7 +95,7 @@ namespace JSAM
                 {
                     if (am.IsSoundLoopingInternal(soundFile))
                     {
-                        am.StopSoundLoopInternal(sound, true, sTransform);
+                        am.StopSoundLoopInternal(audioObject, true, sTransform);
                     }
                 }
             }
@@ -98,16 +103,16 @@ namespace JSAM
             {
                 if (!loopSound)
                 {
-                    if (am.IsSoundPlayingInternal(sound, sTransform))
+                    if (am.IsSoundPlayingInternal(audioObject, sTransform))
                     {
-                        am.StopSoundInternal(sound, sTransform);
+                        am.StopSoundInternal(audioObject, sTransform);
                     }
                 }
                 else
                 {
-                    if (am.IsSoundLoopingInternal(sound))
+                    if (am.IsSoundLoopingInternal(audioObject))
                     {
-                        am.StopSoundLoopInternal(sound, true, sTransform);
+                        am.StopSoundLoopInternal(audioObject, true, sTransform);
                     }
                 }
             }

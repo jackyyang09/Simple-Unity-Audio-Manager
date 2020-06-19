@@ -130,12 +130,13 @@ namespace JSAM
                 "pitchShift", "loopMode", "fadeMode", "playReversed" };
             if (myScript.GetFile() == null)
             {
-                propertiesToExclude.AddRange(new List<string>() { "m_Script", "useLibrary", "files",
-                "fadeMode", "clampBetweenLoopPoints", "startingPitch", "playReversed", "spatialize", "ignoreTimeScale" });
+                propertiesToExclude.AddRange(new List<string>() { "m_Script", "useLibrary", "files", "relativeVolume",
+                "fadeMode", "clampBetweenLoopPoints", "startingPitch", "playReversed", "spatialize", "ignoreTimeScale",
+                "delay", });
             }
             else
             {
-                propertiesToExclude.AddRange(new List<string>() { "m_Script", "useLibrary", "files" });
+                propertiesToExclude.AddRange(new List<string>() { "m_Script", "useLibrary", "files", "maxDistance" });
             }
 
             DrawPropertiesExcluding(serializedObject, propertiesToExclude.ToArray());
@@ -452,6 +453,8 @@ namespace JSAM
 
             if (showPlaybackTool)
             {
+                if (helperSource == null) CreateAudioHelper();
+
                 AudioClip music = myScript.GetFile();
                 Rect progressRect = ProgressBar(helperSource.time / music.length, GetInfoString());
 
@@ -758,13 +761,17 @@ namespace JSAM
                 helperObject = GameObject.Find("JSAM Audio Music Helper");
                 if (helperObject == null)
                     helperObject = new GameObject("JSAM Audio Music Helper");
-                helperSource = helperObject.AddComponent<AudioSource>();
                 helperObject.hideFlags = HideFlags.HideAndDontSave;
+                helperHelper = helperObject.AddComponent<AudioChannelHelper>();
+            }
+
+            if (helperSource == null)
+            {
+                helperSource = helperObject.AddComponent<AudioSource>();
                 helperSource.clip = ((AudioFileMusicObject)target).GetFile();
                 helperSource.time = 0;
-                helperHelper = helperObject.AddComponent<AudioChannelHelper>();
-                helperHelper.Init();
             }
+            helperHelper.Init();
         }
 
         void DestroyAudioHelper()

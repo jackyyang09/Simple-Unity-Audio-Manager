@@ -12,13 +12,36 @@ namespace JSAM
         static bool showAudioClipSettings = false;
         static bool showHowTo = false;
 
+        AudioPlayerMusic myScript;
+        List<string> options = new List<string>();
+
+        System.Type enumType = null;
+
+        SerializedProperty customSound;
+        SerializedProperty transitionMode;
+
+        SerializedProperty musicProperty;
+
+        private void OnEnable()
+        {
+            myScript = (AudioPlayerMusic)target;
+
+            enumType = AudioManager.instance.GetSceneMusicEnum();
+            foreach (string s in System.Enum.GetNames(enumType))
+            {
+                options.Add(s);
+            }
+
+            customSound = serializedObject.FindProperty("musicFile");
+            transitionMode = serializedObject.FindProperty("transitionMode");
+
+            musicProperty = serializedObject.FindProperty("music");
+        }
+
         public override void OnInspectorGUI()
         {
-            AudioPlayerMusic myScript = (AudioPlayerMusic)target;
+            if (myScript == null) return;
 
-            List<string> options = new List<string>();
-
-            System.Type enumType = null;
             if (!AudioManager.instance)
             {
                 EditorGUILayout.HelpBox("Could not find Audio Manager in the scene! This component needs AudioManager " +
@@ -26,17 +49,9 @@ namespace JSAM
             }
             else
             {
-                enumType = AudioManager.instance.GetSceneMusicEnum();
                 if (enumType == null)
                 {
                     EditorGUILayout.HelpBox("Could not find Audio File info! Try regenerating Audio Files in AudioManager!", MessageType.Error);
-                }
-                else
-                {
-                    foreach (string s in System.Enum.GetNames(enumType))
-                    {
-                        options.Add(s);
-                    }
                 }
             }
 
@@ -44,15 +59,16 @@ namespace JSAM
 
             GUIContent musicDesc = new GUIContent("Music", "Music that will be played");
 
-            int music = serializedObject.FindProperty("music").intValue;
+            string music = musicProperty.stringValue;
 
             using (new EditorGUI.DisabledScope(myScript.GetAttachedFile() != null))
             {
-                serializedObject.FindProperty("music").intValue = EditorGUILayout.Popup(musicDesc, music, options.ToArray());
+                int selected = options.IndexOf(music);
+                if (selected == -1) selected = 0;
+                musicProperty.stringValue = options[EditorGUILayout.Popup(musicDesc, selected, options.ToArray())];
             }
 
             GUIContent fileText = new GUIContent("Custom AudioClip", "Overrides the \"Music\" parameter with an AudioClip if not null");
-            SerializedProperty customSound = serializedObject.FindProperty("musicFile");
 
             EditorGUILayout.Space();
 
@@ -77,7 +93,7 @@ namespace JSAM
 
             GUIContent lontent = new GUIContent("Music Player Settings", "Modify settings specific to Audio Player Music");
             EditorGUILayout.LabelField(lontent, EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("transitionMode"));
+            EditorGUILayout.PropertyField(transitionMode);
             if (myScript.GetTransitionMode() != TransitionMode.None)
             {
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("keepPlaybackPosition"));
@@ -92,7 +108,10 @@ namespace JSAM
             EditorGUILayout.PropertyField(serializedObject.FindProperty("stopOnDisable"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("stopOnDestroy"));
 
-            serializedObject.ApplyModifiedProperties();
+            if (serializedObject.hasModifiedProperties)
+            {
+                serializedObject.ApplyModifiedProperties();
+            }
 
             EditorGUILayout.Space();
 
@@ -133,6 +152,11 @@ namespace JSAM
         {
             GameObject newPlayer = new GameObject("Audio Player Music");
             newPlayer.AddComponent<AudioPlayerMusic>();
+            if (Selection.activeTransform != null)
+            {
+                newPlayer.transform.parent = Selection.activeTransform;
+                newPlayer.transform.localPosition = Vector3.zero;
+            }
             EditorGUIUtility.PingObject(newPlayer);
             Selection.activeGameObject = newPlayer;
             Undo.RegisterCreatedObjectUndo(newPlayer, "Added new AudioPlayerMusic");

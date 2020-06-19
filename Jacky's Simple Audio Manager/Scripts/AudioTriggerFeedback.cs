@@ -37,7 +37,7 @@ namespace JSAM
             }
             else
             {
-                AudioManager.instance.PlaySoundInternal(sound, sTransform);
+                AudioManager.instance.PlaySoundInternal(audioObject, sTransform);
             }
         }
 

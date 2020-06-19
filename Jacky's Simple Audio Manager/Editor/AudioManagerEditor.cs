@@ -684,6 +684,11 @@ namespace JSAM
             {
                 string assetPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("Audio Manager t:GameObject")[0]);
                 GameObject newManager = (GameObject)Instantiate(AssetDatabase.LoadAssetAtPath(assetPath, typeof(GameObject)));
+                if (Selection.activeTransform != null)
+                {
+                    newManager.transform.parent = Selection.activeTransform;
+                    newManager.transform.localPosition = Vector3.zero;
+                }
                 newManager.name = newManager.name.Replace("(Clone)", string.Empty);
                 EditorGUIUtility.PingObject(newManager);
                 Selection.activeGameObject = newManager;

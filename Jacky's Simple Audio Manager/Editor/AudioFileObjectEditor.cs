@@ -156,7 +156,7 @@ namespace JSAM
 
             if (noFiles)
             {
-                excludedProperties.AddRange(new List<string>() { "relativeVolume", "spatialize", "loopSound",
+                excludedProperties.AddRange(new List<string>() { "relativeVolume", "spatialize", "loopSound", "maxDistance",
                     "priority", "startingPitch", "pitchShift", "playReversed", "delay", "ignoreTimeScale", "fadeMode" });
             }
 
@@ -287,6 +287,7 @@ namespace JSAM
 
             if (showPlaybackTool)
             {
+                if (helperSource == null) CreateAudioHelper();
                 ProgressBar(helperSource.time / playingClip.length, GetInfoString());
 
                 EditorGUILayout.BeginHorizontal();
@@ -380,7 +381,15 @@ namespace JSAM
                 {
                     Repaint();
                 }
-                HandleFading(myScript);
+
+                if (myScript.fadeMode != FadeMode.None)
+                {
+                    HandleFading(myScript);
+                }
+                else
+                {
+                    helperSource.volume = myScript.relativeVolume;
+                }
             }
             clipPlaying = (playingClip != null && helperSource.isPlaying);
         }
@@ -459,11 +468,15 @@ namespace JSAM
                 helperObject = GameObject.Find("JSAM Audio Helper");
                 if (helperObject == null)
                     helperObject = new GameObject("JSAM Audio Helper");
-                helperSource = helperObject.AddComponent<AudioSource>();
                 helperHelper = helperObject.AddComponent<AudioChannelHelper>();
-                helperHelper.Init();
                 helperObject.hideFlags = HideFlags.HideAndDontSave;
             }
+
+            if (helperSource == null)
+            {
+                helperSource = helperObject.AddComponent<AudioSource>();
+            }
+            helperHelper.Init();
         }
 
         void DestroyAudioHelper()
