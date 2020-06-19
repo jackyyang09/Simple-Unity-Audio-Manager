@@ -139,7 +139,7 @@ namespace JSAM
         }
 
         static bool positionsFoldout = false;
-        static Dictionary<SerializedProperty, bool> foldouts = new Dictionary<SerializedProperty, bool>();
+        static List<bool> foldouts = new List<bool>();
 
         public void DrawPositionsEditor()
         {
@@ -159,20 +159,19 @@ namespace JSAM
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                     SerializedProperty position = positionsProperty.GetArrayElementAtIndex(i);
-#if UNITY_2019_4
-                    if (!foldouts.ContainsKey(position)) foldouts.Add(position, false);
-#elif UNITY_2019_3
-                    if (!foldouts.ContainsKey(position)) foldouts.Add(position, true);
-#endif
-                    string arrow = (foldouts[position]) ? "▼" : "▶";
+                    if (foldouts.Count < i + 1)
+                    {
+                        foldouts.Add(false);
+                    }
+                    string arrow = (foldouts[i]) ? "▼" : "▶";
                     EditorGUILayout.BeginHorizontal();
-                    foldouts[position] = EditorGUILayout.Foldout(foldouts[position], new GUIContent("    " + arrow + "Zone " + i), true, EditorStyles.boldLabel);
+                    foldouts[i] = EditorGUILayout.Foldout(foldouts[i], new GUIContent("    " + arrow + " Zone " + i), true, EditorStyles.boldLabel);
                     if (GUILayout.Button(new GUIContent("x", "Remove this transform"), new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {
                         markedForDeletion.Add(i);
                     }
                     EditorGUILayout.EndHorizontal();
-                    if (true)
+                    if (foldouts[i])
                     {
                         position.vector3Value = EditorGUILayout.Vector3Field(new GUIContent("Position"), position.vector3Value);
 
@@ -197,7 +196,7 @@ namespace JSAM
 
                 foreach (int item in markedForDeletion)
                 {
-                    foldouts.Remove(positionsProperty.GetArrayElementAtIndex(item));
+                    foldouts.RemoveAt(item);
                     positionsProperty.DeleteArrayElementAtIndex(item);
                 }
             }
