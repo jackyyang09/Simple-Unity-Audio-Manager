@@ -26,6 +26,7 @@ Check out the [Releases](https://github.com/jackyyang09/Simple-Unity-Audio-Manag
 If you'd like to see what parts of AudioManager I'm actively working on, you can check out the Trello [here!](https://trello.com/b/r6237lmD/audiomanager)
 
 ## How to Use
+NOTE: Everything below here pertains to releases of AudioManager version 1.4.1 and below. As of AudioManager 2.0, the workflow listed below has been replaced with something completely different. Check out the [wiki](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/wiki) and download the latest test build of version 2.0 in the Releases page if you'd like to ensure your project is using the latest supported build of AudioManager.
 
 1. Download the latest package [here](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/releases/download/1.4.1/JSAM.Audio.Manager.1.4.1.unitypackage) to get started!
 2. Import the package into your Unity project
