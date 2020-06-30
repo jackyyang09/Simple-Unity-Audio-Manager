@@ -97,7 +97,8 @@ namespace JSAM
             if (myScript.GetTransitionMode() != TransitionMode.None)
             {
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("keepPlaybackPosition"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("musicFadeTime"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("musicFadeInTime"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("musicFadeOutTime"));
             }
             EditorGUILayout.PropertyField(serializedObject.FindProperty("restartOnReplay"));
 

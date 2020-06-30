@@ -36,7 +36,7 @@ namespace JSAM
             if (playOnStart && !activated)
             {
                 activated = true;
-                Play();
+                StartCoroutine(PlayOnEnable());
             }
         }
 

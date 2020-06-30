@@ -34,8 +34,8 @@ namespace JSAM
             serializedObject.Update();
 
             AudioManager myScript = (AudioManager)target;
-
-            List<string> excludedProperties = new List<string> { "m_Script" };
+                    
+            List<string> excludedProperties = new List<string> { "m_Script", "audioFileObjects", "audioFileMusicObjects" };
 
             GUIContent content;
 

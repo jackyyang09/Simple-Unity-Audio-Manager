@@ -95,8 +95,8 @@ namespace JSAM
             List<string> excludedProperties = new List<string>
             {
                 "m_Script", "musicFile", "playOnStart", "playOnEnable", "spatializeSound", "loopMode",
-                        "stopOnDisable", "stopOnDestroy", "keepPlaybackPosition", "restartOnReplay", "musicFadeTime",
-                "transitionMode", "positions", "maxDistance", "minDistance"
+                        "stopOnDisable", "stopOnDestroy", "keepPlaybackPosition", "restartOnReplay", "musicFadeInTime",
+                "musicFadeOutTime", "transitionMode", "positions", "maxDistance", "minDistance"
             };
 
             DrawPropertiesExcluding(serializedObject, excludedProperties.ToArray());
@@ -213,6 +213,9 @@ namespace JSAM
 
                 minDistanceProperty.InsertArrayElementAtIndex(index);
                 minDistanceProperty.GetArrayElementAtIndex(index).floatValue = 10;
+
+                positionsFoldout = true;
+                foldouts.Add(true);
             }
 
             if (GUILayout.Button("Add New Position At Local Origin"))
@@ -226,6 +229,9 @@ namespace JSAM
 
                 minDistanceProperty.InsertArrayElementAtIndex(index);
                 minDistanceProperty.GetArrayElementAtIndex(index).floatValue = 10;
+
+                positionsFoldout = true;
+                foldouts.Add(true);
             }
             EditorGUILayout.EndHorizontal();
         }
@@ -244,6 +250,21 @@ namespace JSAM
                 }
             }
             isSharing = false;
+        }
+
+        [MenuItem("GameObject/Audio/JSAM/Audio Music Zone", false, 1)]
+        public static void AddAudioMusicZone()
+        {
+            GameObject newPlayer = new GameObject("Audio Music Zone");
+            newPlayer.AddComponent<AudioMusicZone>();
+            if (Selection.activeTransform != null)
+            {
+                newPlayer.transform.parent = Selection.activeTransform;
+                newPlayer.transform.localPosition = Vector3.zero;
+            }
+            EditorGUIUtility.PingObject(newPlayer);
+            Selection.activeGameObject = newPlayer;
+            Undo.RegisterCreatedObjectUndo(newPlayer, "Added new Audio Player");
         }
     }
 }

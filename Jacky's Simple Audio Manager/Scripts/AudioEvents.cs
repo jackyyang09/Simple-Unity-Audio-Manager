@@ -28,7 +28,7 @@ namespace JSAM
             enums.AddRange(System.Enum.GetNames(enumType));
             int index = enums.IndexOf(name);
 
-            if (index > 0)
+            if (index > -1)
             {
                 AudioManager.instance.PlaySoundInternal(index, transform);
             }

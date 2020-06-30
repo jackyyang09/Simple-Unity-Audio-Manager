@@ -7861,7 +7861,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd13adbb36a3a614fafbec256720d4c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  music: 0
+  music: BGM
   spatializeSound: 0
   transitionMode: 0
   keepPlaybackPosition: 0

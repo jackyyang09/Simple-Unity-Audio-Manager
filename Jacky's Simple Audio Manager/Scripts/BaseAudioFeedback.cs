@@ -10,7 +10,6 @@ namespace JSAM
         protected bool spatialSound = true;
 
         [SerializeField]
-        [HideInInspector]
         public string sound;
 
         [Tooltip("If true, sound will keep playing in a loop according to it's settings until you make it stop")]
@@ -34,6 +33,8 @@ namespace JSAM
         [HideInInspector]
         [Tooltip("Overrides the \"Sound\" parameter with an AudioClip if not null")]
         protected AudioClip soundFile;
+        [SerializeField]
+        [HideInInspector]
         protected AudioFileObject audioObject;
 
         /// <summary>
@@ -68,6 +69,7 @@ namespace JSAM
             if (soundFile == null && sound != "")
             {
                 if (!AudioManager.instance) return;
+                print(AudioManager.instance.gameObject.scene.name + " " + sound);
                 foreach (AudioFileObject a in AudioManager.instance.GetSoundLibrary())
                 {
                     if (a.safeName == sound)

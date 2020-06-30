@@ -49,10 +49,8 @@ namespace JSAM
     public class AudioManager : MonoBehaviour
     {
         [SerializeField]
-        [HideInInspector]
         List<AudioFileObject> audioFileObjects = new List<AudioFileObject>();
         [SerializeField]
-        [HideInInspector]
         List<AudioFileMusicObject> audioFileMusicObjects = new List<AudioFileMusicObject>();
 
         [SerializeField]
@@ -1339,6 +1337,8 @@ namespace JSAM
         /// <param name="time">Fade duration</param>
         public void FadeMusicOutInternal(float time)
         {
+            // Because this method can get called OnDestroy
+            if (musicSources[1] == null) return;
             musicSources[1].clip = null;
             musicSources[1].loop = false;
 
@@ -1783,7 +1783,7 @@ namespace JSAM
             if (sourcePositions.ContainsKey(a)) sourcePositions.Remove(a);
             if (trans != null && s.spatialize)
             {
-                sourcePositions[a] = trans;
+                sourcePositions.Add(a, trans);
                 a.transform.position = trans.position;
                 if (spatialSound)
                 {
@@ -1872,7 +1872,7 @@ namespace JSAM
             if (sourcePositions.ContainsKey(a)) sourcePositions.Remove(a);
             if (trans != null && spatialSound)
             {
-                sourcePositions[a] = trans;
+                sourcePositions.Add(a, trans);
                 a.transform.position = trans.position;
                 if (spatialSound)
                 {
@@ -1981,7 +1981,7 @@ namespace JSAM
             if (sourcePositions.ContainsKey(a)) sourcePositions.Remove(a);
             if (trans != null && s.spatialize)
             {
-                sourcePositions[a] = trans;
+                sourcePositions.Add(a, trans);
                 a.transform.position = trans.position;
                 if (s.maxDistance != 0)
                 {
@@ -2061,7 +2061,7 @@ namespace JSAM
             if (sourcePositions.ContainsKey(a)) sourcePositions.Remove(a);
             if (trans != null)
             {
-                sourcePositions[a] = trans;
+                sourcePositions.Add(a, trans);
                 a.transform.position = trans.position;
                 if (spatialSound)
                 {
@@ -2147,7 +2147,7 @@ namespace JSAM
         }
 
         /// <summary>
-        /// Stops any sound playing through PlaySoundOnce and it's variants immediately 
+        /// Stops any sound playing through PlaySound and it's variants immediately 
         /// </summary>
         /// <param name="s">The sound to be stopped</param>
         /// <param name="t">For sources, helps with duplicate sounds</param>
@@ -2157,7 +2157,7 @@ namespace JSAM
         }
 
         /// <summary>
-        /// Stops any sound playing through PlaySoundOnce and it's variants immediately 
+        /// Stops any sound playing through PlaySound and it's variants immediately 
         /// </summary>
         /// <param name="s">The sound to be stopped</param>
         /// <param name="t">For sources, helps with duplicate sounds</param>
@@ -2169,7 +2169,10 @@ namespace JSAM
                 {
                     if (t != null)
                     {
-                        if (sourcePositions[sources[i]] != t) continue;
+                        if (sourcePositions.ContainsKey(sources[i]))
+                        {
+                            if (sourcePositions[sources[i]] != t) continue;
+                        }
                     }
                     sources[i].Stop();
                     helpers[i].Stop();
@@ -2204,7 +2207,10 @@ namespace JSAM
                 {
                     if (t != null)
                     {
-                        if (sourcePositions[sources[i]] != t) continue;
+                        if (sourcePositions.ContainsKey(sources[i]))
+                        {
+                            if (sourcePositions[sources[i]] != t) continue;
+                        }
                     }
                     sources[i].Stop();
                     helpers[i].Stop();
@@ -2904,9 +2910,12 @@ namespace JSAM
                 {
                     if (trans != null)
                     {
-                        if (trans != sourcePositions[sources[i]]) // Continue if this isn't the specified source position
+                        if (sourcePositions.ContainsKey(sources[i]))
                         {
-                            continue;
+                            if (trans != sourcePositions[sources[i]]) // Continue if this isn't the specified source position
+                            {
+                                continue;
+                            }
                         }
                     }
                     return true;
@@ -2943,9 +2952,12 @@ namespace JSAM
                 {
                     if (trans != null)
                     {
-                        if (trans != sourcePositions[sources[i]]) // Continue if this isn't the specified source position
+                        if (sourcePositions.ContainsKey(sources[i]))
                         {
-                            continue;
+                            if (trans != sourcePositions[sources[i]]) // Continue if this isn't the specified source position
+                            {
+                                continue;
+                            }
                         }
                     }
                     return true;
@@ -3076,7 +3088,6 @@ namespace JSAM
                 {
                     return true;
                 }
-
             }
             return false;
         }
@@ -3296,6 +3307,7 @@ namespace JSAM
             foreach (AudioFileObject a in audioFileObjects)
             {
                 if (a == null) audioFileObjects.Remove(a); // May as well remove it if it's missing
+                if (a.category == null) a.category = "";
                 if (a.category != "" && a.category != "Hidden")
                 {
                     if (categories.Contains(a.category)) continue;

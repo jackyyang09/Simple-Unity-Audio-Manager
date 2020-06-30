@@ -28,7 +28,10 @@ namespace JSAM
         protected bool restartOnReplay = false;
 
         [SerializeField]
-        protected float musicFadeTime = 0;
+        protected float musicFadeInTime = 0;
+
+        [SerializeField]
+        protected float musicFadeOutTime = 0;
 
         [Tooltip("Standard looping disregards all loop point logic, loop point use is enabled in the audio music file")]
         [SerializeField]

@@ -196,7 +196,6 @@ namespace JSAM
         /// <summary>
         /// Don't touch this unless you're modifying AudioManager functionality
         /// </summary>
-        [HideInInspector]
         public string safeName = "";
 
         [SerializeField, HideInInspector] public AudioChorusObj chorusFilter;

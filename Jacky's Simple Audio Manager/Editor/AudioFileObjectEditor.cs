@@ -109,7 +109,7 @@ namespace JSAM
                 }
             }
 
-            List<string> excludedProperties = new List<string>() { "m_Script", "file", "files" };
+            List<string> excludedProperties = new List<string>() { "m_Script", "file", "files", "safeName" };
 
             if (myScript.UsingLibrary()) // Swap file with files
             {
@@ -157,7 +157,9 @@ namespace JSAM
             if (noFiles)
             {
                 excludedProperties.AddRange(new List<string>() { "relativeVolume", "spatialize", "loopSound", "maxDistance",
-                    "priority", "startingPitch", "pitchShift", "playReversed", "delay", "ignoreTimeScale", "fadeMode" });
+                    "priority", "startingPitch", "pitchShift", "playReversed", "delay", "ignoreTimeScale", "fadeMode",
+                    "safeName"
+                });
             }
 
             DrawPropertiesExcluding(serializedObject, excludedProperties.ToArray());

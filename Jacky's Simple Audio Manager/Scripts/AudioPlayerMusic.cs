@@ -41,7 +41,7 @@ namespace JSAM
 
             if (playOnStart)
             {
-                Play();
+                StartCoroutine(PlayDelayed());
             }
         }
 
@@ -65,10 +65,10 @@ namespace JSAM
                             sourceBeingUsed = am.PlayMusicInternal(musicFile, loopMode > LoopMode.NoLooping);
                             break;
                         case TransitionMode.FadeFromSilence:
-                            sourceBeingUsed = am.FadeMusic(musicFile, musicFadeTime, loopMode > LoopMode.NoLooping);
+                            sourceBeingUsed = am.FadeMusic(musicFile, musicFadeInTime, loopMode > LoopMode.NoLooping);
                             break;
                         case TransitionMode.Crossfade:
-                            sourceBeingUsed = am.CrossfadeMusicInternal(musicFile, musicFadeTime, keepPlaybackPosition);
+                            sourceBeingUsed = am.CrossfadeMusicInternal(musicFile, musicFadeInTime, keepPlaybackPosition);
                             break;
                     }
                 }
@@ -89,10 +89,10 @@ namespace JSAM
                             sourceBeingUsed = am.PlayMusicInternal(audioObject);
                             break;
                         case TransitionMode.FadeFromSilence:
-                            sourceBeingUsed = am.FadeMusicInternal(audioObject, musicFadeTime);
+                            sourceBeingUsed = am.FadeMusicInternal(audioObject, musicFadeInTime);
                             break;
                         case TransitionMode.Crossfade:
-                            sourceBeingUsed = am.CrossfadeMusicInternal(audioObject, musicFadeTime, keepPlaybackPosition);
+                            sourceBeingUsed = am.CrossfadeMusicInternal(audioObject, musicFadeInTime, keepPlaybackPosition);
                             break;
                     }
                 }
@@ -105,11 +105,29 @@ namespace JSAM
 
             if (musicFile != null)
             {
-                am.StopMusicInternal(musicFile);
+                switch (transitionMode)
+                {
+                    case TransitionMode.None:
+                        am.StopMusicInternal(musicFile);
+                        break;
+                    case TransitionMode.FadeFromSilence:
+                    case TransitionMode.Crossfade:
+                        am.FadeMusicOutInternal(musicFadeOutTime);
+                        break;
+                }
             }
             else
             {
-                am.StopMusicInternal(audioObject);
+                switch (transitionMode)
+                {
+                    case TransitionMode.None:
+                        am.StopMusicInternal(audioObject);
+                        break;
+                    case TransitionMode.FadeFromSilence:
+                    case TransitionMode.Crossfade:
+                        am.FadeMusicOutInternal(musicFadeOutTime);
+                        break;
+                }
             }
 
             sourceBeingUsed = null;
@@ -135,6 +153,7 @@ namespace JSAM
 
         private void OnEnable()
         {
+            if (audioObject == null) DesignateSound();
             if (playOnEnable)
             {
                 if (playRoutine != null) StopCoroutine(playRoutine);
