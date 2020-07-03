@@ -9,29 +9,29 @@ namespace JSAM
     [CanEditMultipleObjects]
     public class AudioPlayerEditor : Editor
     {
+        AudioPlayer myScript;
+        List<string> options = new List<string>();
+        System.Type enumType = null;
+
+        SerializedProperty sound;
+        SerializedProperty soundFile;
+        SerializedProperty loopSound;
+        SerializedProperty onStart;
+        SerializedProperty onEnable;
+        SerializedProperty onDisable;
+        SerializedProperty onDestroy;
+
         static bool showAudioClipSettings = false;
         static bool showHowTo = false;
 
-        public override void OnInspectorGUI()
+        private void OnEnable()
         {
-            AudioPlayer myScript = (AudioPlayer)target;
+            myScript = (AudioPlayer)target;
 
-            List<string> options = new List<string>();
-
-            System.Type enumType = null;
-            if (!AudioManager.instance)
-            {
-                EditorGUILayout.HelpBox("Could not find Audio Manager in the scene! This component needs AudioManager " +
-                    "in order to function!", MessageType.Error);
-            }
-            else 
+            if (AudioManager.instance)
             {
                 enumType = AudioManager.instance.GetSceneSoundEnum();
-                if (enumType == null)
-                {
-                    EditorGUILayout.HelpBox("Could not find Audio File info! Try regenerating Audio Files in AudioManager!", MessageType.Error);
-                }
-                else
+                if (enumType != null)
                 {
                     foreach (string s in System.Enum.GetNames(enumType))
                     {
@@ -40,51 +40,66 @@ namespace JSAM
                 }
             }
 
+            sound = serializedObject.FindProperty("sound");
+            soundFile = serializedObject.FindProperty("soundFile");
+            loopSound = serializedObject.FindProperty("loopSound");
+            onStart = serializedObject.FindProperty("onStart");
+            onEnable = serializedObject.FindProperty("onEnable");
+            onDisable = serializedObject.FindProperty("onDisable");
+            onDestroy = serializedObject.FindProperty("onDestroy");
+        }
+
+        public override void OnInspectorGUI()
+        {
+            if (myScript == null) return;
+
+            serializedObject.Update();
+
+            if (!AudioManager.instance)
+            {
+                EditorGUILayout.HelpBox("Could not find Audio Manager in the scene! This component needs AudioManager " +
+                    "in order to function!", MessageType.Error);
+            }
+            else 
+            {
+                if (enumType == null)
+                {
+                    EditorGUILayout.HelpBox("Could not find Audio File info! Try regenerating Audio Files in AudioManager!", MessageType.Error);
+                }
+            }
+
             EditorGUILayout.LabelField("Choose a Sound to Play", EditorStyles.boldLabel);
 
             GUIContent soundDesc = new GUIContent("Sound", "Sound that will be played");
 
-            string sound = serializedObject.FindProperty("sound").stringValue;
-
-            using (new EditorGUI.DisabledScope(myScript.GetAttachedSound() != null))
+            int selected = options.IndexOf(sound.stringValue);
+            if (selected == -1) selected = 0;
+            if (options.Count > 0)
             {
-                int selected = options.IndexOf(sound);
-                if (selected == -1) selected = 0;
-                serializedObject.FindProperty("sound").stringValue = options[EditorGUILayout.Popup(soundDesc, selected, options.ToArray())];
+                sound.stringValue = options[EditorGUILayout.Popup(soundDesc, selected, options.ToArray())];
             }
-
-            GUIContent fileText = new GUIContent("Custom AudioClip", "Overrides the \"Sound\" parameter with an AudioClip if not null");
-            SerializedProperty customSound = serializedObject.FindProperty("soundFile");
-
-            EditorGUILayout.Space();
-
-            GUIContent fontent = new GUIContent("Custom AudioClip Settings", "These settings only apply if you input your own custom AudioClip rather than choosing from the generated Audio Library");
-            if (myScript.GetAttachedSound() == null)
-                showAudioClipSettings = EditorGUILayout.Foldout(showAudioClipSettings, fontent);
             else
-                showAudioClipSettings = EditorGUILayout.BeginFoldoutHeaderGroup(showAudioClipSettings, fontent);
-            if (showAudioClipSettings)
             {
-                EditorGUILayout.ObjectField(customSound, fileText);
-                using (new EditorGUI.DisabledScope(myScript.GetAttachedSound() == null))
+                using (new EditorGUI.DisabledScope(true))
                 {
-                    DrawPropertiesExcluding(serializedObject, new[] { "m_Script", "soundFile", "playOnStart", "playOnEnable", "stopOnDisable", "stopOnDestroy", "loopSound" });
+                    EditorGUILayout.Popup(soundDesc, selected, new string[] {"<None>"});
                 }
             }
-            if (myScript.GetAttachedSound() != null)
-                EditorGUILayout.EndFoldoutHeaderGroup();
 
             EditorGUILayout.Space();
 
             GUIContent lontent = new GUIContent("Audio Player Settings", "Modify settings specific to the Audio Player");
             EditorGUILayout.LabelField(lontent, EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("loopSound"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("playOnStart"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("playOnEnable"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("stopOnDisable"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("stopOnDestroy"));
+            EditorGUILayout.PropertyField(loopSound);
+            EditorGUILayout.PropertyField(onStart);
+            EditorGUILayout.PropertyField(onEnable);
+            EditorGUILayout.PropertyField(onDisable);
+            EditorGUILayout.PropertyField(onDestroy);
 
-            serializedObject.ApplyModifiedProperties();
+            if (serializedObject.hasModifiedProperties)
+            {
+                serializedObject.ApplyModifiedProperties();
+            }
 
             EditorGUILayout.Space();
 

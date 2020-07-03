@@ -18,6 +18,7 @@ MonoBehaviour:
   category: Looping
   relativeVolume: 0.4
   spatialize: 0
+  maxDistance: 0
   priority: 128
   startingPitch: 1
   pitchShift: 1
@@ -75,7 +76,7 @@ MonoBehaviour:
     diffusion: 100
     density: 100
   clampToLoopPoints: 0
-  loopMode: 1
+  loopMode: 2
   loopStart: 3.820408
   loopEnd: 12.800001
   bpm: 160

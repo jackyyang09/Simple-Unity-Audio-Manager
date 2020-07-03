@@ -10,8 +10,8 @@ namespace JSAM
         enum CollisionEvent
         {
             OnCollisionEnter,
-            OnCollisionStay,
-            OnCollisionExit
+            OnCollisionExit,
+            OnCollisionStay
         }
 
         [Header("Collision Settings")]
@@ -34,14 +34,7 @@ namespace JSAM
             if (Contains(collidesWith, collision.gameObject.layer))
             {
                 AudioSource source = null;
-                if (soundFile != null)
-                {
-                    source = AudioManager.instance.PlaySoundInternal(soundFile, sTransform, priority, pitchShift);
-                }
-                else
-                {
-                    source = AudioManager.instance.PlaySoundInternal(audioObject, sTransform);
-                }
+                source = AudioManager.instance.PlaySoundInternal(audioObject, sTransform);
                 if (spatialSound)
                 {
                     source.gameObject.transform.position = collision.GetContact(0).point;
@@ -54,14 +47,7 @@ namespace JSAM
             if (Contains(collidesWith, collision.gameObject.layer))
             {
                 AudioSource source = null;
-                if (soundFile != null)
-                {
-                    source = AudioManager.instance.PlaySoundInternal(soundFile, sTransform, priority, pitchShift);
-                }
-                else
-                {
-                    source = AudioManager.instance.PlaySoundInternal(audioObject, sTransform);
-                }
+                source = AudioManager.instance.PlaySoundInternal(audioObject, sTransform);
                 if (spatialSound)
                 {
                     source.gameObject.transform.position = collision.GetContact(0).point;

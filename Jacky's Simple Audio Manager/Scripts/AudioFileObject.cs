@@ -124,8 +124,9 @@ namespace JSAM
         [SerializeField]
         public List<AudioClip> files = new List<AudioClip>();
 
-        [HideInInspector]
-        public bool useLibrary;
+        [HideInInspector] public bool useLibrary;
+        [HideInInspector] public bool neverRepeat;
+        [HideInInspector] public int lastClipIndex = -1;
 
         [HideInInspector]
         public string category = "";
@@ -142,7 +143,7 @@ namespace JSAM
         public bool spatialize;
 
         [SerializeField]
-        [Tooltip("If set above 0, sound can be heard from up to this distance before finally fading away. Good for ambient sounds. Only works if \"spatialize\" is set to true.")]
+        [Tooltip("If set above 0, sound can be heard from up to this distance before finally fading away. Acts as an override to the max distance value set in the AudioSource prefab. Good for ambient sounds. Only works if \"spatialize\" is set to true.")]
         public float maxDistance;
 
         [Tooltip("If there are several sounds playing at once, sounds with higher priority will be culled by Unity's sound system later than sounds with lower priority. \"Music\" has the absolute highest priority and \"Spam\" has the lowest.")]
@@ -204,6 +205,11 @@ namespace JSAM
         [SerializeField, HideInInspector] public AudioLowPassObj lowPassFilter;
         [SerializeField, HideInInspector] public AudioHighPassObj highPassFilter;
         [SerializeField, HideInInspector] public AudioReverbObj reverbFilter;
+
+        public void Initialize()
+        {
+            lastClipIndex = -1;
+        }
 
         public AudioClip GetFile()
         {

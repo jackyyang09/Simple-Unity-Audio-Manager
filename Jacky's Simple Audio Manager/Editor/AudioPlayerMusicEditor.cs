@@ -9,38 +9,60 @@ namespace JSAM
     [CanEditMultipleObjects]
     public class AudioPlayerMusicEditor : Editor
     {
-        static bool showAudioClipSettings = false;
-        static bool showHowTo = false;
-
         AudioPlayerMusic myScript;
         List<string> options = new List<string>();
-
         System.Type enumType = null;
 
-        SerializedProperty customSound;
+        SerializedProperty musicProperty;
         SerializedProperty transitionMode;
 
-        SerializedProperty musicProperty;
+        SerializedProperty keepPlaybackPosition;
+        SerializedProperty musicFadeInTime;
+        SerializedProperty musicFadeOutTime;
+        SerializedProperty restartOnReplay;
+
+        SerializedProperty onStart;
+        SerializedProperty onEnable;
+        SerializedProperty onDisable;
+        SerializedProperty onDestroy;
+
+        static bool showAudioClipSettings = false;
+        static bool showHowTo = false;
 
         private void OnEnable()
         {
             myScript = (AudioPlayerMusic)target;
 
-            enumType = AudioManager.instance.GetSceneMusicEnum();
-            foreach (string s in System.Enum.GetNames(enumType))
+            if (AudioManager.instance)
             {
-                options.Add(s);
+                enumType = AudioManager.instance.GetSceneMusicEnum();
+                if (enumType != null)
+                {
+                    foreach (string s in System.Enum.GetNames(enumType))
+                    {
+                        options.Add(s);
+                    }
+                }
             }
 
-            customSound = serializedObject.FindProperty("musicFile");
-            transitionMode = serializedObject.FindProperty("transitionMode");
-
             musicProperty = serializedObject.FindProperty("music");
+            transitionMode = serializedObject.FindProperty("transitionMode");
+            keepPlaybackPosition = serializedObject.FindProperty("keepPlaybackPosition");
+            musicFadeInTime = serializedObject.FindProperty("musicFadeInTime");
+            musicFadeOutTime = serializedObject.FindProperty("musicFadeOutTime");
+            restartOnReplay = serializedObject.FindProperty("restartOnReplay");
+
+            onStart = serializedObject.FindProperty("onStart");
+            onEnable = serializedObject.FindProperty("onEnable");
+            onDisable = serializedObject.FindProperty("onDisable");
+            onDestroy = serializedObject.FindProperty("onDestroy");
         }
 
         public override void OnInspectorGUI()
         {
             if (myScript == null) return;
+
+            serializedObject.Update();
 
             if (!AudioManager.instance)
             {
@@ -59,55 +81,36 @@ namespace JSAM
 
             GUIContent musicDesc = new GUIContent("Music", "Music that will be played");
 
-            string music = musicProperty.stringValue;
-
-            using (new EditorGUI.DisabledScope(myScript.GetAttachedFile() != null))
+            int selected = options.IndexOf(musicProperty.stringValue);
+            if (selected == -1) selected = 0;
+            if (options.Count > 0)
             {
-                int selected = options.IndexOf(music);
-                if (selected == -1) selected = 0;
                 musicProperty.stringValue = options[EditorGUILayout.Popup(musicDesc, selected, options.ToArray())];
             }
-
-            GUIContent fileText = new GUIContent("Custom AudioClip", "Overrides the \"Music\" parameter with an AudioClip if not null");
-
-            EditorGUILayout.Space();
-
-            GUIContent fontent = new GUIContent("Custom AudioClip Settings", "These settings only apply if you input your own custom AudioClip rather than choosing from the generated Audio Library");
-            if (myScript.GetAttachedFile() == null)
-                showAudioClipSettings = EditorGUILayout.Foldout(showAudioClipSettings, fontent);
             else
-                showAudioClipSettings = EditorGUILayout.BeginFoldoutHeaderGroup(showAudioClipSettings, fontent);
-            if (showAudioClipSettings)
             {
-                EditorGUILayout.ObjectField(customSound, fileText);
-                using (new EditorGUI.DisabledScope(myScript.GetAttachedFile() == null))
+                using (new EditorGUI.DisabledScope(true))
                 {
-                    DrawPropertiesExcluding(serializedObject, new[] { "m_Script", "musicFile", "playOnStart", "playOnEnable",
-                        "stopOnDisable", "stopOnDestroy", "keepPlaybackPosition", "restartOnReplay", "musicFadeTime", "transitionMode" });
+                    EditorGUILayout.Popup(musicDesc, selected, new string[] { "<None>" });
                 }
             }
-            if (myScript.GetAttachedFile() != null)
-                EditorGUILayout.EndFoldoutHeaderGroup();
 
             EditorGUILayout.Space();
-
+            
             GUIContent lontent = new GUIContent("Music Player Settings", "Modify settings specific to Audio Player Music");
             EditorGUILayout.LabelField(lontent, EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(transitionMode);
             if (myScript.GetTransitionMode() != TransitionMode.None)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("keepPlaybackPosition"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("musicFadeInTime"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("musicFadeOutTime"));
+                EditorGUILayout.PropertyField(keepPlaybackPosition);
+                EditorGUILayout.PropertyField(musicFadeInTime);
+                EditorGUILayout.PropertyField(musicFadeOutTime);
             }
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("restartOnReplay"));
-
-            EditorGUILayout.Space();
-
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("playOnStart"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("playOnEnable"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("stopOnDisable"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("stopOnDestroy"));
+            EditorGUILayout.PropertyField(restartOnReplay);
+            EditorGUILayout.PropertyField(onStart);
+            EditorGUILayout.PropertyField(onEnable);
+            EditorGUILayout.PropertyField(onDisable);
+            EditorGUILayout.PropertyField(onDestroy);
 
             if (serializedObject.hasModifiedProperties)
             {

@@ -14,21 +14,21 @@ namespace JSAM
     [AddComponentMenu("AudioManager/Audio Player Music")]
     public class AudioPlayerMusic : BaseAudioMusicFeedback
     {
-        [Tooltip("Plays the music when this component or the GameObject its attached is first created")]
+        [Tooltip("Behaviour to trigger when the object this is attached to is created")]
         [SerializeField]
-        protected bool playOnStart = true;
+        protected AudioPlaybackBehaviour onStart = AudioPlaybackBehaviour.Play;
 
-        [Tooltip("Plays the music when this component or the GameObject its attached to is enabled")]
+        [Tooltip("Behaviour to trigger when the object this is attached to is enabled or when the object is created")]
         [SerializeField]
-        protected bool playOnEnable = false;
+        protected AudioPlaybackBehaviour onEnable = AudioPlaybackBehaviour.None;
 
-        [Tooltip("Stops the music when this component or the GameObject its attached to is disabled")]
+        [Tooltip("Behaviour to trigger when the object this is attached to is destroyed or set to in-active")]
         [SerializeField]
-        protected bool stopOnDisable = false;
+        protected AudioPlaybackBehaviour onDisable = AudioPlaybackBehaviour.None;
 
-        [Tooltip("Stops the music when this component or the GameObject its attached to is destroyed")]
+        [Tooltip("Behaviour to trigger when the object this is attached to is destroyed")]
         [SerializeField]
-        protected bool stopOnDestroy = true;
+        protected AudioPlaybackBehaviour onDestroy = AudioPlaybackBehaviour.Stop;
 
         AudioSource sourceBeingUsed;
 
@@ -39,62 +39,41 @@ namespace JSAM
         {
             base.Start();
 
-            if (playOnStart)
+            switch (onStart)
             {
-                StartCoroutine(PlayDelayed());
+                case AudioPlaybackBehaviour.Play:
+                    StartCoroutine(PlayDelayed());
+                    break;
+                case AudioPlaybackBehaviour.Stop:
+                    Stop();
+                    break;
             }
+            
         }
 
         public void Play()
         {
             AudioManager am = AudioManager.instance;
 
-            if (musicFile != null)
-            {
-                if (am.IsMusicPlayingInternal(musicFile) && !restartOnReplay) return;
+            if (am.IsMusicPlayingInternal(audioObject) && !restartOnReplay) return;
 
-                if (spatializeSound)
-                {
-                    sourceBeingUsed = am.PlayMusic3DInternal(musicFile, transform, loopMode > LoopMode.NoLooping);
-                }
-                else
-                {
-                    switch (transitionMode)
-                    {
-                        case TransitionMode.None:
-                            sourceBeingUsed = am.PlayMusicInternal(musicFile, loopMode > LoopMode.NoLooping);
-                            break;
-                        case TransitionMode.FadeFromSilence:
-                            sourceBeingUsed = am.FadeMusic(musicFile, musicFadeInTime, loopMode > LoopMode.NoLooping);
-                            break;
-                        case TransitionMode.Crossfade:
-                            sourceBeingUsed = am.CrossfadeMusicInternal(musicFile, musicFadeInTime, keepPlaybackPosition);
-                            break;
-                    }
-                }
+            if (spatializeSound)
+            {
+                sourceBeingUsed = am.PlayMusic3DInternal(audioObject, transform, loopMode);
             }
             else
             {
-                if (am.IsMusicPlayingInternal(audioObject) && !restartOnReplay) return;
-
-                if (spatializeSound)
+                switch (transitionMode)
                 {
-                    sourceBeingUsed = am.PlayMusic3DInternal(audioObject, transform, loopMode);
-                }
-                else
-                {
-                    switch (transitionMode)
-                    {
-                        case TransitionMode.None:
-                            sourceBeingUsed = am.PlayMusicInternal(audioObject);
-                            break;
-                        case TransitionMode.FadeFromSilence:
-                            sourceBeingUsed = am.FadeMusicInternal(audioObject, musicFadeInTime);
-                            break;
-                        case TransitionMode.Crossfade:
-                            sourceBeingUsed = am.CrossfadeMusicInternal(audioObject, musicFadeInTime, keepPlaybackPosition);
-                            break;
-                    }
+                    case TransitionMode.None:
+                        sourceBeingUsed = am.PlayMusicInternal(audioObject);
+                        break;
+                    case TransitionMode.FadeFromSilence:
+                        sourceBeingUsed = am.FadeMusicInternal(audioObject, musicFadeInTime);
+                        break;
+                    case TransitionMode.Crossfade:
+                        sourceBeingUsed = am.CrossfadeMusicInternal(audioObject, musicFadeInTime, keepPlaybackPosition);
+                        break;
                 }
             }
         }
@@ -103,31 +82,15 @@ namespace JSAM
         {
             AudioManager am = AudioManager.instance;
 
-            if (musicFile != null)
+            switch (transitionMode)
             {
-                switch (transitionMode)
-                {
-                    case TransitionMode.None:
-                        am.StopMusicInternal(musicFile);
-                        break;
-                    case TransitionMode.FadeFromSilence:
-                    case TransitionMode.Crossfade:
-                        am.FadeMusicOutInternal(musicFadeOutTime);
-                        break;
-                }
-            }
-            else
-            {
-                switch (transitionMode)
-                {
-                    case TransitionMode.None:
-                        am.StopMusicInternal(audioObject);
-                        break;
-                    case TransitionMode.FadeFromSilence:
-                    case TransitionMode.Crossfade:
-                        am.FadeMusicOutInternal(musicFadeOutTime);
-                        break;
-                }
+                case TransitionMode.None:
+                    am.StopMusicInternal(audioObject);
+                    break;
+                case TransitionMode.FadeFromSilence:
+                case TransitionMode.Crossfade:
+                    am.FadeMusicOutInternal(musicFadeOutTime);
+                    break;
             }
 
             sourceBeingUsed = null;
@@ -153,11 +116,16 @@ namespace JSAM
 
         private void OnEnable()
         {
-            if (audioObject == null) DesignateSound();
-            if (playOnEnable)
+            if (audioObject == null) DesignateMusic();
+            switch (onEnable)
             {
-                if (playRoutine != null) StopCoroutine(playRoutine);
-                playRoutine = StartCoroutine(PlayDelayed());
+                case AudioPlaybackBehaviour.Play:
+                    if (playRoutine != null) StopCoroutine(playRoutine);
+                    playRoutine = StartCoroutine(PlayDelayed());
+                    break;
+                case AudioPlaybackBehaviour.Stop:
+                    Stop();
+                    break;
             }
         }
 
@@ -178,17 +146,27 @@ namespace JSAM
 
         private void OnDisable()
         {
-            if (stopOnDisable)
+            switch (onDisable)
             {
-                Stop();
+                case AudioPlaybackBehaviour.Play:
+                    Play();
+                    break;
+                case AudioPlaybackBehaviour.Stop:
+                    Stop();
+                    break;
             }
         }
 
         private void OnDestroy()
         {
-            if (stopOnDestroy)
+            switch (onDestroy)
             {
-                Stop();
+                case AudioPlaybackBehaviour.Play:
+                    Play();
+                    break;
+                case AudioPlaybackBehaviour.Stop:
+                    Stop();
+                    break;
             }
         }
 

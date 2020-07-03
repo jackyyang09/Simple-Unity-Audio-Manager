@@ -4,24 +4,31 @@ using UnityEngine;
 
 namespace JSAM
 {
+    public enum AudioPlaybackBehaviour
+    {
+        None,
+        Play,
+        Stop
+    }
+
     [AddComponentMenu("AudioManager/Audio Player")]
     public class AudioPlayer : BaseAudioFeedback
     {
-        [Tooltip("Play the sound when the scene starts up")]
+        [Tooltip("Behaviour to trigger when the object this is attached to is created")]
         [SerializeField]
-        bool playOnStart = true;
+        AudioPlaybackBehaviour onStart = AudioPlaybackBehaviour.Play;
 
-        [Tooltip("Play the sound both when the scene starts up and when the object this is attached to is created or set to active")]
+        [Tooltip("Behaviour to trigger when the object this is attached to is enabled or when the object is created")]
         [SerializeField]
-        bool playOnEnable = false;
+        AudioPlaybackBehaviour onEnable = AudioPlaybackBehaviour.None;
 
-        [Tooltip("Stop the sound when the object this is attached to is destroyed or set to in-active")]
+        [Tooltip("Behaviour to trigger when the object this is attached to is destroyed or set to in-active")]
         [SerializeField]
-        bool stopOnDisable = true;
+        AudioPlaybackBehaviour onDisable = AudioPlaybackBehaviour.Stop;
 
-        [Tooltip("Stop the sound when the object this is attached to is destroyed")]
+        [Tooltip("Behaviour to trigger when the object this is attached to is destroyed")]
         [SerializeField]
-        bool stopOnDestroy = false;
+        AudioPlaybackBehaviour onDestroy = AudioPlaybackBehaviour.None;
 
         /// <summary>
         /// Boolean prevents the sound from being played multiple times when the Start and OnEnable callbacks intersect
@@ -33,10 +40,18 @@ namespace JSAM
         {
             base.Start();
 
-            if (playOnStart && !activated)
+            switch (onStart)
             {
-                activated = true;
-                StartCoroutine(PlayOnEnable());
+                case AudioPlaybackBehaviour.Play:
+                    if (!activated)
+                    {
+                        activated = true;
+                        StartCoroutine(PlayOnEnable());
+                    }
+                    break;
+                case AudioPlaybackBehaviour.Stop:
+                    Stop();
+                    break;
             }
         }
 
@@ -45,29 +60,48 @@ namespace JSAM
             AudioManager am = AudioManager.instance;
             AudioSource source;
 
-            if (soundFile != null)
+            if (loopSound)
             {
-                Transform t = (spatialSound) ? transform : null;
-
-                if (loopSound)
-                {
-                    source = am.PlaySoundLoopInternal(soundFile, sTransform, spatialSound, priority, delay, ignoreTimeScale);
-                }
-                else source = am.PlaySoundInternal(soundFile, sTransform, priority, pitchShift, delay, ignoreTimeScale);
+                source = am.PlaySoundLoopInternal(audioObject, sTransform);
             }
-            else
-            {
-                if (loopSound)
-                {
-                    source = am.PlaySoundLoopInternal(audioObject, sTransform);
-                }
-                else source = am.PlaySoundInternal(audioObject, sTransform);
-            }
+            else source = am.PlaySoundInternal(audioObject, sTransform);
 
             // Ready to play again later
             activated = false;
 
             return source;
+        }
+
+        void PlayAtPosition()
+        {
+            AudioManager am = AudioManager.instance;
+            AudioSource source;
+
+            if (loopSound)
+            {
+                if (audioObject.spatialize)
+                {
+                    source = am.PlaySoundLoopInternal(audioObject, sTransform.position);
+                }
+                else
+                {
+                    source = am.PlaySoundLoopInternal(audioObject, null);
+                }
+            }
+            else
+            {
+                if (audioObject.spatialize)
+                {
+                    source = am.PlaySoundInternal(audioObject, sTransform.position);
+                }
+                else
+                {
+                    source = am.PlaySoundInternal(audioObject, null);
+                }
+            }
+
+            // Ready to play again later
+            activated = false;
         }
 
         public void PlaySound()
@@ -82,48 +116,36 @@ namespace JSAM
         {
             AudioManager am = AudioManager.instance;
 
-            if (soundFile != null)
+            if (!loopSound)
             {
-                if (!loopSound)
+                if (am.IsSoundPlayingInternal(audioObject, sTransform))
                 {
-                    if (am.IsSoundPlayingInternal(soundFile, sTransform))
-                    {
-                        am.StopSoundInternal(soundFile, sTransform);
-                    }
-                }
-                else
-                {
-                    if (am.IsSoundLoopingInternal(soundFile))
-                    {
-                        am.StopSoundLoopInternal(audioObject, true, sTransform);
-                    }
+                    am.StopSoundInternal(audioObject, sTransform);
                 }
             }
             else
             {
-                if (!loopSound)
+                if (am.IsSoundLoopingInternal(audioObject))
                 {
-                    if (am.IsSoundPlayingInternal(audioObject, sTransform))
-                    {
-                        am.StopSoundInternal(audioObject, sTransform);
-                    }
-                }
-                else
-                {
-                    if (am.IsSoundLoopingInternal(audioObject))
-                    {
-                        am.StopSoundLoopInternal(audioObject, true, sTransform);
-                    }
+                    am.StopSoundLoopInternal(audioObject, true, sTransform);
                 }
             }
         }
 
         private void OnEnable()
         {
-            if (playOnEnable && !activated)
+            switch (onEnable)
             {
-                activated = true;
-                StartCoroutine(PlayOnEnable());
+                case AudioPlaybackBehaviour.Play:
+                    if (!activated)
+                    {
+                        activated = true;
+                        StartCoroutine(PlayOnEnable());
+                    }
+                    break;
+                case AudioPlaybackBehaviour.Stop:
+                    Stop();
+                    break;
             }
         }
 
@@ -143,17 +165,27 @@ namespace JSAM
 
         private void OnDisable()
         {
-            if (stopOnDisable)
+            switch (onDisable)
             {
-                Stop();
+                case AudioPlaybackBehaviour.Play:
+                    Play();
+                    break;
+                case AudioPlaybackBehaviour.Stop:
+                    Stop();
+                    break;
             }
         }
 
         private void OnDestroy()
         {
-            if (stopOnDestroy)
+            switch (onDestroy)
             {
-                Stop();
+                case AudioPlaybackBehaviour.Play:
+                    Play();
+                    break;
+                case AudioPlaybackBehaviour.Stop:
+                    Stop();
+                    break;
             }
         }
     }

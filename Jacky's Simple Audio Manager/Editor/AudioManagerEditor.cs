@@ -19,6 +19,21 @@ namespace JSAM
             public string name;
         }
 
+        AudioManager myScript;
+
+        SerializedProperty audioFolderLocation;
+        SerializedProperty masterVolume;
+        SerializedProperty musicVolume;
+        SerializedProperty soundVolume;
+        SerializedProperty instancedEnums;
+        SerializedProperty wasInstancedBefore;
+        SerializedProperty listener;
+        SerializedProperty sourcePrefab;
+        SerializedProperty sceneSoundEnumName;
+        SerializedProperty sceneMusicEnumName;
+        SerializedProperty audioFileProperty;
+        SerializedProperty audioFileMusicProperty;
+
         static bool showVolumeSettings = true;
         static bool showAdvancedSettings;
         static bool showSoundLibrary;
@@ -33,7 +48,6 @@ namespace JSAM
         {
             serializedObject.Update();
 
-            AudioManager myScript = (AudioManager)target;
                     
             List<string> excludedProperties = new List<string> { "m_Script", "audioFileObjects", "audioFileMusicObjects" };
 
@@ -78,7 +92,7 @@ namespace JSAM
             EditorGUILayout.BeginHorizontal();
 
             GUIContent pathContent = new GUIContent("Audio Assets Folder", "This folder and all sub-folders will be searched for Audio File Objects, AudioManager-generated files will be stored in this location as well");
-            string filePath = serializedObject.FindProperty("audioFolderLocation").stringValue;
+            string filePath = audioFolderLocation.stringValue;
             filePath = EditorGUILayout.DelayedTextField(pathContent, filePath);
 
             GUIContent buttonContent = new GUIContent("Browse", "Designate a new folder to store JSAM's audio files");
@@ -106,7 +120,7 @@ namespace JSAM
                     if (filePath[filePath.Length - 1] == '/') filePath = filePath.Remove(filePath.Length - 1, 1);
                 }
             }
-            serializedObject.FindProperty("audioFolderLocation").stringValue = filePath;
+            audioFolderLocation.stringValue = filePath;
 
             EditorGUILayout.EndHorizontal();
             if (filePath == "" || filePath == "Assets")
@@ -118,8 +132,6 @@ namespace JSAM
             }
             #endregion
 
-            SerializedProperty instancedEnums = serializedObject.FindProperty("instancedEnums");
-            SerializedProperty wasInstancedBefore = serializedObject.FindProperty("wasInstancedBefore");
             bool usingInstancedEnums = instancedEnums.boolValue;
 
             if (showAdvancedSettings)
@@ -132,13 +144,13 @@ namespace JSAM
 
             if (myScript.GetListenerInternal() == null || showAdvancedSettings)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("listener"));
+                EditorGUILayout.PropertyField(listener);
             }
 
             #region Source Prefab Helper
             if (!myScript.SourcePrefabExists())
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("sourcePrefab"));
+                EditorGUILayout.PropertyField(sourcePrefab);
 
                 EditorGUILayout.HelpBox("Reference to Source Prefab is missing! This prefab is required to make " +
                         "AudioManager function. Click the button below to have AudioManager reapply the default reference.", MessageType.Warning);
@@ -161,7 +173,7 @@ namespace JSAM
                     }
                     if (fallback != null) // Check has succeeded in finding the default reference
                     {
-                        serializedObject.FindProperty("sourcePrefab").objectReferenceValue = fallback;
+                        sourcePrefab.objectReferenceValue = fallback;
                     }
                     else // Check has failed to turn up results
                     {
@@ -180,7 +192,7 @@ namespace JSAM
                         PrefabUtility.SaveAsPrefabAsset(newPrefab, assetPath, out success);
                         if (success)
                         {
-                            serializedObject.FindProperty("sourcePrefab").objectReferenceValue = newPrefab;
+                            sourcePrefab.objectReferenceValue = newPrefab;
                             EditorUtility.DisplayDialog("Success", "AudioManager's default source prefab was missing. So a new one was recreated in it's place. " +
                                 "If AudioManager doesn't immediately update with the Audio Source prefab in place, click the button again or recompile your code.", "OK");
                         }
@@ -192,7 +204,7 @@ namespace JSAM
             }
             else if (myScript.SourcePrefabExists() && showAdvancedSettings)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("sourcePrefab"));
+                EditorGUILayout.PropertyField(sourcePrefab);
             }
             #endregion
 
@@ -282,13 +294,13 @@ namespace JSAM
                         {
                             if (instancedEnums.boolValue)
                             {
-                                serializedObject.FindProperty("sceneSoundEnumName").stringValue = "JSAM.Sounds" + safeSceneName;
-                                serializedObject.FindProperty("sceneMusicEnumName").stringValue = "JSAM.Music" + safeSceneName;
+                                sceneSoundEnumName.stringValue = "JSAM.Sounds" + safeSceneName;
+                                sceneMusicEnumName.stringValue = "JSAM.Music" + safeSceneName;
                             }
                             else
                             {
-                                serializedObject.FindProperty("sceneSoundEnumName").stringValue = "JSAM.Sounds";
-                                serializedObject.FindProperty("sceneMusicEnumName").stringValue = "JSAM.Music";
+                                sceneSoundEnumName.stringValue = "JSAM.Sounds";
+                                sceneMusicEnumName.stringValue = "JSAM.Music";
                             }
 
                             EditorUtility.DisplayProgressBar("Re-Generating Audio Library", "Done! Recompiling...", 0.95f);
@@ -310,17 +322,17 @@ namespace JSAM
                 bool fix = false;
                 if (filePath.Length < 6) fix = true;
                 else if (filePath.Substring(0, 6) != "Assets") fix = true;
-                if (fix) serializedObject.FindProperty("audioFolderLocation").stringValue = "Assets/Audio Files";
+                if (fix) audioFolderLocation.stringValue = "Assets/Audio Files";
                 if (filePath[filePath.Length - 1] == '/')
-                    serializedObject.FindProperty("audioFolderLocation").stringValue = filePath.Remove(filePath.Length - 1);
+                    audioFolderLocation.stringValue = filePath.Remove(filePath.Length - 1);
 
                 serializedObject.ApplyModifiedProperties();
             }
 
             if (usingInstancedEnums)
             {
-                string sceneNameSpecial = serializedObject.FindProperty("sceneSoundEnumName").stringValue;
-                string sceneNameSpecialMusic = serializedObject.FindProperty("sceneMusicEnumName").stringValue;
+                string sceneNameSpecial = sceneSoundEnumName.stringValue;
+                string sceneNameSpecialMusic = sceneMusicEnumName.stringValue;
                 if (GetEnumType(sceneNameSpecial) == null)
                 {
                     EditorGUILayout.HelpBox("Could not find Audio Files, did you make sure to designate the correct Audio Assets Folder? Try generating the audio library again!", MessageType.Error);
@@ -354,7 +366,7 @@ namespace JSAM
             showSoundLibrary = EditorGUILayout.BeginFoldoutHeaderGroup(showSoundLibrary, content);
             if (showSoundLibrary)
             {
-                string enumName = serializedObject.FindProperty("sceneSoundEnumName").stringValue;
+                string enumName = sceneSoundEnumName.stringValue;
 
                 System.Type soundType = myScript.GetSceneSoundEnum();
                 string[] soundNames = new string[0];
@@ -363,15 +375,13 @@ namespace JSAM
                     soundNames = System.Enum.GetNames(soundType);
                 }
 
-                SerializedProperty audioFiles = serializedObject.FindProperty("audioFileObjects");
-
-                if (audioFiles.arraySize > 0)
+                if (audioFileProperty.arraySize > 0)
                 {
                     EditorGUILayout.LabelField("You can right click a field to copy the enum to your clipboard");
                 }
 
                 // Make sure AudioManager didn't break during regeneration
-                if (soundNames.Length != audioFiles.arraySize)
+                if (soundNames.Length != audioFileProperty.arraySize)
                 {
                     EditorGUILayout.HelpBox("Something may have interrupted AudioManager while it was generating the Audio Library. " +
                         "Try regenerating the library one more time by clicking the button above.", MessageType.Info);
@@ -392,11 +402,11 @@ namespace JSAM
                     Dictionary<string, List<SPandName>> audioSPs = new Dictionary<string, List<SPandName>>();
                     List<AudioFileObject> audioRef = myScript.GetSoundLibrary();
                     // If there are new AudioFiles being added and the SoundLibrary foldout is open
-                    if (audioRef.Count == audioFiles.arraySize)
+                    if (audioRef.Count == audioFileProperty.arraySize)
                     {
                         for (int i = 0; i < audioRef.Count; i++)
                         {
-                            SerializedProperty ao = audioFiles.GetArrayElementAtIndex(i);
+                            SerializedProperty ao = audioFileProperty.GetArrayElementAtIndex(i);
                             SPandName newPair = new SPandName();
                             newPair.name = soundNames[i];
                             newPair.sp = ao;
@@ -456,7 +466,7 @@ namespace JSAM
             showMusicLibrary = EditorGUILayout.BeginFoldoutHeaderGroup(showMusicLibrary, content);
             if (showMusicLibrary)
             {
-                string enumName = serializedObject.FindProperty("sceneMusicEnumName").stringValue;
+                string enumName = sceneMusicEnumName.stringValue;
 
                 System.Type musicType = myScript.GetSceneMusicEnum();
                 string[] musicNames = new string[0];
@@ -465,14 +475,12 @@ namespace JSAM
                     musicNames = System.Enum.GetNames(musicType);
                 }
 
-                SerializedProperty audioFiles = serializedObject.FindProperty("audioFileMusicObjects");
-
-                if (audioFiles.arraySize > 0)
+                if (audioFileMusicProperty.arraySize > 0)
                 {
                     EditorGUILayout.LabelField("You can right click a field to copy the enum to your clipboard");
                 }
 
-                if (musicNames.Length != audioFiles.arraySize)
+                if (musicNames.Length != audioFileMusicProperty.arraySize)
                 {
                     EditorGUILayout.HelpBox("Something may have interrupted AudioManager while it was generating the Audio Library. " +
                         "Try regenerating the library one more time by clicking the button above.", MessageType.Info);
@@ -492,12 +500,12 @@ namespace JSAM
 
                     Dictionary<string, List<SPandName>> audioSPs = new Dictionary<string, List<SPandName>>();
                     List<AudioFileMusicObject> audioRef = myScript.GetMusicLibrary();
-                    // If there are new AudioFiles being added and the SoundLibrary foldout is open
-                    if (audioRef.Count == audioFiles.arraySize)
+                    // If there are new audioFileMusicProperty being added and the SoundLibrary foldout is open
+                    if (audioRef.Count == audioFileMusicProperty.arraySize)
                     {
                         for (int i = 0; i < audioRef.Count; i++)
                         {
-                            SerializedProperty ao = audioFiles.GetArrayElementAtIndex(i);
+                            SerializedProperty ao = audioFileMusicProperty.GetArrayElementAtIndex(i);
                             SPandName newPair = new SPandName();
                             newPair.name = musicNames[i];
                             newPair.sp = ao;
@@ -614,6 +622,10 @@ namespace JSAM
 
         private void OnEnable()
         {
+            myScript = (AudioManager)target;
+
+            myScript.EstablishSingletonDominance();
+
             categories = new Dictionary<string, bool>();
             if (AudioManager.instance)
             {
@@ -621,6 +633,19 @@ namespace JSAM
                 AudioManager.instance.UpdateAudioFileObjectCategories();
             }
             Application.logMessageReceived += UnityDebugLog;
+
+            audioFolderLocation = serializedObject.FindProperty("audioFolderLocation");
+            masterVolume = serializedObject.FindProperty("masterVolume");
+            musicVolume = serializedObject.FindProperty("musicVolume");
+            soundVolume = serializedObject.FindProperty("soundVolume");
+            instancedEnums = serializedObject.FindProperty("instancedEnums");
+            wasInstancedBefore = serializedObject.FindProperty("wasInstancedBefore");
+            listener = serializedObject.FindProperty("listener");
+            sourcePrefab = serializedObject.FindProperty("sourcePrefab");
+            sceneSoundEnumName = serializedObject.FindProperty("sceneSoundEnumName");
+            sceneMusicEnumName = serializedObject.FindProperty("sceneMusicEnumName");
+            audioFileProperty = serializedObject.FindProperty("audioFileObjects");
+            audioFileMusicProperty = serializedObject.FindProperty("audioFileMusicObjects");
         }
 
         private void OnDisable()
@@ -962,7 +987,7 @@ namespace JSAM
                     if (sliderVolume != myScript.GetMasterVolumeAsIntInternal())
                     {
                         Undo.RecordObject(myScript, "Changed master channel volume");
-                        serializedObject.FindProperty("masterVolume").floatValue = (float)sliderVolume / 100;
+                        masterVolume.floatValue = (float)sliderVolume / 100;
                         myScript.SetMasterVolumeInternal(sliderVolume);
                     }
 
@@ -979,7 +1004,7 @@ namespace JSAM
                     }
 
                     Undo.RecordObject(myScript, "Changed master channel volume");
-                    serializedObject.FindProperty("masterVolume").floatValue = resultF / 100f;
+                    masterVolume.floatValue = resultF / 100f;
                     myScript.SetMasterVolumeInternal((int)resultF);
 
                     EditorGUILayout.EndHorizontal();
@@ -1013,7 +1038,7 @@ namespace JSAM
                     if (sliderVolume != myScript.GetSoundVolumeAsIntInternal())
                     {
                         Undo.RecordObject(myScript, "Changed sound channel volume");
-                        serializedObject.FindProperty("soundVolume").floatValue = (float)sliderVolume / 100;
+                        soundVolume.floatValue = (float)sliderVolume / 100;
                         myScript.SetSoundVolumeInternal(sliderVolume);
                     }
 
@@ -1030,7 +1055,7 @@ namespace JSAM
                     }
 
                     Undo.RecordObject(myScript, "Changed sound channel volume");
-                    serializedObject.FindProperty("soundVolume").floatValue = resultF / 100f;
+                    soundVolume.floatValue = resultF / 100f;
                     myScript.SetSoundVolumeInternal((int)resultF);
 
                     EditorGUILayout.EndHorizontal();
@@ -1064,7 +1089,7 @@ namespace JSAM
                     if (sliderVolume != myScript.GetMusicVolumeAsIntInternal())
                     {
                         Undo.RecordObject(myScript, "Changed music channel volume");
-                        serializedObject.FindProperty("musicVolume").floatValue = (float)sliderVolume / 100;
+                        musicVolume.floatValue = (float)sliderVolume / 100;
                         myScript.SetMusicVolumeInternal(sliderVolume);
                     }
 
@@ -1081,7 +1106,7 @@ namespace JSAM
                     }
 
                     Undo.RecordObject(myScript, "Changed music channel volume");
-                    serializedObject.FindProperty("musicVolume").floatValue = resultF / 100f;
+                    musicVolume.floatValue = resultF / 100f;
                     myScript.SetMusicVolumeInternal((int)resultF);
 
                     EditorGUILayout.EndHorizontal();

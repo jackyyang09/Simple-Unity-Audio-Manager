@@ -31,14 +31,7 @@ namespace JSAM
 
         void TriggerSound()
         {
-            if (soundFile != null)
-            {
-                AudioManager.instance.PlaySoundInternal(soundFile, sTransform, priority, pitchShift);
-            }
-            else
-            {
-                AudioManager.instance.PlaySoundInternal(audioObject, sTransform);
-            }
+            AudioManager.instance.PlaySoundInternal(audioObject, sTransform);
         }
 
         private void OnTriggerEnter(Collider other)

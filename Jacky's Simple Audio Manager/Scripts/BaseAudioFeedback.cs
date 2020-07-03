@@ -31,10 +31,6 @@ namespace JSAM
 
         [SerializeField]
         [HideInInspector]
-        [Tooltip("Overrides the \"Sound\" parameter with an AudioClip if not null")]
-        protected AudioClip soundFile;
-        [SerializeField]
-        [HideInInspector]
         protected AudioFileObject audioObject;
 
         /// <summary>
@@ -46,7 +42,7 @@ namespace JSAM
         protected virtual void Start()
         {
             // Applies settings from the Audio File Object
-            if (soundFile == null && audioObject == null)
+            if (audioObject == null)
             {
                 DesignateSound();
                 spatialSound = audioObject.spatialize;
@@ -59,17 +55,11 @@ namespace JSAM
             sTransform = (spatialSound) ? transform : null;
         }
 
-        public AudioClip GetAttachedSound()
-        {
-            return soundFile;
-        }
-
         void DesignateSound()
         {
-            if (soundFile == null && sound != "")
+            if (sound != "")
             {
                 if (!AudioManager.instance) return;
-                print(AudioManager.instance.gameObject.scene.name + " " + sound);
                 foreach (AudioFileObject a in AudioManager.instance.GetSoundLibrary())
                 {
                     if (a.safeName == sound)
@@ -81,8 +71,12 @@ namespace JSAM
             }
             if (audioObject == null)
             {
-                audioObject = AudioManager.instance.GetSoundLibrary()[0];
-                if (audioObject != null) sound = audioObject.safeName;
+                List<AudioFileObject> audio = AudioManager.instance.GetSoundLibrary();
+                if (audio.Count > 0)
+                {
+                    audioObject = audio[0];
+                    if (audioObject != null) sound = audioObject.safeName;
+                }
             }
         }
 

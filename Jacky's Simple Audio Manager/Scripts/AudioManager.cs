@@ -306,6 +306,11 @@ namespace JSAM
 
         void Start()
         {
+            foreach (AudioFileObject a in audioFileObjects)
+            {
+                a.Initialize();
+            }
+
             initialized = true;
         }
 
@@ -590,38 +595,6 @@ namespace JSAM
         }
 
         /// <summary>
-        /// Swaps the current music track with the new music track,
-        /// music is played globally and does not change volume
-        /// </summary>
-        /// <param name="track">AudioClip to be played</param>
-        /// <param name="loopTrack">Does the music play forever?</param>
-        public static AudioSource PlayMusic(AudioClip track, bool loopTrack = true)
-        {
-            return instance.PlayMusicInternal(track, loopTrack);
-        }
-
-        /// <summary>
-        /// This method can be shortened to AudioManager.PlayMusic. 
-        /// Swaps the current music track with the new music track,
-        /// music is played globally and does not change volume
-        /// </summary>
-        /// <param name="track">AudioClip to be played</param>
-        /// <param name="loopTrack">Does the music play forever?</param>
-        public AudioSource PlayMusicInternal(AudioClip track, bool loopTrack = true)
-        {
-            if (track.Equals("None")) return null;
-
-            if (ignoringTimeScale.Contains(musicSources[0])) ignoringTimeScale.Remove(musicSources[0]);
-            musicSources[0].clip = track;
-            musicSources[0].loop = loopTrack;
-            musicSources[0].spatialBlend = 0;
-            musicSources[0].pitch = 1;
-            musicSources[0].Play();
-
-            return musicSources[0];
-        }
-
-        /// <summary>
         /// Music is played in the scene and becomes quieter as the listener moves away from the source. 
         /// 3D music is independent from regular music, they can overlap if you let them
         /// </summary>
@@ -725,40 +698,6 @@ namespace JSAM
             else musicSources[2].time = 0;
 
             musicHelpers[2].Play(track.delay, track);
-
-            return musicSources[2];
-        }
-
-        /// <summary>
-        /// Music is played in the scene and becomes quieter as you move away from the source
-        /// 3D music source is independent from the main music source, they can overlap if you let them
-        /// </summary>
-        /// <param name="track">Index of the music</param>
-        /// <param name="trans">The origin of the music source</param>
-        /// <param name="loopTrack">Does the music play forever?</param>
-        public static AudioSource PlayMusic3D(AudioClip track, Transform trans, bool loopTrack = true)
-        {
-            return instance.PlayMusic3DInternal(track, trans, loopTrack);
-        }
-
-        /// <summary>
-        /// This method can be shortened to AudioManager.PlayMusic3D. 
-        /// Music is played in the scene and becomes quieter as you move away from the source
-        /// 3D music source is independent from the main music source, they can overlap if you let them
-        /// </summary>
-        /// <param name="track">Index of the music</param>
-        /// <param name="trans">The origin of the music source</param>
-        /// <param name="loopTrack">Does the music play forever?</param>
-        public AudioSource PlayMusic3DInternal(AudioClip track, Transform trans, bool loopTrack = true)
-        {
-            if (track.Equals("None")) return null;
-
-            sourcePositions[musicSources[2]] = trans;
-
-            musicSources[2].clip = track;
-            musicSources[2].loop = loopTrack;
-            musicSources[2].pitch = 1;
-            musicSources[2].Play();
 
             return musicSources[2];
         }
@@ -1095,58 +1034,6 @@ namespace JSAM
         }
 
         /// <summary>
-        /// Fade out the current track to silence, and then fade in a new track
-        /// </summary>
-        /// <param name="track">The name of the music track</param>
-        /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
-        /// <param name="loopTrack">Should the track loop?</param>
-        public AudioSource FadeMusic(AudioClip track, float time, bool loopTrack)
-        {
-            return instance.FadeMusicInternal(track, time, loopTrack);
-        }
-
-        /// <summary>
-        /// This method can be shortened to AudioManager.FadeMusicInternal. 
-        /// Fade out the current track to silence, and then fade in a new track
-        /// </summary>
-        /// <param name="track">The name of the music track</param>
-        /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
-        /// <param name="loopTrack">Should the track loop?</param>
-        public AudioSource FadeMusicInternal(AudioClip track, float time, bool loopTrack)
-        {
-            if (track.Equals("None")) return null;
-
-            musicSources[1].clip = track;
-            musicSources[1].loop = loopTrack;
-
-            AudioSource temp = musicSources[0];
-            AudioChannelHelper tempHelper = musicHelpers[0];
-            musicSources[0] = musicSources[1];
-            musicSources[1] = temp;
-            musicHelpers[0] = musicHelpers[1];
-            musicHelpers[1] = tempHelper;
-
-            if (time > 0)
-            {
-                float stepTime = time / 2;
-
-                if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
-                fadeOutRoutine = StartCoroutine(FadeOutMusic(stepTime));
-
-                if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
-                fadeInRoutine = StartCoroutine(FadeInMusicRoutine(stepTime));
-            }
-            else // Handle our user's incompetence somehow
-            {
-                musicHelpers[0].Play(0);
-                musicHelpers[1].Stop();
-                Debug.LogWarning("AudioManager Warning! Your music fade duration should be set above 0 seconds. Consider using a non-fade otherwise.");
-            }
-
-            return musicSources[0];
-        }
-
-        /// <summary>
         /// Fade in a new track without affecting playback of any currently playing track. 
         /// To fade the currently playing track out at the same time, use the FadeMusic function instead
         /// </summary>
@@ -1273,49 +1160,6 @@ namespace JSAM
                 musicHelpers[0].Play(track);
                 musicHelpers[1].Stop();
                 Debug.LogWarning("AudioManager Warning! Your music fade duration should be set above 0 seconds. Consider using a non-fade otherwise.");
-            }
-
-            return musicSources[0];
-        }
-
-        /// <summary>
-        /// Fade in a new track without affecting playback of any currently playing track.
-        /// To fade the currently playing track out at the same time, use the FadeMusic function instead
-        /// </summary>
-        /// <param name="track">The name of the music track</param>
-        /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
-        /// <param name="loopTrack">Should the track loop?</param>
-        public static AudioSource FadeMusicIn(AudioClip track, float time, bool loopTrack)
-        {
-            return instance.FadeMusicInInternal(track, time, loopTrack);
-        }
-
-        /// <summary>
-        /// This method can be shortened to AudioManager.FadeMusicIn. 
-        /// Fade in a new track without affecting playback of any currently playing track.
-        /// To fade the currently playing track out at the same time, use the FadeMusic function instead
-        /// </summary>
-        /// <param name="track">The name of the music track</param>
-        /// <param name="time">Should be greater than 0, entire fade process lasts this long</param>
-        /// <param name="loopTrack">Should the track loop?</param>
-        public AudioSource FadeMusicInInternal(AudioClip track, float time, bool loopTrack)
-        {
-            if (track.Equals("None")) return null;
-
-            musicSources[1].clip = track;
-            musicSources[1].loop = loopTrack;
-
-            AudioSource temp = musicSources[0];
-            AudioChannelHelper tempHelper = musicHelpers[0];
-            musicSources[0] = musicSources[1];
-            musicSources[1] = temp;
-            musicHelpers[0] = musicHelpers[1];
-            musicHelpers[1] = tempHelper;
-
-            if (time > 0)
-            {
-                if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
-                fadeInRoutine = StartCoroutine(FadeInMusicRoutine(time));
             }
 
             return musicSources[0];
@@ -1497,68 +1341,6 @@ namespace JSAM
             return musicSources[0];
         }
 
-        /// <summary>
-        /// Cross-fade music from the previous track to the new track specified
-        /// </summary>
-        /// <param name="track">The new track to fade to</param>
-        /// <param name="time">How long the fade will last (between both tracks)</param>
-        /// <param name="keepMusicTime">Carry the current playback time of current track over to the next track?</param>
-        public static AudioSource CrossfadeMusic(AudioClip track, float time = 0, bool loopTrack = true, bool keepMusicTime = false)
-        {
-            return instance.CrossfadeMusicInternal(track, time, loopTrack, keepMusicTime);
-        }
-
-        /// <summary>
-        /// This method can be shortened to AudioManager.CrossfadeMusic. 
-        /// Cross-fade music from the previous track to the new track specified
-        /// </summary>
-        /// <param name="track">The new track to fade to</param>
-        /// <param name="time">How long the fade will last (between both tracks)</param>
-        /// <param name="keepMusicTime">Carry the current playback time of current track over to the next track?</param>
-        public AudioSource CrossfadeMusicInternal(AudioClip track, float time = 0, bool loopTrack = true, bool keepMusicTime = false)
-        {
-            if (track.Equals(null)) return null;
-
-            musicSources[1].clip = track;
-            musicSources[1].loop = loopTrack;
-
-            AudioSource temp = musicSources[0];
-            AudioChannelHelper tempHelper = musicHelpers[0];
-            musicSources[0] = musicSources[1];
-            musicSources[1] = temp;
-            musicHelpers[0] = musicHelpers[1];
-            musicHelpers[1] = tempHelper;
-
-            musicSources[0].clip = track;
-            musicSources[0].loop = true;
-
-            musicHelpers[0].Play(0);
-
-            musicSources[0].volume = 0;
-
-            if (keepMusicTime)
-            {
-                SetMusicPlaybackPosition(musicSources[1].timeSamples);
-            }
-
-            if (time > 0)
-            {
-                if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
-                fadeInRoutine = StartCoroutine(FadeInMusic(time));
-
-                if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
-                fadeOutRoutine = StartCoroutine(FadeOutMusic(time));
-            }
-            else // Handle our user's incompetence somehow
-            {
-                musicHelpers[0].Play(0);
-                musicHelpers[1].Stop();
-                Debug.LogWarning("AudioManager Warning! Your music fade duration should be set above 0 seconds. Consider using a non-fade otherwise.");
-            }
-
-            return musicSources[0];
-        }
-
         private IEnumerator FadeInMusic(float time = 0, bool ignoreScale = false, AudioFileMusicObject file = null)
         {
             float timer = 0;
@@ -1668,31 +1450,6 @@ namespace JSAM
             }
         }
 
-        /// <summary>
-        /// Stops playback of the specified track
-        /// </summary>
-        /// <param name="m">The track's audio file</param>
-        public static void StopMusic(AudioClip m)
-        {
-            instance.StopMusicInternal(m);
-        }
-
-        /// <summary>
-        /// Stops playback of the specified track
-        /// </summary>
-        /// <param name="m">The track's audio file</param>
-        public void StopMusicInternal(AudioClip m)
-        {
-            for (int i = 0; i < musicSources.Length; i++)
-            {
-                if (musicSources[i] == null) return; // Chances are sources got destroyed on scene cleanup
-                if (musicSources[i].clip == m)
-                {
-                    musicHelpers[i].Stop();
-                }
-            }
-        }
-
         void TrackSounds()
         {
             if (spatialSound) // Only do this part if we have 3D sound enabled
@@ -1738,6 +1495,18 @@ namespace JSAM
         }
 
         /// <summary>
+        /// Plays the specified sound using the settings provided in the Audio File
+        /// </summary>
+        /// <param name="sound">The enum correlating with the audio file you wish to play</param>
+        /// <param name="position">The position you want to play the sound at</param>
+        /// <returns>The AudioSource playing the sound</returns>
+        public static AudioSource PlaySound<T>(T sound, Vector3 position) where T : Enum
+        {
+            int s = Convert.ToInt32(sound);
+            return instance.PlaySoundInternal(instance.audioFileObjects[s], position);
+        }
+
+        /// <summary>
         /// You are strongly recommend to use AudioManager.PlaySound instead. 
         /// Plays the specified sound using the settings provided in the Audio File
         /// </summary>
@@ -1747,6 +1516,18 @@ namespace JSAM
         public AudioSource PlaySoundInternal(int s, Transform trans = null)
         {
             return PlaySoundInternal(audioFileObjects[s], trans);
+        }
+
+        /// <summary>
+        /// You are strongly recommend to use AudioManager.PlaySound instead. 
+        /// Plays the specified sound using the settings provided in the Audio File
+        /// </summary>
+        /// <param name="s">The index of the audio file in AudioManager's AudioFileObject list you wish to play</param>
+        /// <param name="position">The position you want to play the sound at</param>
+        /// <returns>The AudioSource playing the sound</returns>
+        public AudioSource PlaySoundInternal(int s, Vector3 position)
+        {
+            return PlaySoundInternal(audioFileObjects[s], position);
         }
 
         /// <summary>
@@ -1770,10 +1551,23 @@ namespace JSAM
             if (s.UsingLibrary())
             {
                 AudioClip[] library = s.GetFiles().ToArray();
-                do
+                int index = 0;
+                if (s.GetFileCount() > 1) // The user actually bothered to include multiple files
                 {
-                    a.clip = library[UnityEngine.Random.Range(0, library.Length)];
-                } while (a.clip == null); // If the user is a dingus and left a few null references in the library
+                    do
+                    {
+                        index = UnityEngine.Random.Range(0, library.Length);
+                        a.clip = library[index];
+                    } while (a.clip == null || index == s.lastClipIndex); // If the user is a dingus and left a few null references in the library
+                    if (s.neverRepeat)
+                    {
+                        s.lastClipIndex = index;
+                    }
+                }
+                else
+                {
+                    a.clip = s.GetFirstAvailableFile();
+                }
             }
             else
             {
@@ -1839,46 +1633,62 @@ namespace JSAM
         }
 
         /// <summary>
-        /// Plays the specified sound using the settings provided in the Audio File
+        /// If you are an advanced user and prefer to skip right to passing an AudioFileObject, then you are welcome to do so
         /// </summary>
-        /// <param name="s">The AudioClip to play</param>
-        /// <param name="trans">The transform of the sound's source</param>
-        /// <param name="p">The priority of the sound</param>
-        /// <param name="pitchShift">If not None, randomizes the pitch of the sound, use AudioManager.Pitches for presets</param>
-        /// <param name="delay">Amount of seconds to wait before playing the sound</param>
-        /// <param name="ignoreTimeScale">If true, will not be paused by AudioManager when TimeScale is 0. To change this option for all sounds, check AudioManager's advanced settings</param>
+        /// <param name="s">The AudioFileobject you want AudioManager to play</param>
+        /// <param name="position">The position you want to play the sound at</param>
         /// <returns>The AudioSource playing the sound</returns>
-        public static AudioSource PlaySound(AudioClip audioClip, Transform trans = null, Priority p = Priority.Default, float pitchShift = 0, float delay = 0, bool ignoreTimeScale = false)
-        {
-            return instance.PlaySoundInternal(audioClip, trans, p, pitchShift, delay, ignoreTimeScale);
-        }
-
-        /// <summary>
-        /// This method can be shortened to AudioManager.PlaySound. 
-        /// Plays the specified sound using the settings provided in the Audio File
-        /// </summary>
-        /// <param name="s">The AudioClip to play</param>
-        /// <param name="trans">The transform of the sound's source</param>
-        /// <param name="p">The priority of the sound</param>
-        /// <param name="pitchShift">If not None, randomizes the pitch of the sound, use AudioManager.Pitches for presets</param>
-        /// <param name="delay">Amount of seconds to wait before playing the sound</param>
-        /// <param name="ignoreTimeScale">If true, will not be paused by AudioManager when TimeScale is 0. To change this option for all sounds, check AudioManager's advanced settings</param>
-        /// <returns>The AudioSource playing the sound</returns>
-        public AudioSource PlaySoundInternal(AudioClip audioClip, Transform trans = null, Priority p = Priority.Default, float pitchShift = 0, float delay = 0, bool ignoreTimeScale = false)
+        public AudioSource PlaySoundInternal(AudioFileObject s, Vector3 position)
         {
             if (!Application.isPlaying) return null;
-            AudioSource a = sources[GetAvailableSource()];
+            int sourceIndex = GetAvailableSource();
+            AudioSource a = sources[sourceIndex];
+
+            if (s == null)
+            {
+                Debug.LogWarning("AudioManager warning! AudioFileObject supplied to PlaySoundInternal is null!");
+                return null;
+            }
+
+            if (s.UsingLibrary())
+            {
+                AudioClip[] library = s.GetFiles().ToArray();
+                int index = 0;
+                if (s.GetFileCount() > 1) // The user actually bothered to include multiple files
+                {
+                    do
+                    {
+                        index = UnityEngine.Random.Range(0, library.Length);
+                        a.clip = library[index];
+                    } while (a.clip == null || index == s.lastClipIndex); // If the user is a dingus and left a few null references in the library
+                    if (s.neverRepeat)
+                    {
+                        s.lastClipIndex = index;
+                    }
+                }
+                else
+                {
+                    a.clip = s.GetFirstAvailableFile();
+                }
+            }
+            else
+            {
+                a.clip = s.GetFile();
+            }
 
             if (sourcePositions.ContainsKey(a)) sourcePositions.Remove(a);
-            if (trans != null && spatialSound)
+            if (s.spatialize)
             {
-                sourcePositions.Add(a, trans);
-                a.transform.position = trans.position;
+                a.transform.position = position;
                 if (spatialSound)
                 {
                     a.spatialBlend = 1;
                 }
-                a.maxDistance = defaultSoundDistance;
+                if (s.maxDistance != 0)
+                {
+                    a.maxDistance = s.maxDistance;
+                }
+                else a.maxDistance = defaultSoundDistance;
             }
             else
             {
@@ -1889,22 +1699,16 @@ namespace JSAM
                 }
             }
 
-            float pitch = pitchShift;
+            a.pitch = GetRandomPitch(s);
+
+            bool ignoreTimeScale = s.ignoreTimeScale;
             if (timeScaledSounds && !ignoreTimeScale)
             {
-                a.pitch = Time.timeScale;
                 if (Time.timeScale == 0)
                 {
                     a.Pause(); // If game is paused, pause the sound too
                 }
             }
-            else a.pitch = 1;
-            //This is the base unchanged pitch
-            if (pitch > 0)
-            {
-                a.pitch += UnityEngine.Random.Range(-pitch, pitch);
-            }
-
             if (ignoreTimeScale)
             {
                 ignoringTimeScale.Add(a);
@@ -1914,10 +1718,17 @@ namespace JSAM
                 if (ignoringTimeScale.Contains(a)) ignoringTimeScale.Remove(a);
             }
 
-            a.clip = audioClip;
-            a.priority = (int)p;
+            //This is the base unchanged pitch
+            if (s.playReversed)
+            {
+                a.pitch = -Mathf.Abs(a.pitch);
+                a.time = a.clip.length - -EPSILON;
+            }
+            else a.time = 0;
+
+            a.priority = (int)s.priority;
             a.loop = false;
-            a.PlayDelayed(delay);
+            helpers[sourceIndex].Play(s.delay, s);
 
             return a;
         }
@@ -1927,9 +1738,6 @@ namespace JSAM
         /// </summary>
         /// <param name="sound">Sound to be played in the form of an enum. Check AudioManager for the appropriate value to be put here.</param>
         /// <param name="trans">The transform of the sound's source, makes it easier to stop the looping sound using StopSoundLoop</param>
-        /// <param name="spatialSound">Makes the sound 3D if true, otherwise 2D</param>
-        /// <param name="p">The priority of the sound</param>
-        /// <param name="ignoreTimeScale">If true, will not be paused by AudioManager when TimeScale is 0. To change this option for all sounds, check AudioManager's advanced settings</param>
         /// <returns>The AudioSource playing the sound</returns>
         public static AudioSource PlaySoundLoop<T>(T sound, Transform trans = null) where T : Enum
         {
@@ -1938,18 +1746,39 @@ namespace JSAM
         }
 
         /// <summary>
+        /// Play a sound using the settings specified in the sound's Audio File and loop it forever
+        /// </summary>
+        /// <param name="sound">Sound to be played in the form of an enum. Check AudioManager for the appropriate value to be put here.</param>
+        /// <param name="position">The position you want to play the sound at</param>
+        /// <returns>The AudioSource playing the sound</returns>
+        public static AudioSource PlaySoundLoop<T>(T sound, Vector3 position) where T : Enum
+        {
+            int s = Convert.ToInt32(sound);
+            return instance.PlaySoundLoopInternal(instance.audioFileObjects[s], position);
+        }
+
+        /// <summary>
         /// You are strongly recommend to use AudioManager.PlaySoundLoop instead. 
         /// Play a sound using the settings specified in the sound's Audio File and loop it forever
         /// </summary>
         /// <param name="sound">Index of the AudioFileObject to play</param>
         /// <param name="trans">The transform of the sound's source, makes it easier to stop the looping sound using StopSoundLoop</param>
-        /// <param name="spatialSound">Makes the sound 3D if true, otherwise 2D</param>
-        /// <param name="p">The priority of the sound</param>
-        /// <param name="ignoreTimeScale">If true, will not be paused by AudioManager when TimeScale is 0. To change this option for all sounds, check AudioManager's advanced settings</param>
         /// <returns>The AudioSource playing the sound</returns>
         public AudioSource PlaySoundLoopInternal(int s, Transform trans = null)
         {
             return PlaySoundLoopInternal(audioFileObjects[s], trans);
+        }
+
+        /// <summary>
+        /// You are strongly recommend to use AudioManager.PlaySoundLoop instead. 
+        /// Play a sound using the settings specified in the sound's Audio File and loop it forever
+        /// </summary>
+        /// <param name="sound">Index of the AudioFileObject to play</param>
+        /// <param name="position">The position you want to play the sound at</param>
+        /// <returns>The AudioSource playing the sound</returns>
+        public AudioSource PlaySoundLoopInternal(int s, Vector3 position)
+        {
+            return PlaySoundLoopInternal(audioFileObjects[s], position);
         }
 
         /// <summary>
@@ -2029,54 +1858,56 @@ namespace JSAM
         }
 
         /// <summary>
-        /// Play a custom AudioClip and loop it forever
+        /// If you are an advanced user and prefer to skip right to passing an AudioFileObject, then you are welcome to do so
         /// </summary>
-        /// <param name="s">The AudioClip to play</param>
-        /// <param name="trans">The transform of the sound's source, makes it easier to stop the looping sound using StopSoundLoop</param>
-        /// <param name="spatialSound">Makes the sound 3D if true, otherwise 2D</param>
-        /// <param name="p">The priority of the sound</param>
-        /// <param name="ignoreTimeScale">If true, will not be paused by AudioManager when TimeScale is 0. To change this option for all sounds, check AudioManager's advanced settings</param>
+        /// <param name="s">The AudioFileobject you want AudioManager to play</param>
+        /// <param name="position">The position you want to play the sound at</param>
         /// <returns>The AudioSource playing the sound</returns>
-        public static AudioSource PlaySoundLoop(AudioClip s, Transform trans = null, bool useSpatialSound = false, Priority p = Priority.Default, float delay = 0, bool ignoreTimeScale = false)
-        {
-            return instance.PlaySoundLoopInternal(s, trans, useSpatialSound, p, delay, ignoreTimeScale);
-        }
-
-        /// <summary>
-        /// This method can be shortened to AudioManager.PlaySoundLoopSpecial. 
-        /// Play a custom AudioClip and loop it forever
-        /// </summary>
-        /// <param name="s">The AudioClip to play</param>
-        /// <param name="trans">The transform of the sound's source, makes it easier to stop the looping sound using StopSoundLoop</param>
-        /// <param name="spatialSound">Makes the sound 3D if true, otherwise 2D</param>
-        /// <param name="p">The priority of the sound</param>
-        /// <param name="ignoreTimeScale">If true, will not be paused by AudioManager when TimeScale is 0. To change this option for all sounds, check AudioManager's advanced settings</param>
-        /// <returns>The AudioSource playing the sound</returns>
-        public AudioSource PlaySoundLoopInternal(AudioClip s, Transform trans = null, bool useSpatialSound = false, Priority p = Priority.Default, float delay = 0, bool ignoreTimeScale = false)
+        public AudioSource PlaySoundLoopInternal(AudioFileObject s, Vector3 position)
         {
             if (!Application.isPlaying) return null;
-            AudioSource a = sources[GetAvailableSource()];
+            int sourceIndex = GetAvailableSource();
+            AudioSource a = sources[sourceIndex];
             loopingSources.Add(a);
 
-            if (sourcePositions.ContainsKey(a)) sourcePositions.Remove(a);
-            if (trans != null)
+            if (s.UsingLibrary())
             {
-                sourcePositions.Add(a, trans);
-                a.transform.position = trans.position;
-                if (spatialSound)
+                AudioClip[] library = s.GetFiles().ToArray();
+                do
                 {
-                    a.spatialBlend = 1;
-                }
-                a.maxDistance = defaultSoundDistance;
+                    a.clip = library[UnityEngine.Random.Range(0, library.Length)];
+                } while (a.clip == null); // If the user is a dingus and left a few null references in the library
             }
             else
             {
-                if (sourcePositions.ContainsKey(a)) sourcePositions.Remove(a);
-                sourcePositions[a] = null;
-                a.transform.position = listener.transform.position;
-                if (spatialSound)
+                a.clip = s.GetFile();
+            }
+
+            if (sourcePositions.ContainsKey(a)) sourcePositions.Remove(a);
+            if (s.spatialize)
+            {
+                a.transform.position = position;
+                if (s.maxDistance != 0)
                 {
-                    a.spatialBlend = 0;
+                    a.maxDistance = s.maxDistance;
+                }
+                else a.maxDistance = defaultSoundDistance;
+            }
+            else
+            {
+                a.transform.position = listener.transform.position;
+            }
+
+            bool ignoreTimeScale = s.ignoreTimeScale;
+
+            a.spatialBlend = (spatialSound && s.spatialize) ? 1 : 0;
+            a.priority = (int)s.priority;
+
+            if (timeScaledSounds && !ignoreTimeScale)
+            {
+                if (Time.timeScale == 0)
+                {
+                    a.Pause(); // If game is paused, pause the sound too
                 }
             }
 
@@ -2089,20 +1920,14 @@ namespace JSAM
                 if (ignoringTimeScale.Contains(a)) ignoringTimeScale.Remove(a);
             }
 
-            a.spatialBlend = (spatialSound && useSpatialSound) ? 1 : 0;
-            a.clip = s;
-            a.priority = (int)p;
-            if (timeScaledSounds && !ignoreTimeScale)
+            if (s.playReversed)
             {
-                a.pitch = Time.timeScale;
-                if (Time.timeScale == 0)
-                {
-                    a.Pause(); // If game is paused, pause the sound too
-                }
+                a.pitch = -Mathf.Abs(a.pitch);
+                a.time = a.clip.length - EPSILON;
             }
-            else a.pitch = 1;
+            else a.time = 0;
             a.loop = true;
-            a.PlayDelayed(delay);
+            helpers[sourceIndex].Play(s.delay, s, true);
 
             return a;
         }
@@ -2182,44 +2007,6 @@ namespace JSAM
         }
 
         /// <summary>
-        /// Stops any sound playing through PlaySound and it's variants immediately. 
-        /// For looping sounds, you are recommend to use StopSoundLoop
-        /// </summary>
-        /// <param name="audioClip">The sound to be stopped</param>
-        /// <param name="t">For sources, helps with duplicate sounds</param>
-        public static void StopSound(AudioClip audioClip, Transform trans = null)
-        {
-            instance.StopSoundInternal(audioClip, trans);
-        }
-
-        /// <summary>
-        /// This method can be shortened to AudioManager.StopSound. 
-        /// Stops any sound playing through PlaySound and it's variants immediately. 
-        /// For looping sounds, you are recommend to use StopSoundLoop
-        /// </summary>
-        /// <param name="audioClip">The sound to be stopped</param>
-        /// <param name="t">For sources, helps with duplicate sounds</param>
-        public void StopSoundInternal(AudioClip audioClip, Transform t = null)
-        {
-            for (int i = 0; i < sources.Count; i++)
-            {
-                if (sources[i].clip == audioClip)
-                {
-                    if (t != null)
-                    {
-                        if (sourcePositions.ContainsKey(sources[i]))
-                        {
-                            if (sourcePositions[sources[i]] != t) continue;
-                        }
-                    }
-                    sources[i].Stop();
-                    helpers[i].Stop();
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
         /// Stops a looping sound played using PlaySoundLoop and it's variants. 
         /// To stop a basic a sound that was played through PlaySound and it's variants, use StopSound instead
         /// </summary>
@@ -2270,48 +2057,6 @@ namespace JSAM
                     loopingSources.RemoveAt(i);
                 }
             }
-        }
-
-        /// <summary>
-        /// Stops a looping sound played using PlaySoundLoop and it's variants. 
-        /// To stop a basic a sound that was played through PlaySound, use StopSound instead
-        /// </summary>
-        /// <param name="sound">The enum value for the sound in question. Check AudioManager for the proper value</param>
-        /// <param name="stopInstantly">Stops sound instantly if true</param>
-        /// <param name="trans">Transform of the object playing the looping sound</param>
-        public static void StopSoundLoop(AudioClip sound, bool stopInstantly = false, Transform trans = null)
-        {
-            instance.StopSoundLoopInternal(sound, stopInstantly, trans);
-        }
-
-        /// <summary>
-        /// This method can be shortened to AudioManager.StopSoundLoop. 
-        /// Stops a looping sound played using PlaySoundLoop and it's variants. 
-        /// To stop a basic a sound that was played through PlaySound and it's variants, use StopSound instead
-        /// </summary>
-        /// <param name="sound">The enum value for the sound in question. Check AudioManager for the proper value</param>
-        /// <param name="stopInstantly">Stops sound instantly if true</param>
-        /// <param name="t">Transform of the object playing the looping sound</param>
-        public void StopSoundLoopInternal(AudioClip s, bool stopInstantly = false, Transform t = null)
-        {
-            for (int i = 0; i < loopingSources.Count; i++)
-            {
-                if (loopingSources[i].clip == s)
-                {
-                    int index = sources.IndexOf(loopingSources[i]);
-                    if (sourcePositions.ContainsKey(loopingSources[i])) // Check if the t field matters
-                    {
-                        if (t != sourcePositions[sources[index]])
-                            continue;
-                        sourcePositions.Remove(loopingSources[i]);
-                    }
-                    if (stopInstantly) loopingSources[i].Stop();
-                    loopingSources[i].GetComponent<AudioChannelHelper>().Stop(stopInstantly);
-                    loopingSources[i].loop = false;
-                    loopingSources.RemoveAt(i);
-                }
-            }
-            Debug.LogWarning("AudioManager Warning: Did not find specified loop to stop!");
         }
 
         /// <summary>
@@ -2800,11 +2545,20 @@ namespace JSAM
                 {
                     instance = this;
                 }
+                else if (!instance.gameObject.activeInHierarchy)
+                {
+                    instance = this;
+                }
                 else if (killSelf)
                 {
                     Destroy(gameObject);
                 }
             }
+        }
+
+        private void OnDestroy()
+        {
+            if (instance == this) instance = null;
         }
 
         /// <summary>
@@ -2925,48 +2679,6 @@ namespace JSAM
         }
 
         /// <summary>
-        /// Returns true if a sound that was played using PlaySound or it's variants is currently being played. 
-        /// For sounds played using PlaySoundLoop, use IsSoundLooping instead
-        /// </summary>
-        /// <param name="a">The AudioClip you want to play</param>
-        /// <param name="trans">Specify is the sound is playing from that transform</param>
-        /// <returns></returns>
-        public static bool IsSoundPlaying(AudioClip a, Transform trans = null)
-        {
-            return instance.IsSoundPlayingInternal(a, trans);
-        }
-
-        /// <summary>
-        /// This method can be shortened to AudioManager.IsSoundPlaying. 
-        /// Returns true if a sound that was played using PlaySound or it's variants is currently being played. 
-        /// For sounds played using PlaySoundLoop, use IsSoundLooping instead
-        /// </summary>
-        /// <param name="a">The AudioClip you want to play</param>
-        /// <param name="trans">Specify is the sound is playing from that transform</param>
-        /// <returns></returns>
-        public bool IsSoundPlayingInternal(AudioClip a, Transform trans = null)
-        {
-            for (int i = 0; i < sources.Count; i++) // Loop through all sources
-            {
-                if (sources[i].clip == a && sources[i].isPlaying) // If this source is playing the clip
-                {
-                    if (trans != null)
-                    {
-                        if (sourcePositions.ContainsKey(sources[i]))
-                        {
-                            if (trans != sourcePositions[sources[i]]) // Continue if this isn't the specified source position
-                            {
-                                continue;
-                            }
-                        }
-                    }
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
         /// Returns true if music that was played through PlayMusic is currently playing
         /// </summary>
         /// <param name="music">The enum of the music in question, check AudioManager to see what enums you can use</param>
@@ -3017,34 +2729,6 @@ namespace JSAM
         }
 
         /// <summary>
-        /// Returns true if music is currently being played by any music source
-        /// </summary>
-        /// <param name="music">The music to check against</param>
-        /// <returns></returns>
-        public static bool IsMusicPlaying(AudioClip music)
-        {
-            return instance.IsMusicPlayingInternal(music);
-        }
-
-        /// <summary>
-        /// This method can be shortened to AudioManager.IsMusicPlayingInternal
-        /// Returns true if music is currently being played by any music source
-        /// </summary>
-        /// <param name="music"></param>
-        /// <returns></returns>
-        public bool IsMusicPlayingInternal(AudioClip music)
-        {
-            foreach (AudioSource m in musicSources)
-            {
-                if (m.clip == music && m.isPlaying)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
         /// Returns true if a sound played using PlaySoundLoop or it's variants is currently playing. 
         /// This method is more efficient for looping sounds than IsSoundPlaying
         /// </summary>
@@ -3085,36 +2769,6 @@ namespace JSAM
             {
                 if (c == null) continue;
                 if (sound.HasAudioClip(c.clip))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Returns true if a sound played using PlaySoundLoop or it's variants is currently playing. 
-        /// This method is more efficient for looping sounds than IsSoundPlaying
-        /// </summary>
-        /// <param name="sound">The AudioClip to check against</param>
-        /// <returns></returns>
-        public static bool IsSoundLooping(AudioClip sound)
-        {
-            return instance.IsSoundLoopingInternal(sound);
-        }
-
-        /// <summary>
-        /// This method can be shortened to AudioManager.IsSoundLooping
-        /// Returns true if a sound played using PlaySoundLoop or it's variants is currently playing. 
-        /// This method is more efficient for looping sounds than IsSoundPlaying
-        /// </summary>
-        /// <param name="sound">The AudioClip to check against</param>
-        /// <returns></returns>
-        public bool IsSoundLoopingInternal(AudioClip a)
-        {
-            foreach (AudioSource c in loopingSources)
-            {
-                if (c.clip == a)
                 {
                     return true;
                 }

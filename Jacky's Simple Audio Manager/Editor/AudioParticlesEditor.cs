@@ -9,61 +9,76 @@ namespace JSAM
     [CanEditMultipleObjects]
     public class AudioParticlesEditor : Editor
     {
+        AudioParticles myScript;
+        List<string> options = new List<string>();
+        System.Type enumType = null;
+
+        SerializedProperty sound;
+        SerializedProperty soundFile;
+        SerializedProperty playSoundOn;
+
         static bool showAudioClipSettings = false;
         static bool showHowTo;
 
+        private void OnEnable()
+        {
+            myScript = (AudioParticles)target;
+
+            if (AudioManager.instance)
+            {
+                enumType = AudioManager.instance.GetSceneSoundEnum();
+                if (enumType != null)
+                {
+                    foreach (string s in System.Enum.GetNames(enumType))
+                    {
+                        options.Add(s);
+                    }
+                }
+            }
+
+            sound = serializedObject.FindProperty("sound");
+            soundFile = serializedObject.FindProperty("soundFile");
+            playSoundOn = serializedObject.FindProperty("playSoundOn");
+        }
+
         public override void OnInspectorGUI()
         {
-            AudioParticles myScript = (AudioParticles)target;
+            if (myScript == null) return;
 
-            List<string> options = new List<string>();
+            serializedObject.Update();
 
-            System.Type enumType = AudioManager.instance.GetSceneSoundEnum();
-            if (enumType == null)
+            if (!AudioManager.instance)
             {
-                EditorGUILayout.HelpBox("Could not find Audio File info! Try regenerating Audio Files in AudioManager!", MessageType.Error);
+                EditorGUILayout.HelpBox("Could not find Audio Manager in the scene! This component needs AudioManager " +
+                    "in order to function!", MessageType.Error);
             }
             else
             {
-                foreach (string s in System.Enum.GetNames(enumType))
+                if (enumType == null)
                 {
-                    options.Add(s);
+                    EditorGUILayout.HelpBox("Could not find Audio File info! Try regenerating Audio Files in AudioManager!", MessageType.Error);
                 }
             }
 
             EditorGUILayout.LabelField("Choose a Sound to Play", EditorStyles.boldLabel);
 
-            int sound = serializedObject.FindProperty("sound").intValue;
-
             GUIContent soundDesc = new GUIContent("Sound", "Sound that will be played when particles spawn/die");
 
-            using (new EditorGUI.DisabledScope(myScript.GetAttachedSound() != null))
+            int selected = options.IndexOf(sound.stringValue);
+            if (selected == -1) selected = 0;
+            if (options.Count > 0)
             {
-                serializedObject.FindProperty("sound").intValue = EditorGUILayout.Popup(soundDesc, sound, options.ToArray());
+                sound.stringValue = options[EditorGUILayout.Popup(soundDesc, selected, options.ToArray())];
             }
-
-            GUIContent fileText = new GUIContent("Custom AudioClip", "Overrides the \"Sound\" parameter with an AudioClip if not null");
-            SerializedProperty customSound = serializedObject.FindProperty("soundFile");
-
-            EditorGUILayout.Space();
-
-            GUIContent fontent = new GUIContent("Custom AudioClip Settings", "These settings only apply if you input your own custom AudioClip rather than choosing from the generated Audio Library");
-            if (myScript.GetAttachedSound() == null)
-                showAudioClipSettings = EditorGUILayout.Foldout(showAudioClipSettings, fontent);
             else
-                showAudioClipSettings = EditorGUILayout.BeginFoldoutHeaderGroup(showAudioClipSettings, fontent);
-            if (showAudioClipSettings)
             {
-                EditorGUILayout.ObjectField(customSound, fileText);
-                using (new EditorGUI.DisabledScope(myScript.GetAttachedSound() == null))
+                using (new EditorGUI.DisabledScope(true))
                 {
-                    DrawPropertiesExcluding(serializedObject, new[] { "m_Script", "soundFile", "playOnStart", "playOnEnable",
-                        "stopOnDisable", "stopOnDestroy", "playSoundOn"});
+                    EditorGUILayout.Popup(soundDesc, selected, new string[] { "<None>" });
                 }
             }
-            if (myScript.GetAttachedSound() != null)
-                EditorGUILayout.EndFoldoutHeaderGroup();
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("playSoundOn"));
+
+            EditorGUILayout.PropertyField(playSoundOn);
 
             serializedObject.ApplyModifiedProperties();
 

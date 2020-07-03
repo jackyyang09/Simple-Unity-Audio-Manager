@@ -9,12 +9,9 @@ namespace JSAM
     [CanEditMultipleObjects]
     public class AudioFileObjectEditor : Editor
     {
+        AudioFileObject myScript;
+
         Color buttonPressedColor = new Color(0.475f, 0.475f, 0.475f);
-
-        static bool showFadeTool;
-        static bool showPlaybackTool;
-
-        static bool showHowTo;
 
         AudioClip playingClip;
 
@@ -25,19 +22,31 @@ namespace JSAM
         bool forceRepaint;
         AudioClip cachedClip;
 
-        static bool testBool;
-
         bool unregistered = false;
         bool relevant = false;
         string myName = "";
         string cachedName = "";
         bool nameChanged = false;
 
+        SerializedProperty file;
+        SerializedProperty files;
+        SerializedProperty relativeVolume;
+        SerializedProperty spatialize;
+        SerializedProperty maxDistance;
+
+        SerializedProperty neverRepeat;
+        SerializedProperty fadeInDuration;
+        SerializedProperty fadeOutDuration;
+
+        static bool showFadeTool;
+        static bool showPlaybackTool;
+        static bool showHowTo;
+
         public override void OnInspectorGUI()
         {
-            serializedObject.Update();
+            if (myScript == null) return;
 
-            AudioFileObject myScript = (AudioFileObject)target;
+            serializedObject.Update();
 
             EditorGUILayout.LabelField("Audio File Object", EditorStyles.boldLabel);
 
@@ -109,15 +118,16 @@ namespace JSAM
                 }
             }
 
-            List<string> excludedProperties = new List<string>() { "m_Script", "file", "files", "safeName" };
+            List<string> excludedProperties = new List<string>() { "m_Script", "file", "files", "safeName",
+                "relativeVolume", "spatialize", "maxDistance" };
 
             if (myScript.UsingLibrary()) // Swap file with files
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("files"));
+                EditorGUILayout.PropertyField(files);
             }
             else
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("file"));
+                EditorGUILayout.PropertyField(file);
             }
 
             blontent = new GUIContent("Use Library", "If true, the single AudioFile will be changed to a list of AudioFiles. AudioManager will choose a random AudioClip from this list when you play this sound");
@@ -152,14 +162,31 @@ namespace JSAM
                 myScript.useLibrary = newValue;
             }
 
+            if (myScript.useLibrary)
+            {
+                blontent = new GUIContent("Never Repeat", "Sometimes, AudioManager will allow the same sound from the Audio " +
+                "library to play twice in a row, enabling this option will ensure that this audio file never plays the same " +
+                "sound until after it plays a different sound.");
+                EditorGUILayout.PropertyField(neverRepeat, blontent);
+            }
+
             bool noFiles = myScript.GetFile() == null && myScript.IsLibraryEmpty();
 
             if (noFiles)
             {
-                excludedProperties.AddRange(new List<string>() { "relativeVolume", "spatialize", "loopSound", "maxDistance",
+                excludedProperties.AddRange(new List<string>() { "loopSound",
                     "priority", "startingPitch", "pitchShift", "playReversed", "delay", "ignoreTimeScale", "fadeMode",
                     "safeName"
                 });
+            }
+            else
+            {
+                EditorGUILayout.PropertyField(relativeVolume);
+                EditorGUILayout.PropertyField(spatialize);
+                using (new EditorGUI.DisabledScope(!spatialize.boolValue))
+                {
+                    EditorGUILayout.PropertyField(maxDistance);
+                }
             }
 
             DrawPropertiesExcluding(serializedObject, excludedProperties.ToArray());
@@ -184,8 +211,6 @@ namespace JSAM
                     if (showFadeTool && myScript.fadeMode != FadeMode.None)
                     {
                         GUIContent fContent = new GUIContent();
-                        SerializedProperty fadeInDuration = serializedObject.FindProperty("fadeInDuration");
-                        SerializedProperty fadeOutDuration = serializedObject.FindProperty("fadeOutDuration");
                         GUIStyle rightJustified = new GUIStyle(EditorStyles.label);
                         rightJustified.alignment = TextAnchor.UpperRight;
                         rightJustified.padding = new RectOffset(0, 15, 0, 0);
@@ -398,12 +423,29 @@ namespace JSAM
 
         void OnEnable()
         {
+            myScript = (AudioFileObject)target;
+
             EditorApplication.update += Update;
             Undo.undoRedoPerformed += OnUndoRedo;
             CreateAudioHelper();
             Undo.postprocessModifications += ApplyHelperEffects;
             CheckIfRegistered();
             myName = AudioManagerEditor.ConvertToAlphanumeric(target.name);
+
+            file = serializedObject.FindProperty("file");
+            files = serializedObject.FindProperty("files");
+
+            neverRepeat = serializedObject.FindProperty("neverRepeat");
+
+            fadeInDuration = serializedObject.FindProperty("fadeInDuration");
+            fadeOutDuration = serializedObject.FindProperty("fadeOutDuration");
+            relativeVolume = serializedObject.FindProperty("relativeVolume");
+            spatialize = serializedObject.FindProperty("spatialize");
+            maxDistance = serializedObject.FindProperty("maxDistance");
+
+            bypassEffects = serializedObject.FindProperty("bypassEffects");
+            bypassListenerEffects = serializedObject.FindProperty("bypassListenerEffects");
+            bypassReverbZones = serializedObject.FindProperty("bypassReverbZones");
         }
 
         void OnDisable()
@@ -818,15 +860,19 @@ namespace JSAM
         static bool lowPassFoldout;
         static bool reverbFoldout;
 
+        SerializedProperty bypassEffects;
+        SerializedProperty bypassListenerEffects;
+        SerializedProperty bypassReverbZones;
+
         void DrawAudioEffectTools(AudioFileObject myScript)
         {
             GUIContent blontent = new GUIContent("Audio Effects Stack", "");
             showAudioEffects = EditorGUILayout.BeginFoldoutHeaderGroup(showAudioEffects, blontent);
             if (showAudioEffects)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("bypassEffects"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("bypassListenerEffects"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("bypassReverbZones"));
+                EditorGUILayout.PropertyField(bypassEffects);
+                EditorGUILayout.PropertyField(bypassListenerEffects);
+                EditorGUILayout.PropertyField(bypassReverbZones);
                 if (myScript.chorusFilter.enabled)
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);

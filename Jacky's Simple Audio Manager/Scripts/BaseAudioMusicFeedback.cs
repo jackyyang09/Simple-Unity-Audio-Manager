@@ -15,7 +15,7 @@ namespace JSAM
         [SerializeField]
         protected bool spatializeSound;
 
-        [Tooltip("Adds a transition effect for playing this music")]
+        [Tooltip("Adds a transition effect for playing this music. If not none, music will fade-in and out during Play events and will fadeout during Stop events")]
         [SerializeField]
         protected TransitionMode transitionMode = TransitionMode.None;
 
@@ -37,24 +37,22 @@ namespace JSAM
         [SerializeField]
         protected LoopMode loopMode = LoopMode.Looping;
 
-        [Tooltip("Overrides the \"Music\" parameter with an AudioClip if not null")]
-        [SerializeField]
-        protected AudioClip musicFile = null;
+        [SerializeField, HideInInspector]
         protected AudioFileMusicObject audioObject;
 
         // Start is called before the first frame update
         protected void Start()
         {
-            if (musicFile == null)
+            if (audioObject == null)
             {
-                DesignateSound();
+                DesignateMusic();
 
                 loopMode = audioObject.loopMode;
                 spatializeSound = audioObject.spatialize;
             }
         }
 
-        protected void DesignateSound()
+        protected void DesignateMusic()
         {
             if (audioObject == null && music != "")
             {
@@ -70,14 +68,13 @@ namespace JSAM
             }
             if (audioObject == null)
             {
-                audioObject = AudioManager.instance.GetMusicLibrary()[0];
-                if (audioObject != null) music = audioObject.safeName;
+                List<AudioFileMusicObject> audio = AudioManager.instance.GetMusicLibrary();
+                if (audio.Count > 0)
+                {
+                    audioObject = audio[0];
+                    if (audioObject != null) music = audioObject.safeName;
+                }
             }
-        }
-
-        public AudioClip GetAttachedFile()
-        {
-            return musicFile;
         }
 
         public TransitionMode GetTransitionMode()

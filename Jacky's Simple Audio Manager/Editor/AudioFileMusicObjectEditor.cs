@@ -50,6 +50,10 @@ namespace JSAM
         string cachedName = "";
         bool nameChanged = false;
 
+        SerializedProperty loopMode;
+        SerializedProperty clampToLoopPoints;
+        SerializedProperty loopStartProperty;
+        SerializedProperty loopEndProperty;
 
         public override void OnInspectorGUI()
         {
@@ -154,9 +158,9 @@ namespace JSAM
             if (myScript.GetFile() != null)
             {
                 AudioClip music = myScript.GetFile();
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("loopMode"));
+                EditorGUILayout.PropertyField(loopMode);
                 using (new EditorGUI.DisabledScope(myScript.loopMode != LoopMode.LoopWithLoopPoints))
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("clampToLoopPoints"));
+                    EditorGUILayout.PropertyField(clampToLoopPoints);
 
                 DrawPlaybackTool(myScript);
 
@@ -345,8 +349,8 @@ namespace JSAM
                         if (myScript.loopStart != loopStart || myScript.loopEnd != loopEnd)
                         {
                             Undo.RecordObject(myScript, "Modified loop point properties");
-                            serializedObject.FindProperty("loopStart").floatValue = Mathf.Clamp(loopStart, 0, music.length);
-                            serializedObject.FindProperty("loopEnd").floatValue = Mathf.Clamp(loopEnd, 0, Mathf.Ceil(music.length));
+                            loopStartProperty.floatValue = Mathf.Clamp(loopStart, 0, music.length);
+                            loopEndProperty.floatValue = Mathf.Clamp(loopEnd, 0, Mathf.Ceil(music.length));
                             EditorUtility.SetDirty(myScript);
                             forceRepaint = true;
                         }
@@ -697,6 +701,15 @@ namespace JSAM
             Undo.postprocessModifications += ApplyHelperEffects;
             CheckIfRegistered();
             myName = AudioManagerEditor.ConvertToAlphanumeric(target.name);
+
+            loopMode = serializedObject.FindProperty("loopMode");
+            clampToLoopPoints = serializedObject.FindProperty("clampToLoopPoints");
+            loopStartProperty = serializedObject.FindProperty("loopStart");
+            loopEndProperty = serializedObject.FindProperty("loopEnd");
+
+            bypassEffects = serializedObject.FindProperty("bypassEffects");
+            bypassListenerEffects = serializedObject.FindProperty("bypassListenerEffects");
+            bypassReverbZones = serializedObject.FindProperty("bypassReverbZones");
         }
 
         public UndoPropertyModification[] ApplyHelperEffects(UndoPropertyModification[] modifications)
@@ -911,15 +924,19 @@ namespace JSAM
         static bool lowPassFoldout;
         static bool reverbFoldout;
 
+        SerializedProperty bypassEffects;
+        SerializedProperty bypassListenerEffects;
+        SerializedProperty bypassReverbZones;
+
         void DrawAudioEffectTools(AudioFileMusicObject myScript)
         {
             GUIContent blontent = new GUIContent("Audio Effects Stack", "");
             showAudioEffects = EditorGUILayout.BeginFoldoutHeaderGroup(showAudioEffects, blontent);
             if (showAudioEffects)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("bypassEffects"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("bypassListenerEffects"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("bypassReverbZones"));
+                EditorGUILayout.PropertyField(bypassEffects);
+                EditorGUILayout.PropertyField(bypassListenerEffects);
+                EditorGUILayout.PropertyField(bypassReverbZones);
                 if (myScript.chorusFilter.enabled)
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
