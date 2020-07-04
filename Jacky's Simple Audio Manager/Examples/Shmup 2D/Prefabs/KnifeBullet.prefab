@@ -49,6 +49,7 @@ SpriteRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -60,6 +61,7 @@ SpriteRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -110,10 +112,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spatialSound: 1
-  sound: None
+  sound: BulletHit
+  loopSound: 0
   priority: 128
   pitchShift: 1
-  soundFile: {fileID: 8300000, guid: fd102914e9315024e993441b636b1aab, type: 3}
+  delay: 0
+  ignoreTimeScale: 0
+  audioObject: {fileID: 11400000, guid: 0c17e0236e4346b4a8d3b13a15ed5f38, type: 2}
+  triggersWith:
+    serializedVersion: 2
+    m_Bits: 0
+  triggerEvent: 0
 --- !u!61 &-8625587954343364288
 BoxCollider2D:
   m_ObjectHideFlags: 0

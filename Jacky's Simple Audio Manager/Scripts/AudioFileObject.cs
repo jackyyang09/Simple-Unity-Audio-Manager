@@ -310,7 +310,7 @@ namespace JSAM
                 if (file.category == "" || file.category == "Hidden") continue;
                 else if (projectCategories.ContainsKey(file.category))
                 {
-                    projectCategories[file.category]++;
+                    //projectCategories[file.category]++;
                 }
                 else
                 {
@@ -318,13 +318,13 @@ namespace JSAM
                 }
             }
             // Prune unused categories
-            foreach (string key in projectCategories.Keys)
-            {
-                if (projectCategories[key] == 0)
-                {
-                    projectCategories.Remove(key);
-                }
-            }
+            //foreach (string key in projectCategories.Keys)
+            //{
+            //    if (projectCategories[key] == 0)
+            //    {
+            //        projectCategories.Remove(key);
+            //    }
+            //}
 
             string[] newArray = new string[projectCategories.Count];
             projectCategories.Keys.CopyTo(newArray, 0);

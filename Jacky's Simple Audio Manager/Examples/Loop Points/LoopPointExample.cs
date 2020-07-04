@@ -17,7 +17,6 @@ public class LoopPointExample : MonoBehaviour
     private void Start()
     {
         active = true;
-        sourceToTrack = GetComponent<AudioPlayerMusic>().GetAudioSource();
     }
 
     public void ToggleLoopPoints()
@@ -36,14 +35,21 @@ public class LoopPointExample : MonoBehaviour
 
     public void Update()
     {
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        if (sourceToTrack == null)
         {
-            sourceToTrack.time -= 5;
+            sourceToTrack = GetComponent<AudioPlayerMusic>().GetAudioSource();
         }
-        else if (Input.GetKeyDown(KeyCode.RightArrow))
+        if (sourceToTrack != null)
         {
-            sourceToTrack.time += 5;
+            if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                sourceToTrack.time = Mathf.Clamp(sourceToTrack.time - 5f, 0, sourceToTrack.clip.length - 0.01f);
+            }
+            else if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                sourceToTrack.time = Mathf.Clamp(sourceToTrack.time + 5f, 0, sourceToTrack.clip.length - 0.01f);
+            }
+            progressSlider.value = sourceToTrack.time / sourceToTrack.clip.length;
         }
-        progressSlider.value = sourceToTrack.time / sourceToTrack.clip.length;
     }
 }

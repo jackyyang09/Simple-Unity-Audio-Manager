@@ -723,6 +723,14 @@ namespace JSAM
 
         void OnDisable()
         {
+            // Fix legacy Audio Files
+            SerializedProperty safeName = serializedObject.FindProperty("safeName");
+            string currentName = AudioManagerEditor.ConvertToAlphanumeric(name);
+            if (currentName != safeName.stringValue)
+            {
+                safeName.stringValue = currentName;
+            }
+
             EditorApplication.update -= Update;
             Undo.undoRedoPerformed -= OnUndoRedo;
             DestroyAudioHelper();

@@ -2549,6 +2549,10 @@ namespace JSAM
                 {
                     instance = this;
                 }
+                else if (instance.gameObject.scene.name != gameObject.scene.name)
+                {
+                    instance = this;
+                }
                 else if (killSelf)
                 {
                     Destroy(gameObject);

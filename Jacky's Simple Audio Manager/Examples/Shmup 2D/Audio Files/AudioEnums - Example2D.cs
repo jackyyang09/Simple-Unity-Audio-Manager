@@ -4,8 +4,8 @@ namespace JSAM {
         Shooting
     }
     public enum MusicExample2D{
-        MainThemeCombined,
         MainTheme,
+        MainThemeCombined,
         SideTheme
     }
 }

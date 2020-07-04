@@ -65,9 +65,7 @@ namespace JSAM
                 {
                     //categories.AddRange(AudioManager.instance.GetCategories());
                     categories.AddRange(AudioFileObject.GetCategories());
-                    
                 }
-                AudioManager.instance.InitializeCategories();
                 GenericMenu newMenu = new GenericMenu();
                 int i = 0;
                 // To reduce the number of boolean comparisons we do as we iterate
@@ -450,6 +448,14 @@ namespace JSAM
 
         void OnDisable()
         {
+            // Fix legacy Audio Files
+            SerializedProperty safeName = serializedObject.FindProperty("safeName");
+            string currentName = AudioManagerEditor.ConvertToAlphanumeric(name);
+            if (currentName != safeName.stringValue)
+            {
+                safeName.stringValue = currentName;
+            }
+
             EditorApplication.update -= Update;
             Undo.undoRedoPerformed -= OnUndoRedo;
             DestroyAudioHelper();

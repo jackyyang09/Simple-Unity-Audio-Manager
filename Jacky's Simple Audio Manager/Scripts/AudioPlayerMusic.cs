@@ -48,13 +48,13 @@ namespace JSAM
                     Stop();
                     break;
             }
-            
         }
 
         public void Play()
         {
             AudioManager am = AudioManager.instance;
 
+            if (am == null) return;
             if (am.IsMusicPlayingInternal(audioObject) && !restartOnReplay) return;
 
             if (spatializeSound)
@@ -82,15 +82,18 @@ namespace JSAM
         {
             AudioManager am = AudioManager.instance;
 
-            switch (transitionMode)
+            if (am != null)
             {
-                case TransitionMode.None:
-                    am.StopMusicInternal(audioObject);
-                    break;
-                case TransitionMode.FadeFromSilence:
-                case TransitionMode.Crossfade:
-                    am.FadeMusicOutInternal(musicFadeOutTime);
-                    break;
+                switch (transitionMode)
+                {
+                    case TransitionMode.None:
+                        am.StopMusicInternal(audioObject);
+                        break;
+                    case TransitionMode.FadeFromSilence:
+                    case TransitionMode.Crossfade:
+                        am.FadeMusicOutInternal(musicFadeOutTime);
+                        break;
+                }
             }
 
             sourceBeingUsed = null;

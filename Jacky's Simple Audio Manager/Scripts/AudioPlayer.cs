@@ -116,6 +116,7 @@ namespace JSAM
         {
             AudioManager am = AudioManager.instance;
 
+            if (am == null) return;
             if (!loopSound)
             {
                 if (am.IsSoundPlayingInternal(audioObject, sTransform))

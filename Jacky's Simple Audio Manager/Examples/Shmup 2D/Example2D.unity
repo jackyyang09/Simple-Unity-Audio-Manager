@@ -374,6 +374,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -447,6 +448,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -520,6 +522,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -797,6 +800,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -900,6 +904,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1112,6 +1117,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1285,6 +1291,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1632,6 +1639,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1741,6 +1749,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1890,6 +1899,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -2138,6 +2148,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -2211,6 +2222,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -2333,13 +2345,14 @@ MonoBehaviour:
   transitionMode: 0
   keepPlaybackPosition: 0
   restartOnReplay: 0
-  musicFadeTime: 0
+  musicFadeInTime: 0
+  musicFadeOutTime: 0
   loopMode: 2
-  playOnStart: 1
-  playOnEnable: 0
-  stopOnDisable: 0
-  stopOnDestroy: 0
-  musicFile: {fileID: 0}
+  audioObject: {fileID: 0}
+  onStart: 1
+  onEnable: 0
+  onDisable: 0
+  onDestroy: 2
 --- !u!4 &4502563657082201730
 Transform:
   m_ObjectHideFlags: 0
@@ -2387,8 +2400,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0c17e0236e4346b4a8d3b13a15ed5f38, type: 2}
   - {fileID: 11400000, guid: 3cd9f654ab42ebd40a3491048aeacc09, type: 2}
   audioFileMusicObjects:
-  - {fileID: 11400000, guid: 960ccc6048a725046962d1dd3c40f86f, type: 2}
   - {fileID: 11400000, guid: ba811883cbf748a44976f08ef6af3671, type: 2}
+  - {fileID: 11400000, guid: 960ccc6048a725046962d1dd3c40f86f, type: 2}
   - {fileID: 11400000, guid: 807c84d8fa85b734186e8c3815c42896, type: 2}
   sceneSoundEnumName: JSAM.SoundsExample2D
   sceneMusicEnumName: JSAM.MusicExample2D
@@ -2403,13 +2416,13 @@ MonoBehaviour:
   disableConsoleLogs: 0
   dontDestroyOnLoad: 1
   dynamicSourceAllocation: 1
-  stopSoundsOnSceneLoad: 0
+  stopOnSceneLoad: 0
   spatializeLateUpdate: 0
   timeScaledSounds: 1
-  audioFolderLocation: Assets/Jacky's Simple Audio Manager/Examples/Shmup 2D/Audio
-    Files
   instancedEnums: 1
   wasInstancedBefore: 1
   listener: {fileID: 519420029}
   sourcePrefab: {fileID: 3048837711066349604, guid: cf11aed7e0e56ae45afe7eaebe30a616,
     type: 3}
+  audioFolderLocation: Assets/Jacky's Simple Audio Manager/Examples/Shmup 2D/Audio
+    Files
