@@ -33,5 +33,20 @@ namespace JSAM
                 AudioManager.instance.PlaySoundInternal(index, transform);
             }
         }
+
+        public void SetMasterVolume(float newVal)
+        {
+            AudioManager.instance.SetMasterVolumeInternal(newVal);
+        }
+
+        public void SetMusicVolume(float newVal)
+        {
+            AudioManager.instance.SetMusicVolumeInternal(newVal);
+        }
+
+        public void SetSoundVolume(float newVal)
+        {
+            AudioManager.instance.SetSoundVolumeInternal(newVal);
+        }
     }
 }
