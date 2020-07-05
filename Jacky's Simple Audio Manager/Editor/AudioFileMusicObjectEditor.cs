@@ -723,14 +723,6 @@ namespace JSAM
 
         void OnDisable()
         {
-            // Fix legacy Audio Files
-            SerializedProperty safeName = serializedObject.FindProperty("safeName");
-            string currentName = AudioManagerEditor.ConvertToAlphanumeric(name);
-            if (currentName != safeName.stringValue)
-            {
-                safeName.stringValue = currentName;
-            }
-
             EditorApplication.update -= Update;
             Undo.undoRedoPerformed -= OnUndoRedo;
             DestroyAudioHelper();
@@ -810,13 +802,13 @@ namespace JSAM
             if (Event.current.type != EventType.Repaint) return null;
 
             Texture2D tex = new Texture2D(width, height, TextureFormat.RGBA32, false);
-            float[] samples = new float[audio.samples];
+            float[] samples = new float[audio.samples * audio.channels];
             float[] waveform = new float[width];
             audio.GetData(samples, 0);
 
-            int packSize = (audio.samples / width) + 1;
+            int packSize = (samples.Length / width) + 1;
             int s = 0;
-            for (int i = 0; i < audio.samples; i += packSize)
+            for (int i = 0; i < samples.Length; i += packSize)
             {
                 waveform[s] = Mathf.Abs(samples[i]);
                 s++;

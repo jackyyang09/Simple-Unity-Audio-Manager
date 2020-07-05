@@ -310,7 +310,7 @@ namespace JSAM
             if (!othersExist) return;
             foreach (AudioMusicZone z in otherZones)
             {
-                if (myScript.music == z.music)
+                if (myScript.music == z.music && z != myScript)
                 {
                     isSharing = true;
                     return;
