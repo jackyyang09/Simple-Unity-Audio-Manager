@@ -30,7 +30,7 @@ namespace JSAM
         protected bool ignoreTimeScale = false;
 
         [SerializeField]
-        //[HideInInspector]
+        [HideInInspector]
         protected AudioFileObject audioObject;
 
         /// <summary>
@@ -62,7 +62,6 @@ namespace JSAM
                 if (!AudioManager.instance) return;
                 foreach (AudioFileObject a in AudioManager.instance.GetSoundLibrary())
                 {
-                    print(a.safeName + " " + a);
                     if (a.safeName == sound)
                     {
                         audioObject = a;

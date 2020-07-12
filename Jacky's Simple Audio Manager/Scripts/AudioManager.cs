@@ -2623,6 +2623,7 @@ namespace JSAM
         /// <returns></returns>
         public static bool IsSoundPlaying<T>(T sound, Transform trans = null) where T : Enum
         {
+			if (!instance) return false;
             return instance.IsSoundPlayingInternal(sound, trans);
         }
 
@@ -2636,6 +2637,7 @@ namespace JSAM
         /// <returns></returns>
         public bool IsSoundPlayingInternal<T>(T sound, Transform trans = null) where T : Enum
         {
+			if (!instance) return false;
             int s = Convert.ToInt32(sound);
             return IsSoundPlayingInternal(s, trans);
         }

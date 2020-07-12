@@ -11,11 +11,7 @@ namespace JSAM
             player.Play();
         }
 
-        /// <summary>
-        /// Takes the name of the Audio enum sound to be played as a string and plays it without spatializing.
-        /// </summary>
-        /// <param name="enumName">Either specify the name by it's Audio File name or use the entire enum</param>
-        public void PlaySoundByEnum(string enumName)
+        int SoundNameToIndex(string enumName)
         {
             string name = enumName;
             if (enumName.Contains("."))
@@ -26,11 +22,43 @@ namespace JSAM
             List<string> enums = new List<string>();
             System.Type enumType = AudioManager.instance.GetSceneSoundEnum();
             enums.AddRange(System.Enum.GetNames(enumType));
-            int index = enums.IndexOf(name);
+            return enums.IndexOf(name);
+        }
+
+        /// <summary>
+        /// Takes the name of the Audio enum sound to be played as a string and plays it without spatializing.
+        /// </summary>
+        /// <param name="enumName">Either specify the name by it's Audio File name or use the entire enum</param>
+        public void PlaySoundByEnum(string enumName)
+        {
+            int index = SoundNameToIndex(enumName);
 
             if (index > -1)
             {
                 AudioManager.instance.PlaySoundInternal(index, transform);
+            }
+        }
+
+        public void PlayLoopingSoundByEnum(string enumName)
+        {
+            int index = SoundNameToIndex(enumName);
+
+            if (index > -1)
+            {
+                AudioManager.instance.PlaySoundLoopInternal(index, transform);
+            }
+        }
+
+        public void StopLoopingSoundByEnum(string enumName)
+        {
+            int index = SoundNameToIndex(enumName);
+
+            if (index > -1)
+            {
+                if (AudioManager.instance.IsSoundLoopingInternal(index))
+                {
+                    AudioManager.instance.StopSoundLoopInternal(index, transform);
+                }
             }
         }
 
