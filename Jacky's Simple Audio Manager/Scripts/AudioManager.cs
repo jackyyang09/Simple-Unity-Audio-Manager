@@ -46,6 +46,7 @@ namespace JSAM
     /// <summary>
     /// AudioManager singleton that manages all audio in the game
     /// </summary>
+    [DefaultExecutionOrder(1)]
     public class AudioManager : MonoBehaviour
     {
         [SerializeField]
@@ -345,7 +346,7 @@ namespace JSAM
 
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            // Revert music source volume
+            // Reapply music source volume
             ApplyMusicVolume();
 
             FindNewListener();
@@ -2013,7 +2014,20 @@ namespace JSAM
         /// <param name="sound">The enum value for the sound in question. Check AudioManager for the proper value</param>
         /// <param name="stopInstantly">Stops sound instantly if true</param>
         /// <param name="trans">Transform of the object playing the looping sound</param>
-        public static void StopSoundLoop<T>(T sound, bool stopInstantly = false, Transform trans = null) where T : Enum
+        public static void StopSoundLoop<T>(T sound, bool stopInstantly = false) where T : Enum
+        {
+            int s = Convert.ToInt32(sound);
+            instance.StopSoundLoopInternal(instance.audioFileObjects[s], stopInstantly, null);
+        }
+
+        /// <summary>
+        /// Stops a looping sound played using PlaySoundLoop and it's variants. 
+        /// To stop a basic a sound that was played through PlaySound and it's variants, use StopSound instead
+        /// </summary>
+        /// <param name="sound">The enum value for the sound in question. Check AudioManager for the proper value</param>
+        /// <param name="stopInstantly">Stops sound instantly if true</param>
+        /// <param name="trans">Transform of the object playing the looping sound</param>
+        public static void StopSoundLoop<T>(T sound, Transform trans, bool stopInstantly = false) where T : Enum
         {
             int s = Convert.ToInt32(sound);
             instance.StopSoundLoopInternal(instance.audioFileObjects[s], stopInstantly, trans);

@@ -264,6 +264,11 @@ namespace JSAM
                     myScript.delay = 0;
                     Undo.RecordObject(myScript, "Fixed negative delay");
                 }
+                if (myScript.maxDistance < 0)
+                {
+                    myScript.maxDistance = 0;
+                    Undo.RecordObject(myScript, "Fixed negative distance");
+                }
             }
 
             #region Quick Reference Guide

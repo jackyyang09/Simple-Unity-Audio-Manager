@@ -19,7 +19,7 @@ MonoBehaviour:
   lastClipIndex: -1
   category: AK Sounds
   relativeVolume: 1
-  spatialize: 0
+  spatialize: 1
   maxDistance: 0
   priority: 128
   startingPitch: 1

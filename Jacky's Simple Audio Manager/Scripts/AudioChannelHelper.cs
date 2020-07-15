@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace JSAM
 {
+    [DefaultExecutionOrder(2)]
     public class AudioChannelHelper : MonoBehaviour
     {
         float fadeTime;
@@ -56,6 +57,7 @@ namespace JSAM
             aSource.bypassListenerEffects = file.bypassListenerEffects;
             aSource.bypassReverbZones = file.bypassReverbZones;
             ApplyEffects();
+            ApplyVolumeChanges();
         }
 
         public void Play(float delay, AudioFileObject file, bool loop = false)

@@ -104,17 +104,17 @@ namespace JSAM
                 case MovementStates.Idle:
                     if (AudioManager.IsSoundLooping(SoundsExample3D.Walk))
                     {
-                        AudioManager.StopSoundLoop(SoundsExample3D.Walk, true, transform);
+                        AudioManager.StopSoundLoop(SoundsExample3D.Walk, transform, true);
                     }
                     if (AudioManager.IsSoundLooping(SoundsExample3D.Running))
                     {
-                        AudioManager.StopSoundLoop(SoundsExample3D.Running, true, transform);
+                        AudioManager.StopSoundLoop(SoundsExample3D.Running, transform, true);
                     }
                     break;
                 case MovementStates.Walking:
                     if (AudioManager.IsSoundLooping(SoundsExample3D.Running))
                     {
-                        AudioManager.StopSoundLoop(SoundsExample3D.Running, true, transform);
+                        AudioManager.StopSoundLoop(SoundsExample3D.Running, transform, true);
                     }
                     if (!AudioManager.IsSoundLooping(SoundsExample3D.Walk))
                     {
@@ -124,7 +124,7 @@ namespace JSAM
                 case MovementStates.Running:
                     if (AudioManager.IsSoundLooping(SoundsExample3D.Walk))
                     {
-                        AudioManager.StopSoundLoop(SoundsExample3D.Walk, true, transform);
+                        AudioManager.StopSoundLoop(SoundsExample3D.Walk, transform, true);
                     }
                     if (!AudioManager.IsSoundLooping(SoundsExample3D.Running))
                     {

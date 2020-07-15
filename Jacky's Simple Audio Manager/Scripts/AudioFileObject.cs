@@ -139,8 +139,8 @@ namespace JSAM
         public float relativeVolume = 1;
 
         [SerializeField]
-        [Tooltip("If true, playback will be affected based on distance and direction from listener.")]
-        public bool spatialize;
+        [Tooltip("If true, playback will be affected based on distance and direction from listener. Otherwise, sounds will be played at the same volume at all times.")]
+        public bool spatialize = true;
 
         [SerializeField]
         [Tooltip("If set above 0, sound can be heard from up to this distance before finally fading away. Acts as an override to the max distance value set in the AudioSource prefab. Good for ambient sounds. Only works if \"spatialize\" is set to true.")]
