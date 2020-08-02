@@ -148,7 +148,7 @@ namespace JSAM
                     "However, music is only played when the scene's AudioListener enters a \"Music Zone.\""
                     , MessageType.None);
                 EditorGUILayout.HelpBox("\"Music Zones\" are defined by a position, a min distance, and a max distance. You can " +
-                    "create a new \"Music Zone\" by clicking either \"Add New Zone at World Origin\" or \"Add New Zone at Local Origin\"."
+                    "create a new \"Music Zone\" by clicking either \"Add New Zone at World Center\" or \"Add New Zone at This Position\"."
                     , MessageType.None);
                 EditorGUILayout.HelpBox("The max distance indicates the distance the AudioListener has to be from the Zone's position to hear the music " +
                     "at minimal volume."
@@ -169,6 +169,7 @@ namespace JSAM
                 EditorGUILayout.HelpBox("Click the \"Hide Transform Tool\" option to hide this GameObject's transform tool and " +
                     "make it easier to manipulate the positions of your Music Zones."
                     , MessageType.None);
+                EditorStyles.helpBox.fontSize = 10;
             }
             EditorGUILayout.EndFoldoutHeaderGroup();
             #endregion  
@@ -271,7 +272,7 @@ namespace JSAM
             EditorGUILayout.EndFoldoutHeaderGroup();
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("Add New Zone At World Origin"))
+            if (GUILayout.Button("Add New Zone At World Center"))
             {
                 int index = positionsProperty.arraySize;
                 positionsProperty.InsertArrayElementAtIndex(index);
@@ -287,7 +288,7 @@ namespace JSAM
                 foldouts.Add(true);
             }
 
-            if (GUILayout.Button("Add New Zone At Local Origin"))
+            if (GUILayout.Button("Add New Zone At This Position"))
             {
                 int index = positionsProperty.arraySize;
                 positionsProperty.InsertArrayElementAtIndex(index);

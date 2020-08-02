@@ -18,7 +18,6 @@ namespace JSAM
         SerializedProperty triggerEventProperty;
         SerializedProperty soundFileProperty;
 
-        static bool showAudioClipSettings = false;
         static bool showHowTo;
 
         private void OnEnable()

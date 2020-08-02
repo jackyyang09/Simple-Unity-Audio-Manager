@@ -460,7 +460,7 @@ namespace JSAM
                 if (helperSource == null) CreateAudioHelper();
 
                 AudioClip music = myScript.GetFile();
-                Rect progressRect = ProgressBar(helperSource.time / music.length, GetInfoString());
+                Rect progressRect = ProgressBar((float)helperSource.timeSamples / (float)helperSource.clip.samples, GetInfoString());
 
                 EditorGUILayout.BeginHorizontal();
 
@@ -470,31 +470,49 @@ namespace JSAM
                 {
                     switch (evt.type)
                     {
-                        case EventType.MouseMove:
-                            break;
                         case EventType.MouseUp:
                             mouseDragging = false;
                             break;
                         case EventType.MouseDown:
                         case EventType.MouseDrag:
-                            if (evt.type == EventType.MouseDown && !mouseDragging)
+                            if (evt.type == EventType.MouseDown)
                             {
                                 if (evt.mousePosition.y > progressRect.yMin && evt.mousePosition.y < progressRect.yMax)
                                 {
                                     mouseDragging = true;
                                 }
+                                else mouseDragging = false;
                             }
                             if (!mouseDragging) break;
                             float newProgress = Mathf.InverseLerp(progressRect.xMin, progressRect.xMax, evt.mousePosition.x);
-                            helperSource.timeSamples = Mathf.Clamp((int)(newProgress * music.length * music.frequency), 0, music.samples);
+                            helperSource.time = Mathf.Clamp( (newProgress * music.length), 0, music.length - AudioManager.EPSILON);
+                            if (myScript.loopMode == LoopMode.LoopWithLoopPoints && myScript.clampToLoopPoints)
+                            {
+                                helperSource.time = Mathf.Clamp(helperSource.time, myScript.loopStart, myScript.loopEnd - AudioManager.EPSILON);
+                            }
                             break;
                     }
+                }
+
+                if (GUILayout.Button(s_BackIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
+                {
+                    if (myScript.loopMode == LoopMode.LoopWithLoopPoints && myScript.clampToLoopPoints)
+                    {
+                        helperSource.timeSamples = Mathf.CeilToInt(myScript.loopStart * music.frequency);
+                    }
+                    else
+                    {
+                        helperSource.timeSamples = 0;
+                    }
+                    helperSource.Stop();
+                    clipPaused = false;
+                    clipPlaying = false;
                 }
 
                 Color colorbackup = GUI.backgroundColor;
                 GUIContent buttonIcon = (clipPlaying) ? s_PlayIcons[1] : s_PlayIcons[0];
                 if (clipPlaying) GUI.backgroundColor = buttonPressedColor;
-                if (GUILayout.Button(buttonIcon))
+                if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                 {
                     clipPlaying = !clipPlaying;
                     if (clipPlaying)
@@ -515,7 +533,7 @@ namespace JSAM
                 GUI.backgroundColor = colorbackup;
                 GUIContent theText = (clipPaused) ? s_PauseIcons[1] : s_PauseIcons[0];
                 if (clipPaused) GUI.backgroundColor = buttonPressedColor;
-                if (GUILayout.Button(theText))
+                if (GUILayout.Button(theText, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                 {
                     clipPaused = !clipPaused;
                     if (clipPaused)
@@ -531,7 +549,7 @@ namespace JSAM
                 GUI.backgroundColor = colorbackup;
                 buttonIcon = (loopClip) ? s_LoopIcons[1] : s_LoopIcons[0];
                 if (loopClip) GUI.backgroundColor = buttonPressedColor;
-                if (GUILayout.Button(buttonIcon))
+                if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                 {
                     loopClip = !loopClip;
                     // helperSource.loop = true;
@@ -594,13 +612,10 @@ namespace JSAM
                 GUI.DrawTexture(rect, cachedTex);
             }
 
-            if (clipPlaying)
-            {
-                Rect progressRect = new Rect(rect);
-                progressRect.width *= value;
-                progressRect.xMin = progressRect.xMax - 1;
-                GUI.Box(progressRect, "", "SelectionRect");
-            }
+            Rect progressRect = new Rect(rect);
+            progressRect.width *= value;
+            progressRect.xMin = progressRect.xMax - 1;
+            GUI.Box(progressRect, "", "SelectionRect");
 
             EditorGUILayout.Space();
 
@@ -632,7 +647,7 @@ namespace JSAM
                     EditorApplication.QueuePlayerLoopUpdate();
                     if (myScript.loopMode == LoopMode.LoopWithLoopPoints)
                     {
-                        if (!helperSource.isPlaying && clipPlaying)
+                        if (!helperSource.isPlaying && clipPlaying && !clipPaused)
                         {
                             if (freePlay)
                             {
@@ -663,7 +678,7 @@ namespace JSAM
                 }
                 else if (!loopClip && myScript.loopMode == LoopMode.LoopWithLoopPoints)
                 {
-                    if (!helperSource.isPlaying || clipPos > myScript.loopEnd)
+                    if ((!helperSource.isPlaying && !clipPaused) || clipPos > myScript.loopEnd)
                     {
                         clipPlaying = false;
                         helperSource.Stop();
@@ -866,8 +881,8 @@ namespace JSAM
             return tex;
         }
 
+        static GUIContent s_BackIcon = null;
         static GUIContent[] s_PlayIcons = { null, null };
-        static GUIContent[] s_AutoPlayIcons = { null, null };
         static GUIContent[] s_PauseIcons = { null, null };
         static GUIContent[] s_LoopIcons = { null, null };
 
@@ -877,8 +892,7 @@ namespace JSAM
         /// </summary>
         static void Init()
         {
-            s_AutoPlayIcons[0] = EditorGUIUtility.TrIconContent("preAudioAutoPlayOff", "Turn Auto Play on");
-            s_AutoPlayIcons[1] = EditorGUIUtility.TrIconContent("preAudioAutoPlayOn", "Turn Auto Play off");
+            s_BackIcon = EditorGUIUtility.TrIconContent("beginButton", "Click to Reset Playback Position");
             s_PlayIcons[0] = EditorGUIUtility.TrIconContent("preAudioPlayOff", "Click to Play");
             s_PlayIcons[1] = EditorGUIUtility.TrIconContent("preAudioPlayOn", "Click to Stop");
             s_PauseIcons[0] = EditorGUIUtility.TrIconContent("PauseButton", "Click to Pause");
@@ -945,7 +959,7 @@ namespace JSAM
                         "The Audio Chorus Filter takes an Audio Clip and processes it creating a chorus effect. " +
                         "The output sounds like there are multiple sources emitting the same sound with slight variations (resembling a choir).");
                     EditorGUILayout.BeginHorizontal();
-                    chorusFoldout = EditorGUILayout.Foldout(chorusFoldout, blontent, EditorStyles.boldLabel);
+                    chorusFoldout = EditorGUILayout.Foldout(chorusFoldout, blontent, true, EditorStyles.boldLabel);
                     blontent = new GUIContent("x", "Remove this filter");
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {
@@ -986,7 +1000,7 @@ namespace JSAM
                     string arrow = (distortionFoldout) ? "▼" : "▶";
                     blontent = new GUIContent("    " + arrow + " Distortion Filter", "Distorts the sound when its played.");
                     EditorGUILayout.BeginHorizontal();
-                    distortionFoldout = EditorGUILayout.Foldout(distortionFoldout, blontent, EditorStyles.boldLabel);
+                    distortionFoldout = EditorGUILayout.Foldout(distortionFoldout, blontent, true, EditorStyles.boldLabel);
                     blontent = new GUIContent("x", "Remove this filter");
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {
@@ -1015,7 +1029,7 @@ namespace JSAM
                     string arrow = (echoFoldout) ? "▼" : "▶";
                     blontent = new GUIContent("    " + arrow + " Echo Filter", "Repeats a sound after a given Delay, attenuating the repetitions based on the Decay Ratio");
                     EditorGUILayout.BeginHorizontal();
-                    echoFoldout = EditorGUILayout.Foldout(echoFoldout, blontent, EditorStyles.boldLabel);
+                    echoFoldout = EditorGUILayout.Foldout(echoFoldout, blontent, true, EditorStyles.boldLabel);
                     blontent = new GUIContent("x", "Remove this filter");
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {
@@ -1052,7 +1066,7 @@ namespace JSAM
                     string arrow = (lowPassFoldout) ? "▼" : "▶";
                     blontent = new GUIContent("    " + arrow + " Low Pass Filter", "Filters the audio to let lower frequencies pass while removing frequencies higher than the cutoff");
                     EditorGUILayout.BeginHorizontal();
-                    lowPassFoldout = EditorGUILayout.Foldout(lowPassFoldout, blontent, EditorStyles.boldLabel);
+                    lowPassFoldout = EditorGUILayout.Foldout(lowPassFoldout, blontent, true, EditorStyles.boldLabel);
                     blontent = new GUIContent("x", "Remove this filter");
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {
@@ -1087,7 +1101,7 @@ namespace JSAM
                     string arrow = (highPassFoldout) ? "▼" : "▶";
                     blontent = new GUIContent("    " + arrow + " High Pass Filter", "Filters the audio to let higher frequencies pass while removing frequencies lower than the cutoff");
                     EditorGUILayout.BeginHorizontal();
-                    highPassFoldout = EditorGUILayout.Foldout(highPassFoldout, blontent, EditorStyles.boldLabel);
+                    highPassFoldout = EditorGUILayout.Foldout(highPassFoldout, blontent, true, EditorStyles.boldLabel);
                     blontent = new GUIContent("x", "Remove this filter");
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {
@@ -1122,7 +1136,7 @@ namespace JSAM
                     string arrow = (reverbFoldout) ? "▼" : "▶";
                     blontent = new GUIContent("    " + arrow + " Reverb Filter", "Modifies the sound to make it feel like it's reverberating around a room");
                     EditorGUILayout.BeginHorizontal();
-                    reverbFoldout = EditorGUILayout.Foldout(reverbFoldout, blontent, EditorStyles.boldLabel);
+                    reverbFoldout = EditorGUILayout.Foldout(reverbFoldout, blontent, true, EditorStyles.boldLabel);
                     blontent = new GUIContent("x", "Remove this filter");
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {

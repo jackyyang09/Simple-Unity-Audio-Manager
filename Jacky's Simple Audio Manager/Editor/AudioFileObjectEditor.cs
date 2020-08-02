@@ -42,6 +42,9 @@ namespace JSAM
         static bool showPlaybackTool;
         static bool showHowTo;
 
+#if !UNITY_2019_3_OR_NEWER
+        static bool filesFoldout;
+#endif
         public override void OnInspectorGUI()
         {
             if (myScript == null) return;
@@ -52,7 +55,7 @@ namespace JSAM
 
             EditorGUILayout.LabelField(new GUIContent("Name: ", "This is the name that AudioManager will use to reference this object with."), new GUIContent(myName));
 
-            #region Category Inspector
+#region Category Inspector
             EditorGUILayout.BeginHorizontal();
             GUIContent blontent = new GUIContent("Category", "An optional field that lets you further sort your AudioFileObjects for better organization in AudioManager's library view.");
             string newCategory = EditorGUILayout.DelayedTextField(blontent, myScript.category);
@@ -94,7 +97,7 @@ namespace JSAM
                 SetCategory(newCategory);
             }
             EditorGUILayout.EndHorizontal();
-            #endregion
+#endregion
 
             if (unregistered)
             {
@@ -121,7 +124,23 @@ namespace JSAM
 
             if (myScript.UsingLibrary()) // Swap file with files
             {
+#if UNITY_2019_3_OR_NEWER
                 EditorGUILayout.PropertyField(files);
+#else           // Property field on an array doesn't seem to work before 2019.3, so we have to make it ourselves
+                EditorGUILayout.Space();
+                EditorGUILayout.LabelField("Attach audio files here to use", EditorStyles.boldLabel);
+                filesFoldout = EditorGUILayout.Foldout(filesFoldout, new GUIContent("Files"), true);
+                if (filesFoldout)
+                {
+                    EditorGUI.indentLevel++;
+                    files.arraySize = EditorGUILayout.IntField("Size", files.arraySize);
+                    for (int i = 0; i < files.arraySize; i++)
+                    {
+                        EditorGUILayout.PropertyField(files.GetArrayElementAtIndex(i));
+                    }
+                    EditorGUI.indentLevel--;
+                }
+#endif
             }
             else
             {
@@ -200,7 +219,7 @@ namespace JSAM
 
             if (!noFiles) DrawPlaybackTool(myScript);
 
-            #region Fade Tools
+#region Fade Tools
             using (new EditorGUI.DisabledScope(myScript.fadeMode == FadeMode.None))
             {
                 if (!myScript.IsLibraryEmpty())
@@ -249,7 +268,7 @@ namespace JSAM
                     EditorGUILayout.EndFoldoutHeaderGroup();
                 }
             }
-            #endregion
+#endregion
 
             if (!noFiles) DrawAudioEffectTools(myScript);
 
@@ -271,7 +290,7 @@ namespace JSAM
                 }
             }
 
-            #region Quick Reference Guide
+#region Quick Reference Guide
             showHowTo = EditorGUILayout.BeginFoldoutHeaderGroup(showHowTo, "Quick Reference Guide");
             if (showHowTo)
             {
@@ -300,7 +319,7 @@ namespace JSAM
                     , MessageType.None);
             }
             EditorGUILayout.EndFoldoutHeaderGroup();
-            #endregion  
+#endregion
         }
 
         void DrawPlaybackTool(AudioFileObject myScript)
@@ -852,7 +871,7 @@ namespace JSAM
             AudioManager.instance.UpdateAudioFileObjectCategories();
         }
 
-        #region Audio Effect Rendering
+#region Audio Effect Rendering
         static bool showAudioEffects;
         static bool chorusFoldout;
         static bool distortionFoldout;
@@ -1123,7 +1142,7 @@ namespace JSAM
                     EditorGUILayout.EndVertical();
                 }
 
-                #region Add New Effect Button
+#region Add New Effect Button
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
                 if (GUILayout.Button("Add New Effect", new GUILayoutOption[] { GUILayout.MaxWidth(200) }))
@@ -1151,7 +1170,7 @@ namespace JSAM
                 }
                 GUILayout.FlexibleSpace();
                 EditorGUILayout.EndHorizontal();
-                #endregion
+#endregion
             }
             EditorGUILayout.EndFoldoutHeaderGroup();
         }
@@ -1228,6 +1247,6 @@ namespace JSAM
             myScript.reverbFilter.diffusion = 100;
             myScript.reverbFilter.density = 100;
         }
-        #endregion
+#endregion
     }
 }

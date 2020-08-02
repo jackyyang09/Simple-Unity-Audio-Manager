@@ -95,7 +95,7 @@ namespace JSAM
         {
             aSource.Stop();
             if (file.playReversed) aSource.time = aSource.clip.length - AudioManager.EPSILON;
-            else aSource.timeSamples = 0;
+            else aSource.time = Mathf.Clamp(aSource.time, 0, aSource.clip.length - AudioManager.EPSILON);
             aSource.Play();
             aSource.pitch = AudioManager.GetRandomPitch(file);
             aSource.bypassEffects = file.bypassEffects;

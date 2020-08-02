@@ -26,7 +26,7 @@ namespace JSAM
         SerializedProperty onDisable;
         SerializedProperty onDestroy;
 
-        static bool showAudioClipSettings = false;
+        //static bool showAudioClipSettings = false;
         static bool showHowTo = false;
 
         private void OnEnable()
