@@ -79,12 +79,12 @@ namespace JSAM
             EditorGUILayout.Space();
 
             content = new GUIContent("Volume Controls", "Change the volume levels of all AudioManager-controlled audio channels here");
-            showVolumeSettings = EditorGUILayout.BeginFoldoutHeaderGroup(showVolumeSettings, content);
+            showVolumeSettings = EditorCompatability.SpecialFoldouts(showVolumeSettings, content);
             if (showVolumeSettings)
             {
                 DrawAdvancedVolumeControls(myScript);
             }
-            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorCompatability.EndSpecialFoldoutGroup();
 
             DrawPropertiesExcluding(serializedObject, excludedProperties.ToArray());
 
@@ -363,7 +363,7 @@ namespace JSAM
             #region Library Foldouts and Categories
             content = new GUIContent("Sound Library", "Library of all sounds loaded into AudioManager's Sound Dictionary. Mouse over each entry to see the full name in script.");
 
-            showSoundLibrary = EditorGUILayout.BeginFoldoutHeaderGroup(showSoundLibrary, content);
+            showSoundLibrary = EditorCompatability.SpecialFoldouts(showSoundLibrary, content);
             if (showSoundLibrary)
             {
                 string enumName = sceneSoundEnumName.stringValue;
@@ -428,7 +428,7 @@ namespace JSAM
                             }
                         }
 
-                        GUIStyle foldoutGroup = new GUIStyle(EditorStyles.foldoutHeader);
+                        GUIStyle foldoutGroup = EditorCompatability.GetFoldoutHeaderStyle();
                         foldoutGroup.fontStyle = FontStyle.Normal;
                         string[] keys = new string[categories.Keys.Count];
                         categories.Keys.CopyTo(keys, 0);
@@ -459,11 +459,11 @@ namespace JSAM
                     }
                 }
             }
-            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorCompatability.EndSpecialFoldoutGroup();
 
             content = new GUIContent("Music Library", "Library of all music loaded into AudioManager's Music Dictionary. Mouse over each entry to see the full name in script.");
 
-            showMusicLibrary = EditorGUILayout.BeginFoldoutHeaderGroup(showMusicLibrary, content);
+            showMusicLibrary = EditorCompatability.SpecialFoldouts(showMusicLibrary, content);
             if (showMusicLibrary)
             {
                 string enumName = sceneMusicEnumName.stringValue;
@@ -527,7 +527,7 @@ namespace JSAM
                             }
                         }
 
-                        GUIStyle foldoutGroup = new GUIStyle(EditorStyles.foldoutHeader);
+                        GUIStyle foldoutGroup = EditorCompatability.GetFoldoutHeaderStyle();
                         foldoutGroup.fontStyle = FontStyle.Normal;
                         string[] keys = new string[categoriesMusic.Keys.Count];
                         categoriesMusic.Keys.CopyTo(keys, 0);
@@ -558,7 +558,7 @@ namespace JSAM
                     }
                 }
             }
-            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorCompatability.EndSpecialFoldoutGroup();
 #endregion
 
             if (myScript.GetMasterVolumeInternal() == 0) EditorGUILayout.HelpBox("Note: Master Volume is set to 0!", MessageType.Info);
@@ -568,7 +568,7 @@ namespace JSAM
             EditorGUILayout.Space();
 
             #region Quick Reference Guide
-            showHowTo = EditorGUILayout.BeginFoldoutHeaderGroup(showHowTo, "Quick Reference Guide");
+            showHowTo = EditorCompatability.SpecialFoldouts(showHowTo, "Quick Reference Guide");
             if (showHowTo)
             {
                 EditorGUILayout.Space();
@@ -616,7 +616,7 @@ namespace JSAM
                     " used in other scenes. It's with this system that allows AudioManager to hold many different example projects as sub folders!"
                     , MessageType.None);
             }
-            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorCompatability.EndSpecialFoldoutGroup();
             #endregion  
         }
 

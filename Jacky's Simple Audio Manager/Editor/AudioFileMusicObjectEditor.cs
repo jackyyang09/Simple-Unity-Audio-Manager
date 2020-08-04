@@ -168,7 +168,7 @@ namespace JSAM
                 {
                     blontent = new GUIContent("Loop Point Tools", "Customize where music will loop between. " +
                         "Loops may not appear to be seamless in the inspector but rest assured, they will be seamless in-game!");
-                    showLoopPointTool = EditorGUILayout.BeginFoldoutHeaderGroup(showLoopPointTool, blontent);
+                    showLoopPointTool = EditorCompatability.SpecialFoldouts(showLoopPointTool, blontent);
                     if (showLoopPointTool && myScript.loopMode == LoopMode.LoopWithLoopPoints)
                     {
                         GUIContent[] contents = new GUIContent[] { new GUIContent("Slider"), new GUIContent("Time"), new GUIContent("Samples"), new GUIContent("BPM") };
@@ -355,7 +355,7 @@ namespace JSAM
                             forceRepaint = true;
                         }
                     }
-                    EditorGUILayout.EndFoldoutHeaderGroup();
+                    EditorCompatability.EndSpecialFoldoutGroup();
                 }
             }
             #endregion
@@ -376,7 +376,7 @@ namespace JSAM
             }
 
             #region Quick Reference Guide 
-            showHowTo = EditorGUILayout.BeginFoldoutHeaderGroup(showHowTo, "Quick Reference Guide");
+            showHowTo = EditorCompatability.SpecialFoldouts(showHowTo, "Quick Reference Guide");
             if (showHowTo)
             {
                 EditorGUILayout.Space();
@@ -441,6 +441,7 @@ namespace JSAM
                     "to use in other programs!"
                     , MessageType.None);
             }
+            EditorCompatability.EndSpecialFoldoutGroup();
             #endregion  
         }
 
@@ -453,7 +454,7 @@ namespace JSAM
             GUIContent blontent = new GUIContent("Audio Playback Preview",
                 "Allows you to preview how your AudioFileMusicObject will sound during runtime right here in the inspector. " +
                 "Some effects, like spatialization, will not be available to preview");
-            showPlaybackTool = EditorGUILayout.BeginFoldoutHeaderGroup(showPlaybackTool, blontent);
+            showPlaybackTool = EditorCompatability.SpecialFoldouts(showPlaybackTool, blontent);
 
             if (showPlaybackTool)
             {
@@ -581,7 +582,7 @@ namespace JSAM
 
                 EditorGUILayout.Space();
             }
-            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorCompatability.EndSpecialFoldoutGroup();
         }
 
         /// <summary>
@@ -945,7 +946,7 @@ namespace JSAM
         void DrawAudioEffectTools(AudioFileMusicObject myScript)
         {
             GUIContent blontent = new GUIContent("Audio Effects Stack", "");
-            showAudioEffects = EditorGUILayout.BeginFoldoutHeaderGroup(showAudioEffects, blontent);
+            showAudioEffects = EditorCompatability.SpecialFoldouts(showAudioEffects, blontent);
             if (showAudioEffects)
             {
                 EditorGUILayout.PropertyField(bypassEffects);
@@ -1230,7 +1231,7 @@ namespace JSAM
                 EditorGUILayout.EndHorizontal();
                 #endregion
             }
-            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorCompatability.EndSpecialFoldoutGroup();
         }
 
         void EnableChorus()

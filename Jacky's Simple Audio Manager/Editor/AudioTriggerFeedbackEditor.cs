@@ -86,7 +86,7 @@ namespace JSAM
 
             EditorGUILayout.Space();
 
-            showHowTo = EditorGUILayout.BeginFoldoutHeaderGroup(showHowTo, "Quick Reference Guide");
+            showHowTo = EditorCompatability.SpecialFoldouts(showHowTo, "Quick Reference Guide");
             if (showHowTo)
             {
                 EditorGUILayout.Space();
@@ -112,7 +112,7 @@ namespace JSAM
                 EditorGUILayout.HelpBox("Feel free to use multiple different AudioTriggerFeedback components on the same GameObject!"
                     , MessageType.None);
             }
-            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorCompatability.EndSpecialFoldoutGroup();
         }
     }
 }

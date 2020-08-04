@@ -120,7 +120,7 @@ namespace JSAM
             EditorGUILayout.Space();
 
             #region Quick Reference Guide
-            showHowTo = EditorGUILayout.BeginFoldoutHeaderGroup(showHowTo, "Quick Reference Guide");
+            showHowTo = EditorCompatability.SpecialFoldouts(showHowTo, "Quick Reference Guide");
             if (showHowTo)
             {
                 EditorGUILayout.Space();
@@ -147,6 +147,7 @@ namespace JSAM
                 //    , MessageType.None);
 
             }
+            EditorCompatability.EndSpecialFoldoutGroup();
             EditorGUILayout.Space();
             #endregion  
         }

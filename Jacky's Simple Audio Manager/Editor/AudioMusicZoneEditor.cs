@@ -138,7 +138,7 @@ namespace JSAM
             }
 
             #region Quick Reference Guide
-            showHowTo = EditorGUILayout.BeginFoldoutHeaderGroup(showHowTo, "Quick Reference Guide");
+            showHowTo = EditorCompatability.SpecialFoldouts(showHowTo, "Quick Reference Guide");
             if (showHowTo)
             {
                 EditorGUILayout.Space();
@@ -171,8 +171,8 @@ namespace JSAM
                     , MessageType.None);
                 EditorStyles.helpBox.fontSize = 10;
             }
-            EditorGUILayout.EndFoldoutHeaderGroup();
-            #endregion  
+            EditorCompatability.EndSpecialFoldoutGroup();
+#endregion
         }
 
         private void OnSceneGUI()
@@ -217,8 +217,9 @@ namespace JSAM
 
             List<int> markedForDeletion = new List<int>();
             GUIContent blontent;
+
             bool previousFoldout = positionsFoldout;
-            positionsFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(positionsFoldout, new GUIContent("Music Zones"));
+            positionsFoldout = EditorCompatability.SpecialFoldouts(positionsFoldout, "Music Zone");
             if (previousFoldout != positionsFoldout) // Toggle handles in scene view
             {
                 if (SceneView.sceneViews.Count > 0) SceneView.lastActiveSceneView.Repaint();
@@ -269,7 +270,7 @@ namespace JSAM
                     positionsProperty.DeleteArrayElementAtIndex(item);
                 }
             }
-            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorCompatability.EndSpecialFoldoutGroup();
 
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("Add New Zone At World Center"))

@@ -224,7 +224,7 @@ namespace JSAM
             {
                 if (!myScript.IsLibraryEmpty())
                 {
-                    showFadeTool = EditorGUILayout.BeginFoldoutHeaderGroup(showFadeTool, new GUIContent("Fade Tools", "Show/Hide the Audio Fade previewer"));
+                    showFadeTool = EditorCompatability.SpecialFoldouts(showFadeTool, new GUIContent("Fade Tools", "Show/Hide the Audio Fade previewer"));
                     if (showFadeTool && myScript.fadeMode != FadeMode.None)
                     {
                         GUIContent fContent = new GUIContent();
@@ -265,7 +265,7 @@ namespace JSAM
                                 break;
                         }
                     }
-                    EditorGUILayout.EndFoldoutHeaderGroup();
+                    EditorCompatability.EndSpecialFoldoutGroup();
                 }
             }
 #endregion
@@ -291,7 +291,7 @@ namespace JSAM
             }
 
 #region Quick Reference Guide
-            showHowTo = EditorGUILayout.BeginFoldoutHeaderGroup(showHowTo, "Quick Reference Guide");
+            showHowTo = EditorCompatability.SpecialFoldouts(showHowTo, "Quick Reference Guide");
             if (showHowTo)
             {
                 EditorGUILayout.Space();
@@ -318,7 +318,7 @@ namespace JSAM
                     "category to this audio file object. Use the \"Hidden\" category to hide your audio file object from the library list completely."
                     , MessageType.None);
             }
-            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorCompatability.EndSpecialFoldoutGroup();
 #endregion
         }
 
@@ -327,7 +327,7 @@ namespace JSAM
             GUIContent fContent = new GUIContent("Audio Playback Preview", 
                 "Allows you to preview how your AudioFileObject will sound during runtime right here in the inspector. " +
                 "Some effects, like spatialization and delay, will not be available to preview");
-            showPlaybackTool = EditorGUILayout.BeginFoldoutHeaderGroup(showPlaybackTool, fContent);
+            showPlaybackTool = EditorCompatability.SpecialFoldouts(showPlaybackTool, fContent);
 
             if (playingClip == null)
             {
@@ -375,7 +375,7 @@ namespace JSAM
                 GUILayout.FlexibleSpace();
                 EditorGUILayout.EndHorizontal();
             }
-            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorCompatability.EndSpecialFoldoutGroup();
         }
 
         public void DesignateActiveAudioClip(AudioFileObject myScript)
@@ -887,7 +887,7 @@ namespace JSAM
         void DrawAudioEffectTools(AudioFileObject myScript)
         {
             GUIContent blontent = new GUIContent("Audio Effects Stack", "");
-            showAudioEffects = EditorGUILayout.BeginFoldoutHeaderGroup(showAudioEffects, blontent);
+            showAudioEffects = EditorCompatability.SpecialFoldouts(showAudioEffects, blontent);
             if (showAudioEffects)
             {
                 EditorGUILayout.PropertyField(bypassEffects);
@@ -1172,7 +1172,7 @@ namespace JSAM
                 EditorGUILayout.EndHorizontal();
 #endregion
             }
-            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorCompatability.EndSpecialFoldoutGroup();
         }
 
         void EnableChorus()

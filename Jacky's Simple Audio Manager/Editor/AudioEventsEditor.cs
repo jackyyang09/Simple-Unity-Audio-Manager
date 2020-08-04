@@ -15,7 +15,7 @@ namespace JSAM
             DrawPropertiesExcluding(serializedObject, new[] { "m_Script" });
 
             #region Quick Reference Guide
-            showHowTo = EditorGUILayout.BeginFoldoutHeaderGroup(showHowTo, "Quick Reference Guide");
+            showHowTo = EditorCompatability.SpecialFoldouts(showHowTo, "Quick Reference Guide");
             if (showHowTo)
             {
                 EditorGUILayout.Space();
@@ -55,7 +55,7 @@ namespace JSAM
                     Application.OpenURL("https://docs.unity3d.com/Manual/AnimationEventsOnImportedClips.html");
                 }
             }
-            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorCompatability.EndSpecialFoldoutGroup();
             #endregion  
         }
     }

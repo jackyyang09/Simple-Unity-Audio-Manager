@@ -20,7 +20,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: a2f331ceaeebb254aa600162e217214e, type: 3}
   useLibrary: 1
   neverRepeat: 1
-  lastClipIndex: -1
+  lastClipIndex: 1
   category: AK Sounds
   relativeVolume: 1
   spatialize: 0

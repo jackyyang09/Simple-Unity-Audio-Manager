@@ -83,7 +83,7 @@ namespace JSAM
 
             EditorGUILayout.Space();
 
-            showHowTo = EditorGUILayout.BeginFoldoutHeaderGroup(showHowTo, "Quick Reference Guide");
+            showHowTo = EditorCompatability.SpecialFoldouts(showHowTo, "Quick Reference Guide");
             if (showHowTo)
             {
                 EditorGUILayout.Space();
@@ -102,7 +102,7 @@ namespace JSAM
                     " Particle System plays sounds on both instantiation and destruction!"
                     , MessageType.None);
             }
-            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorCompatability.EndSpecialFoldoutGroup();
         }
     }
 }
