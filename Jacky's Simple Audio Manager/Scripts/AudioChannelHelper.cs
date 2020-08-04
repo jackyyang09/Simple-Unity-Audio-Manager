@@ -262,32 +262,56 @@ namespace JSAM
         {
             {
                 AudioChorusFilter component;
+#if UNITY_2019_4_OR_NEWER
                 TryGetComponent(out component);
+#else
+                component = GetComponent<AudioChorusFilter>();
+#endif
                 if (component) component.enabled = false;
             }
             {
                 AudioDistortionFilter component;
+#if UNITY_2019_4_OR_NEWER
                 TryGetComponent(out component);
+#else
+                component = GetComponent<AudioDistortionFilter>();
+#endif
                 if (component) component.enabled = false;
             }
             {
                 AudioEchoFilter component;
+#if UNITY_2019_4_OR_NEWER
                 TryGetComponent(out component);
+#else
+                component = GetComponent<AudioEchoFilter>();
+#endif
                 if (component) component.enabled = false;
             }
             {
                 AudioHighPassFilter component;
+#if UNITY_2019_4_OR_NEWER
                 TryGetComponent(out component);
+#else
+                component = GetComponent<AudioHighPassFilter>();
+#endif
                 if (component) component.enabled = false;
             }
             {
                 AudioLowPassFilter component;
+#if UNITY_2019_4_OR_NEWER
                 TryGetComponent(out component);
+#else
+                component = GetComponent<AudioLowPassFilter>();
+#endif
                 if (component) component.enabled = false;
             }
             {
                 AudioReverbFilter component;
+#if UNITY_2019_4_OR_NEWER
                 TryGetComponent(out component);
+#else
+                component = GetComponent<AudioReverbFilter>();
+#endif
                 if (component) component.enabled = false;
             }
         }
