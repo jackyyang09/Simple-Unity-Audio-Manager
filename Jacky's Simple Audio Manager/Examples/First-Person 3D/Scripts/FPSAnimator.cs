@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using JSAM;
 
 namespace JSAM
 {
@@ -32,6 +31,9 @@ namespace JSAM
         float aimDownSightsTime = 1;
         float adsProgress = 0;
 
+        [SerializeField]
+        UnityEngine.UI.Text ammoText;
+
         [Header("Example of AudioEvents being used when player crouches")]
         [SerializeField]
         UnityEngine.Events.UnityEvent onCrouch = null;
@@ -52,6 +54,7 @@ namespace JSAM
         {
             bullets = magSize;
             canShoot = true;
+            ammoText.text = bullets.ToString(); 
         }
 
         // Update is called once per frame
@@ -84,12 +87,14 @@ namespace JSAM
                                 StartCoroutine(ShootDelay());
                                 anim.SetTrigger("Fire");
                                 bullets--;
+                                ammoText.text = bullets.ToString();
                             }
                             else if (bullets == 1)
                             {
                                 anim.SetTrigger("FireFinal");
                                 StartCoroutine(ShootDelay());
                                 bullets--;
+                                ammoText.text = bullets.ToString();
                                 AudioManager.PlaySound(SoundsExample3D.AKDryFire);
                             }
                         }
@@ -138,6 +143,7 @@ namespace JSAM
             bullets = magSize;
             canShoot = true;
             currentState = ShooterStates.Idle;
+            ammoText.text = bullets.ToString();
         }
     }
 }

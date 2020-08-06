@@ -31,13 +31,33 @@ namespace JSAM
                     "This component contains some helpful methods meant to be called by these Event systems."
                     , MessageType.None);
 
-                EditorGUILayout.Space();
+                if (GUILayout.Button("Guide on using JSAM with Mecanim", new GUILayoutOption[] { GUILayout.MinWidth(100) }))
+                {
+                    Application.OpenURL("https://github.com/jackyyang09/Simple-Unity-Audio-Manager/wiki/8.-Using-JSAM-with-Mecanim");
+                }
 
-                EditorGUILayout.LabelField("public void PlaySoundByEnum (string enumName)");
-                EditorGUILayout.HelpBox("Takes the name of the Audio enum sound to be played as a string and plays it according to the settings specified in the Audio File Object", MessageType.None);
+                EditorGUILayout.Space();
 
                 EditorGUILayout.LabelField("public void PlayAudioPlayer (AudioPlayer player)");
                 EditorGUILayout.HelpBox("Pass the AudioPlayer to play it's contents", MessageType.None);
+
+                EditorGUILayout.LabelField("public void PlaySoundByEnum (string enumName)");
+                EditorGUILayout.HelpBox("Takes the Enum name of the Audio File to be played and plays it according to the File's settings", MessageType.None);
+
+                EditorGUILayout.LabelField("public void PlayLoopingSoundByEnum (string enumName)");
+                EditorGUILayout.HelpBox("Does the same as PlaySoundByEnum but loops the sound instead", MessageType.None);
+
+                EditorGUILayout.LabelField("public void StopLoopingSoundByEnum (string enumName)");
+                EditorGUILayout.HelpBox("Stops an existing looping sound whose Audio File name matches the one specified", MessageType.None);
+
+                EditorGUILayout.LabelField("public void SetMasterVolume (float newVolume)");
+                EditorGUILayout.HelpBox("Changes the volume level of the Master channel to the specified value from 0 to 1", MessageType.None);
+
+                EditorGUILayout.LabelField("public void SetMusicVolume (float newVolume)");
+                EditorGUILayout.HelpBox("Changes the volume level of the Music channel to the specified value from 0 to 1", MessageType.None);
+
+                EditorGUILayout.LabelField("public void SetSoundVolume (float newVolume)");
+                EditorGUILayout.HelpBox("Changes the volume level of the Sound channel to the specified value from 0 to 1", MessageType.None);
 
                 EditorGUILayout.Space();
 
@@ -60,5 +80,3 @@ namespace JSAM
         }
     }
 }
-
-
