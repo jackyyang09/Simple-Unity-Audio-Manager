@@ -1,11 +1,11 @@
 # Jacky's Simple Audio Manager (JSAM)
 
-Tired of having a billion AudioSources lying about? That will no longer be a reality!
+Tired of having to manage a billion AudioSources lying about? That will no longer be a reality!
 Never worry about sounds and music ever again!
 
-A quick, easy-to-use, decentralized audio playing system for Unity
+Jacky's Simple Audio Manager (aka **JSAM**) is a easy-to-use, performant, and decentralized audio playing system for Unity.
 
-Perfect for game jams, prototypes, or if you just want to get started on a project quickly
+JSAM is perfect for game jams, prototypes and is scaleable with your project!
 
 # Features
 - Easily and intuitively add and play sounds and music!
@@ -18,8 +18,12 @@ Perfect for game jams, prototypes, or if you just want to get started on a proje
    - Collision events
    - Trigger events
    - Particle emission and death
+- *Extensive* in-editor, in-code documentation for easy extensibility
+   
+# Add JSAM to your Project
+- Check out the [wiki](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/wiki/1.-Downloading-and-Importing-JSAM) to see how to make audio **simple** in your project!
 
-## What's New?
+# What's New?
 
 Check out the [Releases](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/releases) page to see all the latest updates!
 If you'd like to see what parts of AudioManager I'm actively working on, you can check out the Trello [here!](https://trello.com/b/r6237lmD/audiomanager)
