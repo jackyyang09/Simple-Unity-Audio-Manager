@@ -21,7 +21,7 @@ JSAM is perfect for game jams, prototypes and is scaleable with your project!
 - *Extensive* in-editor, in-code documentation for easy extensibility
    
 # Add JSAM to your Project
-- Check out the [wiki](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/wiki/1.-Downloading-and-Importing-JSAM) to see how to make audio **simple** in your project!
+- Check out the [wiki](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/wiki/1.-Downloading-and-Importing-JSAM) to see how to **simplify** audio in your project!
 
 # What's New?
 
