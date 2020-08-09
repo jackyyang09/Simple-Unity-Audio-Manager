@@ -32,7 +32,7 @@ namespace JSAM
         float adsProgress = 0;
 
         [SerializeField]
-        UnityEngine.UI.Text ammoText;
+        UnityEngine.UI.Text ammoText = null;
 
         [Header("Example of AudioEvents being used when player crouches")]
         [SerializeField]
