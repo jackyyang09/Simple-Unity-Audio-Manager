@@ -16,16 +16,19 @@ MonoBehaviour:
   files:
   - {fileID: 8300000, guid: 1a3ec11eedd102f4488b169670fcef28, type: 3}
   useLibrary: 0
+  neverRepeat: 0
+  lastClipIndex: -1
   category: 
   relativeVolume: 1
   spatialize: 1
+  maxDistance: 0
   priority: 128
   startingPitch: 1
   pitchShift: 0.05
   playReversed: 0
   delay: 0
   ignoreTimeScale: 0
-  fadeMode: 1
+  fadeMode: 0
   fadeInDuration: 0
   fadeOutDuration: 0
   bypassEffects: 0

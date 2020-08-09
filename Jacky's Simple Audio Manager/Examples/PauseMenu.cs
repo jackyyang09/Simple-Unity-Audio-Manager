@@ -45,21 +45,13 @@ public class PauseMenu : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Sample method that gets called from the sample button in the Pause Menu hierarchy
-    /// </summary>
-    public void FadeMusic()
+    public void UpdateSoundVolume(float newVolume)
     {
-        //AudioManager.instance.FadeMusic("Main Theme Combined", 5);
+        AudioManager.SetSoundVolume(newVolume);
     }
 
-    public void UpdateSoundVolume(UnityEngine.UI.Slider uiElement)
+    public void UpdateMusicVolume(float newVolume)
     {
-        AudioManager.SetSoundVolume(uiElement.value);
-    }
-
-    public void UpdateMusicVolume(UnityEngine.UI.Slider uiElement)
-    {
-        AudioManager.SetMusicVolume(uiElement.value);
+        AudioManager.SetMusicVolume(newVolume);
     }
 }
