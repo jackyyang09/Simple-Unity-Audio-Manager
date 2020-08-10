@@ -44,14 +44,4 @@ public class PauseMenu : MonoBehaviour
             }
         }
     }
-
-    public void UpdateSoundVolume(float newVolume)
-    {
-        AudioManager.SetSoundVolume(newVolume);
-    }
-
-    public void UpdateMusicVolume(float newVolume)
-    {
-        AudioManager.SetMusicVolume(newVolume);
-    }
 }
