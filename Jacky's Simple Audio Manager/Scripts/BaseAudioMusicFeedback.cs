@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace JSAM
 {
-    public class BaseAudioMusicFeedback : MonoBehaviour
+    public abstract class BaseAudioMusicFeedback : MonoBehaviour
     {
         [SerializeField]
         [HideInInspector]

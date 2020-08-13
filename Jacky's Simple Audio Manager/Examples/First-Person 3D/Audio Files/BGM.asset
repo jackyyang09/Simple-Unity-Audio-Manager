@@ -78,7 +78,7 @@ MonoBehaviour:
     diffusion: 100
     density: 100
   clampToLoopPoints: 0
-  loopMode: 2
+  loopMode: 1
   loopStart: 0
-  loopEnd: 12.8
+  loopEnd: 12.800001
   bpm: 160

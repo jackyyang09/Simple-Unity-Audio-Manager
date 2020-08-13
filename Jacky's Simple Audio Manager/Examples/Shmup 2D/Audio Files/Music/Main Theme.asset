@@ -33,7 +33,7 @@ MonoBehaviour:
   bypassEffects: 0
   bypassListenerEffects: 0
   bypassReverbZones: 0
-  safeName: 
+  safeName: MainTheme
   chorusFilter:
     enabled: 0
     dryMix: 0
