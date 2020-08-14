@@ -49,6 +49,7 @@ namespace JSAM
         string myName = "";
         string cachedName = "";
         bool nameChanged = false;
+        bool mouseScrubbed = false;
 
         SerializedProperty loopMode;
         SerializedProperty clampToLoopPoints;
@@ -481,12 +482,13 @@ namespace JSAM
                                 if (evt.mousePosition.y > progressRect.yMin && evt.mousePosition.y < progressRect.yMax)
                                 {
                                     mouseDragging = true;
+                                    mouseScrubbed = true;
                                 }
                                 else mouseDragging = false;
                             }
                             if (!mouseDragging) break;
                             float newProgress = Mathf.InverseLerp(progressRect.xMin, progressRect.xMax, evt.mousePosition.x);
-                            helperSource.time = Mathf.Clamp( (newProgress * music.length), 0, music.length - AudioManager.EPSILON);
+                            helperSource.time = Mathf.Clamp((newProgress * music.length), 0, music.length - AudioManager.EPSILON);
                             if (myScript.loopMode == LoopMode.LoopWithLoopPoints && myScript.clampToLoopPoints)
                             {
                                 helperSource.time = Mathf.Clamp(helperSource.time, myScript.loopStart, myScript.loopEnd - AudioManager.EPSILON);
@@ -506,6 +508,7 @@ namespace JSAM
                         helperSource.timeSamples = 0;
                     }
                     helperSource.Stop();
+                    mouseScrubbed = false;
                     clipPaused = false;
                     clipPlaying = false;
                 }
@@ -518,8 +521,9 @@ namespace JSAM
                     clipPlaying = !clipPlaying;
                     if (clipPlaying)
                     {
-                        helperHelper.PlayDebug(myScript);
-                        // Perhaps make resetting the position optional?
+                        // Note: For some reason, reading from helperSource.time returns 0 even if timeSamples is not 0
+                        // However, writing a value to helperSource.time changes timeSamples to the appropriate value just fine
+                        helperHelper.PlayDebug(myScript, mouseScrubbed);
                         if (clipPaused) helperSource.Pause();
                         firstPlayback = true;
                         freePlay = false;
@@ -527,6 +531,10 @@ namespace JSAM
                     else
                     {
                         helperSource.Stop();
+                        if (!mouseScrubbed)
+                        {
+                            helperSource.time = 0;
+                        }
                         clipPaused = false;
                     }
                 }
@@ -635,13 +643,18 @@ namespace JSAM
                 helperSource.clip = cachedClip;
             }
 
-            if ((clipPlaying && !clipPaused) || (mouseDragging && clipPlaying))
+            if (!helperSource.isPlaying && mouseDragging)
             {
                 Repaint();
+            }
 
+            if ((clipPlaying && !clipPaused) || (mouseDragging && clipPlaying))
+            {
                 float clipPos = helperSource.timeSamples / (float)music.frequency;
                 helperSource.volume = myScript.relativeVolume;
                 helperSource.pitch = myScript.startingPitch;
+
+                Repaint();
 
                 if (loopClip)
                 {
@@ -693,7 +706,7 @@ namespace JSAM
 
             if (myScript.loopMode != LoopMode.LoopWithLoopPoints)
             {
-                if (!helperSource.isPlaying && !clipPaused)
+                if (!helperSource.isPlaying && !clipPaused && clipPlaying)
                 {
                     helperSource.time = 0;
                     if (loopClip)
@@ -894,12 +907,12 @@ namespace JSAM
         static void Init()
         {
             s_BackIcon = EditorGUIUtility.TrIconContent("beginButton", "Click to Reset Playback Position");
-            s_PlayIcons[0] = EditorGUIUtility.TrIconContent("preAudioPlayOff", "Click to Play");
-            s_PlayIcons[1] = EditorGUIUtility.TrIconContent("preAudioPlayOn", "Click to Stop");
+            s_PlayIcons[0] = EditorGUIUtility.TrIconContent("d_PlayButton", "Click to Play");
+            s_PlayIcons[1] = EditorGUIUtility.TrIconContent("d_PlayButton On", "Click to Stop");
             s_PauseIcons[0] = EditorGUIUtility.TrIconContent("PauseButton", "Click to Pause");
             s_PauseIcons[1] = EditorGUIUtility.TrIconContent("PauseButton On", "Click to Unpause");
-            s_LoopIcons[0] = EditorGUIUtility.TrIconContent("playLoopOff", "Click to enable looping");
-            s_LoopIcons[1] = EditorGUIUtility.TrIconContent("playLoopOn", "Click to disable looping");
+            s_LoopIcons[0] = EditorGUIUtility.TrIconContent("d_preAudioLoopOff", "Click to enable looping");
+            s_LoopIcons[1] = EditorGUIUtility.TrIconContent("preAudioLoopOff", "Click to disable looping");
         }
 
         /// <summary>

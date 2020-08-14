@@ -91,11 +91,14 @@ namespace JSAM
         }
 
 #if UNITY_EDITOR
-        public void PlayDebug(AudioFileObject file)
+        public void PlayDebug(AudioFileObject file, bool dontReset)
         {
-            aSource.Stop();
+            if (!dontReset)
+            {
+                aSource.Stop();
+            }
             if (file.playReversed) aSource.time = aSource.clip.length - AudioManager.EPSILON;
-            else aSource.time = Mathf.Clamp(aSource.time, 0, aSource.clip.length - AudioManager.EPSILON);
+            else aSource.timeSamples = (int)Mathf.Clamp((float)aSource.timeSamples, 0, (float)aSource.clip.samples - 1);
             aSource.Play();
             aSource.pitch = AudioManager.GetRandomPitch(file);
             aSource.bypassEffects = file.bypassEffects;

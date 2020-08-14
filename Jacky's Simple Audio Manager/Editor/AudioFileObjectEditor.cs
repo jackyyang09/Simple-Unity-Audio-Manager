@@ -623,7 +623,7 @@ namespace JSAM
             if (fadeInTime == 0) fadeInTime = float.Epsilon;
             if (fadeOutTime == 0) fadeOutTime = float.Epsilon;
             helperSource.clip = playingClip;
-            helperHelper.PlayDebug(myScript);
+            helperHelper.PlayDebug(myScript, false);
         }
 
         /// <summary>
