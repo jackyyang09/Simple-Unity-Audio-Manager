@@ -907,12 +907,23 @@ namespace JSAM
         static void Init()
         {
             s_BackIcon = EditorGUIUtility.TrIconContent("beginButton", "Click to Reset Playback Position");
+#if UNITY_2019_4_OR_NEWER
             s_PlayIcons[0] = EditorGUIUtility.TrIconContent("d_PlayButton", "Click to Play");
             s_PlayIcons[1] = EditorGUIUtility.TrIconContent("d_PlayButton On", "Click to Stop");
+#else
+            s_PlayIcons[0] = EditorGUIUtility.TrIconContent("preAudioPlayOff", "Click to Play");
+            s_PlayIcons[1] = EditorGUIUtility.TrIconContent("preAudioPlayOn", "Click to Stop");
+#endif
             s_PauseIcons[0] = EditorGUIUtility.TrIconContent("PauseButton", "Click to Pause");
             s_PauseIcons[1] = EditorGUIUtility.TrIconContent("PauseButton On", "Click to Unpause");
+#if UNITY_2019_4_OR_NEWER
             s_LoopIcons[0] = EditorGUIUtility.TrIconContent("d_preAudioLoopOff", "Click to enable looping");
             s_LoopIcons[1] = EditorGUIUtility.TrIconContent("preAudioLoopOff", "Click to disable looping");
+#else
+            s_LoopIcons[0] = EditorGUIUtility.TrIconContent("playLoopOff", "Click to enable looping");
+            s_LoopIcons[1] = EditorGUIUtility.TrIconContent("playLoopOn", "Click to disable looping");
+#endif
+
         }
 
         /// <summary>
@@ -943,7 +954,7 @@ namespace JSAM
             return string.Format("{0:00}:{1:00}:{2:000}", minutes, seconds, milliseconds);
         }
 
-        #region Audio Effect Rendering
+#region Audio Effect Rendering
         static bool showAudioEffects;
         static bool chorusFoldout;
         static bool distortionFoldout;
@@ -1214,7 +1225,7 @@ namespace JSAM
                     EditorGUILayout.EndVertical();
                 }
 
-                #region Add New Effect Button
+#region Add New Effect Button
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
                 if (GUILayout.Button("Add New Effect", new GUILayoutOption[] { GUILayout.MaxWidth(200) }))
@@ -1242,7 +1253,7 @@ namespace JSAM
                 }
                 GUILayout.FlexibleSpace();
                 EditorGUILayout.EndHorizontal();
-                #endregion
+#endregion
             }
             EditorCompatability.EndSpecialFoldoutGroup();
         }
@@ -1319,6 +1330,6 @@ namespace JSAM
             myScript.reverbFilter.diffusion = 100;
             myScript.reverbFilter.density = 100;
         }
-        #endregion
+#endregion
     }
 }
