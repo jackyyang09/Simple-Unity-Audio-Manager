@@ -576,13 +576,18 @@ namespace JSAM
                 EditorGUILayout.LabelField("Overview", EditorStyles.boldLabel);
                 EditorGUILayout.HelpBox("This component is the backbone of the entire JSAM Audio Manager system and ideally should occupy it's own gameobject."
                     , MessageType.None);
-                EditorGUILayout.HelpBox("For detailed instructions on how to get started, check out JSAM's Github page here!"
+                EditorGUILayout.HelpBox("Click on these links here for more info on getting started and for full documentation!"
                     , MessageType.None);
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
-                if (GUILayout.Button("Github", new GUILayoutOption[]{ GUILayout.MinWidth(100) }))
+                if (GUILayout.Button(new GUIContent("Getting Started", "Click on me open the wiki in a new browser window"), new GUILayoutOption[]{ GUILayout.MinWidth(100) }))
                 {
-                    Application.OpenURL("https://github.com/jackyyang09/Simple-Unity-Audio-Manager/wiki");
+                    Application.OpenURL("https://github.com/jackyyang09/Simple-Unity-Audio-Manager/wiki/2.-Getting-Started-with-JSAM");
+                }
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button(new GUIContent("Documentation", "Click on me to check out the documentation"), new GUILayoutOption[] { GUILayout.MinWidth(100) }))
+                {
+                    Application.OpenURL("https://jackyyang09.github.io/Simple-Unity-Audio-Manager/class_j_s_a_m_1_1_audio_manager.html");
                 }
                 GUILayout.FlexibleSpace();
                 EditorGUILayout.EndHorizontal();
@@ -590,12 +595,17 @@ namespace JSAM
                 EditorGUILayout.HelpBox("Please ensure that you don't have multiple AudioManagers in one scene."
                     , MessageType.None);
                 EditorGUILayout.HelpBox("If you have any questions, suggestions or bug reports, feel free to open a new issue " +
-                    "on Github repository's Issues page.", MessageType.None);
+                    "on Github repository's Issues page or send me an email directly!", MessageType.None);
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
-                if (GUILayout.Button("Report a Bug", new GUILayoutOption[] { GUILayout.MaxWidth(100) }))
+                if (GUILayout.Button(new GUIContent("Report a Bug", "Click on me to go to the bug report page in a new browser window"), new GUILayoutOption[] { GUILayout.MinWidth(100) }))
                 {
                     Application.OpenURL("https://github.com/jackyyang09/Simple-Unity-Audio-Manager/issues");
+                }
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button(new GUIContent("Email", "You can find me at jackyyang267@gmail.com"), new GUILayoutOption[] { GUILayout.MinWidth(100) }))
+                {
+                    Application.OpenURL("mailto:jackyyang267@gmail.com");
                 }
                 GUILayout.FlexibleSpace();
                 EditorGUILayout.EndHorizontal();
