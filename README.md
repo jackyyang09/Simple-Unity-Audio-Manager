@@ -13,6 +13,7 @@ JSAM is perfect for game jams, prototypes and is scaleable with your project!
 - Music and sound fading!
 - Built-in Loop Point authoring interface (powered by [Audio Tools Library for .NET](https://github.com/Zeugma440/atldotnet))
 - Spatialized 3D sound and audio!
+- Audio that changes depending on the scale of time
 - Compatible with Unity's built-in Audio Effects
 - Drag and drop components that handle sound playback on
    - Collision events
