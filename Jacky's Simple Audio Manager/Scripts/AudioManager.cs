@@ -2709,7 +2709,7 @@ namespace JSAM
         /// <returns></returns>
         public bool IsSoundPlayingInternal(int s, Transform trans = null)
         {
-            return IsSoundPlayingInternal(s, trans);
+            return IsSoundPlayingInternal(audioFileObjects[s], trans);
         }
 
         /// <summary>
