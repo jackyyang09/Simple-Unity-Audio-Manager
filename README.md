@@ -27,6 +27,7 @@ JSAM is perfect for game jams, prototypes and is scaleable with your project!
 
 # More Info
 Check out the [Releases](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/releases) page to see all the latest updates!
+
 If you'd like to see what parts of AudioManager I'm actively working on, you can check out the Trello [here!](https://trello.com/b/r6237lmD/audiomanager)
 
 If JSAM has helped you at all, feel free to donate [here](https://www.paypal.com/paypalme/brogrammist)! My quest to streamline audio is neverending, but your patronage is always appreciated!
