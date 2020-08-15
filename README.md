@@ -20,7 +20,7 @@ JSAM is perfect for game jams, prototypes and is scaleable with your project!
    - Trigger events
    - Particle emission and death
 - *Extensive* in-editor, in-code documentation for easy extensibility
-   
+
 # Add JSAM to your Project
 - Check out the [wiki](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/wiki/1.-Downloading-and-Importing-JSAM) to see how to **simplify** audio in your project!
 
@@ -28,3 +28,13 @@ JSAM is perfect for game jams, prototypes and is scaleable with your project!
 
 Check out the [Releases](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/releases) page to see all the latest updates!
 If you'd like to see what parts of AudioManager I'm actively working on, you can check out the Trello [here!](https://trello.com/b/r6237lmD/audiomanager)
+
+# Screenshots
+![](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/Media/Media/Homepage%20Promo/JSAM%20promo%201.png)
+![](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/Media/Media/Homepage%20Promo/JSAM%20promo%202.png)
+![](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/Media/Media/Homepage%20Promo/JSAM%20promo%203.png)
+![](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/Media/Media/Homepage%20Promo/JSAM%20promo%204.png)
+![](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/Media/Media/Homepage%20Promo/JSAM%20promo%205.png)
+![](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/Media/Media/Homepage%20Promo/JSAM%20promo%206.png)
+![](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/Media/Media/Homepage%20Promo/JSAM%20promo%207.png)
+![](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/Media/Media/Homepage%20Promo/JSAM%20promo%208.png)
