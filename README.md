@@ -1,3 +1,5 @@
+![](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/Media/Media/Homepage%20Promo/jsam%202%20logo%20larger.png)
+
 # Jacky's Simple Audio Manager (JSAM)
 
 Tired of having to manage a billion AudioSources lying about? That will no longer be a reality!
