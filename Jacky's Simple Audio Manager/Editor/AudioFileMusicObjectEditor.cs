@@ -219,11 +219,11 @@ namespace JSAM
                                 GUILayout.BeginHorizontal();
                                 float theTime = loopStart * 1000f;
                                 GUILayout.Label("Loop Point Start:");
-                                int minutes = EditorGUILayout.IntField((int)(theTime / 60000f));
+                                int minutes = EditorGUILayout.IntField(Mathf.RoundToInt(theTime / 60000f));
                                 GUILayout.Label(":");
-                                int seconds = Mathf.Clamp(EditorGUILayout.IntField((int)(theTime % 60000) / 1000), 0, 59);
+                                int seconds = Mathf.Clamp(EditorGUILayout.IntField(Mathf.RoundToInt((theTime % 60000) / 1000f - 0.5f)), 0, 59);
                                 GUILayout.Label(":");
-                                float milliseconds = Mathf.Clamp(EditorGUILayout.IntField((int)(theTime % 1000)), 0, 999.0f);
+                                float milliseconds = Mathf.Clamp(EditorGUILayout.IntField(Mathf.RoundToInt(theTime % 1000f)), 0, 999.0f);
                                 //milliseconds = float.Parse("0." + milliseconds.ToString("0.####")); // Ensures that our milliseconds never leave their decimal place
                                 milliseconds /= 1000.0f; // Ensures that our milliseconds never leave their decimal place
                                 loopStart = (float)minutes * 60f + (float)seconds + milliseconds;
@@ -232,11 +232,11 @@ namespace JSAM
                                 GUILayout.BeginHorizontal();
                                 theTime = loopEnd * 1000f;
                                 GUILayout.Label("Loop Point End:  ");
-                                minutes = EditorGUILayout.IntField((int)theTime / 60000);
+                                minutes = EditorGUILayout.IntField(Mathf.RoundToInt(theTime / 60000f));
                                 GUILayout.Label(":");
-                                seconds = Mathf.Clamp(EditorGUILayout.IntField((int)(theTime % 60000) / 1000), 0, 59);
+                                seconds = Mathf.Clamp(EditorGUILayout.IntField(Mathf.RoundToInt((theTime % 60000) / 1000f - 0.5f)), 0, 59);
                                 GUILayout.Label(":");
-                                milliseconds = Mathf.Clamp(EditorGUILayout.IntField((int)(theTime % 1000)), 0, 999.0f);
+                                milliseconds = Mathf.Clamp(EditorGUILayout.IntField(Mathf.RoundToInt(theTime % 1000f)), 0, 999.0f);
                                 //milliseconds = float.Parse("0." + milliseconds.ToString("0.####")); // Ensures that our milliseconds never leave their decimal place
                                 milliseconds /= 1000.0f; // Ensures that our milliseconds never leave their decimal place
                                 loopEnd = (float)minutes * 60f + (float)seconds + milliseconds;
@@ -252,7 +252,7 @@ namespace JSAM
                                 loopStart = samplesStart / music.frequency;
 
                                 GUILayout.BeginHorizontal();
-                                float samplesEnd = Mathf.Clamp(EditorGUILayout.FloatField("Loop Point End:", myScript.loopEnd * music.frequency), 0, music.samples);
+                                float samplesEnd = MathHelper.Clamp(EditorGUILayout.FloatField("Loop Point End:", myScript.loopEnd * music.frequency), 0, music.samples);
                                 GUILayout.EndHorizontal();
                                 loopEnd = samplesEnd / music.frequency;
                                 break;
@@ -362,7 +362,6 @@ namespace JSAM
                         {
                             Undo.RecordObject(myScript, "Modified loop point properties");
                             loopStartProperty.floatValue = Mathf.Clamp(loopStart, 0, music.length);
-                            Debug.Log(loopStartProperty.floatValue);
                             loopEndProperty.floatValue = Mathf.Clamp(loopEnd, 0, Mathf.Ceil(music.length));
                             EditorUtility.SetDirty(myScript);
                             forceRepaint = true;
@@ -513,7 +512,7 @@ namespace JSAM
                 {
                     if (myScript.loopMode == LoopMode.LoopWithLoopPoints && myScript.clampToLoopPoints)
                     {
-                        helperSource.timeSamples = Mathf.CeilToInt(myScript.loopStart * music.frequency);
+                        helperSource.timeSamples = Mathf.CeilToInt((myScript.loopStart * music.frequency));
                     }
                     else
                     {
