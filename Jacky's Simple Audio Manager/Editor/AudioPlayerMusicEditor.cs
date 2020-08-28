@@ -7,11 +7,9 @@ namespace JSAM
 {
     [CustomEditor(typeof(AudioPlayerMusic))]
     [CanEditMultipleObjects]
-    public class AudioPlayerMusicEditor : Editor
+    public class AudioPlayerMusicEditor : BaseAudioMusicEditor
     {
         AudioPlayerMusic myScript;
-        List<string> options = new List<string>();
-        System.Type enumType = null;
 
         SerializedProperty musicProperty;
         SerializedProperty transitionMode;
@@ -27,23 +25,10 @@ namespace JSAM
         SerializedProperty onDestroy;
 
         //static bool showAudioClipSettings = false;
-        static bool showHowTo = false;
 
-        private void OnEnable()
+        protected override void Setup()
         {
             myScript = (AudioPlayerMusic)target;
-
-            if (AudioManager.instance)
-            {
-                enumType = AudioManager.instance.GetSceneMusicEnum();
-                if (enumType != null)
-                {
-                    foreach (string s in System.Enum.GetNames(enumType))
-                    {
-                        options.Add(s);
-                    }
-                }
-            }
 
             musicProperty = serializedObject.FindProperty("music");
             transitionMode = serializedObject.FindProperty("transitionMode");
@@ -64,36 +49,7 @@ namespace JSAM
 
             serializedObject.Update();
 
-            if (!AudioManager.instance)
-            {
-                EditorGUILayout.HelpBox("Could not find Audio Manager in the scene! This component needs AudioManager " +
-                    "in order to function!", MessageType.Error);
-            }
-            else
-            {
-                if (enumType == null)
-                {
-                    EditorGUILayout.HelpBox("Could not find Audio File info! Try regenerating Audio Files in AudioManager!", MessageType.Error);
-                }
-            }
-
-            EditorGUILayout.LabelField("Specify Music to Play", EditorStyles.boldLabel);
-
-            GUIContent musicDesc = new GUIContent("Music", "Music that will be played");
-
-            int selected = options.IndexOf(musicProperty.stringValue);
-            if (selected == -1) selected = 0;
-            if (options.Count > 0)
-            {
-                musicProperty.stringValue = options[EditorGUILayout.Popup(musicDesc, selected, options.ToArray())];
-            }
-            else
-            {
-                using (new EditorGUI.DisabledScope(true))
-                {
-                    EditorGUILayout.Popup(musicDesc, selected, new string[] { "<None>" });
-                }
-            }
+            DrawMusicDropdown(musicProperty);
 
             EditorGUILayout.Space();
             
@@ -117,40 +73,41 @@ namespace JSAM
                 serializedObject.ApplyModifiedProperties();
             }
 
+            DrawQuickReferenceGuide();
+        }
+
+        #region Quick Reference Guide
+        protected override void DrawQuickReferenceGuide()
+        {
+            base.DrawQuickReferenceGuide();
+
+            if (!showHowTo) return;
+
+            EditorGUILayout.LabelField("Overview", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(
+                "This component allows you to easily play music anywhere in the scene."
+                , MessageType.None);
+            EditorGUILayout.HelpBox(
+                "To get started, choose your music to play from the drop-down at the top. " +
+                "Make sure you've generated your Audio Libraries in your Audio Manager. "
+                , MessageType.None);
+
             EditorGUILayout.Space();
 
-            #region Quick Reference Guide
-            showHowTo = EditorCompatability.SpecialFoldouts(showHowTo, "Quick Reference Guide");
-            if (showHowTo)
-            {
-                EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Tips", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(
+                "Alternatively, you can specify to use your own AudioClip by filling in the AudioClip. " +
+                "You can then fill out the Custom AudioClip settings so the AudioPlayer plays your music to your liking."
+                , MessageType.None);
+            //EditorGUILayout.HelpBox(
+            //    "AudioPlayer includes a public function Play() that lets you play the sound in AudioPlayer on your own. " +
+            //    "AudioPlayer's Play() function also returns the AudioSource to let you further modify the audio being played."
+            //    , MessageType.None);
 
-                EditorGUILayout.LabelField("Overview", EditorStyles.boldLabel);
-                EditorGUILayout.HelpBox(
-                    "This component allows you to easily play music anywhere in the scene."
-                    , MessageType.None);
-                EditorGUILayout.HelpBox(
-                    "To get started, choose your music to play from the drop-down at the top. " +
-                    "Make sure you've generated your Audio Libraries in your Audio Manager. "
-                    , MessageType.None);
-
-                EditorGUILayout.Space();
-
-                EditorGUILayout.LabelField("Tips", EditorStyles.boldLabel);
-                EditorGUILayout.HelpBox(
-                    "Alternatively, you can specify to use your own AudioClip by filling in the AudioClip. " +
-                    "You can then fill out the Custom AudioClip settings so the AudioPlayer plays your music to your liking."
-                    , MessageType.None);
-                //EditorGUILayout.HelpBox(
-                //    "AudioPlayer includes a public function Play() that lets you play the sound in AudioPlayer on your own. " +
-                //    "AudioPlayer's Play() function also returns the AudioSource to let you further modify the audio being played."
-                //    , MessageType.None);
-
-            }
             EditorCompatability.EndSpecialFoldoutGroup();
             EditorGUILayout.Space();
-            #endregion  
         }
+        #endregion
 
         [MenuItem("GameObject/Audio/JSAM/Audio Player Music", false, 1)]
         public static void AddAudioPlayerMusic()

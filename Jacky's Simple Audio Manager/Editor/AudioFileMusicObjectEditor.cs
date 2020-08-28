@@ -158,8 +158,20 @@ namespace JSAM
             #region Loop Point Tools
             if (myScript.GetFile() != null)
             {
+                float loopStart = myScript.loopStart;
+                float loopEnd = myScript.loopEnd;
+
                 AudioClip music = myScript.GetFile();
+                EditorGUI.BeginChangeCheck();
                 EditorGUILayout.PropertyField(loopMode);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    if (myScript.loopStart >= myScript.loopEnd)
+                    {
+                        loopStart = 0;
+                        loopEnd = music.length;
+                    }
+                }
                 using (new EditorGUI.DisabledScope(myScript.loopMode != LoopMode.LoopWithLoopPoints))
                     EditorGUILayout.PropertyField(clampToLoopPoints);
 
@@ -182,9 +194,6 @@ namespace JSAM
                             GUI.backgroundColor = colorbackup;
                         }
                         EditorGUILayout.EndHorizontal();
-
-                        float loopStart = myScript.loopStart;
-                        float loopEnd = myScript.loopEnd;
 
                         switch ((LoopPointTool)loopPointInputMode)
                         {
@@ -214,8 +223,9 @@ namespace JSAM
                                 GUILayout.Label(":");
                                 int seconds = Mathf.Clamp(EditorGUILayout.IntField((int)(theTime % 60000) / 1000), 0, 59);
                                 GUILayout.Label(":");
-                                float milliseconds = EditorGUILayout.IntField((int)(theTime % 60000) % 1000);
-                                milliseconds = float.Parse("0." + milliseconds.ToString("0.####")); // Ensures that our milliseconds never leave their decimal place
+                                float milliseconds = Mathf.Clamp(EditorGUILayout.IntField((int)(theTime % 1000)), 0, 999.0f);
+                                //milliseconds = float.Parse("0." + milliseconds.ToString("0.####")); // Ensures that our milliseconds never leave their decimal place
+                                milliseconds /= 1000.0f; // Ensures that our milliseconds never leave their decimal place
                                 loopStart = (float)minutes * 60f + (float)seconds + milliseconds;
                                 GUILayout.EndHorizontal();
 
@@ -226,8 +236,9 @@ namespace JSAM
                                 GUILayout.Label(":");
                                 seconds = Mathf.Clamp(EditorGUILayout.IntField((int)(theTime % 60000) / 1000), 0, 59);
                                 GUILayout.Label(":");
-                                milliseconds = EditorGUILayout.IntField((int)(theTime % 60000) % 1000);
-                                milliseconds = float.Parse("0." + milliseconds.ToString("0.####")); // Ensures that our milliseconds never leave their decimal place
+                                milliseconds = Mathf.Clamp(EditorGUILayout.IntField((int)(theTime % 1000)), 0, 999.0f);
+                                //milliseconds = float.Parse("0." + milliseconds.ToString("0.####")); // Ensures that our milliseconds never leave their decimal place
+                                milliseconds /= 1000.0f; // Ensures that our milliseconds never leave their decimal place
                                 loopEnd = (float)minutes * 60f + (float)seconds + milliseconds;
                                 GUILayout.EndHorizontal();
                                 break;
@@ -351,6 +362,7 @@ namespace JSAM
                         {
                             Undo.RecordObject(myScript, "Modified loop point properties");
                             loopStartProperty.floatValue = Mathf.Clamp(loopStart, 0, music.length);
+                            Debug.Log(loopStartProperty.floatValue);
                             loopEndProperty.floatValue = Mathf.Clamp(loopEnd, 0, Mathf.Ceil(music.length));
                             EditorUtility.SetDirty(myScript);
                             forceRepaint = true;

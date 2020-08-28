@@ -7,33 +7,17 @@ namespace JSAM
 {
     [CustomEditor(typeof(AudioParticles))]
     [CanEditMultipleObjects]
-    public class AudioParticlesEditor : Editor
+    public class AudioParticlesEditor : BaseAudioEditor
     {
         AudioParticles myScript;
-        List<string> options = new List<string>();
-        System.Type enumType = null;
 
         SerializedProperty sound;
         SerializedProperty soundFile;
         SerializedProperty playSoundOn;
 
-        static bool showHowTo;
-
-        private void OnEnable()
+        protected override void Setup()
         {
             myScript = (AudioParticles)target;
-
-            if (AudioManager.instance)
-            {
-                enumType = AudioManager.instance.GetSceneSoundEnum();
-                if (enumType != null)
-                {
-                    foreach (string s in System.Enum.GetNames(enumType))
-                    {
-                        options.Add(s);
-                    }
-                }
-            }
 
             sound = serializedObject.FindProperty("sound");
             soundFile = serializedObject.FindProperty("soundFile");
@@ -46,62 +30,35 @@ namespace JSAM
 
             serializedObject.Update();
 
-            if (!AudioManager.instance)
-            {
-                EditorGUILayout.HelpBox("Could not find Audio Manager in the scene! This component needs AudioManager " +
-                    "in order to function!", MessageType.Error);
-            }
-            else
-            {
-                if (enumType == null)
-                {
-                    EditorGUILayout.HelpBox("Could not find Audio File info! Try regenerating Audio Files in AudioManager!", MessageType.Error);
-                }
-            }
-
-            EditorGUILayout.LabelField("Choose a Sound to Play", EditorStyles.boldLabel);
-
-            GUIContent soundDesc = new GUIContent("Sound", "Sound that will be played when particles spawn/die");
-
-            int selected = options.IndexOf(sound.stringValue);
-            if (selected == -1) selected = 0;
-            if (options.Count > 0)
-            {
-                sound.stringValue = options[EditorGUILayout.Popup(soundDesc, selected, options.ToArray())];
-            }
-            else
-            {
-                using (new EditorGUI.DisabledScope(true))
-                {
-                    EditorGUILayout.Popup(soundDesc, selected, new string[] { "<None>" });
-                }
-            }
+            DrawSoundDropdown(sound);
 
             EditorGUILayout.PropertyField(playSoundOn);
 
             serializedObject.ApplyModifiedProperties();
 
+            DrawQuickReferenceGuide();
+        }
+
+        protected override void DrawQuickReferenceGuide()
+        {
+            base.DrawQuickReferenceGuide();
+
+            if (!showHowTo) return;
+
+            EditorGUILayout.LabelField("Overview", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox("This component is meant to be attached to a Particle System." +
+                " When a particle is created or is destroyed, AudioParticles will play a sound."
+                , MessageType.None);
+            EditorGUILayout.HelpBox("This component should be placed on the same GameObject that holds the Particle System."
+                , MessageType.None);
+
             EditorGUILayout.Space();
 
-            showHowTo = EditorCompatability.SpecialFoldouts(showHowTo, "Quick Reference Guide");
-            if (showHowTo)
-            {
-                EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Tips", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox("Feel free to use multiple different AudioParticles components on the same GameObject so your" +
+                " Particle System plays sounds on both instantiation and destruction!"
+                , MessageType.None);
 
-                EditorGUILayout.LabelField("Overview", EditorStyles.boldLabel);
-                EditorGUILayout.HelpBox("This component is meant to be attached to a Particle System." + 
-                    " When a particle is created or is destroyed, AudioParticles will play a sound."
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("This component should be placed on the same GameObject that holds the Particle System."
-                    , MessageType.None);
-
-                EditorGUILayout.Space();
-
-                EditorGUILayout.LabelField("Tips", EditorStyles.boldLabel);
-                EditorGUILayout.HelpBox("Feel free to use multiple different AudioParticles components on the same GameObject so your" +
-                    " Particle System plays sounds on both instantiation and destruction!"
-                    , MessageType.None);
-            }
             EditorCompatability.EndSpecialFoldoutGroup();
         }
     }

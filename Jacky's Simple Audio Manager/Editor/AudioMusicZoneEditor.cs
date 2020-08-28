@@ -11,11 +11,9 @@ namespace JSAM
 {
     [CustomEditor(typeof(AudioMusicZone))]
     [CanEditMultipleObjects]
-    public class AudioMusicZoneEditor : Editor
+    public class AudioMusicZoneEditor : BaseAudioMusicEditor
     {
         AudioMusicZone myScript;
-        List<string> options = new List<string>();
-        System.Type enumType;
 
         SerializedProperty musicProperty;
         SerializedProperty positionsProperty;
@@ -27,29 +25,10 @@ namespace JSAM
         bool isSharing = false;
 
         static bool hideTransformTool;
-        static bool showHowTo;
 
-        private void OnEnable()
+        protected override void Setup()
         {
-            if (target == null)
-            {
-                OnEnable();
-                return;
-            }
-
             myScript = (AudioMusicZone)target;
-
-            if (AudioManager.instance)
-            {
-                enumType = AudioManager.instance.GetSceneMusicEnum();
-                if (enumType != null)
-                {
-                    foreach (string s in System.Enum.GetNames(enumType))
-                    {
-                        options.Add(s);
-                    }
-                }
-            }
 
             otherZones = FindObjectsOfType<AudioMusicZone>();
             if (otherZones.Length > 1) othersExist = true;
@@ -75,51 +54,13 @@ namespace JSAM
 
             serializedObject.Update();
 
-            if (!AudioManager.instance)
-            {
-                EditorGUILayout.HelpBox("Could not find Audio Manager in the scene! This component needs AudioManager " +
-                    "in order to function!", MessageType.Error);
-            }
-            else
-            {
-                if (enumType == null)
-                {
-                    EditorGUILayout.HelpBox("Could not find Audio File info! Try regenerating Audio Files in AudioManager!", MessageType.Error);
-                }
-            }
-
-            EditorGUILayout.LabelField("Specify Music to Play", EditorStyles.boldLabel);
-
             if (isSharing)
             {
                 EditorGUILayout.HelpBox("Another Audio Music Zone exists in this scene that plays the same music! You can only " +
                     "have one Audio Music Zone that plays a specific piece of music.", MessageType.Error);
             }
 
-            GUIContent musicDesc = new GUIContent("Music", "Music that will be played");
-
-            string music = musicProperty.stringValue;
-
-            int selected = options.IndexOf(music);
-            if (selected == -1) selected = 0;
-            string newValue = "";
-            if (options.Count > 0)
-            {
-                newValue = options[EditorGUILayout.Popup(musicDesc, selected, options.ToArray())];
-            }
-            else
-            {
-                using (new EditorGUI.DisabledScope(true))
-                {
-                    EditorGUILayout.Popup(musicDesc, selected, new string[] { "<None>" });
-                }
-            }
-
-            if (musicProperty.stringValue != newValue)
-            {
-                CheckIfSharing();
-                musicProperty.stringValue = newValue;
-            }
+            DrawMusicDropdown(musicProperty);
 
             List<string> excludedProperties = new List<string>
             {
@@ -135,45 +76,49 @@ namespace JSAM
             if (serializedObject.hasModifiedProperties)
             {
                 serializedObject.ApplyModifiedProperties();
+                CheckIfSharing();
             }
 
-            #region Quick Reference Guide
-            showHowTo = EditorCompatability.SpecialFoldouts(showHowTo, "Quick Reference Guide");
-            if (showHowTo)
-            {
-                EditorGUILayout.Space();
-
-                EditorGUILayout.LabelField("Overview", EditorStyles.boldLabel);
-                EditorGUILayout.HelpBox("Audio Music Zones are like AudioPlayerMusic components in that they playback music in the scene. " +
-                    "However, music is only played when the scene's AudioListener enters a \"Music Zone.\""
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("\"Music Zones\" are defined by a position, a min distance, and a max distance. You can " +
-                    "create a new \"Music Zone\" by clicking either \"Add New Zone at World Center\" or \"Add New Zone at This Position\"."
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("The max distance indicates the distance the AudioListener has to be from the Zone's position to hear the music " +
-                    "at minimal volume."
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("The min distance indicates the distance the AudioListener has to be from the Zone's position to hear the music " +
-                    "at maximum volume."
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("If the AudioListener is in-between the min and max distances, the volume of the music will be " +
-                    " played relative to the player's middle distance."
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("There should only be one Audio Music Zone for each music track in the scene."
-                    , MessageType.None);
-                EditorGUILayout.Space();
-                    
-                EditorGUILayout.LabelField("Tips", EditorStyles.boldLabel);
-                EditorGUILayout.HelpBox("You can assign multiple zone positions to this one component to cover a large range."
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("Click the \"Hide Transform Tool\" option to hide this GameObject's transform tool and " +
-                    "make it easier to manipulate the positions of your Music Zones."
-                    , MessageType.None);
-                EditorStyles.helpBox.fontSize = 10;
-            }
-            EditorCompatability.EndSpecialFoldoutGroup();
-#endregion
+            DrawQuickReferenceGuide();
         }
+
+        #region Quick Reference Guide
+        protected override void DrawQuickReferenceGuide()
+        {
+            base.DrawQuickReferenceGuide();
+
+            if (!showHowTo) return;
+
+            EditorGUILayout.LabelField("Overview", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox("Audio Music Zones are like AudioPlayerMusic components in that they playback music in the scene. " +
+                "However, music is only played when the scene's AudioListener enters a \"Music Zone.\""
+                , MessageType.None);
+            EditorGUILayout.HelpBox("\"Music Zones\" are defined by a position, a min distance, and a max distance. You can " +
+                "create a new \"Music Zone\" by clicking either \"Add New Zone at World Center\" or \"Add New Zone at This Position\"."
+                , MessageType.None);
+            EditorGUILayout.HelpBox("The max distance indicates the distance the AudioListener has to be from the Zone's position to hear the music " +
+                "at minimal volume."
+                , MessageType.None);
+            EditorGUILayout.HelpBox("The min distance indicates the distance the AudioListener has to be from the Zone's position to hear the music " +
+                "at maximum volume."
+                , MessageType.None);
+            EditorGUILayout.HelpBox("If the AudioListener is in-between the min and max distances, the volume of the music will be " +
+                " played relative to the player's middle distance."
+                , MessageType.None);
+            EditorGUILayout.HelpBox("There should only be one Audio Music Zone for each music track in the scene."
+                , MessageType.None);
+            EditorGUILayout.Space();
+
+            EditorGUILayout.LabelField("Tips", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox("You can assign multiple zone positions to this one component to cover a large range."
+                , MessageType.None);
+            EditorGUILayout.HelpBox("Click the \"Hide Transform Tool\" option to hide this GameObject's transform tool and " +
+                "make it easier to manipulate the positions of your Music Zones."
+                , MessageType.None);
+            EditorStyles.helpBox.fontSize = 10;
+            EditorCompatability.EndSpecialFoldoutGroup();
+        }
+        #endregion
 
         private void OnSceneGUI()
         {
