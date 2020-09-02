@@ -58,7 +58,7 @@ namespace JSAM
         }
 
         // Add menu named "My Window" to the Window menu
-        [MenuItem("Window/Audio Playback Tool")]
+        //[MenuItem("Window/Audio Playback Tool")]
         public static void Init()
         {
             // Get existing open window or if none, make a new one:
@@ -70,7 +70,7 @@ namespace JSAM
             lastWindowSize = Window.position.size;
         }
 
-        [OnOpenAsset]
+        //[OnOpenAsset]
         public static bool OnDoubleClickAssets(int instanceID, int line)
         {
             string assetPath = AssetDatabase.GetAssetPath(instanceID);
@@ -165,6 +165,7 @@ namespace JSAM
                 selectedClip = selectedMusic.file;
                 CreateAudioHelper(selectedClip, true);
             }
+            else return;
             helperSource.clip = selectedClip;
 
             DoForceRepaint();

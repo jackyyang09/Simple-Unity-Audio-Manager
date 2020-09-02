@@ -31,7 +31,7 @@ namespace JSAM
         }
 
         // Add menu named "My Window" to the Window menu
-        [MenuItem("Window/AudioManager Settings")]
+        //[MenuItem("Window/AudioManager Settings")]
         static void Init()
         {
             // Get existing open window or if none, make a new one:
