@@ -2913,14 +2913,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   music: MainTheme
-  spatializeSound: 0
+  spatializeSound: 1
   transitionMode: 0
   keepPlaybackPosition: 0
   restartOnReplay: 0
   musicFadeInTime: 0
   musicFadeOutTime: 0
-  loopMode: 2
-  audioObject: {fileID: 0}
+  loopMode: 1
+  audioObject: {fileID: 11400000, guid: ba811883cbf748a44976f08ef6af3671, type: 2}
   onStart: 1
   onEnable: 0
   onDisable: 0

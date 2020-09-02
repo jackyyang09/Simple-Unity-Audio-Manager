@@ -38,18 +38,33 @@ namespace JSAM
         /// </summary>
         protected Transform sTransform;
 
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (AudioManager.instance) DesignateSound();
+        }
+#endif
+
         // Start is called before the first frame update
         protected virtual void Start()
+        {
+            CheckForSound();
+        }
+
+        void CheckForSound()
         {
             // Applies settings from the Audio File Object
             if (audioObject == null)
             {
                 DesignateSound();
-                spatialSound = audioObject.spatialize;
-                priority = audioObject.priority;
-                pitchShift = audioObject.pitchShift;
-                delay = audioObject.delay;
-                ignoreTimeScale = audioObject.ignoreTimeScale;
+                if (audioObject != null)
+                {
+                    spatialSound = audioObject.spatialize;
+                    priority = audioObject.priority;
+                    pitchShift = audioObject.pitchShift;
+                    delay = audioObject.delay;
+                    ignoreTimeScale = audioObject.ignoreTimeScale;
+                }
             }
 
             sTransform = (spatialSound) ? transform : null;
@@ -79,12 +94,5 @@ namespace JSAM
                 }
             }
         }
-
-#if UNITY_EDITOR
-        private void OnValidate()
-        {
-            if (AudioManager.instance) DesignateSound();
-        }
-#endif
     }
 }

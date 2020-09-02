@@ -31,7 +31,7 @@ namespace JSAM
 
         void TriggerSound(Collision collision)
         {
-            if (Contains(collidesWith, collision.gameObject.layer))
+            if (collidesWith.Contains(collision.gameObject.layer))
             {
                 AudioSource source = null;
                 source = AudioManager.instance.PlaySoundInternal(audioObject, sTransform);
@@ -44,7 +44,7 @@ namespace JSAM
 
         void TriggerSound(Collision2D collision)
         {
-            if (Contains(collidesWith, collision.gameObject.layer))
+            if (collidesWith.Contains(collision.gameObject.layer))
             {
                 AudioSource source = null;
                 source = AudioManager.instance.PlaySoundInternal(audioObject, sTransform);
@@ -83,18 +83,6 @@ namespace JSAM
         private void OnCollisionExit2D(Collision2D collision)
         {
             if (triggerEvent == CollisionEvent.OnCollisionExit) TriggerSound(collision);
-        }
-
-        /// <summary>
-        /// Extension method to check if a layer is in a layer mask
-        /// With help from these lads https://answers.unity.com/questions/50279/check-if-layer-is-in-layermask.html
-        /// </summary>
-        /// <param name="mask"></param>
-        /// <param name="layer"></param>
-        /// <returns></returns>
-        public static bool Contains(LayerMask mask, int layer)
-        {
-            return mask == (mask | (1 << layer));
         }
     }
 }

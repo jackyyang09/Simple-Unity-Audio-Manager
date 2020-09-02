@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
 namespace JSAM
 {
     public abstract class BaseAudioMusicFeedback : MonoBehaviour
@@ -43,12 +42,27 @@ namespace JSAM
         // Start is called before the first frame update
         protected void Start()
         {
+            CheckForMusic();
+        }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (AudioManager.instance) CheckForMusic();
+        }
+#endif
+
+        public void CheckForMusic()
+        {
             if (audioObject == null)
             {
                 DesignateMusic();
 
-                loopMode = audioObject.loopMode;
-                spatializeSound = audioObject.spatialize;
+                if (audioObject != null)
+                {
+                    loopMode = audioObject.loopMode;
+                    spatializeSound = audioObject.spatialize;
+                }
             }
         }
 

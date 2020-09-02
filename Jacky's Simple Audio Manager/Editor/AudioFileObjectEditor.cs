@@ -19,7 +19,6 @@ namespace JSAM
         bool playingRandom;
 
         Texture2D cachedTex;
-        bool forceRepaint;
         AudioClip cachedClip;
 
         bool unregistered = false;
@@ -41,6 +40,10 @@ namespace JSAM
         static bool showFadeTool;
         static bool showPlaybackTool;
         static bool showHowTo;
+
+        GUIContent openIcon;
+
+        public static AudioFileObjectEditor instance;
 
 #if !UNITY_2019_3_OR_NEWER
         static bool filesFoldout;
@@ -217,7 +220,11 @@ namespace JSAM
                 EditorGUILayout.HelpBox("Warning! Change the name of the gameObject to something different or things will break!", MessageType.Warning);
             }
 
-            if (!noFiles) DrawPlaybackTool(myScript);
+            if (playingClip == null)
+            {
+                DesignateActiveAudioClip(myScript);
+            }
+            if (!noFiles && !AudioPlaybackToolEditor.WindowOpen) DrawPlaybackTool(myScript);
 
 #region Fade Tools
             using (new EditorGUI.DisabledScope(myScript.fadeMode == FadeMode.None))
@@ -274,7 +281,7 @@ namespace JSAM
 
             if (serializedObject.hasModifiedProperties)
             {
-                forceRepaint = true;
+                AudioPlaybackToolEditor.DoForceRepaint(true);
                 serializedObject.ApplyModifiedProperties();
 
                 // Manually fix variables
@@ -329,15 +336,10 @@ namespace JSAM
                 "Some effects, like spatialization and delay, will not be available to preview");
             showPlaybackTool = EditorCompatability.SpecialFoldouts(showPlaybackTool, fContent);
 
-            if (playingClip == null)
-            {
-                DesignateActiveAudioClip(myScript);
-            }
-
             if (showPlaybackTool)
             {
-                if (helperSource == null) CreateAudioHelper();
-                ProgressBar(helperSource.time / playingClip.length, GetInfoString());
+                var helperSource = AudioPlaybackToolEditor.helperSource;
+                ProgressBar(AudioPlaybackToolEditor.helperSource.time / playingClip.length, GetInfoString());
 
                 EditorGUILayout.BeginHorizontal();
                 Color colorbackup = GUI.backgroundColor;
@@ -352,7 +354,7 @@ namespace JSAM
                 }
                 if (GUILayout.Button(fContent))
                 {
-                    helperSource.Stop();
+                    AudioPlaybackToolEditor.helperSource.Stop();
                     if (playingClip != null && !clipPlaying)
                     {
                         StartFading(myScript);
@@ -371,6 +373,11 @@ namespace JSAM
                         helperSource.Stop();
                         StartFading(myScript);
                     }
+                }
+
+                if (GUILayout.Button(openIcon, new GUILayoutOption[] { GUILayout.MaxHeight(19) }))
+                {
+                    AudioPlaybackToolEditor.Init();
                 }
                 GUILayout.FlexibleSpace();
                 EditorGUILayout.EndHorizontal();
@@ -404,19 +411,18 @@ namespace JSAM
             }
             playingClip = theClip;
             playingRandom = true;
-            forceRepaint = true;
+            AudioPlaybackToolEditor.DoForceRepaint(true);
         }
 
         void Update()
         {
-            AudioFileObject myScript = (AudioFileObject)target;
             if (myScript == null) return; // This can happen on the same frame it's deleted
             AudioClip clip = myScript.GetFirstAvailableFile();
             if (playingClip != null && clip != null)
             {
                 if (clip != cachedClip)
                 {
-                    forceRepaint = true;
+                    AudioPlaybackToolEditor.DoForceRepaint(true);
                     cachedClip = myScript.GetFirstAvailableFile();
                     playingClip = cachedClip;
                 }
@@ -437,19 +443,19 @@ namespace JSAM
                 }
                 else
                 {
-                    helperSource.volume = myScript.relativeVolume;
+                    AudioPlaybackToolEditor.helperSource.volume = myScript.relativeVolume;
                 }
             }
-            clipPlaying = (playingClip != null && helperSource.isPlaying);
+            clipPlaying = (playingClip != null && AudioPlaybackToolEditor.helperSource.isPlaying);
         }
 
         void OnEnable()
         {
             myScript = (AudioFileObject)target;
+            instance = this;
 
             EditorApplication.update += Update;
             Undo.undoRedoPerformed += OnUndoRedo;
-            CreateAudioHelper();
             Undo.postprocessModifications += ApplyHelperEffects;
             CheckIfRegistered();
             myName = AudioManagerEditor.ConvertToAlphanumeric(target.name);
@@ -468,26 +474,30 @@ namespace JSAM
             bypassEffects = serializedObject.FindProperty("bypassEffects");
             bypassListenerEffects = serializedObject.FindProperty("bypassListenerEffects");
             bypassReverbZones = serializedObject.FindProperty("bypassReverbZones");
+
+            openIcon = EditorGUIUtility.TrIconContent("d_ScaleTool", "Click to open Playback Preview in a standalone window");
+
+            AudioPlaybackToolEditor.CreateAudioHelper(myScript.GetFirstAvailableFile());
         }
 
         void OnDisable()
         {
             EditorApplication.update -= Update;
             Undo.undoRedoPerformed -= OnUndoRedo;
-            DestroyAudioHelper();
+            AudioPlaybackToolEditor.DestroyAudioHelper();
             Undo.postprocessModifications -= ApplyHelperEffects;
         }
 
         void OnUndoRedo()
         {
-            forceRepaint = true;
+            AudioPlaybackToolEditor.DoForceRepaint(true);
         }
 
         public UndoPropertyModification[] ApplyHelperEffects(UndoPropertyModification[] modifications)
         {
-            if (helperSource.isPlaying)
+            if (AudioPlaybackToolEditor.helperSource.isPlaying)
             {
-                helperHelper.ApplyEffects();
+                AudioPlaybackToolEditor.helperHelper.ApplyEffects();
             }
             return modifications;
         }
@@ -524,35 +534,10 @@ namespace JSAM
         FadeMode fadeMode;
         GameObject helperObject;
         float fadeInTime, fadeOutTime;
-        AudioSource helperSource;
-        AudioChannelHelper helperHelper;
-
-        void CreateAudioHelper()
-        {
-            if (helperObject == null)
-            {
-                helperObject = GameObject.Find("JSAM Audio Helper");
-                if (helperObject == null)
-                    helperObject = new GameObject("JSAM Audio Helper");
-                helperHelper = helperObject.AddComponent<AudioChannelHelper>();
-                helperObject.hideFlags = HideFlags.HideAndDontSave;
-            }
-
-            if (helperSource == null)
-            {
-                helperSource = helperObject.AddComponent<AudioSource>();
-            }
-            helperHelper.Init();
-        }
-
-        void DestroyAudioHelper()
-        {
-            helperSource.Stop();
-            DestroyImmediate(helperObject);
-        }
 
         void HandleFading(AudioFileObject myScript)
         {
+            var helperSource = AudioPlaybackToolEditor.helperSource;
             if (helperSource.isPlaying)
             {
                 EditorApplication.QueuePlayerLoopUpdate();
@@ -613,17 +598,16 @@ namespace JSAM
             }
         }
 
-        void StartFading(AudioFileObject myScript)
+        public void StartFading(AudioFileObject myScript)
         {
-            CreateAudioHelper();
             fadeMode = myScript.fadeMode;
             fadeInTime = myScript.fadeInDuration * playingClip.length;
             fadeOutTime = myScript.fadeOutDuration * playingClip.length;
             // To prevent divisions by 0
             if (fadeInTime == 0) fadeInTime = float.Epsilon;
             if (fadeOutTime == 0) fadeOutTime = float.Epsilon;
-            helperSource.clip = playingClip;
-            helperHelper.PlayDebug(myScript, false);
+            AudioPlaybackToolEditor.helperSource.clip = playingClip;
+            AudioPlaybackToolEditor.helperHelper.PlayDebug(myScript, false);
         }
 
         /// <summary>
@@ -641,13 +625,13 @@ namespace JSAM
 
             AudioClip sound = playingClip;
 
-            if (cachedTex == null || forceRepaint)
+            if (cachedTex == null || AudioPlaybackToolEditor.forceRepaint)
             {
                 Texture2D waveformTexture = PaintWaveformSpectrum(sound, (int)rect.width, (int)rect.height, new Color(1, 0.5f, 0));
                 cachedTex = waveformTexture;
                 if (waveformTexture != null)
                     GUI.DrawTexture(rect, waveformTexture);
-                forceRepaint = false;
+                AudioPlaybackToolEditor.forceRepaint = false;
             }
             else
             {
@@ -677,12 +661,21 @@ namespace JSAM
 
             Texture2D tex = new Texture2D(width, height, TextureFormat.RGBA32, false);
             float[] samples = new float[audio.samples * audio.channels];
-            float[] waveform = new float[width];
+            // Copy sample data to array
             audio.GetData(samples, 0);
 
-            int packSize = (samples.Length / width) + 1;
+            int leftSide = Mathf.RoundToInt(AudioPlaybackToolEditor.CalculateZoomedLeftValue() * samples.Length);
+            int rightSide = Mathf.RoundToInt(AudioPlaybackToolEditor.CalculateZoomedRightValue() * samples.Length);
+
+            float zoomLevel = AudioPlaybackToolEditor.scrollZoom / AudioPlaybackToolEditor.MAX_SCROLL_ZOOM;
+            int packSize = Mathf.RoundToInt((int)samples.Length / (int)width * (float)zoomLevel) + 1;
+
             int s = 0;
-            for (int i = 0; i < samples.Length; i += packSize)
+            int limit = Mathf.Max(rightSide, samples.Length);
+
+            // Build waveform data
+            float[] waveform = new float[limit];
+            for (int i = leftSide; i < limit; i += packSize)
             {
                 waveform[s] = Mathf.Abs(samples[i]);
                 s++;
@@ -693,6 +686,14 @@ namespace JSAM
 
             Color lightShade = new Color(0.3f, 0.3f, 0.3f);
             int halfHeight = (int)(height / 2);
+
+            float leftValue = AudioPlaybackToolEditor.CalculateZoomedLeftValue();
+            float rightValue = AudioPlaybackToolEditor.CalculateZoomedRightValue();
+
+            // The halved height limit of the wave at the left/right extremes
+            float fadeStart = leftValue * halfHeight;
+            float fadeEnd = rightValue * halfHeight;
+
             switch (myScript.fadeMode)
             {
                 case FadeMode.None:
@@ -706,11 +707,77 @@ namespace JSAM
                         }
                     }
                     break;
-                case FadeMode.FadeIn:
+                case FadeMode.FadeIn: // Paint the fade-in area
                     {
-                        for (int x = 0; x < (int)(fadeInDuration * width); x++)
+                        // Scope lol
                         {
-                            int amountToPaint = (int)Mathf.Lerp(0, halfHeight, ((float)x / (float)width) / fadeInDuration);
+                            // Scale our fadeIn value by the current zoom
+                            float fadeInRelative = InverseLerpUnclamped(leftValue, rightValue, fadeInDuration);
+                            float fadeStartRelative = InverseLerpUnclamped(leftValue, rightValue, 0);
+
+                            // Get the length of the whole fade shape from the scaled fade duration relative to the rect width
+                            float fadeWidth = width * fadeInRelative;
+                            // Offset the lerp value by how much the left side bar is obscuring the start of the fade
+                            int offset = Mathf.RoundToInt(width * Mathf.Abs(fadeStartRelative));
+
+                            // Clamp the limit in case fadeWidth exceeds the right side of the bar
+                            for (int x = 0; x + offset < Mathf.Clamp(fadeWidth, 0, width) + offset; x++)
+                            {
+                                // Paint amount of vertical black depending on progress
+                                // Lerp from 0 to half height as those are the extremes we're working with
+                                // amountToPaint is the amount of 
+                                float lerpValue = (float)(x + offset) / (fadeWidth + offset);
+                                int amountToPaint = (int)Mathf.Lerp(0, halfHeight, lerpValue);
+                                for (int y = halfHeight; y >= 0; y--)
+                                {
+                                    switch (amountToPaint)
+                                    {
+                                        case 0:
+                                            tex.SetPixel(x, y, Color.black);
+                                            break;
+                                        default:
+                                            tex.SetPixel(x, y, lightShade);
+                                            amountToPaint--;
+                                            break;
+                                    }
+                                }
+                                // Paint the same on the lower half
+                                for (int y = halfHeight; y < height; y++)
+                                {
+                                    tex.SetPixel(x, halfHeight - y, tex.GetPixel(x, y - halfHeight));
+                                }
+                            }
+                            for (int x = (int)Mathf.Clamp(fadeWidth, 0, width); x < width; x++)
+                            {
+                                for (int y = 0; y < height; y++)
+                                {
+                                    tex.SetPixel(x, y, lightShade);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case FadeMode.FadeOut:
+                    {
+                        for (int x = 0; x < width - (int)(fadeOutDuration * width); x++)
+                        {
+                            for (int y = 0; y < height; y++)
+                            {
+                                tex.SetPixel(x, y, lightShade);
+                            }
+                        }
+
+                        float fadeOutRelative = InverseLerpUnclamped(leftValue, rightValue, 1 - fadeOutDuration);
+                        float fadeEndRelative = InverseLerpUnclamped(leftValue, rightValue, 0);
+
+                        float fadeWidth = width * fadeOutRelative;
+
+                        int offset = Mathf.RoundToInt(width * Mathf.Abs(fadeEndRelative));
+
+                        //for (int x = 0; x + offset < Mathf.Clamp(fadeWidth, 0, width) + offset; x++)
+                        for (int x = width - (int)(fadeOutDuration * width); x < width; x++)
+                        {
+                            int amountToPaint = (int)Mathf.Lerp(fadeEnd, fadeStart, ((width - (float)x) / (float)width) / fadeOutDuration);
                             for (int y = halfHeight; y >= 0; y--)
                             {
                                 switch (amountToPaint)
@@ -728,44 +795,6 @@ namespace JSAM
                             {
                                 tex.SetPixel(x, halfHeight - y, tex.GetPixel(x, y - halfHeight));
                             }
-                        }
-                        for (int x = (int)(fadeInDuration * width); x < width; x++)
-                        {
-                            for (int y = 0; y < height; y++)
-                            {
-                                tex.SetPixel(x, y, lightShade);
-                            }
-                        }
-                    }
-                    break;
-                case FadeMode.FadeOut:
-                    for (int x = 0; x < width - (int)(fadeOutDuration * width); x++)
-                    {
-                        for (int y = 0; y < height; y++)
-                        {
-                            tex.SetPixel(x, y, lightShade);
-                        }
-                    }
-
-                    for (int x = width - (int)(fadeOutDuration * width); x < width; x++)
-                    {
-                        int amountToPaint = (int)Mathf.Lerp(0, halfHeight, ((width - (float)x) / (float)width) / fadeOutDuration);
-                        for (int y = halfHeight; y >= 0; y--)
-                        {
-                            switch (amountToPaint)
-                            {
-                                case 0:
-                                    tex.SetPixel(x, y, Color.black);
-                                    break;
-                                default:
-                                    tex.SetPixel(x, y, lightShade);
-                                    break;
-                            }
-                            amountToPaint = Mathf.Clamp(amountToPaint - 1, 0, height);
-                        }
-                        for (int y = halfHeight; y < height; y++)
-                        {
-                            tex.SetPixel(x, halfHeight - y, tex.GetPixel(x, y - halfHeight));
                         }
                     }
                     break;
@@ -773,7 +802,7 @@ namespace JSAM
                     {
                         for (int x = 0; x < (int)(fadeInDuration * width); x++)
                         {
-                            int amountToPaint = (int)Mathf.Lerp(0, halfHeight, ((float)x / (float)width) / fadeInDuration);
+                            int amountToPaint = (int)Mathf.Lerp(fadeStart, fadeEnd, ((float)x / (float)width) / fadeInDuration);
                             for (int y = halfHeight; y >= 0; y--)
                             {
                                 switch (amountToPaint)
@@ -793,35 +822,38 @@ namespace JSAM
                             }
                         }
 
-                        for (int x = (int)(fadeInDuration * width); x < width - (int)(fadeOutDuration * width); x++)
-                        {
-                            for (int y = 0; y < height; y++)
-                            {
-                                tex.SetPixel(x, y, lightShade);
-                            }
-                        }
+                        //for (int x = (int)(fadeInDuration * width); x < width - (int)(fadeOutDuration * width); x++)
+                        //{
+                        //    for (int y = 0; y < height; y++)
+                        //    {
+                        //        tex.SetPixel(x, y, lightShade);
+                        //    }
+                        //}
 
-                        for (int x = width - (int)(fadeOutDuration * width); x < width; x++)
-                        {
-                            int amountToPaint = (int)Mathf.Lerp(0, halfHeight, ((width - (float)x) / (float)width) / fadeOutDuration);
-                            for (int y = halfHeight; y >= 0; y--)
-                            {
-                                switch (amountToPaint)
-                                {
-                                    case 0:
-                                        tex.SetPixel(x, y, Color.black);
-                                        break;
-                                    default:
-                                        tex.SetPixel(x, y, lightShade);
-                                        break;
-                                }
-                                amountToPaint = Mathf.Clamp(amountToPaint - 1, 0, height);
-                            }
-                            for (int y = halfHeight; y < height; y++)
-                            {
-                                tex.SetPixel(x, halfHeight - y, tex.GetPixel(x, y - halfHeight));
-                            }
-                        }
+                        fadeStart = halfHeight - AudioPlaybackToolEditor.CalculateZoomedLeftValue() * halfHeight;
+                        fadeEnd = halfHeight - AudioPlaybackToolEditor.CalculateZoomedRightValue() * halfHeight;
+
+                        //for (int x = width - (int)(fadeOutDuration * width); x < width; x++)
+                        //{
+                        //    int amountToPaint = (int)Mathf.Lerp(fadeEnd, fadeStart, ((width - (float)x) / (float)width) / fadeOutDuration);
+                        //    for (int y = halfHeight; y >= 0; y--)
+                        //    {
+                        //        switch (amountToPaint)
+                        //        {
+                        //            case 0:
+                        //                tex.SetPixel(x, y, Color.black);
+                        //                break;
+                        //            default:
+                        //                tex.SetPixel(x, y, lightShade);
+                        //                break;
+                        //        }
+                        //        amountToPaint = Mathf.Clamp(amountToPaint - 1, 0, height);
+                        //    }
+                        //    for (int y = halfHeight; y < height; y++)
+                        //    {
+                        //        tex.SetPixel(x, halfHeight - y, tex.GetPixel(x, y - halfHeight));
+                        //    }
+                        //}
                     }
                     break;
             }
@@ -833,10 +865,9 @@ namespace JSAM
                     Color currentPixelColour = tex.GetPixel(x, (height / 2) + y);
                     if (currentPixelColour == Color.black) continue;
 
-                    tex.SetPixel(x, (height / 2) + y, currentPixelColour + col * 0.75f);
+                    tex.SetPixel(x, (height / 2) + y, lightShade + col * 0.75f);
 
-                    currentPixelColour = tex.GetPixel(x, (height / 2) - y);
-                    tex.SetPixel(x, (height / 2) - y, currentPixelColour + col * 0.75f);
+                    tex.SetPixel(x, (height / 2) - (y - 1), lightShade + col * 0.75f);
                 }
             }
             tex.Apply();
@@ -1177,7 +1208,6 @@ namespace JSAM
 
         void EnableChorus()
         {
-            AudioFileObject myScript = (AudioFileObject)target;
             Undo.RecordObject(myScript, "Added Effect");
             myScript.chorusFilter.enabled = true;
             myScript.chorusFilter.dryMix = 0.5f;
@@ -1191,7 +1221,6 @@ namespace JSAM
 
         void EnableDistortion()
         {
-            AudioFileObject myScript = (AudioFileObject)target;
             Undo.RecordObject(myScript, "Added Effect");
             myScript.distortionFilter.enabled = true;
             myScript.distortionFilter.distortionLevel = 0.5f;
@@ -1199,7 +1228,6 @@ namespace JSAM
 
         void EnableEcho()
         {
-            AudioFileObject myScript = (AudioFileObject)target;
             Undo.RecordObject(myScript, "Added Effect");
             myScript.echoFilter.enabled = true;
             myScript.echoFilter.delay = 500;
@@ -1210,7 +1238,6 @@ namespace JSAM
 
         void EnableHighPass()
         {
-            AudioFileObject myScript = (AudioFileObject)target;
             Undo.RecordObject(myScript, "Added Effect");
             myScript.highPassFilter.enabled = true;
             myScript.highPassFilter.cutoffFrequency = 5000;
@@ -1219,7 +1246,6 @@ namespace JSAM
 
         void EnableLowPass()
         {
-            AudioFileObject myScript = (AudioFileObject)target;
             Undo.RecordObject(myScript, "Added Effect");
             myScript.lowPassFilter.enabled = true;
             myScript.lowPassFilter.cutoffFrequency = 5000;
@@ -1228,7 +1254,6 @@ namespace JSAM
 
         void EnableReverb()
         {
-            AudioFileObject myScript = (AudioFileObject)target;
             Undo.RecordObject(myScript, "Added Effect");
             myScript.reverbFilter.enabled = true;
             myScript.reverbFilter.reverbPreset = AudioReverbPreset.Generic;
@@ -1247,6 +1272,11 @@ namespace JSAM
             myScript.reverbFilter.diffusion = 100;
             myScript.reverbFilter.density = 100;
         }
-#endregion
+        #endregion
+
+        public static float InverseLerpUnclamped(float min, float max, float value)
+        {
+            return (value - min) / (max - min);
+        }
     }
 }

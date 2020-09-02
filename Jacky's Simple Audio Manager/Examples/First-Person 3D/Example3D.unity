@@ -2125,7 +2125,6 @@ ParticleSystemRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 10301, guid: 0000000000000000f000000000000000, type: 0}
-  - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8447,7 +8446,7 @@ MonoBehaviour:
   musicFadeInTime: 0
   musicFadeOutTime: 0
   loopMode: 1
-  audioObject: {fileID: 0}
+  audioObject: {fileID: 11400000, guid: 53d013968086c2a4b9dde34f761fbb70, type: 2}
   positions:
   - {x: -17.96645, y: 0.25669998, z: 0}
   maxDistance:
@@ -10287,6 +10286,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: b5061c426d2ebb54b83d9a3f5bae9492, type: 2}
   audioFileMusicObjects:
   - {fileID: 11400000, guid: 53d013968086c2a4b9dde34f761fbb70, type: 2}
+  - {fileID: 11400000, guid: 3c6fd0e196984804abd83f18131757bf, type: 2}
   sceneSoundEnumName: JSAM.SoundsExample3D
   sceneMusicEnumName: JSAM.MusicExample3D
   masterVolume: 1

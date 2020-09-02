@@ -596,11 +596,17 @@ namespace JSAM
                     , MessageType.None);
                 EditorGUILayout.HelpBox("If you have any questions, suggestions or bug reports, feel free to open a new issue " +
                     "on Github repository's Issues page or send me an email directly!", MessageType.None);
+                EditorGUILayout.HelpBox("The Github Repository is usually more up to date with bug fixes than what's shown on the Unity Asset Store, so give it a look just in case!", MessageType.None);
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
                 if (GUILayout.Button(new GUIContent("Report a Bug", "Click on me to go to the bug report page in a new browser window"), new GUILayoutOption[] { GUILayout.MinWidth(100) }))
                 {
                     Application.OpenURL("https://github.com/jackyyang09/Simple-Unity-Audio-Manager/issues");
+                }
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button(new GUIContent("Github Releases", "Click on me to check out the latest releases in a new browser window"), new GUILayoutOption[] { GUILayout.MinWidth(100) }))
+                {
+                    Application.OpenURL("https://github.com/jackyyang09/Simple-Unity-Audio-Manager/releases");
                 }
                 GUILayout.FlexibleSpace();
                 if (GUILayout.Button(new GUIContent("Email", "You can find me at jackyyang267@gmail.com"), new GUILayoutOption[] { GUILayout.MinWidth(100) }))
@@ -919,8 +925,8 @@ namespace JSAM
         {
             char[] arr = input.ToCharArray();
 
-            arr = System.Array.FindAll<char>(arr, (c => (char.IsLetterOrDigit(c)
-                                              || c == '-' || c == '_')));
+            arr = System.Array.FindAll<char>(arr, (c => (char.IsLetterOrDigit(c) 
+            || c == '_')));
             return new string(arr);
         }
         #endregion

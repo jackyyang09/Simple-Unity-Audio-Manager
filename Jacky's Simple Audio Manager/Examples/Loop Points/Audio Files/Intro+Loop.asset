@@ -9,31 +9,31 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0d15ae218647a2d4f85e14306846c10c, type: 3}
-  m_Name: AK Chamber
+  m_Script: {fileID: 11500000, guid: bfb8002b44af6934a9ae327c8311d458, type: 3}
+  m_Name: Intro+Loop
   m_EditorClassIdentifier: 
-  file: {fileID: 8300000, guid: 42f211e8d68e33941ad2f8c969326171, type: 3}
+  file: {fileID: 8300000, guid: 4cd473ea326bb224499d94db7251c75c, type: 3}
   files: []
   useLibrary: 0
   neverRepeat: 0
   lastClipIndex: -1
-  category: AK Sounds
+  category: 
   relativeVolume: 1
-  spatialize: 1
+  spatialize: 0
   maxDistance: 0
   priority: 128
   startingPitch: 1
-  pitchShift: 0.05
+  pitchShift: 1
   playReversed: 0
   delay: 0
   ignoreTimeScale: 0
-  fadeMode: 1
-  fadeInDuration: 0.75
+  fadeMode: 0
+  fadeInDuration: 0
   fadeOutDuration: 0
   bypassEffects: 0
   bypassListenerEffects: 0
   bypassReverbZones: 0
-  safeName: AKChamber
+  safeName: 
   chorusFilter:
     enabled: 0
     dryMix: 0
@@ -58,8 +58,8 @@ MonoBehaviour:
     lowpassResonanceQ: 0
   highPassFilter:
     enabled: 0
-    cutoffFrequency: 5000
-    highpassResonanceQ: 1
+    cutoffFrequency: 0
+    highpassResonanceQ: 0
   reverbFilter:
     enabled: 0
     reverbPreset: 0
@@ -77,3 +77,8 @@ MonoBehaviour:
     lFReference: 0
     diffusion: 0
     density: 0
+  clampToLoopPoints: 1
+  loopMode: 2
+  loopStart: 48
+  loopEnd: 95.986
+  bpm: 160

@@ -10,6 +10,8 @@ namespace JSAM
     [CanEditMultipleObjects]
     public class AudioFileMusicObjectEditor : Editor
     {
+        AudioFileMusicObject myScript;
+
         public enum LoopPointTool
         {
             Slider,
@@ -31,8 +33,8 @@ namespace JSAM
         /// <summary>
         /// True so long as the inspector music player hasn't looped
         /// </summary>
-        bool firstPlayback = true;
-        bool freePlay = false;
+        public static bool firstPlayback = true;
+        public static bool freePlay = false;
 
         static bool showLoopPointTool;
         static bool showPlaybackTool;
@@ -56,11 +58,11 @@ namespace JSAM
         SerializedProperty loopStartProperty;
         SerializedProperty loopEndProperty;
 
+        public static AudioFileMusicObjectEditor instance;
+
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-
-            AudioFileMusicObject myScript = (AudioFileMusicObject)target;
 
             EditorGUILayout.LabelField("Audio File Music Object", EditorStyles.boldLabel);
 
@@ -202,13 +204,13 @@ namespace JSAM
                                 EditorGUILayout.MinMaxSlider(ref loopStart, ref loopEnd, 0, music.length);
 
                                 GUILayout.BeginHorizontal();
-                                GUILayout.Label("Loop Point Start: " + TimeToString(loopStart), new GUILayoutOption[] { GUILayout.Width(180) });
+                                GUILayout.Label("Loop Point Start: " + AudioPlaybackToolEditor.TimeToString(loopStart), new GUILayoutOption[] { GUILayout.Width(180) });
                                 GUILayout.FlexibleSpace();
                                 GUILayout.Label("Loop Point Start (Samples): " + myScript.loopStart * music.frequency);
                                 GUILayout.EndHorizontal();
 
                                 GUILayout.BeginHorizontal();
-                                GUILayout.Label("Loop Point End:   " + TimeToString(loopEnd), new GUILayoutOption[] { GUILayout.Width(180) });
+                                GUILayout.Label("Loop Point End:   " + AudioPlaybackToolEditor.TimeToString(loopEnd), new GUILayoutOption[] { GUILayout.Width(180) });
                                 GUILayout.FlexibleSpace();
                                 GUILayout.Label("Loop Point End (Samples): " + myScript.loopEnd * music.frequency);
                                 GUILayout.EndHorizontal();
@@ -252,7 +254,7 @@ namespace JSAM
                                 loopStart = samplesStart / music.frequency;
 
                                 GUILayout.BeginHorizontal();
-                                float samplesEnd = MathHelper.Clamp(EditorGUILayout.FloatField("Loop Point End:", myScript.loopEnd * music.frequency), 0, music.samples);
+                                float samplesEnd = JSAMExtensions.Clamp(EditorGUILayout.FloatField("Loop Point End:", myScript.loopEnd * music.frequency), 0, music.samples);
                                 GUILayout.EndHorizontal();
                                 loopEnd = samplesEnd / music.frequency;
                                 break;
@@ -467,7 +469,6 @@ namespace JSAM
                 "Allows you to preview how your AudioFileMusicObject will sound during runtime right here in the inspector. " +
                 "Some effects, like spatialization, will not be available to preview");
             showPlaybackTool = EditorCompatability.SpecialFoldouts(showPlaybackTool, blontent);
-
             if (showPlaybackTool)
             {
                 if (helperSource == null) CreateAudioHelper();
@@ -576,6 +577,11 @@ namespace JSAM
                 }
                 GUI.backgroundColor = colorbackup;
 
+                if (GUILayout.Button(""))
+                {
+
+                }
+
                 // Reset loop point input mode if not using loop points so the duration shows up as time by default
                 if (myScript.loopMode != LoopMode.LoopWithLoopPoints) loopPointInputMode = 0;
 
@@ -583,8 +589,8 @@ namespace JSAM
                 {
                     case LoopPointTool.Slider:
                     case LoopPointTool.TimeInput:
-                        blontent = new GUIContent(TimeToString((float)helperSource.timeSamples / music.frequency) + " / " + (TimeToString(music.length)),
-                            "The playback time in samples");
+                        blontent = new GUIContent(AudioPlaybackToolEditor.TimeToString((float)helperSource.timeSamples / music.frequency) + " / " + (AudioPlaybackToolEditor.TimeToString(music.length)),
+                            "The playback time in seconds");
                         break;
                     case LoopPointTool.TimeSamplesInput:
                         blontent = new GUIContent(helperSource.timeSamples + " / " + music.samples, "The playback time in samples");
@@ -734,7 +740,9 @@ namespace JSAM
 
         void OnEnable()
         {
-            Init();
+            myScript = (AudioFileMusicObject)target;
+
+            SetupIcons();
             EditorApplication.update += Update;
             Undo.undoRedoPerformed += OnUndoRedo;
             CreateAudioHelper();
@@ -915,7 +923,7 @@ namespace JSAM
         /// Why does Unity keep all this stuff secret?
         /// https://unitylist.com/p/5c3/Unity-editor-icons
         /// </summary>
-        static void Init()
+        static void SetupIcons()
         {
             s_BackIcon = EditorGUIUtility.TrIconContent("beginButton", "Click to Reset Playback Position");
 #if UNITY_2019_4_OR_NEWER
@@ -956,15 +964,6 @@ namespace JSAM
             AudioManager.instance.UpdateAudioFileMusicObjectCategories();
         }
 
-        public static string TimeToString(float time)
-        {
-            time *= 1000;
-            int minutes = (int)time / 60000;
-            int seconds = (int)time / 1000 - 60 * minutes;
-            int milliseconds = (int)time - minutes * 60000 - 1000 * seconds;
-            return string.Format("{0:00}:{1:00}:{2:000}", minutes, seconds, milliseconds);
-        }
-
 #region Audio Effect Rendering
         static bool showAudioEffects;
         static bool chorusFoldout;
@@ -990,6 +989,7 @@ namespace JSAM
                 if (myScript.chorusFilter.enabled)
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
                     string arrow = (chorusFoldout) ? "▼" : "▶";
                     blontent = new GUIContent("    " + arrow + " Chorus Filter", "Applies a Chorus Filter to the sound when its played. " +
                         "The Audio Chorus Filter takes an Audio Clip and processes it creating a chorus effect. " +

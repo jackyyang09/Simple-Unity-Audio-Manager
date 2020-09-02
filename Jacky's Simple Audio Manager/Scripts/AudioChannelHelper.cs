@@ -91,6 +91,22 @@ namespace JSAM
         }
 
 #if UNITY_EDITOR
+        /// <summary>
+        /// Just for the playing of generic AudioClips
+        /// </summary>
+        /// <param name="dontReset"></param>
+        public void PlayDebug(bool dontReset)
+        {
+            if (!dontReset)
+            {
+                aSource.Stop();
+            }
+            aSource.timeSamples = (int)Mathf.Clamp((float)aSource.timeSamples, 0, (float)aSource.clip.samples - 1);
+            aSource.Play();
+            aSource.pitch = 1;
+            ClearEffects();
+        }
+
         public void PlayDebug(AudioFileObject file, bool dontReset)
         {
             if (!dontReset)

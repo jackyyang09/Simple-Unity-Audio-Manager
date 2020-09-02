@@ -47,6 +47,7 @@ namespace JSAM
     /// AudioManager singleton that manages all audio in the game
     /// </summary>
     [DefaultExecutionOrder(1)]
+    [DisallowMultipleComponent]
     public class AudioManager : MonoBehaviour
     {
         [SerializeField]
@@ -75,12 +76,6 @@ namespace JSAM
         List<AudioSource> ignoringTimeScale = new List<AudioSource>();
 
         Dictionary<AudioSource, Transform> sourcePositions = new Dictionary<AudioSource, Transform>();
-
-        /// <summary>
-        /// Limits the number of each sounds being played. If at 0 or no value, assume infinite
-        /// </summary>
-        [Tooltip("Limits the number of each sounds being played. If at 0 or no value, assume infinite")]
-        int[] exclusiveList;
 
         List<AudioSource> sources;
         List<AudioChannelHelper> helpers;
@@ -380,7 +375,7 @@ namespace JSAM
                         musicSources[0].Play();
                     }
 #if UNITY_EDITOR
-                    if (Mathf.Abs(loopStartTime - loopEndTime) < 1)
+                    if (Mathf.Abs((float)(loopStartTime - loopEndTime)) < 1)
                     {
                         Debug.LogWarning("AudioManager Warning! The difference in time in your loop start/end points is less than 1 second! " +
                             "Are you sure you meant to enable loop points in your music?");

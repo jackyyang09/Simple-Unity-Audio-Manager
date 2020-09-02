@@ -1,46 +1,48 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using JSAM;
 
-public class PauseMenu : MonoBehaviour
+namespace JSAM
 {
-    /// <summary>
-    /// Button used to toggle the pause menu, incompatible with Unity's new input manager
-    /// </summary>
-    [Tooltip("Button used to toggle the pause menu, incompatible with Unity's new input manager")]
-    [SerializeField]
-    KeyCode toggleButton = KeyCode.Escape;
-
-    Canvas pauseMenu;
-
-    // Start is called before the first frame update
-    void Awake()
+    public class PauseMenu : MonoBehaviour
     {
-        pauseMenu = GetComponent<Canvas>();
-    }
+        /// <summary>
+        /// Button used to toggle the pause menu, incompatible with Unity's new input manager
+        /// </summary>
+        [Tooltip("Button used to toggle the pause menu, incompatible with Unity's new input manager")]
+        [SerializeField]
+        KeyCode toggleButton = KeyCode.Escape;
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (Input.GetKeyDown(toggleButton))
+        Canvas pauseMenu;
+
+        // Start is called before the first frame update
+        void Awake()
         {
-            pauseMenu.enabled = !pauseMenu.enabled;
-            if (pauseMenu.enabled)
-            {
-                Time.timeScale = 0;
-            }
-            else Time.timeScale = 1;
+            pauseMenu = GetComponent<Canvas>();
         }
 
-        if (pauseMenu.enabled)
+        // Update is called once per frame
+        void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Mouse0) || Input.GetKeyDown(KeyCode.Mouse1))
+            if (Input.GetKeyDown(toggleButton))
             {
-                Time.timeScale = 0;
-                // Sometimes the user has custom cursor locking code
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
+                pauseMenu.enabled = !pauseMenu.enabled;
+                if (pauseMenu.enabled)
+                {
+                    Time.timeScale = 0;
+                }
+                else Time.timeScale = 1;
+            }
+
+            if (pauseMenu.enabled)
+            {
+                if (Input.GetKeyDown(KeyCode.Mouse0) || Input.GetKeyDown(KeyCode.Mouse1))
+                {
+                    Time.timeScale = 0;
+                    // Sometimes the user has custom cursor locking code
+                    Cursor.lockState = CursorLockMode.None;
+                    Cursor.visible = true;
+                }
             }
         }
     }
