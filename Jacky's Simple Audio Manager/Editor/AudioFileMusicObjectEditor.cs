@@ -43,7 +43,6 @@ namespace JSAM
         static int loopPointInputMode = 0;
 
         Texture2D cachedTex;
-        bool forceRepaint;
         AudioClip cachedClip;
 
         bool unregistered = false;
@@ -57,6 +56,8 @@ namespace JSAM
         SerializedProperty clampToLoopPoints;
         SerializedProperty loopStartProperty;
         SerializedProperty loopEndProperty;
+
+        GUIContent openIcon;
 
         public static AudioFileMusicObjectEditor instance;
 
@@ -168,16 +169,20 @@ namespace JSAM
                 EditorGUILayout.PropertyField(loopMode);
                 if (EditorGUI.EndChangeCheck())
                 {
+                    // This won't do, reset loop point positions
                     if (myScript.loopStart >= myScript.loopEnd)
                     {
-                        loopStart = 0;
-                        loopEnd = music.length;
+                        loopStartProperty.floatValue = 0;
+                        loopEndProperty.floatValue = music.length;
+                        loopStart = myScript.loopStart;
+                        loopEnd = myScript.loopEnd;
+                        serializedObject.ApplyModifiedProperties();
                     }
                 }
                 using (new EditorGUI.DisabledScope(myScript.loopMode != LoopMode.LoopWithLoopPoints))
                     EditorGUILayout.PropertyField(clampToLoopPoints);
 
-                DrawPlaybackTool(myScript);
+                if (!AudioPlaybackToolEditor.WindowOpen) DrawPlaybackTool(myScript);
 
                 using (new EditorGUI.DisabledScope(myScript.loopMode != LoopMode.LoopWithLoopPoints))
                 {
@@ -218,15 +223,15 @@ namespace JSAM
                             case LoopPointTool.TimeInput:
                                 EditorGUILayout.Space();
 
+                                // int casts are used instead of Mathf.RoundToInt so that we truncate the floats instead of rounding up
                                 GUILayout.BeginHorizontal();
                                 float theTime = loopStart * 1000f;
                                 GUILayout.Label("Loop Point Start:");
-                                int minutes = EditorGUILayout.IntField(Mathf.RoundToInt(theTime / 60000f));
+                                int minutes = EditorGUILayout.IntField((int)(theTime / 60000f));
                                 GUILayout.Label(":");
-                                int seconds = Mathf.Clamp(EditorGUILayout.IntField(Mathf.RoundToInt((theTime % 60000) / 1000f - 0.5f)), 0, 59);
+                                int seconds = Mathf.Clamp(EditorGUILayout.IntField((int)((theTime % 60000) / 1000f)), 0, 59);
                                 GUILayout.Label(":");
                                 float milliseconds = Mathf.Clamp(EditorGUILayout.IntField(Mathf.RoundToInt(theTime % 1000f)), 0, 999.0f);
-                                //milliseconds = float.Parse("0." + milliseconds.ToString("0.####")); // Ensures that our milliseconds never leave their decimal place
                                 milliseconds /= 1000.0f; // Ensures that our milliseconds never leave their decimal place
                                 loopStart = (float)minutes * 60f + (float)seconds + milliseconds;
                                 GUILayout.EndHorizontal();
@@ -234,12 +239,11 @@ namespace JSAM
                                 GUILayout.BeginHorizontal();
                                 theTime = loopEnd * 1000f;
                                 GUILayout.Label("Loop Point End:  ");
-                                minutes = EditorGUILayout.IntField(Mathf.RoundToInt(theTime / 60000f));
+                                minutes = EditorGUILayout.IntField((int)(theTime / 60000f));
                                 GUILayout.Label(":");
-                                seconds = Mathf.Clamp(EditorGUILayout.IntField(Mathf.RoundToInt((theTime % 60000) / 1000f - 0.5f)), 0, 59);
+                                seconds = Mathf.Clamp(EditorGUILayout.IntField((int)((theTime % 60000) / 1000f)), 0, 59);
                                 GUILayout.Label(":");
                                 milliseconds = Mathf.Clamp(EditorGUILayout.IntField(Mathf.RoundToInt(theTime % 1000f)), 0, 999.0f);
-                                //milliseconds = float.Parse("0." + milliseconds.ToString("0.####")); // Ensures that our milliseconds never leave their decimal place
                                 milliseconds /= 1000.0f; // Ensures that our milliseconds never leave their decimal place
                                 loopEnd = (float)minutes * 60f + (float)seconds + milliseconds;
                                 GUILayout.EndHorizontal();
@@ -332,11 +336,11 @@ namespace JSAM
                             }
                             if (myScript.IsWavFile())
                             {
-                                buttonText = new GUIContent("Save Loop Points to File", "Clicking this will write the above start and end loop points into the actual file itself. Check the quick reference guide for details!");
+                                buttonText = new GUIContent("Embed Loop Points to File", "Clicking this will write the above start and end loop points into the actual file itself. Check the quick reference guide for details!");
                             }
                             else
                             {
-                                buttonText = new GUIContent("Save Loop Points to File", "This option is exclusive to .WAV files. Clicking this will write the above start and end loop points into the actual file itself. Check the quick reference guide for details!");
+                                buttonText = new GUIContent("Embed Loop Points to File", "This option is exclusive to .WAV files. Clicking this will write the above start and end loop points into the actual file itself. Check the quick reference guide for details!");
                             }
                             if (GUILayout.Button(buttonText))
                             {
@@ -366,7 +370,7 @@ namespace JSAM
                             loopStartProperty.floatValue = Mathf.Clamp(loopStart, 0, music.length);
                             loopEndProperty.floatValue = Mathf.Clamp(loopEnd, 0, Mathf.Ceil(music.length));
                             EditorUtility.SetDirty(myScript);
-                            forceRepaint = true;
+                            AudioPlaybackToolEditor.DoForceRepaint(true);
                         }
                     }
                     EditorCompatability.EndSpecialFoldoutGroup();
@@ -378,7 +382,7 @@ namespace JSAM
 
             if (serializedObject.hasModifiedProperties)
             {
-                forceRepaint = true;
+                AudioPlaybackToolEditor.DoForceRepaint(true);
                 serializedObject.ApplyModifiedProperties();
 
                 // Manually fix variables
@@ -471,10 +475,8 @@ namespace JSAM
             showPlaybackTool = EditorCompatability.SpecialFoldouts(showPlaybackTool, blontent);
             if (showPlaybackTool)
             {
-                if (helperSource == null) CreateAudioHelper();
-
                 AudioClip music = myScript.GetFile();
-                Rect progressRect = ProgressBar((float)helperSource.timeSamples / (float)helperSource.clip.samples, GetInfoString());
+                Rect progressRect = ProgressBar((float)AudioPlaybackToolEditor.helperSource.timeSamples / (float)AudioPlaybackToolEditor.helperSource.clip.samples, GetInfoString());
 
                 EditorGUILayout.BeginHorizontal();
 
@@ -500,10 +502,12 @@ namespace JSAM
                             }
                             if (!mouseDragging) break;
                             float newProgress = Mathf.InverseLerp(progressRect.xMin, progressRect.xMax, evt.mousePosition.x);
-                            helperSource.time = Mathf.Clamp((newProgress * music.length), 0, music.length - AudioManager.EPSILON);
+                            AudioPlaybackToolEditor.helperSource.time = Mathf.Clamp((newProgress * music.length), 0, music.length - AudioManager.EPSILON);
                             if (myScript.loopMode == LoopMode.LoopWithLoopPoints && myScript.clampToLoopPoints)
                             {
-                                helperSource.time = Mathf.Clamp(helperSource.time, myScript.loopStart, myScript.loopEnd - AudioManager.EPSILON);
+                                float start = myScript.loopStart * myScript.GetFile().frequency;
+                                float end = myScript.loopEnd * myScript.GetFile().frequency;
+                                AudioPlaybackToolEditor.helperSource.timeSamples = (int)Mathf.Clamp(AudioPlaybackToolEditor.helperSource.timeSamples, start, end - AudioManager.EPSILON);
                             }
                             break;
                     }
@@ -513,13 +517,13 @@ namespace JSAM
                 {
                     if (myScript.loopMode == LoopMode.LoopWithLoopPoints && myScript.clampToLoopPoints)
                     {
-                        helperSource.timeSamples = Mathf.CeilToInt((myScript.loopStart * music.frequency));
+                        AudioPlaybackToolEditor.helperSource.timeSamples = Mathf.CeilToInt((myScript.loopStart * music.frequency));
                     }
                     else
                     {
-                        helperSource.timeSamples = 0;
+                        AudioPlaybackToolEditor.helperSource.timeSamples = 0;
                     }
-                    helperSource.Stop();
+                    AudioPlaybackToolEditor.helperSource.Stop();
                     mouseScrubbed = false;
                     clipPaused = false;
                     clipPlaying = false;
@@ -533,19 +537,19 @@ namespace JSAM
                     clipPlaying = !clipPlaying;
                     if (clipPlaying)
                     {
-                        // Note: For some reason, reading from helperSource.time returns 0 even if timeSamples is not 0
-                        // However, writing a value to helperSource.time changes timeSamples to the appropriate value just fine
-                        helperHelper.PlayDebug(myScript, mouseScrubbed);
-                        if (clipPaused) helperSource.Pause();
+                        // Note: For some reason, reading from AudioPlaybackToolEditor.helperSource.time returns 0 even if timeSamples is not 0
+                        // However, writing a value to AudioPlaybackToolEditor.helperSource.time changes timeSamples to the appropriate value just fine
+                        AudioPlaybackToolEditor.helperHelper.PlayDebug(myScript, mouseScrubbed);
+                        if (clipPaused) AudioPlaybackToolEditor.helperSource.Pause();
                         firstPlayback = true;
                         freePlay = false;
                     }
                     else
                     {
-                        helperSource.Stop();
+                        AudioPlaybackToolEditor.helperSource.Stop();
                         if (!mouseScrubbed)
                         {
-                            helperSource.time = 0;
+                            AudioPlaybackToolEditor.helperSource.time = 0;
                         }
                         clipPaused = false;
                     }
@@ -559,11 +563,11 @@ namespace JSAM
                     clipPaused = !clipPaused;
                     if (clipPaused)
                     {
-                        helperSource.Pause();
+                        AudioPlaybackToolEditor.helperSource.Pause();
                     }
                     else
                     {
-                        helperSource.UnPause();
+                        AudioPlaybackToolEditor.helperSource.UnPause();
                     }
                 }
 
@@ -573,13 +577,13 @@ namespace JSAM
                 if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                 {
                     loopClip = !loopClip;
-                    // helperSource.loop = true;
+                    // AudioPlaybackToolEditor.helperSource.loop = true;
                 }
                 GUI.backgroundColor = colorbackup;
 
-                if (GUILayout.Button(""))
+                if (GUILayout.Button(openIcon, new GUILayoutOption[] { GUILayout.MaxHeight(19) }))
                 {
-
+                    AudioPlaybackToolEditor.Init();
                 }
 
                 // Reset loop point input mode if not using loop points so the duration shows up as time by default
@@ -589,14 +593,14 @@ namespace JSAM
                 {
                     case LoopPointTool.Slider:
                     case LoopPointTool.TimeInput:
-                        blontent = new GUIContent(AudioPlaybackToolEditor.TimeToString((float)helperSource.timeSamples / music.frequency) + " / " + (AudioPlaybackToolEditor.TimeToString(music.length)),
+                        blontent = new GUIContent(AudioPlaybackToolEditor.TimeToString((float)AudioPlaybackToolEditor.helperSource.timeSamples / music.frequency) + " / " + (AudioPlaybackToolEditor.TimeToString(music.length)),
                             "The playback time in seconds");
                         break;
                     case LoopPointTool.TimeSamplesInput:
-                        blontent = new GUIContent(helperSource.timeSamples + " / " + music.samples, "The playback time in samples");
+                        blontent = new GUIContent(AudioPlaybackToolEditor.helperSource.timeSamples + " / " + music.samples, "The playback time in samples");
                         break;
                     case LoopPointTool.BPMInput:
-                        blontent = new GUIContent(string.Format("{0:0}", helperSource.time / (60f / myScript.bpm)) + " / " + music.length / (60f / myScript.bpm),
+                        blontent = new GUIContent(string.Format("{0:0}", AudioPlaybackToolEditor.helperSource.time / (60f / myScript.bpm)) + " / " + music.length / (60f / myScript.bpm),
                             "The playback time in beats");
                         break;
                 }
@@ -625,13 +629,13 @@ namespace JSAM
 
             AudioClip music = ((AudioFileMusicObject)target).GetFile();
 
-            if (cachedTex == null || forceRepaint)
+            if (cachedTex == null || AudioPlaybackToolEditor.forceRepaint)
             {
                 Texture2D waveformTexture = PaintWaveformSpectrum(music, (int)rect.width, (int)rect.height, new Color(1, 0.5f, 0));
                 cachedTex = waveformTexture;
                 if (waveformTexture != null)
                     GUI.DrawTexture(rect, waveformTexture);
-                forceRepaint = false;
+                AudioPlaybackToolEditor.forceRepaint = false;
             }
             else
             {
@@ -655,21 +659,21 @@ namespace JSAM
             AudioClip music = myScript.GetFile();
             if (music != cachedClip)
             {
-                forceRepaint = true;
+                AudioPlaybackToolEditor.DoForceRepaint(true);
                 cachedClip = music;
-                helperSource.clip = cachedClip;
+                AudioPlaybackToolEditor.helperSource.clip = cachedClip;
             }
 
-            if (!helperSource.isPlaying && mouseDragging)
+            if (!AudioPlaybackToolEditor.helperSource.isPlaying && mouseDragging)
             {
                 Repaint();
             }
 
             if ((clipPlaying && !clipPaused) || (mouseDragging && clipPlaying))
             {
-                float clipPos = helperSource.timeSamples / (float)music.frequency;
-                helperSource.volume = myScript.relativeVolume;
-                helperSource.pitch = myScript.startingPitch;
+                float clipPos = AudioPlaybackToolEditor.helperSource.timeSamples / (float)music.frequency;
+                AudioPlaybackToolEditor.helperSource.volume = myScript.relativeVolume;
+                AudioPlaybackToolEditor.helperSource.pitch = myScript.startingPitch;
 
                 Repaint();
 
@@ -678,16 +682,16 @@ namespace JSAM
                     EditorApplication.QueuePlayerLoopUpdate();
                     if (myScript.loopMode == LoopMode.LoopWithLoopPoints)
                     {
-                        if (!helperSource.isPlaying && clipPlaying && !clipPaused)
+                        if (!AudioPlaybackToolEditor.helperSource.isPlaying && clipPlaying && !clipPaused)
                         {
                             if (freePlay)
                             {
-                                helperSource.Play();
+                                AudioPlaybackToolEditor.helperSource.Play();
                             }
                             else
                             {
-                                helperSource.Play();
-                                helperSource.timeSamples = Mathf.CeilToInt(myScript.loopStart * music.frequency);
+                                AudioPlaybackToolEditor.helperSource.Play();
+                                AudioPlaybackToolEditor.helperSource.timeSamples = Mathf.CeilToInt(myScript.loopStart * music.frequency);
                             }
                             freePlay = false;
                         }
@@ -696,39 +700,39 @@ namespace JSAM
                             if (clipPos < myScript.loopStart || clipPos > myScript.loopEnd)
                             {
                                 // CeilToInt to guarantee clip position stays within loop bounds
-                                helperSource.timeSamples = Mathf.CeilToInt(myScript.loopStart * music.frequency);
+                                AudioPlaybackToolEditor.helperSource.timeSamples = Mathf.CeilToInt(myScript.loopStart * music.frequency);
                                 firstPlayback = false;
                             }
                         }
                         else if (clipPos >= myScript.loopEnd)
                         {
-                            helperSource.timeSamples = Mathf.CeilToInt(myScript.loopStart * music.frequency);
+                            AudioPlaybackToolEditor.helperSource.timeSamples = Mathf.CeilToInt(myScript.loopStart * music.frequency);
                             firstPlayback = false;
                         }
                     }
                 }
                 else if (!loopClip && myScript.loopMode == LoopMode.LoopWithLoopPoints)
                 {
-                    if ((!helperSource.isPlaying && !clipPaused) || clipPos > myScript.loopEnd)
+                    if ((!AudioPlaybackToolEditor.helperSource.isPlaying && !clipPaused) || clipPos > myScript.loopEnd)
                     {
                         clipPlaying = false;
-                        helperSource.Stop();
+                        AudioPlaybackToolEditor.helperSource.Stop();
                     }
                     else if (myScript.clampToLoopPoints && clipPos < myScript.loopStart)
                     {
-                        helperSource.timeSamples = Mathf.CeilToInt(myScript.loopStart * music.frequency);
+                        AudioPlaybackToolEditor.helperSource.timeSamples = Mathf.CeilToInt(myScript.loopStart * music.frequency);
                     }
                 }
             }
 
             if (myScript.loopMode != LoopMode.LoopWithLoopPoints)
             {
-                if (!helperSource.isPlaying && !clipPaused && clipPlaying)
+                if (!AudioPlaybackToolEditor.helperSource.isPlaying && !clipPaused && clipPlaying)
                 {
-                    helperSource.time = 0;
+                    AudioPlaybackToolEditor.helperSource.time = 0;
                     if (loopClip)
                     {
-                        helperSource.Play();
+                        AudioPlaybackToolEditor.helperSource.Play();
                     }
                     else
                     {
@@ -741,11 +745,12 @@ namespace JSAM
         void OnEnable()
         {
             myScript = (AudioFileMusicObject)target;
+            instance = this;
 
             SetupIcons();
             EditorApplication.update += Update;
             Undo.undoRedoPerformed += OnUndoRedo;
-            CreateAudioHelper();
+            AudioPlaybackToolEditor.CreateAudioHelper(myScript.GetFile(), true);
             Undo.postprocessModifications += ApplyHelperEffects;
             CheckIfRegistered();
             myName = AudioManagerEditor.ConvertToAlphanumeric(target.name);
@@ -758,13 +763,15 @@ namespace JSAM
             bypassEffects = serializedObject.FindProperty("bypassEffects");
             bypassListenerEffects = serializedObject.FindProperty("bypassListenerEffects");
             bypassReverbZones = serializedObject.FindProperty("bypassReverbZones");
+
+            openIcon = EditorGUIUtility.TrIconContent("d_ScaleTool", "Click to open Playback Preview in a standalone window");
         }
 
         public UndoPropertyModification[] ApplyHelperEffects(UndoPropertyModification[] modifications)
         {
-            if (helperSource.isPlaying)
+            if (AudioPlaybackToolEditor.helperSource.isPlaying)
             {
-                helperHelper.ApplyEffects();
+                AudioPlaybackToolEditor.helperHelper.ApplyEffects();
             }
             return modifications;
         }
@@ -773,13 +780,13 @@ namespace JSAM
         {
             EditorApplication.update -= Update;
             Undo.undoRedoPerformed -= OnUndoRedo;
-            DestroyAudioHelper();
+            AudioPlaybackToolEditor.DestroyAudioHelper();
             Undo.postprocessModifications -= ApplyHelperEffects;
         }
 
         void OnUndoRedo()
         {
-            forceRepaint = true;
+            AudioPlaybackToolEditor.DoForceRepaint(true);
         }
 
         public void CheckIfRegistered()
@@ -811,36 +818,6 @@ namespace JSAM
             else nameChanged = false;
         }
 
-        GameObject helperObject;
-        AudioSource helperSource;
-        AudioChannelHelper helperHelper;
-
-        void CreateAudioHelper()
-        {
-            if (helperObject == null)
-            {
-                helperObject = GameObject.Find("JSAM Audio Music Helper");
-                if (helperObject == null)
-                    helperObject = new GameObject("JSAM Audio Music Helper");
-                helperObject.hideFlags = HideFlags.HideAndDontSave;
-                helperHelper = helperObject.AddComponent<AudioChannelHelper>();
-            }
-
-            if (helperSource == null)
-            {
-                helperSource = helperObject.AddComponent<AudioSource>();
-                helperSource.clip = ((AudioFileMusicObject)target).GetFile();
-                helperSource.time = 0;
-            }
-            helperHelper.Init();
-        }
-
-        void DestroyAudioHelper()
-        {
-            helperSource.Stop();
-            DestroyImmediate(helperObject);
-        }
-
         /// <summary>
         /// Code from these gents
         /// https://answers.unity.com/questions/189886/displaying-an-audio-waveform-in-the-editor.html
@@ -851,25 +828,43 @@ namespace JSAM
 
             Texture2D tex = new Texture2D(width, height, TextureFormat.RGBA32, false);
             float[] samples = new float[audio.samples * audio.channels];
-            float[] waveform = new float[width];
+            // Copy sample data to array
             audio.GetData(samples, 0);
 
-            int packSize = (samples.Length / width) + 1;
+            Color lightShade = new Color(0.3f, 0.3f, 0.3f);
+            int halfHeight = height / 2;
+
+            float leftValue = AudioPlaybackToolEditor.CalculateZoomedLeftValue();
+            float rightValue = AudioPlaybackToolEditor.CalculateZoomedRightValue();
+
+            int leftSide = Mathf.RoundToInt(leftValue * samples.Length);
+            int rightSide = Mathf.RoundToInt(rightValue * samples.Length);
+
+            float zoomLevel = AudioPlaybackToolEditor.scrollZoom / AudioPlaybackToolEditor.MAX_SCROLL_ZOOM;
+            int packSize = Mathf.RoundToInt((int)samples.Length / (int)width * (float)zoomLevel) + 1;
+
             int s = 0;
-            for (int i = 0; i < samples.Length; i += packSize)
+            int limit = Mathf.Min(rightSide, samples.Length);
+
+            // Build waveform data
+            float[] waveform = new float[limit];
+            for (int i = leftSide; i < limit; i += packSize)
             {
                 waveform[s] = Mathf.Abs(samples[i]);
                 s++;
             }
 
-            AudioFileMusicObject myScript = (AudioFileMusicObject)target;
-
             if (myScript.loopMode == LoopMode.LoopWithLoopPoints)
             {
+                float beginning = JSAMExtensions.InverseLerpUnclamped(leftValue, rightValue, myScript.loopStart / audio.length);
+                float ending = JSAMExtensions.InverseLerpUnclamped(leftValue, rightValue, myScript.loopEnd / audio.length);
+                float loopStart = beginning * width;
+                float loopEnd = ending * width;
+
                 for (int x = 0; x < width; x++)
                 {
                     // Here we limit the scope of the area based on loop points
-                    if (x < waveform.Length * (myScript.loopStart / audio.length) || x > waveform.Length * (myScript.loopEnd / audio.length))
+                    if (x < loopStart || x > loopEnd)
                     {
                         for (int y = 0; y < height; y++)
                         {
@@ -880,7 +875,7 @@ namespace JSAM
                     {
                         for (int y = 0; y < height; y++)
                         {
-                            tex.SetPixel(x, y, new Color(0.3f, 0.3f, 0.3f));
+                            tex.SetPixel(x, y, lightShade);
                         }
                     }
                 }
@@ -891,22 +886,26 @@ namespace JSAM
                 {
                     for (int y = 0; y < height; y++)
                     {
-                        tex.SetPixel(x, y, new Color(0.3f, 0.3f, 0.3f));
+                        tex.SetPixel(x, y, lightShade);
                     }
                 }
             }
             
-
-            for (int x = 0; x < waveform.Length; x++)
+            for (int x = 0; x < Mathf.Clamp(rightSide, 0, width); x++)
             {
-                for (int y = 0; y <= waveform[x] * ((float)height * myScript.relativeVolume); y++)
+                // Scale the wave vertically relative to half the rect height and the relative volume
+                float heightLimit = waveform[x] * halfHeight * myScript.relativeVolume;
+
+                for (int y = (int)heightLimit; y >= 0; y--)
                 {
-                    Color currentPixelColour = tex.GetPixel(x, (height / 2) + y);
-
-                    tex.SetPixel(x, (height / 2) + y, currentPixelColour + col * 0.75f);
-
-                    currentPixelColour = tex.GetPixel(x, (height / 2) - y);
-                    tex.SetPixel(x, (height / 2) - y, currentPixelColour + col * 0.75f);
+                    Color currentPixelColour = tex.GetPixel(x, halfHeight + y);
+            
+                    tex.SetPixel(x, halfHeight + y, currentPixelColour + col * 0.75f);
+            
+                    // Get data from upper half offset by 1 unit due to int truncation
+                    currentPixelColour = tex.GetPixel(x, halfHeight - (y + 1));
+                    // Draw bottom half with data from upper half
+                    tex.SetPixel(x, halfHeight - (y + 1), currentPixelColour + col * 0.75f);
                 }
             }
             tex.Apply();

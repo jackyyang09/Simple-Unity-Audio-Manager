@@ -57,14 +57,15 @@ namespace JSAM
             if (audioObject == null)
             {
                 DesignateSound();
-                if (audioObject != null)
-                {
-                    spatialSound = audioObject.spatialize;
-                    priority = audioObject.priority;
-                    pitchShift = audioObject.pitchShift;
-                    delay = audioObject.delay;
-                    ignoreTimeScale = audioObject.ignoreTimeScale;
-                }
+            }
+
+            if (audioObject != null)
+            {
+                spatialSound = audioObject.spatialize;
+                priority = audioObject.priority;
+                pitchShift = audioObject.pitchShift;
+                delay = audioObject.delay;
+                ignoreTimeScale = audioObject.ignoreTimeScale;
             }
 
             sTransform = (spatialSound) ? transform : null;

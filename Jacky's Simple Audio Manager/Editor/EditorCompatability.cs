@@ -40,5 +40,17 @@ namespace JSAM
             return new GUIStyle(EditorStyles.foldout);
 #endif
         }
+
+        /// <summary>
+        /// Not sure if this works
+        /// </summary>
+        public static void OpenInspectorWindow()
+        {
+#if UNITY_2019_4_OR_NEWER
+            EditorApplication.ExecuteMenuItem("Window/General/Inspector");
+#else
+            EditorApplication.ExecuteMenuItem("Window/Inspector");
+#endif
+        }
     }
 }

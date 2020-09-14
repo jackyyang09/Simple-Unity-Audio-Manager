@@ -24,5 +24,10 @@ namespace JSAM
         {
             return mask == (mask | (1 << layer));
         }
+
+        public static float InverseLerpUnclamped(float min, float max, float value)
+        {
+            return (value - min) / (max - min);
+        }
     }
 }

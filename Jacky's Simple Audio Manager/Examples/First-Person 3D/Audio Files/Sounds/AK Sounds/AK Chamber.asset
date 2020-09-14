@@ -27,8 +27,8 @@ MonoBehaviour:
   playReversed: 0
   delay: 0
   ignoreTimeScale: 0
-  fadeMode: 1
-  fadeInDuration: 0.75
+  fadeMode: 3
+  fadeInDuration: 0
   fadeOutDuration: 0
   bypassEffects: 0
   bypassListenerEffects: 0

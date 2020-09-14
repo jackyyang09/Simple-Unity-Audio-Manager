@@ -57,12 +57,12 @@ namespace JSAM
             if (audioObject == null)
             {
                 DesignateMusic();
+            }
 
-                if (audioObject != null)
-                {
-                    loopMode = audioObject.loopMode;
-                    spatializeSound = audioObject.spatialize;
-                }
+            if (audioObject != null)
+            {
+                loopMode = audioObject.loopMode;
+                spatializeSound = audioObject.spatialize;
             }
         }
 

@@ -233,7 +233,7 @@ namespace JSAM
                 DontDestroyOnLoad(gameObject);
             }
 
-            EstablishSingletonDominance();
+            EstablishSingletonDominance(true);
 
             if (!initialized)
             {
@@ -2601,6 +2601,10 @@ namespace JSAM
                 {
                     instance = this;
                 }
+                else if (instance.gameObject.scene.name == "DontDestroyOnLoad")
+                {
+                    Destroy(gameObject);
+                }
                 else if (instance.gameObject.scene.name != gameObject.scene.name)
                 {
                     instance = this;
@@ -3020,7 +3024,11 @@ namespace JSAM
             categories = new List<string>();
             foreach (AudioFileObject a in audioFileObjects)
             {
-                if (a == null) audioFileObjects.Remove(a); // May as well remove it if it's missing
+                if (a == null)
+                {
+                    audioFileObjects.Remove(a); // May as well remove it if it's missing
+                    continue;
+                }
                 if (a.category == null) a.category = "";
                 if (a.category != "" && a.category != "Hidden")
                 {
@@ -3036,7 +3044,12 @@ namespace JSAM
             categoriesMusic = new List<string>();
             foreach (AudioFileMusicObject a in audioFileMusicObjects)
             {
-                if (a == null) audioFileMusicObjects.Remove(a); // May as well remove it if it's missing
+                if (a == null)
+                {
+                    audioFileMusicObjects.Remove(a); // May as well remove it if it's missing
+                    continue;
+                }
+                if (a.category == null) a.category = "";
                 if (a.category != "" && a.category != "Hidden")
                 {
                     if (categoriesMusic.Contains(a.category)) continue;

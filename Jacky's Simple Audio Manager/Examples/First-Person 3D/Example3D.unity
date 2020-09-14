@@ -10286,7 +10286,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: b5061c426d2ebb54b83d9a3f5bae9492, type: 2}
   audioFileMusicObjects:
   - {fileID: 11400000, guid: 53d013968086c2a4b9dde34f761fbb70, type: 2}
-  - {fileID: 11400000, guid: 3c6fd0e196984804abd83f18131757bf, type: 2}
   sceneSoundEnumName: JSAM.SoundsExample3D
   sceneMusicEnumName: JSAM.MusicExample3D
   masterVolume: 1

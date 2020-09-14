@@ -197,7 +197,9 @@ MonoBehaviour:
   m_Text: 'Navigate to
 
     Jacky''s Simple AudioManager/Examples/Loop Points/Audio
-    Folder/Intro+Loop.asset'
+    Folder/Intro+Loop.asset
+
+    in your Project Window'
 --- !u!222 &156189613
 CanvasRenderer:
   m_ObjectHideFlags: 0

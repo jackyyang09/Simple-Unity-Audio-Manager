@@ -15,9 +15,12 @@ MonoBehaviour:
   file: {fileID: 8300000, guid: 4a78a46e20946844db297869c9b819fa, type: 3}
   files: []
   useLibrary: 0
+  neverRepeat: 0
+  lastClipIndex: -1
   category: 
   relativeVolume: 0.5
   spatialize: 0
+  maxDistance: 0
   priority: 128
   startingPitch: 1
   pitchShift: 0.05
@@ -27,6 +30,9 @@ MonoBehaviour:
   fadeMode: 0
   fadeInDuration: 0
   fadeOutDuration: 0
+  bypassEffects: 0
+  bypassListenerEffects: 0
+  bypassReverbZones: 0
   safeName: Running
   chorusFilter:
     enabled: 0
