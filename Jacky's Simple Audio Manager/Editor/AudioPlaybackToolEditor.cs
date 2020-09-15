@@ -526,7 +526,7 @@ namespace JSAM
             {
                 helperSource.Stop();
             }
-            if (!WindowOpen)
+            if (!WindowOpen && !AudioFileObjectEditor.instance && !AudioFileMusicObjectEditor.instance)
             {
                 DestroyImmediate(helperObject);
             }

@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace JSAM
 {
+    [AddComponentMenu("AudioManager/Audio Music Zone")]
     public class AudioMusicZone : BaseAudioMusicFeedback
     {
         public List<Vector3> positions = new List<Vector3>();
