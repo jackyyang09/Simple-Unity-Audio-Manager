@@ -14,7 +14,6 @@ namespace JSAM {
         Walk
     }
     public enum MusicExample3D{
-        BGM,
-        BGM1
+        BGM
     }
 }

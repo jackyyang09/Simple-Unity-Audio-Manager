@@ -58,7 +58,11 @@ namespace JSAM
         {
             get
             {
+#if UNITY_2019_4_OR_NEWER
                 return HasOpenInstances<AudioPlaybackToolEditor>();
+#else
+                return window != null;
+#endif
             }
         }
 
@@ -188,6 +192,8 @@ namespace JSAM
                 EditorGUILayout.HelpBox(
                     "This EditorWindow serves as a high-fidelity alternative to the small playback preview in the inspector window used when inspecting Audio File Objects."
                     , MessageType.None);
+
+                EditorGUILayout.Space();
 
                 EditorGUILayout.LabelField("Tips", EditorStyles.boldLabel);
                 EditorGUILayout.HelpBox(
@@ -400,18 +406,21 @@ namespace JSAM
 
             if (evt.isScrollWheel)
             {
-                float destinedProgress = Mathf.InverseLerp(progressRect.xMin, progressRect.xMax, evt.mousePosition.x);
+                if (evt.mousePosition.y > progressRect.yMin && evt.mousePosition.y < progressRect.yMax)
+                {
+                    float destinedProgress = Mathf.InverseLerp(progressRect.xMin, progressRect.xMax, evt.mousePosition.x);
 
-                destinedProgress = Mathf.Lerp(CalculateZoomedLeftValue(), CalculateZoomedRightValue(), destinedProgress);
+                    destinedProgress = Mathf.Lerp(CalculateZoomedLeftValue(), CalculateZoomedRightValue(), destinedProgress);
 
-                // Center the scrollbar because scrollbars have their pivot set to the left
-                scrollbarProgress = destinedProgress * MAX_SCROLL_ZOOM - scrollZoom / 2;
+                    // Center the scrollbar because scrollbars have their pivot set to the left
+                    scrollbarProgress = destinedProgress * MAX_SCROLL_ZOOM - scrollZoom / 2;
 
-                scrollZoom = Mathf.Clamp(scrollZoom + evt.delta.y / 3, 0, MAX_SCROLL_ZOOM);
+                    scrollZoom = Mathf.Clamp(scrollZoom + evt.delta.y / 3, 0, MAX_SCROLL_ZOOM);
 
-                // Because scrollbar progress isn't real progress
-                trueScrollProgress = destinedProgress;
-                DoForceRepaint(true);
+                    // Because scrollbar progress isn't real progress
+                    trueScrollProgress = destinedProgress;
+                    DoForceRepaint(true);
+                }
             }
             else if (evt.isMouse)
             {
