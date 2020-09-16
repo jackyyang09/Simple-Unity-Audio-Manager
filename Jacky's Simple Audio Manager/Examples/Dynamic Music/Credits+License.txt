@@ -1,17 +1,14 @@
-All assets used in the "Crossfade" example project can be used royalty-free provided that you abide by the terms of their respective licenses
+All assets used in the "Crossfade" example project can be used royalty-free
 
 ====Music====
 
-The following tracks are released under the Creative Commons Attribution 4.0 license
-https://creativecommons.org/licenses/by/4.0/
+This sound is released under the CC0 1.0 Universal Public Domain Dedication license
+https://creativecommons.org/publicdomain/zero/1.0/
 
 Menu(Pitched).ogg
 Menu.ogg
 
-Use of these tracks requrires that you give appropriate credit to the author
-https://soundcloud.com/brogrammist
-
-Do list their username and provide the corresponding links alongside the rest of your credits
+You are free to use this track however you wish
 
 ====Code====
 

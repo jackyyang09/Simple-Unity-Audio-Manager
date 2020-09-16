@@ -122,7 +122,7 @@ MonoBehaviour:
   audioObject: {fileID: 11400000, guid: 0c17e0236e4346b4a8d3b13a15ed5f38, type: 2}
   triggersWith:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 4294967295
   triggerEvent: 0
 --- !u!61 &-8625587954343364288
 BoxCollider2D:

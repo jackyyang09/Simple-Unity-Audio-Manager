@@ -12,18 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d15ae218647a2d4f85e14306846c10c, type: 3}
   m_Name: Shooting
   m_EditorClassIdentifier: 
-  file: {fileID: 8300000, guid: a162759dde1d37b48ab2b1d5743b8f77, type: 3}
-  files: []
+  file: {fileID: 8300000, guid: 6efe8e9de1b7fa84b92869ea70b1c48c, type: 3}
+  files:
+  - {fileID: 8300000, guid: f3ce30e49a21b0c42b9b1390daf0a306, type: 3}
   useLibrary: 0
   neverRepeat: 0
   lastClipIndex: -1
   category: 
-  relativeVolume: 1
+  relativeVolume: 0.1
   spatialize: 1
   maxDistance: 0
   priority: 128
   startingPitch: 1
-  pitchShift: 0.05
+  pitchShift: 0
   playReversed: 0
   delay: 0
   ignoreTimeScale: 0

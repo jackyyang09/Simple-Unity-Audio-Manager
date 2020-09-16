@@ -1,18 +1,12 @@
-All assets used in the "First-Person 3D" example project can be used royalty-free provided that you abide by the terms of their respective licenses
+All assets used in the "First-Person 3D" example project can be used royalty-free
 
 ====Models====
-The following models are released under the Attribution 4.0 International license
-https://creativecommons.org/licenses/by/4.0/
+The following sounds are released under the CC0 1.0 Universal Public Domain Dedication license
+https://creativecommons.org/publicdomain/zero/1.0/
 
-relolanimation 2.fbx
-relolanimation_2.fbx
+machinegunlauncher.obj
 
-Use of this model requires that you give appropriate credit to the author
-
-Do list their username and provide the corresponding links alongside the rest of your credits
-https://www.artstation.com/abraxocleaner - AbraxoCleaner
-https://sketchfab.com/Brogrammist/ - Brogrammist
-http://portfolio.ranon3d.com/hands.html - Ranon Sarono
+You are free to use this model however you wish
 
 ====Sound====
 

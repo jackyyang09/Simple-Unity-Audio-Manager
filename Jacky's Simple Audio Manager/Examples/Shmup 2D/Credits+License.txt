@@ -1,48 +1,37 @@
-All assets used in the "Shmup 2D" example project can be used royalty-free provided that you abide by the terms of their respective licenses
+All assets used in the "Shmup 2D" example project can be used royalty-free
 
 ====Graphics====
 
-The following graphics are released under the Creative Commons Attribution 4.0 license
-https://creativecommons.org/licenses/by/4.0/
+The following sounds are released under the CC0 1.0 Universal Public Domain Dedication license
+https://creativecommons.org/publicdomain/zero/1.0/
 
-chefSpriteSheetPadded.png by Brogrammist
-knife_double_transparent.png by Brogrammist
+chefSpriteSheetPadded.png
+knife_double_transparent.png
 
-Use of these graphics requrires that you give appropriate credit to the author
-
-Do list their username and provide the corresponding links alongside the rest of your credits
-https://brogrammist.itch.io/
+You are free to use these graphics in any project however you wish
 
 ====Sound====
 
-This sound is released under the Creative Commons Attribution 4.0 license
-https://creativecommons.org/licenses/by/4.0/
-
-knifeslash.wav by beerbelly38
-
-Do list their username and provide the corresponding links alongside the rest of your credits
-
-This sound is released under the CC0 1.0 Universal Public Domain Dedication license
+The following sounds are released under the CC0 1.0 Universal Public Domain Dedication license
 https://creativecommons.org/publicdomain/zero/1.0/
 
+swordswing1.wav
+swordswing2.wav
+swordswing3.wav
 bulletHit.wav 
 
-You are free to use this sound however you wish
+You are free to use these sounds however you wish
 
 ====Music====
 
-The following tracks are released under the Creative Commons Attribution 4.0 license
-https://creativecommons.org/licenses/by/4.0/
+The following tracks are released under the CC0 1.0 Universal Public Domain Dedication license
+https://creativecommons.org/publicdomain/zero/1.0/
 
-Italian Spice ~ Indian Spice by Brogrammist
-MainChorusv4.ogg by ToxicRish
-MainIntro.ogg by ToxicRish
+Italian Spice ~ Indian Spice
+MainChorusv4.ogg
+MainIntro.ogg
 
-Use of these tracks requrires that you give appropriate credit to the authors
-https://soundcloud.com/brogrammist
-https://twitter.com/ToxicRish
-
-Do list their username and provide the corresponding links alongside the rest of your credits
+You are free to use these tracks however you wish
 
 ====Code====
 
