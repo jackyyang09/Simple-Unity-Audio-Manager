@@ -1,4 +1,4 @@
-![](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/Media/Media/Homepage%20Promo/jsam%202%20logo%20larger.png)
+![](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/Media/Media/Homepage%20Promo/jsam%20card%20image.png)
 
 Tired of having to manage a billion AudioSources lying about? That will no longer be a reality!
 Never worry about sounds and music ever again!
