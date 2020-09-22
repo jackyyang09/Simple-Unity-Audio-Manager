@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d15ae218647a2d4f85e14306846c10c, type: 3}
   m_Name: AK Dry Fire
   m_EditorClassIdentifier: 
-  file: {fileID: 8300000, guid: b6076c919cd5e3d4491c8bfde482ff38, type: 3}
+  file: {fileID: 8300000, guid: 782941a1d268cbe4a9277ed4d2861198, type: 3}
   files: []
   useLibrary: 0
   neverRepeat: 0
