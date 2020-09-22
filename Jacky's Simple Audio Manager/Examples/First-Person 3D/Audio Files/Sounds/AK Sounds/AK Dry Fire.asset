@@ -15,17 +15,24 @@ MonoBehaviour:
   file: {fileID: 8300000, guid: b6076c919cd5e3d4491c8bfde482ff38, type: 3}
   files: []
   useLibrary: 0
+  neverRepeat: 0
+  lastClipIndex: -1
   category: AK Sounds
   relativeVolume: 1
   spatialize: 0
+  maxDistance: 0
   priority: 128
   startingPitch: 1
   pitchShift: 0.05
+  playReversed: 0
   delay: 0
   ignoreTimeScale: 0
   fadeMode: 0
   fadeInDuration: 0
   fadeOutDuration: 1
+  bypassEffects: 0
+  bypassListenerEffects: 0
+  bypassReverbZones: 0
   safeName: AKDryFire
   chorusFilter:
     enabled: 0

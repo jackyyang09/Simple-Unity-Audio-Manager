@@ -302,9 +302,9 @@ namespace JSAM
 
         void Start()
         {
-            foreach (AudioFileObject a in audioFileObjects)
+            for (int i = 0; i < audioFileObjects.Count; i++)
             {
-                a.Initialize();
+                audioFileObjects[i].Initialize();
             }
 
             initialized = true;
@@ -3022,18 +3022,18 @@ namespace JSAM
         public void UpdateAudioFileObjectCategories()
         {
             categories = new List<string>();
-            foreach (AudioFileObject a in audioFileObjects)
+            for (int i = 0; i < audioFileObjects.Count; i++)
             {
-                if (a == null)
+                if (audioFileObjects[i] == null)
                 {
-                    audioFileObjects.Remove(a); // May as well remove it if it's missing
+                    audioFileObjects.Remove(audioFileObjects[i]); // May as well remove it if it's missing
                     continue;
                 }
-                if (a.category == null) a.category = "";
-                if (a.category != "" && a.category != "Hidden")
+                if (audioFileObjects[i].category == null) audioFileObjects[i].category = "";
+                if (audioFileObjects[i].category != "" && audioFileObjects[i].category != "Hidden")
                 {
-                    if (categories.Contains(a.category)) continue;
-                    categories.Add(a.category);
+                    if (categories.Contains(audioFileObjects[i].category)) continue;
+                    categories.Add(audioFileObjects[i].category);
                 }
             }
             categories.Sort();
@@ -3042,18 +3042,18 @@ namespace JSAM
         public void UpdateAudioFileMusicObjectCategories()
         {
             categoriesMusic = new List<string>();
-            foreach (AudioFileMusicObject a in audioFileMusicObjects)
+            for (int i = 0; i < audioFileMusicObjects.Count; i++)
             {
-                if (a == null)
+                if (audioFileMusicObjects[i] == null)
                 {
-                    audioFileMusicObjects.Remove(a); // May as well remove it if it's missing
+                    audioFileMusicObjects.Remove(audioFileMusicObjects[i]); // May as well remove it if it's missing
                     continue;
                 }
-                if (a.category == null) a.category = "";
-                if (a.category != "" && a.category != "Hidden")
+                if (audioFileMusicObjects[i].category == null) audioFileMusicObjects[i].category = "";
+                if (audioFileMusicObjects[i].category != "" && audioFileMusicObjects[i].category != "Hidden")
                 {
-                    if (categoriesMusic.Contains(a.category)) continue;
-                    categoriesMusic.Add(a.category);
+                    if (categoriesMusic.Contains(audioFileMusicObjects[i].category)) continue;
+                    categoriesMusic.Add(audioFileMusicObjects[i].category);
                 }
             }
             categoriesMusic.Sort();

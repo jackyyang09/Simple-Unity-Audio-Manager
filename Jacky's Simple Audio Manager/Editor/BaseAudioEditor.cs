@@ -32,13 +32,9 @@ namespace JSAM
         {
             if (AudioManager.instance)
             {
-                enumType = AudioManager.instance.GetSceneSoundEnum();
-                if (enumType != null)
+                foreach (AudioFileObject audio in AudioManager.instance.GetSoundLibrary())
                 {
-                    foreach (string s in System.Enum.GetNames(enumType))
-                    {
-                        options.Add(s);
-                    }
+                    options.Add(audio.safeName);
                 }
             }
         }
@@ -47,7 +43,7 @@ namespace JSAM
         protected static int MAX_ATTEMPTS = 3;
 
         /// <summary>
-        /// Is here to prevent the strange errors the moment you finish compiling
+        /// Is here to prevent the strange errors the appear the moment you finish compiling
         /// </summary>
         protected void TryPopulateSoundList()
         {
@@ -81,11 +77,14 @@ namespace JSAM
 
             GUIContent soundDesc = new GUIContent("Sound", "Sound that will be played");
 
-            int selected = options.IndexOf(soundProperty.stringValue);
+            AudioFileObject audioObject = (AudioFileObject)soundProperty.objectReferenceValue;
+            int selected = 0;
+            if (audioObject != null) selected = options.IndexOf(audioObject.safeName);
             if (selected == -1) selected = 0;
             if (options.Count > 0)
             {
-                soundProperty.stringValue = options[EditorGUILayout.Popup(soundDesc, selected, options.ToArray())];
+                selected = EditorGUILayout.Popup(soundDesc, selected, options.ToArray());
+                soundProperty.objectReferenceValue = AudioManager.instance.GetSoundLibrary()[selected];
             }
             else
             {

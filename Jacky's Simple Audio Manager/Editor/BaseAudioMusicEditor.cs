@@ -24,13 +24,9 @@ namespace JSAM
         {
             if (AudioManager.instance)
             {
-                enumType = AudioManager.instance.GetSceneMusicEnum();
-                if (enumType != null)
+                foreach (AudioFileMusicObject audio in AudioManager.instance.GetMusicLibrary())
                 {
-                    foreach (string s in System.Enum.GetNames(enumType))
-                    {
-                        options.Add(s);
-                    }
+                    options.Add(audio.safeName);
                 }
             }
         }
@@ -70,11 +66,15 @@ namespace JSAM
 
             GUIContent musicDesc = new GUIContent("Music", "Music that will be played");
 
-            int selected = options.IndexOf(musicProperty.stringValue);
+            AudioFileMusicObject audioObject = (AudioFileMusicObject)musicProperty.objectReferenceValue;
+            int selected = 0;
+            if (audioObject != null) selected = options.IndexOf(audioObject.safeName);
+            selected = options.IndexOf(musicProperty.stringValue);
             if (selected == -1) selected = 0;
             if (options.Count > 0)
             {
-                musicProperty.stringValue = options[EditorGUILayout.Popup(musicDesc, selected, options.ToArray())];
+                selected = EditorGUILayout.Popup(musicDesc, selected, options.ToArray());
+                musicProperty.objectReferenceValue = AudioManager.instance.GetMusicLibrary()[selected];
             }
             else
             {

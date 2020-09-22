@@ -808,6 +808,15 @@ namespace JSAM
         public void CheckIfNameChanged()
         {
             myName = AudioManagerEditor.ConvertToAlphanumeric(target.name);
+            if (myName == "")
+            {
+                target.name = "NEW AUDIO FILE";
+                myName = "NEWAUDIOFILE";
+                AssetDatabase.RenameAsset(AssetDatabase.GUIDToAssetPath(Selection.assetGUIDs[0]), "NEW AUDIO FILE");
+                EditorUtility.DisplayDialog("Audio File Warning!", "Due to the limitations of C#, " +
+                    "the names of your Audio File Objects cannot start with a number. Certain symbols (+, -) cannot be used " +
+                    "and will be stripped from the name entirely. Additionally, you must include letters in your name.", "OK");
+            }
 
             List<string> names = new List<string>();
             names.AddRange(AudioManager.instance.GetSceneMusicEnum().GetEnumNames());

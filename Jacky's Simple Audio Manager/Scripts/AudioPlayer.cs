@@ -62,9 +62,9 @@ namespace JSAM
 
             if (loopSound)
             {
-                source = am.PlaySoundLoopInternal(audioObject, sTransform);
+                source = am.PlaySoundLoopInternal(sound, sTransform);
             }
-            else source = am.PlaySoundInternal(audioObject, sTransform);
+            else source = am.PlaySoundInternal(sound, sTransform);
 
             // Ready to play again later
             activated = false;
@@ -79,24 +79,24 @@ namespace JSAM
 
             if (loopSound)
             {
-                if (audioObject.spatialize)
+                if (sound.spatialize)
                 {
-                    source = am.PlaySoundLoopInternal(audioObject, sTransform.position);
+                    source = am.PlaySoundLoopInternal(sound, sTransform.position);
                 }
                 else
                 {
-                    source = am.PlaySoundLoopInternal(audioObject, null);
+                    source = am.PlaySoundLoopInternal(sound, null);
                 }
             }
             else
             {
-                if (audioObject.spatialize)
+                if (sound.spatialize)
                 {
-                    source = am.PlaySoundInternal(audioObject, sTransform.position);
+                    source = am.PlaySoundInternal(sound, sTransform.position);
                 }
                 else
                 {
-                    source = am.PlaySoundInternal(audioObject, null);
+                    source = am.PlaySoundInternal(sound, null);
                 }
             }
 
@@ -119,16 +119,16 @@ namespace JSAM
             if (am == null) return;
             if (!loopSound)
             {
-                if (am.IsSoundPlayingInternal(audioObject, sTransform))
+                if (am.IsSoundPlayingInternal(sound, sTransform))
                 {
-                    am.StopSoundInternal(audioObject, sTransform);
+                    am.StopSoundInternal(sound, sTransform);
                 }
             }
             else
             {
-                if (am.IsSoundLoopingInternal(audioObject))
+                if (am.IsSoundLoopingInternal(sound))
                 {
-                    am.StopSoundLoopInternal(audioObject, true, sTransform);
+                    am.StopSoundLoopInternal(sound, true, sTransform);
                 }
             }
         }

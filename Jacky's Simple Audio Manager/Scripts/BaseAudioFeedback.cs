@@ -9,9 +9,6 @@ namespace JSAM
         [SerializeField]
         protected bool spatialSound = true;
 
-        [SerializeField]
-        public string sound;
-
         [Tooltip("If true, sound will keep playing in a loop according to it's settings until you make it stop")]
         [SerializeField]
         protected bool loopSound = false;
@@ -31,7 +28,7 @@ namespace JSAM
 
         [SerializeField]
         [HideInInspector]
-        protected AudioFileObject audioObject;
+        protected AudioFileObject sound;
 
         /// <summary>
         /// Used as a shorthand for all sound functions that ask for a transform. Will set itself to null if spatialSound is set to null
@@ -41,59 +38,29 @@ namespace JSAM
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            if (AudioManager.instance) DesignateSound();
+            if (AudioManager.instance) SetSoundProperties();
         }
 #endif
 
         // Start is called before the first frame update
         protected virtual void Start()
         {
-            CheckForSound();
+            SetSoundProperties();
         }
 
-        void CheckForSound()
+        void SetSoundProperties()
         {
             // Applies settings from the Audio File Object
-            if (audioObject == null)
+            if (sound != null)
             {
-                DesignateSound();
-            }
-
-            if (audioObject != null)
-            {
-                spatialSound = audioObject.spatialize;
-                priority = audioObject.priority;
-                pitchShift = audioObject.pitchShift;
-                delay = audioObject.delay;
-                ignoreTimeScale = audioObject.ignoreTimeScale;
+                spatialSound = sound.spatialize;
+                priority = sound.priority;
+                pitchShift = sound.pitchShift;
+                delay = sound.delay;
+                ignoreTimeScale = sound.ignoreTimeScale;
             }
 
             sTransform = (spatialSound) ? transform : null;
-        }
-
-        void DesignateSound()
-        {
-            if (sound != "")
-            {
-                if (!AudioManager.instance) return;
-                foreach (AudioFileObject a in AudioManager.instance.GetSoundLibrary())
-                {
-                    if (a.safeName == sound)
-                    {
-                        audioObject = a;
-                        return;
-                    }
-                }
-            }
-            if (audioObject == null)
-            {
-                List<AudioFileObject> audio = AudioManager.instance.GetSoundLibrary();
-                if (audio.Count > 0)
-                {
-                    audioObject = audio[0];
-                    if (audioObject != null) sound = audioObject.safeName;
-                }
-            }
         }
     }
 }

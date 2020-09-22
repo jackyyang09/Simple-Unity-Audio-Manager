@@ -14,7 +14,6 @@ namespace JSAM
         SerializedProperty sound;
         SerializedProperty collidesWithProperty;
         SerializedProperty triggerEventProperty;
-        SerializedProperty soundFileProperty;
 
         protected override void Setup()
         {
@@ -23,7 +22,6 @@ namespace JSAM
             sound = serializedObject.FindProperty("sound");
             collidesWithProperty = serializedObject.FindProperty("collidesWith");
             triggerEventProperty = serializedObject.FindProperty("triggerEvent");
-            soundFileProperty = serializedObject.FindProperty("soundFile");
         }
 
         public override void OnInspectorGUI()

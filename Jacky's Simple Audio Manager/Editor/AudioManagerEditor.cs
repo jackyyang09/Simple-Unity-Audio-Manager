@@ -115,7 +115,7 @@ namespace JSAM
                         "function inside the project's Assets folder. Please choose a different folder.", "OK");
                     filePath = prevPath;
                 }
-                else // otherwise
+                else
                 {
                     // Fix path to be usable for AssetDatabase.FindAssets
                     filePath = filePath.Remove(0, filePath.IndexOf("Assets/"));
@@ -249,7 +249,6 @@ namespace JSAM
                         Selection.activeObject = asset;
                     }
                 }
-                
             }
             EditorGUILayout.EndHorizontal();
 
@@ -644,14 +643,6 @@ namespace JSAM
 
             myScript.EstablishSingletonDominance();
 
-            categories = new Dictionary<string, bool>();
-            if (AudioManager.instance)
-            {
-                AudioManager.instance.UpdateAudioFileMusicObjectCategories();
-                AudioManager.instance.UpdateAudioFileObjectCategories();
-            }
-            Application.logMessageReceived += UnityDebugLog;
-
             audioFolderLocation = serializedObject.FindProperty("audioFolderLocation");
             masterVolume = serializedObject.FindProperty("masterVolume");
             musicVolume = serializedObject.FindProperty("musicVolume");
@@ -667,6 +658,14 @@ namespace JSAM
 
             //copyIcon = EditorGUIUtility.TrIconContent("winbtn_win_restore_h", "Click to Copy Enum Name to Clipboard");
             copyIcon = new GUIContent("Copy", "Click to Copy Enum Name to Clipboard");
+
+            categories = new Dictionary<string, bool>();
+            if (AudioManager.instance)
+            {
+                AudioManager.instance.UpdateAudioFileMusicObjectCategories();
+                AudioManager.instance.UpdateAudioFileObjectCategories();
+            }
+            Application.logMessageReceived += UnityDebugLog;
         }
 
         private void OnDisable()
@@ -937,6 +936,17 @@ namespace JSAM
 
             arr = System.Array.FindAll<char>(arr, (c => (char.IsLetterOrDigit(c) 
             || c == '_')));
+
+            // If the first index is a number
+            while (char.IsDigit(arr[0]))
+            {
+                List<char> newArray = new List<char>();
+                newArray = new List<char>(arr);
+                newArray.RemoveAt(0);
+                arr = newArray.ToArray();
+                if (arr.Length == 0) break; // No valid characters to use, returning empty
+            }
+
             return new string(arr);
         }
         #endregion

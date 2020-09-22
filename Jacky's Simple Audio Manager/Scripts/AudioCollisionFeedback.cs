@@ -34,7 +34,7 @@ namespace JSAM
             if (collidesWith.Contains(collision.gameObject.layer))
             {
                 AudioSource source = null;
-                source = AudioManager.instance.PlaySoundInternal(audioObject, sTransform);
+                source = AudioManager.instance.PlaySoundInternal(sound, sTransform);
                 if (spatialSound)
                 {
                     source.gameObject.transform.position = collision.GetContact(0).point;
@@ -47,7 +47,7 @@ namespace JSAM
             if (collidesWith.Contains(collision.gameObject.layer))
             {
                 AudioSource source = null;
-                source = AudioManager.instance.PlaySoundInternal(audioObject, sTransform);
+                source = AudioManager.instance.PlaySoundInternal(sound, sTransform);
                 if (spatialSound)
                 {
                     source.gameObject.transform.position = collision.GetContact(0).point;
