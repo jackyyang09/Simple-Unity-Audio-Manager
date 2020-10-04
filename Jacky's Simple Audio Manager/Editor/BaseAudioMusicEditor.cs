@@ -53,14 +53,6 @@ namespace JSAM
                 EditorGUILayout.HelpBox("Could not find Audio Manager in the scene! This component needs AudioManager " +
                     "in order to function!", MessageType.Error);
             }
-            else
-            {
-                if (enumType == null)
-                {
-                    EditorGUILayout.HelpBox("Could not find Audio File info! Try regenerating Audio Files in AudioManager!", MessageType.Error);
-                    TryPopulateMusicList();
-                }
-            }
 
             EditorGUILayout.LabelField("Specify Music to Play", EditorStyles.boldLabel);
 

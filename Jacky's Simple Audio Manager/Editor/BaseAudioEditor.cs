@@ -8,7 +8,6 @@ namespace JSAM
     public abstract class BaseAudioEditor : Editor
     {
         protected List<string> options = new List<string>();
-        protected static System.Type enumType;
         protected static bool showHowTo;
 
         protected void OnEnable()
@@ -63,14 +62,6 @@ namespace JSAM
             {
                 EditorGUILayout.HelpBox("Could not find Audio Manager in the scene! This component needs AudioManager " +
                     "in order to function!", MessageType.Error);
-            }
-            else 
-            {
-                if (enumType == null)
-                {
-                    EditorGUILayout.HelpBox("Could not find Audio File info! Try regenerating Audio Files in AudioManager!", MessageType.Error);
-                    TryPopulateSoundList();
-                }
             }
 
             EditorGUILayout.LabelField("Choose a Sound to Play", EditorStyles.boldLabel);
