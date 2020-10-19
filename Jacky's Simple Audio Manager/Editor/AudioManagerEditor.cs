@@ -95,12 +95,13 @@ namespace JSAM
 
             GUIContent pathContent = new GUIContent("Audio Assets Folder", "This folder and all sub-folders will be searched for Audio File Objects, AudioManager-generated files will be stored in this location as well");
             string filePath = audioFolderLocation.stringValue;
-            filePath = EditorGUILayout.DelayedTextField(pathContent, filePath);
+            string prevPath = filePath;
+
+            filePath = EditorGUILayout.TextField(pathContent, filePath);
 
             GUIContent buttonContent = new GUIContent("Browse", "Designate a new folder to store JSAM's audio files");
             if (GUILayout.Button(buttonContent, new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.MaxWidth(55) }))
             {
-                string prevPath = filePath;
                 filePath = EditorUtility.OpenFolderPanel("Specify folder to store JSAM's audio files", Application.dataPath, "Audio Files");
 
                 // If the user presses "cancel"
@@ -231,6 +232,10 @@ namespace JSAM
                         EditorUtility.FocusProjectWindow();
                         Selection.activeObject = asset;
                     }
+                    else
+                    {
+                        EditorGUILayout.BeginHorizontal();
+                    }
                 }
             }
 
@@ -247,6 +252,10 @@ namespace JSAM
                         AssetDatabase.CreateAsset(asset, savePath);
                         EditorUtility.FocusProjectWindow();
                         Selection.activeObject = asset;
+                    }
+                    else
+                    {
+                        EditorGUILayout.BeginHorizontal();
                     }
                 }
             }
@@ -323,7 +332,7 @@ namespace JSAM
                 bool fix = false;
                 if (filePath.Length < 6) fix = true;
                 else if (filePath.Substring(0, 6) != "Assets") fix = true;
-                if (fix) audioFolderLocation.stringValue = "Assets/Audio Files";
+                if (fix) audioFolderLocation.stringValue = prevPath;
                 if (filePath[filePath.Length - 1] == '/')
                     audioFolderLocation.stringValue = filePath.Remove(filePath.Length - 1);
 

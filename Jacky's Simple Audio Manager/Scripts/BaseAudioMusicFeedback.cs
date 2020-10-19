@@ -6,10 +6,6 @@ namespace JSAM
 {
     public abstract class BaseAudioMusicFeedback : MonoBehaviour
     {
-        [SerializeField]
-        [HideInInspector]
-        public string music = "";
-
         [Tooltip("Play Music in 3D space, will override Music Fading if true")]
         [SerializeField]
         protected bool spatializeSound;
@@ -37,7 +33,7 @@ namespace JSAM
         protected LoopMode loopMode = LoopMode.Looping;
 
         [SerializeField, HideInInspector]
-        protected AudioFileMusicObject audioObject;
+        public AudioFileMusicObject music;
 
         // Start is called before the first frame update
         protected void Start()
@@ -54,40 +50,10 @@ namespace JSAM
 
         public void CheckForMusic()
         {
-            if (audioObject == null)
+            if (music != null)
             {
-                DesignateMusic();
-            }
-
-            if (audioObject != null)
-            {
-                loopMode = audioObject.loopMode;
-                spatializeSound = audioObject.spatialize;
-            }
-        }
-
-        protected void DesignateMusic()
-        {
-            if (audioObject == null && music != "")
-            {
-                if (!AudioManager.instance) return;
-                foreach (AudioFileMusicObject a in AudioManager.instance.GetMusicLibrary())
-                {
-                    if (a.safeName == music)
-                    {
-                        audioObject = a;
-                        return;
-                    }
-                }
-            }
-            if (audioObject == null)
-            {
-                List<AudioFileMusicObject> audio = AudioManager.instance.GetMusicLibrary();
-                if (audio.Count > 0)
-                {
-                    audioObject = audio[0];
-                    if (audioObject != null) music = audioObject.safeName;
-                }
+                loopMode = music.loopMode;
+                spatializeSound = music.spatialize;
             }
         }
 

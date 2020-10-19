@@ -102,6 +102,12 @@ namespace JSAM
             EditorGUILayout.EndHorizontal();
 #endregion
 
+            if (cachedName != target.name)
+            {
+                CheckIfNameChanged();
+                cachedName = target.name;
+            }
+
             if (unregistered)
             {
                 EditorGUILayout.HelpBox("This Audio File Object has yet to be added to AudioManager's library. Do make sure to " +
@@ -109,12 +115,6 @@ namespace JSAM
             }
             else if (relevant)
             {
-                if (cachedName != target.name)
-                {
-                    CheckIfNameChanged();
-                    cachedName = target.name;
-                }
-
                 if (nameChanged)
                 {
                     EditorGUILayout.HelpBox("This Audio File Object's name differs from it's corresponding enum name! " +
@@ -147,7 +147,10 @@ namespace JSAM
             }
             else
             {
-                EditorGUILayout.PropertyField(file);
+                if (file != null)
+                {
+                    EditorGUILayout.PropertyField(file);
+                }
             }
 
             blontent = new GUIContent("Use Library", "If true, the single AudioFile will be changed to a list of AudioFiles. AudioManager will choose a random AudioClip from this list when you play this sound");
@@ -467,7 +470,10 @@ namespace JSAM
             Undo.undoRedoPerformed += OnUndoRedo;
             Undo.postprocessModifications += ApplyHelperEffects;
             CheckIfRegistered();
-            myName = AudioManagerEditor.ConvertToAlphanumeric(target.name);
+            if (target.name.Length > 0) // Creating from right-click dialog throws error here because name is invalid when first selected
+            {
+                myName = AudioManagerEditor.ConvertToAlphanumeric(target.name);
+            }
 
             file = serializedObject.FindProperty("file");
             files = serializedObject.FindProperty("files");

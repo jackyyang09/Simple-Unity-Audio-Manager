@@ -114,6 +114,12 @@ namespace JSAM
             EditorGUILayout.EndHorizontal();
             #endregion
 
+            if (cachedName != target.name)
+            {
+                CheckIfNameChanged();
+                cachedName = target.name;
+            }
+
             if (unregistered)
             {
                 EditorGUILayout.HelpBox("This Audio File Object has yet to be added to AudioManager's library. Do make sure to " +
@@ -121,12 +127,6 @@ namespace JSAM
             }
             else if (relevant)
             {
-                if (cachedName != target.name)
-                {
-                    CheckIfNameChanged();
-                    cachedName = target.name;
-                }
-
                 if (nameChanged)
                 {
                     EditorGUILayout.HelpBox("This Audio File Object's name differs from it's corresponding enum name! " +
@@ -810,8 +810,8 @@ namespace JSAM
             myName = AudioManagerEditor.ConvertToAlphanumeric(target.name);
             if (myName == "")
             {
-                target.name = "NEW AUDIO FILE";
-                myName = "NEWAUDIOFILE";
+                target.name = "NEW AUDIO MUSIC FILE";
+                myName = "NEWAUDIOMUSICFILE";
                 AssetDatabase.RenameAsset(AssetDatabase.GUIDToAssetPath(Selection.assetGUIDs[0]), "NEW AUDIO FILE");
                 EditorUtility.DisplayDialog("Audio File Warning!", "Due to the limitations of C#, " +
                     "the names of your Audio File Objects cannot start with a number. Certain symbols (+, -) cannot be used " +

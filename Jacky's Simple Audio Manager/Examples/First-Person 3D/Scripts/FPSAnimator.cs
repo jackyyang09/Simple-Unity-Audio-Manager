@@ -145,5 +145,10 @@ namespace JSAM
             currentState = ShooterStates.Idle;
             ammoText.text = bullets.ToString();
         }
+
+        public void ATest(AnimationEvent test)
+        {
+
+        }
     }
 }

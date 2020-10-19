@@ -61,7 +61,6 @@ namespace JSAM
             AudioFileMusicObject audioObject = (AudioFileMusicObject)musicProperty.objectReferenceValue;
             int selected = 0;
             if (audioObject != null) selected = options.IndexOf(audioObject.safeName);
-            selected = options.IndexOf(musicProperty.stringValue);
             if (selected == -1) selected = 0;
             if (options.Count > 0)
             {

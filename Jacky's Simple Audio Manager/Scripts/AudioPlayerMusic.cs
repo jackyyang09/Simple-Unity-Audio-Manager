@@ -55,24 +55,24 @@ namespace JSAM
             AudioManager am = AudioManager.instance;
 
             if (am == null) return;
-            if (am.IsMusicPlayingInternal(audioObject) && !restartOnReplay) return;
+            if (am.IsMusicPlayingInternal(music) && !restartOnReplay) return;
 
             if (spatializeSound)
             {
-                sourceBeingUsed = am.PlayMusic3DInternal(audioObject, transform, loopMode);
+                sourceBeingUsed = am.PlayMusic3DInternal(music, transform, loopMode);
             }
             else
             {
                 switch (transitionMode)
                 {
                     case TransitionMode.None:
-                        sourceBeingUsed = am.PlayMusicInternal(audioObject);
+                        sourceBeingUsed = am.PlayMusicInternal(music);
                         break;
                     case TransitionMode.FadeFromSilence:
-                        sourceBeingUsed = am.FadeMusicInternal(audioObject, musicFadeInTime);
+                        sourceBeingUsed = am.FadeMusicInternal(music, musicFadeInTime);
                         break;
                     case TransitionMode.Crossfade:
-                        sourceBeingUsed = am.CrossfadeMusicInternal(audioObject, musicFadeInTime, keepPlaybackPosition);
+                        sourceBeingUsed = am.CrossfadeMusicInternal(music, musicFadeInTime, keepPlaybackPosition);
                         break;
                 }
             }
@@ -87,7 +87,7 @@ namespace JSAM
                 switch (transitionMode)
                 {
                     case TransitionMode.None:
-                        am.StopMusicInternal(audioObject);
+                        am.StopMusicInternal(music);
                         break;
                     case TransitionMode.FadeFromSilence:
                     case TransitionMode.Crossfade:
@@ -104,7 +104,7 @@ namespace JSAM
         /// </summary>
         public void FadeIn(float time)
         {
-            sourceBeingUsed = AudioManager.instance.FadeMusicInInternal(audioObject, time);
+            sourceBeingUsed = AudioManager.instance.FadeMusicInInternal(music, time);
         }
 
         /// <summary>
@@ -119,7 +119,6 @@ namespace JSAM
 
         private void OnEnable()
         {
-            if (audioObject == null) DesignateMusic();
             switch (onEnable)
             {
                 case AudioPlaybackBehaviour.Play:

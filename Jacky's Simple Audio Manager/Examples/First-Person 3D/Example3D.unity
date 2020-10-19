@@ -8510,7 +8510,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 386a4603b067b2f4bb0542f2f9c33bbf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  music: BGM
   spatializeSound: 0
   transitionMode: 0
   keepPlaybackPosition: 1
@@ -8518,7 +8517,7 @@ MonoBehaviour:
   musicFadeInTime: 0
   musicFadeOutTime: 0
   loopMode: 1
-  audioObject: {fileID: 11400000, guid: 53d013968086c2a4b9dde34f761fbb70, type: 2}
+  music: {fileID: 11400000, guid: 53d013968086c2a4b9dde34f761fbb70, type: 2}
   positions:
   - {x: -17.96645, y: 0.25669998, z: 0}
   maxDistance:
