@@ -2949,7 +2949,7 @@ namespace JSAM
             bool ignoreTimeScale = audioFile.ignoreTimeScale;
             if (instance.timeScaledSounds && !ignoreTimeScale)
             {
-                newPitch = Time.timeScale;
+                newPitch *= Time.timeScale;
                 if (Time.timeScale == 0)
                 {
                     return 0;
