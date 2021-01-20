@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e9dd0504360f614abba5d531febb97b, type: 3}
+  m_Name: Treenis
+  m_EditorClassIdentifier: 
+  safeLibraryName: Treenis
+  nameMismatch: 0
+  soundEnumName: TreenisSounds
+  musicEnumName: TreenisMusic
+  categories:
+  - Movement
+  - 
+  - AK Sounds
+  categoriesMusic:
+  - Looping
+  - 
+  sounds:
+  - {fileID: 11400000, guid: a03d93398434809489558195c45c68f7, type: 2}
+  - {fileID: 11400000, guid: b5061c426d2ebb54b83d9a3f5bae9492, type: 2}
+  - {fileID: 11400000, guid: 38dc31c11b7578b45b7127f83db23b96, type: 2}
+  - {fileID: 11400000, guid: 530f7a308da40784e9e25b5f252961da, type: 2}
+  - {fileID: 11400000, guid: 6c801ee681c34444e88308ac2d32cb30, type: 2}
+  music:
+  - {fileID: 11400000, guid: 53d013968086c2a4b9dde34f761fbb70, type: 2}
+  - {fileID: 11400000, guid: 8df32090689f69f4a9f77e408e1668bf, type: 2}
+  soundCategoryToList:
+  - category: Movement
+    files:
+    - {fileID: 11400000, guid: b5061c426d2ebb54b83d9a3f5bae9492, type: 2}
+    - {fileID: 11400000, guid: 38dc31c11b7578b45b7127f83db23b96, type: 2}
+    foldoutOpen: 1
+  - category: 
+    files:
+    - {fileID: 11400000, guid: a03d93398434809489558195c45c68f7, type: 2}
+    - {fileID: 11400000, guid: 530f7a308da40784e9e25b5f252961da, type: 2}
+    foldoutOpen: 1
+  - category: AK Sounds
+    files:
+    - {fileID: 11400000, guid: 6c801ee681c34444e88308ac2d32cb30, type: 2}
+    foldoutOpen: 1
+  musicCategoryToList:
+  - category: Looping
+    files:
+    - {fileID: 11400000, guid: 53d013968086c2a4b9dde34f761fbb70, type: 2}
+    foldoutOpen: 1
+  - category: 
+    files:
+    - {fileID: 11400000, guid: 8df32090689f69f4a9f77e408e1668bf, type: 2}
+    foldoutOpen: 1
+  soundsFoldout: 1
+  musicFoldout: 1

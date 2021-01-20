@@ -102,6 +102,14 @@ Preset:
     value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
+    propertyPath: clipStartPosition
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: clipEndPosition
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
     propertyPath: bypassEffects
     value: 0
     objectReference: {fileID: 0}
@@ -115,6 +123,10 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: safeName
+    value: SpatialSound
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: presetDescription
     value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}
@@ -265,3 +277,4 @@ Preset:
     propertyPath: reverbFilter.density
     value: 0
     objectReference: {fileID: 0}
+  m_ExcludedProperties: []

@@ -26,9 +26,5 @@ namespace JSAM
         [HideInInspector] public bool musicMuted = false;
 
         [HideInInspector] public bool spatialSound = true;
-
-        private void OnEnable()
-        {
-        }
     }
 }
