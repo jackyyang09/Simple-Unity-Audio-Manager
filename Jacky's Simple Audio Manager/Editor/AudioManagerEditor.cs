@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using System.IO;
 
-namespace JSAM
+namespace JSAM.JSAMEditor
 {
     /// <summary>
     /// Thank god to brownboot67 for his advice
@@ -223,7 +223,7 @@ namespace JSAM
                 {
                     // Many thanks to mstevenson for having a reference on creating scriptable objects from code
                     // https://gist.github.com/mstevenson/4726563
-                    var asset = CreateInstance<AudioFileObject>();
+                    var asset = CreateInstance<AudioFileSoundObject>();
                     string savePath = EditorUtility.SaveFilePanel("Create new Audio File Object", filePath, "New Audio File Object", "asset");
                     if (savePath != "") // Make sure user didn't press "Cancel"
                     {
@@ -273,16 +273,16 @@ namespace JSAM
                     // Search for AudioFileObjects, music included
                     string[] GUIDs = AssetDatabase.FindAssets("t:JSAM.AudioFileObject", paths);
 
-                    List<AudioFileObject> audioFiles = new List<AudioFileObject>();
+                    List<AudioFileSoundObject> audioFiles = new List<AudioFileSoundObject>();
                     List<AudioFileMusicObject> musicFiles = new List<AudioFileMusicObject>();
                     foreach (var s in GUIDs)
                     {
-                        AudioFileObject theObject = (AudioFileObject)AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(s), typeof(AudioFileObject));
+                        AudioFileSoundObject theObject = (AudioFileSoundObject)AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(s), typeof(AudioFileSoundObject));
 
-                        theObject.safeName = ConvertToAlphanumeric(theObject.name);
+                        //theObject.safeName = JSAMEditorHelper.ConvertToAlphanumeric(theObject.name);
 
                         // Is this actually a music object?
-                        if (!theObject.GetType().IsAssignableFrom(typeof(AudioFileObject)))
+                        if (!theObject.GetType().IsAssignableFrom(typeof(AudioFileSoundObject)))
                         {
                             musicFiles.Add((AudioFileMusicObject)theObject);
                         }
@@ -410,7 +410,7 @@ namespace JSAM
                     if (!categories.ContainsKey("Uncategorized")) categories["Uncategorized"] = false;
 
                     Dictionary<string, List<SPandName>> audioSPs = new Dictionary<string, List<SPandName>>();
-                    List<AudioFileObject> audioRef = myScript.GetSoundLibrary();
+                    List<AudioFileSoundObject> audioRef = myScript.GetSoundLibrary();
                     // If there are new AudioFiles being added and the SoundLibrary foldout is open
                     if (audioRef.Count == audioFileProperty.arraySize)
                     {
@@ -768,12 +768,12 @@ namespace JSAM
         public static string GenerateEnumFile(string filePath, bool usingInstancedEnums)
         {
             // Evaluate potential enum names before writing to file
-            List<AudioFileObject> soundLibrary = AudioManager.instance.GetSoundLibrary();
+            List<AudioFileSoundObject> soundLibrary = AudioManager.instance.GetSoundLibrary();
 
             List<string> soundNames = new List<string>();
             foreach (var s in soundLibrary)
             {
-                string newName = s.safeName;
+                string newName = string.Empty;
 
                 if (!soundNames.Contains(newName))
                 {
@@ -794,7 +794,7 @@ namespace JSAM
             List<string> musicNames = new List<string>();
             foreach (var m in musicLibrary)
             {
-                string newName = m.safeName;
+                string newName = string.Empty;
 
                 if (!musicNames.Contains(newName))
                 {
@@ -820,7 +820,7 @@ namespace JSAM
                     "It's also good to ensure all your work isn't lost forever!", "OK");
                 return "";
             }
-            string safeSceneName = ConvertToAlphanumeric(sceneName);
+            string safeSceneName = JSAMEditorHelper.ConvertToAlphanumeric(sceneName);
 
             string fileName = (usingInstancedEnums) ? "\\AudioEnums - " + sceneName + ".cs" : "\\AudioEnums.cs";
 
@@ -897,9 +897,9 @@ namespace JSAM
                 {
                     for (int i = 0; i < soundLibrary.Count - 1; i++)
                     {
-                        writer.WriteLine("        " + ConvertToAlphanumeric(soundLibrary[i].name) + ",");
+                        writer.WriteLine("        " + JSAMEditorHelper.ConvertToAlphanumeric(soundLibrary[i].name) + ",");
                     }
-                    writer.WriteLine("        " + ConvertToAlphanumeric(soundLibrary[soundLibrary.Count - 1].name));
+                    writer.WriteLine("        " + JSAMEditorHelper.ConvertToAlphanumeric(soundLibrary[soundLibrary.Count - 1].name));
                 }
             }
 
@@ -916,9 +916,9 @@ namespace JSAM
                 {
                     for (int i = 0; i < musicLibrary.Count - 1; i++)
                     {
-                        writer.WriteLine("        " + ConvertToAlphanumeric(musicLibrary[i].name) + ",");
+                        writer.WriteLine("        " + JSAMEditorHelper.ConvertToAlphanumeric(musicLibrary[i].name) + ",");
                     }
-                    writer.WriteLine("        " + ConvertToAlphanumeric(musicLibrary[musicLibrary.Count - 1].name));
+                    writer.WriteLine("        " + JSAMEditorHelper.ConvertToAlphanumeric(musicLibrary[musicLibrary.Count - 1].name));
                 }
             }
             
@@ -931,32 +931,6 @@ namespace JSAM
             AssetDatabase.Refresh();
 
             return safeSceneName;
-        }
-
-        /// <summary>
-        /// Helpful method by Stack Overflow user ata
-        /// https://stackoverflow.com/questions/3210393/how-do-i-remove-all-non-alphanumeric-characters-from-a-string-except-dash
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string ConvertToAlphanumeric(string input)
-        {
-            char[] arr = input.ToCharArray();
-
-            arr = System.Array.FindAll<char>(arr, (c => (char.IsLetterOrDigit(c) 
-            || c == '_')));
-
-            // If the first index is a number
-            while (char.IsDigit(arr[0]))
-            {
-                List<char> newArray = new List<char>();
-                newArray = new List<char>(arr);
-                newArray.RemoveAt(0);
-                arr = newArray.ToArray();
-                if (arr.Length == 0) break; // No valid characters to use, returning empty
-            }
-
-            return new string(arr);
         }
         #endregion
 
@@ -1209,9 +1183,9 @@ namespace JSAM
         }
     }
 
-    class AudioFileComparer : IComparer<AudioFileObject>
+    class AudioFileComparer : IComparer<AudioFileSoundObject>
     {
-        public int Compare(AudioFileObject x, AudioFileObject y)
+        public int Compare(AudioFileSoundObject x, AudioFileSoundObject y)
         {
             if (x == null || y == null)
             {

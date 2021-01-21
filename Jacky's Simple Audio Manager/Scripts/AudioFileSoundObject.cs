@@ -114,7 +114,7 @@ namespace JSAM
     #endregion
 
     [CreateAssetMenu(fileName = "New Audio File", menuName = "AudioManager/New Audio File Object", order = 1)]
-    public class AudioFileObject : ScriptableObject, IComparer<AudioFileObject>
+    public class AudioFileSoundObject : ScriptableObject, IComparer<AudioFileSoundObject>
     {
         [Header("Attach audio file here to use")]
         [SerializeField]
@@ -197,7 +197,8 @@ namespace JSAM
         /// <summary>
         /// Don't touch this unless you're modifying AudioManager functionality
         /// </summary>
-        public string safeName = "";
+        [SerializeField, HideInInspector] public string safeName = "";
+        [SerializeField, HideInInspector] string presetDescription;
 
         [SerializeField, HideInInspector] public AudioChorusObj chorusFilter;
         [SerializeField, HideInInspector] public AudioDistortionObj distortionFilter;
@@ -280,7 +281,7 @@ namespace JSAM
             return useLibrary;
         }
 
-        public int Compare(AudioFileObject x, AudioFileObject y)
+        public int Compare(AudioFileSoundObject x, AudioFileSoundObject y)
         {
             if (x == null || y == null)
             {
@@ -297,15 +298,15 @@ namespace JSAM
         /// <returns></returns>
         public static List<string> GetCategories()
         {
-            List<AudioFileObject> files = new List<AudioFileObject>();
+            List<AudioFileSoundObject> files = new List<AudioFileSoundObject>();
             foreach (string guid in UnityEditor.AssetDatabase.FindAssets("t:AudioFileObject"))
             {
-                files.Add((AudioFileObject)UnityEditor.AssetDatabase.LoadAssetAtPath(UnityEditor.AssetDatabase.GUIDToAssetPath(guid), typeof(AudioFileObject)));
+                files.Add((AudioFileSoundObject)UnityEditor.AssetDatabase.LoadAssetAtPath(UnityEditor.AssetDatabase.GUIDToAssetPath(guid), typeof(AudioFileSoundObject)));
             }
             // Reset count
             if (projectCategories.Keys.Count > 0) projectCategories.Clear();
             // Increment categories based on use
-            foreach (AudioFileObject file in files)
+            foreach (AudioFileSoundObject file in files)
             {
                 if (file.category == "" || file.category == "Hidden") continue;
                 else if (projectCategories.ContainsKey(file.category))
@@ -341,15 +342,15 @@ namespace JSAM
 
         public static List<string> GetMusicCategories()
         {
-            List<AudioFileObject> files = new List<AudioFileObject>();
+            List<AudioFileSoundObject> files = new List<AudioFileSoundObject>();
             foreach (string guid in UnityEditor.AssetDatabase.FindAssets("t:AudioFileMusicObject"))
             {
-                files.Add((AudioFileObject)UnityEditor.AssetDatabase.LoadAssetAtPath(UnityEditor.AssetDatabase.GUIDToAssetPath(guid), typeof(AudioFileObject)));
+                files.Add((AudioFileSoundObject)UnityEditor.AssetDatabase.LoadAssetAtPath(UnityEditor.AssetDatabase.GUIDToAssetPath(guid), typeof(AudioFileSoundObject)));
             }
             // Reset count
             if (projectCategories.Keys.Count > 0) projectCategories.Clear();
             // Increment categories based on use
-            foreach (AudioFileObject file in files)
+            foreach (AudioFileSoundObject file in files)
             {
                 if (file.category == "" || file.category == "Hidden") continue;
                 else if (projectCategories.ContainsKey(file.category))

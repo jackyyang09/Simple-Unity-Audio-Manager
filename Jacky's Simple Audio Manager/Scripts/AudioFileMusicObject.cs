@@ -5,7 +5,7 @@ using UnityEngine;
 namespace JSAM
 {
     [CreateAssetMenu(fileName = "New Audio Music File", menuName = "AudioManager/New Audio File Music Object", order = 1)]
-    public class AudioFileMusicObject : AudioFileObject
+    public class AudioFileMusicObject : AudioFileSoundObject
     {
         /// <summary>
         /// If true, music will always start and end between loop points

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using ATL.AudioData;
 
-namespace JSAM
+namespace JSAM.JSAMEditor
 {
     [CustomEditor(typeof(AudioFileMusicObject))]
     [CanEditMultipleObjects]
@@ -81,7 +81,7 @@ namespace JSAM
                 if (AudioManager.instance != null)
                 {
                     //categories.AddRange(AudioManager.instance.GetMusicCategories());
-                    categories.AddRange(AudioFileObject.GetMusicCategories());
+                    categories.AddRange(AudioFileSoundObject.GetMusicCategories());
                 }
                 AudioManager.instance.InitializeCategories();
                 GenericMenu newMenu = new GenericMenu();
@@ -753,7 +753,7 @@ namespace JSAM
             AudioPlaybackToolEditor.CreateAudioHelper(myScript.GetFile(), true);
             Undo.postprocessModifications += ApplyHelperEffects;
             CheckIfRegistered();
-            myName = AudioManagerEditor.ConvertToAlphanumeric(target.name);
+            myName = JSAMEditorHelper.ConvertToAlphanumeric(target.name);
 
             loopMode = serializedObject.FindProperty("loopMode");
             clampToLoopPoints = serializedObject.FindProperty("clampToLoopPoints");
@@ -807,7 +807,7 @@ namespace JSAM
 
         public void CheckIfNameChanged()
         {
-            myName = AudioManagerEditor.ConvertToAlphanumeric(target.name);
+            myName = JSAMEditorHelper.ConvertToAlphanumeric(target.name);
             if (myName == "")
             {
                 target.name = "NEW AUDIO MUSIC FILE";

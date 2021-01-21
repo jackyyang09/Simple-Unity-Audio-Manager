@@ -9,7 +9,7 @@ namespace JSAM
     {
         float fadeTime;
 
-        AudioFileObject audioFile;
+        AudioFileSoundObject audioFile;
         AudioSource aSource;
         bool looping;
 
@@ -24,7 +24,7 @@ namespace JSAM
             enabled = false;
         }
 
-        public void SetAudioFile(AudioFileObject file)
+        public void SetAudioFile(AudioFileSoundObject file)
         {
             audioFile = file;
         }
@@ -60,7 +60,7 @@ namespace JSAM
             ApplyVolumeChanges();
         }
 
-        public void Play(float delay, AudioFileObject file, bool loop = false)
+        public void Play(float delay, AudioFileSoundObject file, bool loop = false)
         {
             // Make sure no remnants from a previous sound remain
             StopAllCoroutines();
@@ -107,7 +107,7 @@ namespace JSAM
             ClearEffects();
         }
 
-        public void PlayDebug(AudioFileObject file, bool dontReset)
+        public void PlayDebug(AudioFileSoundObject file, bool dontReset)
         {
             if (!dontReset)
             {

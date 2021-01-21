@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace JSAM
+namespace JSAM.JSAMEditor
 {
-    [CustomEditor(typeof(AudioFileObject))]
+    [CustomEditor(typeof(AudioFileSoundObject))]
     [CanEditMultipleObjects]
     public class AudioFileObjectEditor : Editor
     {
-        AudioFileObject myScript;
+        AudioFileSoundObject myScript;
 
         Color buttonPressedColor = new Color(0.475f, 0.475f, 0.475f);
 
@@ -21,11 +21,18 @@ namespace JSAM
         Texture2D cachedTex;
         AudioClip cachedClip;
 
-        bool unregistered = false;
-        bool relevant = false;
-        string myName = "";
-        string cachedName = "";
-        bool nameChanged = false;
+        GUIContent openIcon;
+
+        static bool showFadeTool;
+        static bool showPlaybackTool;
+        static bool showHowTo;
+
+        bool isPreset;
+
+        public static AudioFileObjectEditor instance;
+
+        SerializedProperty safeName;
+        SerializedProperty presetDescription;
 
         SerializedProperty file;
         SerializedProperty files;
@@ -37,13 +44,50 @@ namespace JSAM
         SerializedProperty fadeInDuration;
         SerializedProperty fadeOutDuration;
 
-        static bool showFadeTool;
-        static bool showPlaybackTool;
-        static bool showHowTo;
+        void OnEnable()
+        {
+            myScript = (AudioFileSoundObject)target;
+            instance = this;
 
-        GUIContent openIcon;
+            EditorApplication.update += Update;
+            Undo.undoRedoPerformed += OnUndoRedo;
+            Undo.postprocessModifications += ApplyHelperEffects;
 
-        public static AudioFileObjectEditor instance;
+            isPreset = string.IsNullOrEmpty(AssetDatabase.GetAssetPath(myScript));
+
+            safeName = serializedObject.FindProperty("safeName");
+            if (target.name.Length > 0) // Creating from right-click dialog throws error here because name is invalid when first selected
+            {
+                safeName.stringValue = JSAMEditorHelper.ConvertToAlphanumeric(target.name);
+            }
+
+            file = serializedObject.FindProperty(nameof(myScript.files));
+            files = serializedObject.FindProperty("files");
+
+            neverRepeat = serializedObject.FindProperty("neverRepeat");
+
+            fadeInDuration = serializedObject.FindProperty("fadeInDuration");
+            fadeOutDuration = serializedObject.FindProperty("fadeOutDuration");
+            relativeVolume = serializedObject.FindProperty("relativeVolume");
+            spatialize = serializedObject.FindProperty("spatialize");
+            maxDistance = serializedObject.FindProperty("maxDistance");
+
+            bypassEffects = serializedObject.FindProperty("bypassEffects");
+            bypassListenerEffects = serializedObject.FindProperty("bypassListenerEffects");
+            bypassReverbZones = serializedObject.FindProperty("bypassReverbZones");
+
+            openIcon = EditorGUIUtility.TrIconContent("d_ScaleTool", "Click to open Playback Preview in a standalone window");
+
+            AudioPlaybackToolEditor.CreateAudioHelper(myScript.GetFirstAvailableFile());
+        }
+
+        void OnDisable()
+        {
+            EditorApplication.update -= Update;
+            Undo.undoRedoPerformed -= OnUndoRedo;
+            AudioPlaybackToolEditor.DestroyAudioHelper();
+            Undo.postprocessModifications -= ApplyHelperEffects;
+        }
 
 #if !UNITY_2019_3_OR_NEWER
         static bool filesFoldout;
@@ -53,10 +97,6 @@ namespace JSAM
             if (myScript == null) return;
 
             serializedObject.Update();
-
-            EditorGUILayout.LabelField("Audio File Object", EditorStyles.boldLabel);
-
-            EditorGUILayout.LabelField(new GUIContent("Name: ", "This is the name that AudioManager will use to reference this object with."), new GUIContent(myName));
 
 #region Category Inspector
             EditorGUILayout.BeginHorizontal();
@@ -70,7 +110,7 @@ namespace JSAM
                 if (AudioManager.instance != null)
                 {
                     //categories.AddRange(AudioManager.instance.GetCategories());
-                    categories.AddRange(AudioFileObject.GetCategories());
+                    categories.AddRange(AudioFileSoundObject.GetCategories());
                 }
                 GenericMenu newMenu = new GenericMenu();
                 int i = 0;
@@ -101,26 +141,6 @@ namespace JSAM
             }
             EditorGUILayout.EndHorizontal();
 #endregion
-
-            if (cachedName != target.name)
-            {
-                CheckIfNameChanged();
-                cachedName = target.name;
-            }
-
-            if (unregistered)
-            {
-                EditorGUILayout.HelpBox("This Audio File Object has yet to be added to AudioManager's library. Do make sure to " +
-                    "click on \"Re-generate Audio Library\" in AudioManager before playing!", MessageType.Warning);
-            }
-            else if (relevant)
-            {
-                if (nameChanged)
-                {
-                    EditorGUILayout.HelpBox("This Audio File Object's name differs from it's corresponding enum name! " +
-                        "No error will come of this, but you may want to regenerate AudioManager's audio libraries again for clarity.", MessageType.Info);
-                }
-            }
 
             List<string> excludedProperties = new List<string>() { "m_Script", "file", "files", "safeName",
                 "relativeVolume", "spatialize", "maxDistance" };
@@ -332,7 +352,7 @@ namespace JSAM
 #endregion
         }
 
-        void DrawPlaybackTool(AudioFileObject myScript)
+        void DrawPlaybackTool(AudioFileSoundObject myScript)
         {
             GUIContent fContent = new GUIContent("Audio Playback Preview", 
                 "Allows you to preview how your AudioFileObject will sound during runtime right here in the inspector. " +
@@ -393,7 +413,7 @@ namespace JSAM
             EditorCompatability.EndSpecialFoldoutGroup();
         }
 
-        public void DesignateActiveAudioClip(AudioFileObject myScript)
+        public void DesignateActiveAudioClip(AudioFileSoundObject myScript)
         {
             AudioClip theClip = null;
             if (!myScript.IsLibraryEmpty())
@@ -406,7 +426,7 @@ namespace JSAM
             }
         }
 
-        public AudioClip DesignateRandomAudioClip(AudioFileObject myScript)
+        public AudioClip DesignateRandomAudioClip(AudioFileSoundObject myScript)
         {
             AudioClip theClip = playingClip;
             if (!myScript.IsLibraryEmpty())
@@ -461,48 +481,6 @@ namespace JSAM
             clipPlaying = (playingClip != null && AudioPlaybackToolEditor.helperSource.isPlaying);
         }
 
-        void OnEnable()
-        {
-            myScript = (AudioFileObject)target;
-            instance = this;
-
-            EditorApplication.update += Update;
-            Undo.undoRedoPerformed += OnUndoRedo;
-            Undo.postprocessModifications += ApplyHelperEffects;
-            CheckIfRegistered();
-            if (target.name.Length > 0) // Creating from right-click dialog throws error here because name is invalid when first selected
-            {
-                myName = AudioManagerEditor.ConvertToAlphanumeric(target.name);
-            }
-
-            file = serializedObject.FindProperty("file");
-            files = serializedObject.FindProperty("files");
-
-            neverRepeat = serializedObject.FindProperty("neverRepeat");
-
-            fadeInDuration = serializedObject.FindProperty("fadeInDuration");
-            fadeOutDuration = serializedObject.FindProperty("fadeOutDuration");
-            relativeVolume = serializedObject.FindProperty("relativeVolume");
-            spatialize = serializedObject.FindProperty("spatialize");
-            maxDistance = serializedObject.FindProperty("maxDistance");
-
-            bypassEffects = serializedObject.FindProperty("bypassEffects");
-            bypassListenerEffects = serializedObject.FindProperty("bypassListenerEffects");
-            bypassReverbZones = serializedObject.FindProperty("bypassReverbZones");
-
-            openIcon = EditorGUIUtility.TrIconContent("d_ScaleTool", "Click to open Playback Preview in a standalone window");
-
-            AudioPlaybackToolEditor.CreateAudioHelper(myScript.GetFirstAvailableFile());
-        }
-
-        void OnDisable()
-        {
-            EditorApplication.update -= Update;
-            Undo.undoRedoPerformed -= OnUndoRedo;
-            AudioPlaybackToolEditor.DestroyAudioHelper();
-            Undo.postprocessModifications -= ApplyHelperEffects;
-        }
-
         void OnUndoRedo()
         {
             AudioPlaybackToolEditor.DoForceRepaint(true);
@@ -517,49 +495,11 @@ namespace JSAM
             return modifications;
         }
 
-        public void CheckIfRegistered()
-        {
-            if (AudioManager.instance)
-            {
-                // Check if this file is actually relevant to the AudioManager
-                if (AssetDatabase.GetAssetPath(target).Contains(AudioManager.instance.GetAudioFolderLocation()))
-                {
-                    relevant = true;
-                    if (!AudioManager.instance.GetSoundLibrary().Contains((AudioFileObject)target))
-                    {
-                        unregistered = true;
-                    }
-                }
-            }
-        }
-
-        public void CheckIfNameChanged()
-        {
-            myName = AudioManagerEditor.ConvertToAlphanumeric(target.name);
-            if (myName == "")
-            {
-                target.name = "NEW AUDIO FILE";
-                myName = "NEWAUDIOFILE";
-                AssetDatabase.RenameAsset(AssetDatabase.GUIDToAssetPath(Selection.assetGUIDs[0]), "NEW AUDIO FILE");
-                EditorUtility.DisplayDialog("Audio File Warning!", "Due to the limitations of C#, " +
-                    "the names of your Audio File Objects cannot start with a number. Certain symbols (+, -) cannot be used " +
-                    "and will be stripped from the name entirely. Additionally, you must include letters in your name.", "OK");
-            }
-
-            List<string> names = new List<string>();
-            names.AddRange(AudioManager.instance.GetSceneSoundEnum().GetEnumNames());
-            if (!names.Contains(myName))
-            {
-                nameChanged = true;
-            }
-            else nameChanged = false;
-        }
-
         FadeMode fadeMode;
         GameObject helperObject;
         float fadeInTime, fadeOutTime;
 
-        public void HandleFading(AudioFileObject myScript)
+        public void HandleFading(AudioFileSoundObject myScript)
         {
             var helperSource = AudioPlaybackToolEditor.helperSource;
             if (helperSource.isPlaying)
@@ -622,7 +562,7 @@ namespace JSAM
             }
         }
 
-        public void StartFading(AudioFileObject myScript, AudioClip overrideClip = null)
+        public void StartFading(AudioFileSoundObject myScript, AudioClip overrideClip = null)
         {
             fadeMode = myScript.fadeMode;
             if (!overrideClip)
@@ -942,7 +882,7 @@ namespace JSAM
             Undo.RecordObjects(Selection.objects, "Modified Category");
             foreach (var g in Selection.objects)
             {
-                AudioFileObject obj = (AudioFileObject)g;
+                AudioFileSoundObject obj = (AudioFileSoundObject)g;
                 if (obj != null){
                     obj.category = c;
                 }
@@ -963,7 +903,7 @@ namespace JSAM
         SerializedProperty bypassListenerEffects;
         SerializedProperty bypassReverbZones;
 
-        void DrawAudioEffectTools(AudioFileObject myScript)
+        void DrawAudioEffectTools(AudioFileSoundObject myScript)
         {
             GUIContent blontent = new GUIContent("Audio Effects Stack", "");
             showAudioEffects = EditorCompatability.SpecialFoldouts(showAudioEffects, blontent);

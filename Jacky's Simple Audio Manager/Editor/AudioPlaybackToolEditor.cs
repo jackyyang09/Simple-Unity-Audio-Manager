@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
 
-namespace JSAM
+namespace JSAM.JSAMEditor
 {
     /// <summary>
     /// Handles the Playback Tool Editor Window
@@ -83,7 +83,7 @@ namespace JSAM
         public static bool OnDoubleClickAssets(int instanceID, int line)
         {
             string assetPath = AssetDatabase.GetAssetPath(instanceID);
-            AudioFileObject audioFile = AssetDatabase.LoadAssetAtPath<AudioFileObject>(assetPath);
+            AudioFileSoundObject audioFile = AssetDatabase.LoadAssetAtPath<AudioFileSoundObject>(assetPath);
             if (audioFile)
             {
                 Init();
@@ -213,7 +213,7 @@ namespace JSAM
         }
 
         AudioClip selectedClip;
-        AudioFileObject selectedSound;
+        AudioFileSoundObject selectedSound;
         AudioFileMusicObject selectedMusic;
         private void OnSelectionChange()
         {
@@ -229,9 +229,9 @@ namespace JSAM
                 selectedClip = (AudioClip)Selection.activeObject;
                 CreateAudioHelper(selectedClip);
             }
-            else if (activeType.Equals(typeof(AudioFileObject)))
+            else if (activeType.Equals(typeof(AudioFileSoundObject)))
             {
-                selectedSound = ((AudioFileObject)Selection.activeObject);
+                selectedSound = ((AudioFileSoundObject)Selection.activeObject);
                 selectedClip = selectedSound.file;
                 CreateAudioHelper(selectedClip);
             }
@@ -255,7 +255,7 @@ namespace JSAM
         /// Draws a playback 
         /// </summary>
         /// <param name="music"></param>
-        public void DrawPlaybackTool(AudioClip selectedClip, AudioFileObject selectedSound = null, AudioFileMusicObject selectedMusic = null)
+        public void DrawPlaybackTool(AudioClip selectedClip, AudioFileSoundObject selectedSound = null, AudioFileMusicObject selectedMusic = null)
         {
             Rect progressRect = ProgressBar((float)helperSource.timeSamples / (float)helperSource.clip.samples, selectedClip, selectedSound, selectedMusic);
             EditorGUI.BeginChangeCheck();
@@ -540,7 +540,7 @@ namespace JSAM
         /// <param name="value"></param>
         /// <param name="label"></param>
         /// <returns></returns>
-        public static Rect ProgressBar(float value, AudioClip selectedClip, AudioFileObject selectedSound = null, AudioFileMusicObject selectedMusic = null)
+        public static Rect ProgressBar(float value, AudioClip selectedClip, AudioFileSoundObject selectedSound = null, AudioFileMusicObject selectedMusic = null)
         {
             // Get a rect for the progress bar using the same margins as a text field
             // TODO: Make this dynamic, locks its previous size before showing the guide

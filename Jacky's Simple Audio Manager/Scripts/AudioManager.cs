@@ -51,7 +51,7 @@ namespace JSAM
     public class AudioManager : MonoBehaviour
     {
         [SerializeField]
-        List<AudioFileObject> audioFileObjects = new List<AudioFileObject>();
+        List<AudioFileSoundObject> audioFileObjects = new List<AudioFileSoundObject>();
         [SerializeField]
         List<AudioFileMusicObject> audioFileMusicObjects = new List<AudioFileMusicObject>();
 
@@ -1547,7 +1547,7 @@ namespace JSAM
         /// <param name="s">The AudioFileobject you want AudioManager to play</param>
         /// <param name="trans">The transform of the sound's source</param>
         /// <returns>The AudioSource playing the sound</returns>
-        public AudioSource PlaySoundInternal(AudioFileObject s, Transform trans = null)
+        public AudioSource PlaySoundInternal(AudioFileSoundObject s, Transform trans = null)
         {
             if (!Application.isPlaying) return null;
             int sourceIndex = GetAvailableSource();
@@ -1649,7 +1649,7 @@ namespace JSAM
         /// <param name="s">The AudioFileobject you want AudioManager to play</param>
         /// <param name="position">The position you want to play the sound at</param>
         /// <returns>The AudioSource playing the sound</returns>
-        public AudioSource PlaySoundInternal(AudioFileObject s, Vector3 position)
+        public AudioSource PlaySoundInternal(AudioFileSoundObject s, Vector3 position)
         {
             if (!Application.isPlaying) return null;
             int sourceIndex = GetAvailableSource();
@@ -1800,7 +1800,7 @@ namespace JSAM
         /// <param name="s">The AudioFileobject you want AudioManager to play</param>
         /// <param name="trans">The transform of the sound's source</param>
         /// <returns>The AudioSource playing the sound</returns>
-        public AudioSource PlaySoundLoopInternal(AudioFileObject s, Transform trans = null)
+        public AudioSource PlaySoundLoopInternal(AudioFileSoundObject s, Transform trans = null)
         {
             if (!Application.isPlaying) return null;
             int sourceIndex = GetAvailableSource();
@@ -1876,7 +1876,7 @@ namespace JSAM
         /// <param name="s">The AudioFileobject you want AudioManager to play</param>
         /// <param name="position">The position you want to play the sound at</param>
         /// <returns>The AudioSource playing the sound</returns>
-        public AudioSource PlaySoundLoopInternal(AudioFileObject s, Vector3 position)
+        public AudioSource PlaySoundLoopInternal(AudioFileSoundObject s, Vector3 position)
         {
             if (!Application.isPlaying) return null;
             int sourceIndex = GetAvailableSource();
@@ -2001,7 +2001,7 @@ namespace JSAM
         /// </summary>
         /// <param name="s">The sound to be stopped</param>
         /// <param name="t">For sources, helps with duplicate sounds</param>
-        public void StopSoundInternal(AudioFileObject s, Transform t = null)
+        public void StopSoundInternal(AudioFileSoundObject s, Transform t = null)
         {
             for (int i = 0; i < sources.Count; i++)
             {
@@ -2066,7 +2066,7 @@ namespace JSAM
         /// <param name="s"></param>
         /// <param name="stopInstantly"></param>
         /// <param name="t"></param>
-        public void StopSoundLoopInternal(AudioFileObject s, bool stopInstantly = false, Transform t = null)
+        public void StopSoundLoopInternal(AudioFileSoundObject s, bool stopInstantly = false, Transform t = null)
         {
             for (int i = 0; i < loopingSources.Count; i++)
             {
@@ -2717,7 +2717,7 @@ namespace JSAM
         /// <param name="sound">The enum value for the sound in question. Check AudioManager to see what Enum you should use</param>
         /// <param name="trans">Specify is the sound is playing from that transform</param>
         /// <returns></returns>
-        public bool IsSoundPlayingInternal(AudioFileObject s, Transform trans = null)
+        public bool IsSoundPlayingInternal(AudioFileSoundObject s, Transform trans = null)
         {
             for (int i = 0; i < sources.Count; i++) // Loop through all sources
             {
@@ -2827,7 +2827,7 @@ namespace JSAM
             return IsSoundLoopingInternal(audioFileObjects[sound]);
         }
 
-        public bool IsSoundLoopingInternal(AudioFileObject sound)
+        public bool IsSoundLoopingInternal(AudioFileSoundObject sound)
         {
             foreach (AudioSource c in loopingSources)
             {
@@ -2847,9 +2847,9 @@ namespace JSAM
         /// <param name="audioFiles"></param>
         /// <param name="musicFiles"></param>
         /// <returns></returns>
-        public bool GenerateAudioDictionarys(List<AudioFileObject> audioFiles, List<AudioFileMusicObject> musicFiles)
+        public bool GenerateAudioDictionarys(List<AudioFileSoundObject> audioFiles, List<AudioFileMusicObject> musicFiles)
         {
-            List<AudioFileObject> audioSoundDiff = audioFiles.Except(audioFileObjects).ToList();
+            List<AudioFileSoundObject> audioSoundDiff = audioFiles.Except(audioFileObjects).ToList();
             List<AudioFileMusicObject> audioMusicDiff = musicFiles.Except(audioFileMusicObjects).ToList();
             audioFileObjects = audioFiles;
             audioFileMusicObjects = musicFiles;
@@ -2903,7 +2903,7 @@ namespace JSAM
         /// <typeparam name="T">The audio enum type corresponding to your scene. In most cases, this is just JSAM.Sound</typeparam>
         /// <param name="sound"></param>
         /// <returns></returns>
-        public static AudioFileObject GetSound<T>(T sound) where T : Enum
+        public static AudioFileSoundObject GetSound<T>(T sound) where T : Enum
         {
             int a = Convert.ToInt32(sound);
             return instance.audioFileObjects[a];
@@ -2914,7 +2914,7 @@ namespace JSAM
             return audioFileMusicObjects;
         }
 
-        public List<AudioFileObject> GetSoundLibrary()
+        public List<AudioFileSoundObject> GetSoundLibrary()
         {
             return audioFileObjects;
         }
@@ -2942,7 +2942,7 @@ namespace JSAM
         /// </summary>
         /// <param name="audioFile"></param>
         /// <returns></returns>
-        public static float GetRandomPitch(AudioFileObject audioFile)
+        public static float GetRandomPitch(AudioFileSoundObject audioFile)
         {
             float pitch = audioFile.pitchShift;
             float newPitch = audioFile.startingPitch;

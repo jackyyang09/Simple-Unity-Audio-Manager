@@ -28,7 +28,7 @@ namespace JSAM
 
         [SerializeField]
         [HideInInspector]
-        protected AudioFileObject sound;
+        protected AudioFileSoundObject sound;
 
         /// <summary>
         /// Used as a shorthand for all sound functions that ask for a transform. Will set itself to null if spatialSound is set to null

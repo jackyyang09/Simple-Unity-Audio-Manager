@@ -5,23 +5,35 @@ using UnityEditor;
 
 namespace JSAM.JSAMEditor
 {
-    public abstract class JSAMBaseEditorWindow<T> : EditorWindow where T : class
+    public abstract class JSAMBaseEditorWindow<T> : EditorWindow where T : EditorWindow
     {
-        public T window;
-        //public T Window
-        //{
-        //    get
-        //    {
-        //        window = GetWindow<T>();
-        //        return window;
-        //    }
-        //}
+        protected static SerializedObject serializedObject;
 
-        protected void OnEnable()
+        protected static T window;
+        public static T Window
         {
-
+            get
+            {
+                if (window == null)
+                {
+                    window = GetWindow<T>();
+                }
+                return window;
+            }
         }
 
-        public abstract void DesignateSerializedProperties();
+        protected virtual void OnEnable()
+        {
+            if (serializedObject != null) DesignateSerializedProperties();
+        }
+
+        protected SerializedProperty FindProp(string prop)
+        {
+            return serializedObject.FindProperty(prop);
+        }
+
+        protected abstract void SetWindowTitle();
+
+        protected abstract void DesignateSerializedProperties();
     }
 }

@@ -1,10 +1,26 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEditor;
 
 namespace JSAM.JSAMEditor
 {
+    public static class JSAMEditorExtensions
+    {
+        /// <summary>
+        /// Adds a new element to the end of the array and returns the new element
+        /// </summary>
+        /// <param name="prop"></param>
+        /// <returns></returns>
+        public static SerializedProperty AddNewArrayElement(this SerializedProperty prop)
+        {
+            int index = prop.arraySize;
+            prop.InsertArrayElementAtIndex(index);
+            return prop.GetArrayElementAtIndex(index);
+        }
+    }
+
     public class JSAMEditorHelper
     {
         /// <summary>
@@ -71,6 +87,57 @@ namespace JSAM.JSAMEditor
                 }
                 while (!AssetDatabase.IsValidFolder(filePath));
             }
+        }
+
+        /// <summary>
+        /// Helpful method by Stack Overflow user ata
+        /// https://stackoverflow.com/questions/3210393/how-do-i-remove-all-non-alphanumeric-characters-from-a-string-except-dash
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string ConvertToAlphanumeric(string input)
+        {
+            char[] arr = input.ToCharArray();
+
+            arr = System.Array.FindAll<char>(arr, (c => (char.IsLetterOrDigit(c)
+            || c == '_')));
+
+            // If the first index is a number
+            while (char.IsDigit(arr[0]))
+            {
+                List<char> newArray = new List<char>();
+                newArray = new List<char>(arr);
+                newArray.RemoveAt(0);
+                arr = newArray.ToArray();
+                if (arr.Length == 0) break; // No valid characters to use, returning empty
+            }
+
+            return new string(arr);
+        }
+
+        public static List<T> ImportAssetsOrFoldersAtPath<T>(string filePath) where T : Object
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<T>(filePath);
+            if (!AssetDatabase.IsValidFolder(filePath))
+            {
+                if (asset != null)
+                {
+                    return new List<T> { asset };
+                }
+            }
+            else
+            {
+                List<T> imports = new List<T>();
+                List<string> importTarget = new List<string>(Directory.GetDirectories(filePath));
+                importTarget.AddRange(Directory.GetFiles(filePath));
+                for (int i = 0; i < importTarget.Count; i++)
+                {
+                    imports.AddRange(ImportAssetsOrFoldersAtPath<T>(importTarget[i]));
+                }
+                return imports;
+            }
+
+            return new List<T>();
         }
     }
 }

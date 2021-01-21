@@ -31,7 +31,7 @@ namespace JSAM
         {
             if (AudioManager.instance)
             {
-                foreach (AudioFileObject audio in AudioManager.instance.GetSoundLibrary())
+                foreach (AudioFileSoundObject audio in AudioManager.instance.GetSoundLibrary())
                 {
                     options.Add(audio.safeName);
                 }
@@ -68,7 +68,7 @@ namespace JSAM
 
             GUIContent soundDesc = new GUIContent("Sound", "Sound that will be played");
 
-            AudioFileObject audioObject = (AudioFileObject)soundProperty.objectReferenceValue;
+            AudioFileSoundObject audioObject = (AudioFileSoundObject)soundProperty.objectReferenceValue;
             int selected = 0;
             if (audioObject != null) selected = options.IndexOf(audioObject.safeName);
             if (selected == -1) selected = 0;
