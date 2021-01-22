@@ -8,7 +8,7 @@ namespace JSAM.JSAMEditor
 {
     [CustomEditor(typeof(AudioFileMusicObject))]
     [CanEditMultipleObjects]
-    public class AudioFileMusicObjectEditor : Editor
+    public class AudioFileMusicObjectEditor : BaseAudioFileObjectEditor<AudioFileMusicObjectEditor>
     {
         AudioFileMusicObject myScript;
 
@@ -37,19 +37,12 @@ namespace JSAM.JSAMEditor
         public static bool freePlay = false;
 
         static bool showLoopPointTool;
-        static bool showPlaybackTool;
-        static bool showHowTo;
 
         static int loopPointInputMode = 0;
 
         Texture2D cachedTex;
         AudioClip cachedClip;
 
-        bool unregistered = false;
-        bool relevant = false;
-        string myName = "";
-        string cachedName = "";
-        bool nameChanged = false;
         bool mouseScrubbed = false;
 
         SerializedProperty loopMode;
@@ -59,80 +52,15 @@ namespace JSAM.JSAMEditor
 
         GUIContent openIcon;
 
-        public static AudioFileMusicObjectEditor instance;
-
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
 
-            EditorGUILayout.LabelField("Audio File Music Object", EditorStyles.boldLabel);
-
-            EditorGUILayout.LabelField(new GUIContent("Name: ", "This is the name that AudioManager will use to reference this object with."), new GUIContent(myName));
-
             #region Category Inspector
             EditorGUILayout.BeginHorizontal();
-            GUIContent blontent = new GUIContent("Category", "An optional field that lets you further sort your AudioFileObjects for better organization in AudioManager's library view.");
-            string newCategory = EditorGUILayout.DelayedTextField(blontent, myScript.category);
-            List<string> categories = new List<string>();
-            // Check if we're modifying this AudioFileObject in a valid scene
-            if (EditorGUILayout.DropdownButton(GUIContent.none, FocusType.Keyboard, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
-            {
-                GUI.FocusControl(null);
-                if (AudioManager.instance != null)
-                {
-                    //categories.AddRange(AudioManager.instance.GetMusicCategories());
-                    categories.AddRange(AudioFileSoundObject.GetMusicCategories());
-                }
-                AudioManager.instance.InitializeCategories();
-                GenericMenu newMenu = new GenericMenu();
-                int i = 0;
-                // To reduce the number of boolean comparisons we do as we iterate
-                for (; i < categories.Count; i++)
-                {
-                    if (myScript.category == categories[i])
-                    {
-                        newMenu.AddItem(new GUIContent(categories[i]), true, SetCategory, categories[i]);
-                        break;
-                    }
-                    else
-                    {
-                        newMenu.AddItem(new GUIContent(categories[i]), false, SetCategory, categories[i]);
-                    }
-                }
-                for (; i < categories.Count; i++)
-                {
-                    newMenu.AddItem(new GUIContent(categories[i]), false, SetCategory, categories[i]);
-                }
-                newMenu.AddSeparator("");
-                newMenu.AddItem(new GUIContent("Hidden"), myScript.category == "Hidden", SetCategory, "Hidden");
-                newMenu.ShowAsContext();
-            }
-            if (newCategory != myScript.category)
-            {
-                SetCategory(newCategory);
-            }
+            EditorGUILayout.PropertyField(category);
             EditorGUILayout.EndHorizontal();
             #endregion
-
-            if (cachedName != target.name)
-            {
-                CheckIfNameChanged();
-                cachedName = target.name;
-            }
-
-            if (unregistered)
-            {
-                EditorGUILayout.HelpBox("This Audio File Object has yet to be added to AudioManager's library. Do make sure to " +
-                    "click on \"Re-generate Audio Library\" in AudioManager before playing!", MessageType.Warning);
-            }
-            else if (relevant)
-            {
-                if (nameChanged)
-                {
-                    EditorGUILayout.HelpBox("This Audio File Object's name differs from it's corresponding enum name! " +
-                        "No error will come of this, but you may want to regenerate AudioManager's audio libraries again for clarity.", MessageType.Info);
-                }
-            }
 
             List<string> propertiesToExclude = new List<string>() { "spatialSound", "loopSound", "priority",
                 "pitchShift", "loopMode", "fadeMode", "playReversed", "safeName", "maxDistance" };
@@ -752,17 +680,11 @@ namespace JSAM.JSAMEditor
             Undo.undoRedoPerformed += OnUndoRedo;
             AudioPlaybackToolEditor.CreateAudioHelper(myScript.GetFile(), true);
             Undo.postprocessModifications += ApplyHelperEffects;
-            CheckIfRegistered();
-            myName = JSAMEditorHelper.ConvertToAlphanumeric(target.name);
 
             loopMode = serializedObject.FindProperty("loopMode");
             clampToLoopPoints = serializedObject.FindProperty("clampToLoopPoints");
             loopStartProperty = serializedObject.FindProperty("loopStart");
             loopEndProperty = serializedObject.FindProperty("loopEnd");
-
-            bypassEffects = serializedObject.FindProperty("bypassEffects");
-            bypassListenerEffects = serializedObject.FindProperty("bypassListenerEffects");
-            bypassReverbZones = serializedObject.FindProperty("bypassReverbZones");
 
             openIcon = EditorGUIUtility.TrIconContent("d_ScaleTool", "Click to open Playback Preview in a standalone window");
         }
@@ -787,44 +709,6 @@ namespace JSAM.JSAMEditor
         void OnUndoRedo()
         {
             AudioPlaybackToolEditor.DoForceRepaint(true);
-        }
-
-        public void CheckIfRegistered()
-        {
-            if (AudioManager.instance)
-            {
-                // Check if this file is actually relevant to the AudioManager
-                if (AssetDatabase.GetAssetPath(target).Contains(AudioManager.instance.GetAudioFolderLocation()))
-                {
-                    relevant = true;
-                    if (!AudioManager.instance.GetMusicLibrary().Contains((AudioFileMusicObject)target))
-                    {
-                        unregistered = true;
-                    }
-                }
-            }
-        }
-
-        public void CheckIfNameChanged()
-        {
-            myName = JSAMEditorHelper.ConvertToAlphanumeric(target.name);
-            if (myName == "")
-            {
-                target.name = "NEW AUDIO MUSIC FILE";
-                myName = "NEWAUDIOMUSICFILE";
-                AssetDatabase.RenameAsset(AssetDatabase.GUIDToAssetPath(Selection.assetGUIDs[0]), "NEW AUDIO FILE");
-                EditorUtility.DisplayDialog("Audio File Warning!", "Due to the limitations of C#, " +
-                    "the names of your Audio File Objects cannot start with a number. Certain symbols (+, -) cannot be used " +
-                    "and will be stripped from the name entirely. Additionally, you must include letters in your name.", "OK");
-            }
-
-            List<string> names = new List<string>();
-            names.AddRange(AudioManager.instance.GetSceneMusicEnum().GetEnumNames());
-            if (!names.Contains(myName))
-            {
-                nameChanged = true;
-            }
-            else nameChanged = false;
         }
 
         /// <summary>
@@ -952,26 +836,6 @@ namespace JSAM.JSAMEditor
 #endif
 
         }
-
-        /// <summary>
-        /// Allows for multi-editing of categories
-        /// </summary>
-        /// <param name="category"></param>
-        void SetCategory(object category)
-        {
-            string c = category.ToString();
-            Undo.RecordObjects(Selection.objects, "Modified Category");
-            foreach (var g in Selection.objects)
-            {
-                AudioFileMusicObject obj = (AudioFileMusicObject)g;
-                if (obj != null)
-                {
-                    obj.category = c;
-                }
-            }
-            AudioManager.instance.UpdateAudioFileMusicObjectCategories();
-        }
-
 #region Audio Effect Rendering
         static bool showAudioEffects;
         static bool chorusFoldout;

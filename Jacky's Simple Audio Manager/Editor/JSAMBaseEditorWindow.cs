@@ -5,9 +5,12 @@ using UnityEditor;
 
 namespace JSAM.JSAMEditor
 {
-    public abstract class JSAMBaseEditorWindow<T> : EditorWindow where T : EditorWindow
+    public abstract class JSAMBaseEditorWindow<Asset, T> : EditorWindow
+        where Asset : ScriptableObject
+        where T : EditorWindow
     {
         protected static SerializedObject serializedObject;
+        protected static Asset asset;
 
         protected static T window;
         public static T Window

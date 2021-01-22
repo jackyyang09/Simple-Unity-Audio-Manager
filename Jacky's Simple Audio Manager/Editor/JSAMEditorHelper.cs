@@ -89,32 +89,6 @@ namespace JSAM.JSAMEditor
             }
         }
 
-        /// <summary>
-        /// Helpful method by Stack Overflow user ata
-        /// https://stackoverflow.com/questions/3210393/how-do-i-remove-all-non-alphanumeric-characters-from-a-string-except-dash
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string ConvertToAlphanumeric(string input)
-        {
-            char[] arr = input.ToCharArray();
-
-            arr = System.Array.FindAll<char>(arr, (c => (char.IsLetterOrDigit(c)
-            || c == '_')));
-
-            // If the first index is a number
-            while (char.IsDigit(arr[0]))
-            {
-                List<char> newArray = new List<char>();
-                newArray = new List<char>(arr);
-                newArray.RemoveAt(0);
-                arr = newArray.ToArray();
-                if (arr.Length == 0) break; // No valid characters to use, returning empty
-            }
-
-            return new string(arr);
-        }
-
         public static List<T> ImportAssetsOrFoldersAtPath<T>(string filePath) where T : Object
         {
             var asset = AssetDatabase.LoadAssetAtPath<T>(filePath);
@@ -139,5 +113,14 @@ namespace JSAM.JSAMEditor
 
             return new List<T>();
         }
+
+        static Color guiColor;
+        public static void BeginColourChange(Color color)
+        {
+            guiColor = GUI.color;
+            GUI.color = color;
+        }
+
+        public static void EndColourChange() => GUI.color = guiColor;
     }
 }

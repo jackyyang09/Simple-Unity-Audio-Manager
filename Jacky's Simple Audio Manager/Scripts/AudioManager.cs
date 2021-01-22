@@ -50,21 +50,6 @@ namespace JSAM
     [DisallowMultipleComponent]
     public class AudioManager : MonoBehaviour
     {
-        [SerializeField]
-        List<AudioFileSoundObject> audioFileObjects = new List<AudioFileSoundObject>();
-        [SerializeField]
-        List<AudioFileMusicObject> audioFileMusicObjects = new List<AudioFileMusicObject>();
-
-        [SerializeField]
-        [HideInInspector]
-        string sceneSoundEnumName = "Sounds";
-        Type sceneSoundEnumType = null;
-
-        [SerializeField]
-        [HideInInspector]
-        string sceneMusicEnumName = "Music";
-        Type sceneMusicEnumType = null;
-
         /// <summary>
         /// List of sources allocated to play looping sounds
         /// </summary>
@@ -172,19 +157,25 @@ namespace JSAM
 
         [SerializeField]
         [Tooltip("Changes the pitch of sounds according to Time.timeScale. When Time.timeScale is set to 0, pauses all sounds instead")]
-        bool timeScaledSounds = true;
+        public bool timeScaledSounds = true;
 
-        /// <summary>
-        /// If true, enums are generated to be unique to scenes.
-        /// Otherwise, enums are generated to be global across the project
-        /// </summary>
-        [SerializeField]
-        [HideInInspector]
-        bool instancedEnums = false;
+        [SerializeField] AudioManagerSettings settings;
+        public AudioManagerSettings Settings
+        {
+            get
+            {
+                return settings;
+            }
+        }
 
-        [SerializeField]
-        [HideInInspector]
-        bool wasInstancedBefore = false;
+        [SerializeField] AudioLibrary library;
+        public AudioLibrary Library
+        {
+            get
+            {
+                return library;
+            }
+        }
 
         [Header("Scene AudioListener Reference (Optional)")]
 
@@ -302,9 +293,9 @@ namespace JSAM
 
         void Start()
         {
-            for (int i = 0; i < audioFileObjects.Count; i++)
+            for (int i = 0; i < library.sounds.Count; i++)
             {
-                audioFileObjects[i].Initialize();
+                library.sounds[i].Initialize();
             }
 
             initialized = true;
@@ -511,7 +502,7 @@ namespace JSAM
         public AudioSource PlayMusicInternal<T>(T track) where T : Enum
         {
             int t = Convert.ToInt32(track);
-            return PlayMusicInternal(audioFileMusicObjects[t]);
+            return PlayMusicInternal(library.music[t]);
         }
 
         /// <summary>
@@ -523,7 +514,7 @@ namespace JSAM
 
         public AudioSource PlayMusicInternal(int track)
         {
-            return PlayMusicInternal(audioFileMusicObjects[track]);
+            return PlayMusicInternal(library.music[track]);
         }
 
         /// <summary>
@@ -616,7 +607,7 @@ namespace JSAM
         public AudioSource PlayMusic3DInternal<T>(T track, Transform trans, LoopMode loopMode = LoopMode.LoopWithLoopPoints) where T : Enum
         {
             int t = Convert.ToInt32(track);
-            return PlayMusic3DInternal(audioFileMusicObjects[t], trans, loopMode);
+            return PlayMusic3DInternal(library.music[t], trans, loopMode);
         }
 
         /// <summary>
@@ -630,7 +621,7 @@ namespace JSAM
         /// <returns>The AudioSource playing the sound</returns>
         public AudioSource PlayMusic3DInternal(int track, Transform trans, LoopMode loopMode = LoopMode.LoopWithLoopPoints)
         {
-            return PlayMusic3DInternal(audioFileMusicObjects[track], trans, loopMode);
+            return PlayMusic3DInternal(library.music[track], trans, loopMode);
         }
 
         /// <summary>
@@ -936,7 +927,7 @@ namespace JSAM
         public AudioSource FadeMusicInternal<T>(T track, float time) where T : Enum
         {
             int t = Convert.ToInt32(track);
-            return FadeMusicInternal(audioFileMusicObjects[t], time);
+            return FadeMusicInternal(library.music[t], time);
         }
 
         /// <summary>
@@ -948,7 +939,7 @@ namespace JSAM
         /// <param name="loopMode">Does the track loop from start to finish? Does the track loop between loop points?</param>
         public AudioSource FadeMusicInternal(int track, float time)
         {
-            return FadeMusicInternal(audioFileMusicObjects[track], time);
+            return FadeMusicInternal(library.music[track], time);
         }
 
         /// <summary>
@@ -1064,7 +1055,7 @@ namespace JSAM
         public AudioSource FadeMusicInInternal<T>(T track, float time, bool playFromStartPoint = false) where T : Enum
         {
             int t = Convert.ToInt32(track);
-            return FadeMusicInInternal(audioFileMusicObjects[t], time, playFromStartPoint);
+            return FadeMusicInInternal(library.music[t], time, playFromStartPoint);
         }
 
         /// <summary>
@@ -1078,7 +1069,7 @@ namespace JSAM
         /// <param name="playFromStartPoint">Start track playback from starting loop point, only works if loopMode is set to LoopWithLoopPoints</param>
         public AudioSource FadeMusicInInternal(int track, float time, bool playFromStartPoint = false)
         {
-            return FadeMusicInInternal(audioFileMusicObjects[track], time, playFromStartPoint);
+            return FadeMusicInInternal(library.music[track], time, playFromStartPoint);
         }
 
         /// <summary>
@@ -1242,12 +1233,12 @@ namespace JSAM
         public AudioSource CrossfadeMusicInternal<T>(T track, float time, bool keepMusicTime = false) where T : Enum
         {
             int t = Convert.ToInt32(track);
-            return CrossfadeMusicInternal(audioFileMusicObjects[t], time, keepMusicTime);
+            return CrossfadeMusicInternal(library.music[t], time, keepMusicTime);
         }
 
         public AudioSource CrossfadeMusicInternal(int track, float time = 0, bool keepMusicTime = false)
         {
-            return CrossfadeMusicInternal(audioFileMusicObjects[track], time, keepMusicTime);
+            return CrossfadeMusicInternal(library.music[track], time, keepMusicTime);
         }
 
         /// <summary>
@@ -1435,12 +1426,12 @@ namespace JSAM
         public void StopMusicInternal<T>(T track) where T : Enum
         {
             int t = Convert.ToInt32(track);
-            StopMusicInternal(audioFileMusicObjects[t]);
+            StopMusicInternal(library.music[t]);
         }
 
         public void StopMusicInternal(int track)
         {
-            StopMusicInternal(audioFileMusicObjects[track]);
+            StopMusicInternal(library.music[track]);
         }
 
         /// <summary>
@@ -1501,7 +1492,7 @@ namespace JSAM
         {
             if (!instance) return null;
             int s = Convert.ToInt32(sound);
-            return instance.PlaySoundInternal(instance.audioFileObjects[s], trans);
+            return instance.PlaySoundInternal(instance.library.sounds[s], trans);
         }
 
         /// <summary>
@@ -1514,7 +1505,7 @@ namespace JSAM
         {
             if (!instance) return null;
             int s = Convert.ToInt32(sound);
-            return instance.PlaySoundInternal(instance.audioFileObjects[s], position);
+            return instance.PlaySoundInternal(instance.library.sounds[s], position);
         }
 
         /// <summary>
@@ -1526,7 +1517,7 @@ namespace JSAM
         /// <returns>The AudioSource playing the sound</returns>
         public AudioSource PlaySoundInternal(int s, Transform trans = null)
         {
-            return PlaySoundInternal(audioFileObjects[s], trans);
+            return PlaySoundInternal(library.sounds[s], trans);
         }
 
         /// <summary>
@@ -1538,7 +1529,7 @@ namespace JSAM
         /// <returns>The AudioSource playing the sound</returns>
         public AudioSource PlaySoundInternal(int s, Vector3 position)
         {
-            return PlaySoundInternal(audioFileObjects[s], position);
+            return PlaySoundInternal(library.sounds[s], position);
         }
 
         /// <summary>
@@ -1608,8 +1599,6 @@ namespace JSAM
                     a.spatialBlend = 0;
                 }
             }
-
-            a.pitch = GetRandomPitch(s);
 
             bool ignoreTimeScale = s.ignoreTimeScale;
             if (timeScaledSounds && !ignoreTimeScale)
@@ -1710,8 +1699,6 @@ namespace JSAM
                 }
             }
 
-            a.pitch = GetRandomPitch(s);
-
             bool ignoreTimeScale = s.ignoreTimeScale;
             if (timeScaledSounds && !ignoreTimeScale)
             {
@@ -1754,7 +1741,7 @@ namespace JSAM
         {
             if (!instance) return null;
             int s = Convert.ToInt32(sound);
-            return instance.PlaySoundLoopInternal(instance.audioFileObjects[s], trans);
+            return instance.PlaySoundLoopInternal(instance.library.sounds[s], trans);
         }
 
         /// <summary>
@@ -1767,7 +1754,7 @@ namespace JSAM
         {
             if (!instance) return null;
             int s = Convert.ToInt32(sound);
-            return instance.PlaySoundLoopInternal(instance.audioFileObjects[s], position);
+            return instance.PlaySoundLoopInternal(instance.library.sounds[s], position);
         }
 
         /// <summary>
@@ -1779,7 +1766,7 @@ namespace JSAM
         /// <returns>The AudioSource playing the sound</returns>
         public AudioSource PlaySoundLoopInternal(int s, Transform trans = null)
         {
-            return PlaySoundLoopInternal(audioFileObjects[s], trans);
+            return PlaySoundLoopInternal(library.sounds[s], trans);
         }
 
         /// <summary>
@@ -1791,7 +1778,7 @@ namespace JSAM
         /// <returns>The AudioSource playing the sound</returns>
         public AudioSource PlaySoundLoopInternal(int s, Vector3 position)
         {
-            return PlaySoundLoopInternal(audioFileObjects[s], position);
+            return PlaySoundLoopInternal(library.sounds[s], position);
         }
 
         /// <summary>
@@ -1983,7 +1970,7 @@ namespace JSAM
         {
             if (!instance) return;
             int s = Convert.ToInt32(sound);
-            instance.StopSoundInternal(instance.audioFileObjects[s], trans);
+            instance.StopSoundInternal(instance.library.sounds[s], trans);
         }
 
         /// <summary>
@@ -1993,7 +1980,7 @@ namespace JSAM
         /// <param name="t">For sources, helps with duplicate sounds</param>
         public void StopSoundInternal(int s, Transform t = null)
         {
-            StopSoundLoopInternal(audioFileObjects[s], t);
+            StopSoundLoopInternal(library.sounds[s], t);
         }
 
         /// <summary>
@@ -2032,7 +2019,7 @@ namespace JSAM
         {
             if (!instance) return;
             int s = Convert.ToInt32(sound);
-            instance.StopSoundLoopInternal(instance.audioFileObjects[s], stopInstantly, null);
+            instance.StopSoundLoopInternal(instance.library.sounds[s], stopInstantly, null);
         }
 
         /// <summary>
@@ -2046,7 +2033,7 @@ namespace JSAM
         {
             if (!instance) return;
             int s = Convert.ToInt32(sound);
-            instance.StopSoundLoopInternal(instance.audioFileObjects[s], stopInstantly, trans);
+            instance.StopSoundLoopInternal(instance.library.sounds[s], stopInstantly, trans);
         }
 
         /// <summary>
@@ -2057,7 +2044,7 @@ namespace JSAM
         /// <param name="t">Transform of the object playing the looping sound</param>
         public void StopSoundLoopInternal(int s, bool stopInstantly = false, Transform t = null)
         {
-            StopSoundLoopInternal(audioFileObjects[s], stopInstantly, t);
+            StopSoundLoopInternal(library.sounds[s], stopInstantly, t);
         }
 
         /// <summary>
@@ -2708,7 +2695,7 @@ namespace JSAM
         /// <returns></returns>
         public bool IsSoundPlayingInternal(int s, Transform trans = null)
         {
-            return IsSoundPlayingInternal(audioFileObjects[s], trans);
+            return IsSoundPlayingInternal(library.sounds[s], trans);
         }
 
         /// <summary>
@@ -2760,7 +2747,7 @@ namespace JSAM
         public bool IsMusicPlayingInternal<T>(T music) where T : Enum
         {
             int a = Convert.ToInt32(music);
-            return IsMusicPlayingInternal(audioFileMusicObjects[a]);
+            return IsMusicPlayingInternal(library.music[a]);
         }
 
         /// <summary>
@@ -2771,7 +2758,7 @@ namespace JSAM
         /// <returns></returns>
         public bool IsMusicPlayingInternal(int a)
         {
-            return IsMusicPlayingInternal(audioFileMusicObjects[a]);
+            return IsMusicPlayingInternal(library.music[a]);
         }
 
         /// <summary>
@@ -2824,7 +2811,7 @@ namespace JSAM
         /// <returns></returns>
         public bool IsSoundLoopingInternal(int sound)
         {
-            return IsSoundLoopingInternal(audioFileObjects[sound]);
+            return IsSoundLoopingInternal(library.sounds[sound]);
         }
 
         public bool IsSoundLoopingInternal(AudioFileSoundObject sound)
@@ -2838,23 +2825,6 @@ namespace JSAM
                 }
             }
             return false;
-        }
-
-        /// <summary>
-        /// Called internally by AudioManager's custom inspector. 
-        /// Returns true so long as there was a difference in audio files
-        /// </summary>
-        /// <param name="audioFiles"></param>
-        /// <param name="musicFiles"></param>
-        /// <returns></returns>
-        public bool GenerateAudioDictionarys(List<AudioFileSoundObject> audioFiles, List<AudioFileMusicObject> musicFiles)
-        {
-            List<AudioFileSoundObject> audioSoundDiff = audioFiles.Except(audioFileObjects).ToList();
-            List<AudioFileMusicObject> audioMusicDiff = musicFiles.Except(audioFileMusicObjects).ToList();
-            audioFileObjects = audioFiles;
-            audioFileMusicObjects = musicFiles;
-
-            return (audioSoundDiff.Count + audioMusicDiff.Count > 0);
         }
 
         /// <summary>
@@ -2894,7 +2864,7 @@ namespace JSAM
         public static AudioFileMusicObject GetMusic<T>(T track) where T : Enum
         {
             int a = Convert.ToInt32(track);
-            return instance.audioFileMusicObjects[a];
+            return instance.library.music[a];
         }
 
         /// <summary>
@@ -2906,64 +2876,7 @@ namespace JSAM
         public static AudioFileSoundObject GetSound<T>(T sound) where T : Enum
         {
             int a = Convert.ToInt32(sound);
-            return instance.audioFileObjects[a];
-        }
-
-        public List<AudioFileMusicObject> GetMusicLibrary()
-        {
-            return audioFileMusicObjects;
-        }
-
-        public List<AudioFileSoundObject> GetSoundLibrary()
-        {
-            return audioFileObjects;
-        }
-
-        public Type GetSceneSoundEnum()
-        {
-            if (sceneSoundEnumType == null || sceneSoundEnumType.ToString() != sceneSoundEnumName)
-            {
-                sceneSoundEnumType = Type.GetType(sceneSoundEnumName);
-            }
-            return sceneSoundEnumType;
-        }
-
-        public Type GetSceneMusicEnum()
-        {
-            if (sceneMusicEnumType == null || sceneMusicEnumType.ToString() != sceneMusicEnumName)
-            {
-                sceneMusicEnumType = Type.GetType(sceneMusicEnumName);
-            }
-            return sceneMusicEnumType;
-        }
-
-        /// <summary>
-        /// Given an AudioFileObject, returns a pitch with a modified pitch depending on the Audio File Object's settings
-        /// </summary>
-        /// <param name="audioFile"></param>
-        /// <returns></returns>
-        public static float GetRandomPitch(AudioFileSoundObject audioFile)
-        {
-            float pitch = audioFile.pitchShift;
-            float newPitch = audioFile.startingPitch;
-            bool ignoreTimeScale = audioFile.ignoreTimeScale;
-            if (instance.timeScaledSounds && !ignoreTimeScale)
-            {
-                newPitch *= Time.timeScale;
-                if (Time.timeScale == 0)
-                {
-                    return 0;
-                }
-            }
-            //This is the base unchanged pitch
-            if (pitch > 0)
-            {
-                newPitch += UnityEngine.Random.Range(-pitch, pitch);
-                newPitch = Mathf.Clamp(newPitch, 0, 3);
-            }
-            if (audioFile.playReversed) newPitch = -Mathf.Abs(newPitch);
-
-            return newPitch;
+            return instance.library.sounds[a];
         }
 
         /// <summary>
@@ -3003,70 +2916,10 @@ namespace JSAM
             if (GetListener() == null) FindNewListener();
             if (audioFolderLocation == "") audioFolderLocation = "Assets";
             ValidateSourcePrefab();
-            // Do this once on editor startup just so we have the categories cached
-            InitializeCategories();
 
             if (!doneLoading) return;
 
             SetSpatialSound(spatialSound);
-        }
-
-        public void InitializeCategories()
-        {
-            if (initialCategoryCheck) return;
-            UpdateAudioFileObjectCategories();
-            UpdateAudioFileMusicObjectCategories();
-            initialCategoryCheck = true;
-        }
-
-        public void UpdateAudioFileObjectCategories()
-        {
-            categories = new List<string>();
-            for (int i = 0; i < audioFileObjects.Count; i++)
-            {
-                if (audioFileObjects[i] == null)
-                {
-                    audioFileObjects.Remove(audioFileObjects[i]); // May as well remove it if it's missing
-                    continue;
-                }
-                if (audioFileObjects[i].category == null) audioFileObjects[i].category = "";
-                if (audioFileObjects[i].category != "" && audioFileObjects[i].category != "Hidden")
-                {
-                    if (categories.Contains(audioFileObjects[i].category)) continue;
-                    categories.Add(audioFileObjects[i].category);
-                }
-            }
-            categories.Sort();
-        }
-
-        public void UpdateAudioFileMusicObjectCategories()
-        {
-            categoriesMusic = new List<string>();
-            for (int i = 0; i < audioFileMusicObjects.Count; i++)
-            {
-                if (audioFileMusicObjects[i] == null)
-                {
-                    audioFileMusicObjects.Remove(audioFileMusicObjects[i]); // May as well remove it if it's missing
-                    continue;
-                }
-                if (audioFileMusicObjects[i].category == null) audioFileMusicObjects[i].category = "";
-                if (audioFileMusicObjects[i].category != "" && audioFileMusicObjects[i].category != "Hidden")
-                {
-                    if (categoriesMusic.Contains(audioFileMusicObjects[i].category)) continue;
-                    categoriesMusic.Add(audioFileMusicObjects[i].category);
-                }
-            }
-            categoriesMusic.Sort();
-        }
-
-        public List<string> GetCategories()
-        {
-            return categories;
-        }
-
-        public List<string> GetMusicCategories()
-        {
-            return categoriesMusic;
         }
 
         public bool SourcePrefabExists()
@@ -3092,29 +2945,6 @@ namespace JSAM
             {
                 TrackSounds();
             }
-        }
-
-        public bool IsUsingInstancedEnums()
-        {
-            return instancedEnums;
-        }
-
-        bool WasInstancedBefore()
-        {
-            return wasInstancedBefore;
-        }
-
-        public string GetAudioFolderLocation()
-        {
-            return audioFolderLocation;
-        }
-
-        [UnityEditor.Callbacks.DidReloadScripts]
-        static void OnCompile()
-        {
-            if (instance == null) return;
-            instance.UpdateAudioFileObjectCategories();
-            instance.UpdateAudioFileMusicObjectCategories();
         }
 #endif
     }

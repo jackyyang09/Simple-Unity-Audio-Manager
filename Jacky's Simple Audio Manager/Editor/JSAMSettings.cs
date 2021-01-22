@@ -12,7 +12,7 @@ namespace JSAM.JSAMEditor
         {
             get
             {
-                if (string.IsNullOrEmpty(packagePath) || string.IsNullOrWhiteSpace(packagePath))
+                if (packagePath.IsNullEmptyOrWhiteSpace())
                 {
                     packagePath = JSAMEditorHelper.GetAudioManagerPath();
                     packagePath.Remove(packagePath.IndexOf("/Scripts/AudioManager.cs"));
@@ -21,7 +21,18 @@ namespace JSAM.JSAMEditor
             }
         }
         [SerializeField] string presetsPath;
-        [SerializeField] string enumPath;
+        [SerializeField] string generatedEnumsPath;
+        public string GeneratedEnumsPath
+        {
+            get
+            {
+                if (generatedEnumsPath.IsNullEmptyOrWhiteSpace())
+                {
+                    generatedEnumsPath = PackagePath + "/JSAMGenerated";
+                }
+                return generatedEnumsPath;
+            }
+        }
 
         static string settingsAssetName = "JSAMSettings.asset";
 

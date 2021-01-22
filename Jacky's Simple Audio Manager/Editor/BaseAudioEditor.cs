@@ -31,9 +31,10 @@ namespace JSAM
         {
             if (AudioManager.instance)
             {
-                foreach (AudioFileSoundObject audio in AudioManager.instance.GetSoundLibrary())
+                var sounds = AudioManager.instance.Library.sounds;
+                for (int i = 0; i < sounds.Count; i++)
                 {
-                    options.Add(audio.safeName);
+                    options.Add(sounds[i].SafeName);
                 }
             }
         }
@@ -70,12 +71,12 @@ namespace JSAM
 
             AudioFileSoundObject audioObject = (AudioFileSoundObject)soundProperty.objectReferenceValue;
             int selected = 0;
-            if (audioObject != null) selected = options.IndexOf(audioObject.safeName);
+            if (audioObject != null) selected = options.IndexOf(audioObject.SafeName);
             if (selected == -1) selected = 0;
             if (options.Count > 0)
             {
                 selected = EditorGUILayout.Popup(soundDesc, selected, options.ToArray());
-                soundProperty.objectReferenceValue = AudioManager.instance.GetSoundLibrary()[selected];
+                soundProperty.objectReferenceValue = AudioManager.instance.Library.sounds[selected];
             }
             else
             {

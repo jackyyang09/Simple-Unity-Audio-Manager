@@ -9,7 +9,7 @@ namespace JSAM
     {
         float fadeTime;
 
-        AudioFileSoundObject audioFile;
+        BaseAudioFileObject audioFile;
         AudioSource aSource;
         bool looping;
 
@@ -24,7 +24,7 @@ namespace JSAM
             enabled = false;
         }
 
-        public void SetAudioFile(AudioFileSoundObject file)
+        public void SetAudioFile(BaseAudioFileObject file)
         {
             audioFile = file;
         }
@@ -36,6 +36,7 @@ namespace JSAM
             aSource.PlayDelayed(delay);
             audioFile = null;
             looping = false;
+            aSource.pitch = GetRandomPitch();
             aSource.bypassEffects = false;
             aSource.bypassListenerEffects = false;
             aSource.bypassReverbZones = false;
@@ -53,6 +54,7 @@ namespace JSAM
             aSource.Play();
             audioFile = file;
             looping = false;
+            aSource.pitch = GetRandomPitch();
             aSource.bypassEffects = file.bypassEffects;
             aSource.bypassListenerEffects = file.bypassListenerEffects;
             aSource.bypassReverbZones = file.bypassReverbZones;
@@ -60,7 +62,7 @@ namespace JSAM
             ApplyVolumeChanges();
         }
 
-        public void Play(float delay, AudioFileSoundObject file, bool loop = false)
+        public void Play(float delay, BaseAudioFileObject file, bool loop = false)
         {
             // Make sure no remnants from a previous sound remain
             StopAllCoroutines();
@@ -73,6 +75,7 @@ namespace JSAM
             aSource.PlayDelayed(delay);
             audioFile = file;
             looping = loop;
+            aSource.pitch = GetRandomPitch();
             aSource.bypassEffects = file.bypassEffects;
             aSource.bypassListenerEffects = file.bypassListenerEffects;
             aSource.bypassReverbZones = file.bypassReverbZones;
@@ -107,7 +110,7 @@ namespace JSAM
             ClearEffects();
         }
 
-        public void PlayDebug(AudioFileSoundObject file, bool dontReset)
+        public void PlayDebug(BaseAudioFileObject file, bool dontReset)
         {
             if (!dontReset)
             {
@@ -115,12 +118,13 @@ namespace JSAM
             }
             if (file.playReversed) aSource.time = aSource.clip.length - AudioManager.EPSILON;
             else aSource.timeSamples = (int)Mathf.Clamp((float)aSource.timeSamples, 0, (float)aSource.clip.samples - 1);
+
+            audioFile = file;
             aSource.Play();
-            aSource.pitch = AudioManager.GetRandomPitch(file);
+            aSource.pitch = GetRandomPitch();
             aSource.bypassEffects = file.bypassEffects;
             aSource.bypassListenerEffects = file.bypassListenerEffects;
             aSource.bypassReverbZones = file.bypassReverbZones;
-            audioFile = file;
             ApplyVolumeChanges();
             ApplyEffects();
         }
@@ -163,10 +167,39 @@ namespace JSAM
                         } while (aSource.clip == null); // If the user is a dingus and left a few null references in the library
                         aSource.Play();
                     }
-                    aSource.pitch = AudioManager.GetRandomPitch(audioFile);
+                    aSource.pitch = GetRandomPitch();
                 }
                 prevPlaybackTime = aSource.time;
             }
+        }
+
+        /// <summary>
+        /// Given an AudioFileObject, returns a pitch with a modified pitch depending on the Audio File Object's settings
+        /// </summary>
+        /// <param name="audioFile"></param>
+        /// <returns></returns>
+        public float GetRandomPitch()
+        {
+            float pitch = audioFile.pitchShift;
+            float newPitch = audioFile.startingPitch;
+            bool ignoreTimeScale = audioFile.ignoreTimeScale;
+            if (AudioManager.instance.timeScaledSounds && !ignoreTimeScale)
+            {
+                newPitch *= Time.timeScale;
+                if (Time.timeScale == 0)
+                {
+                    return 0;
+                }
+            }
+            //This is the base unchanged pitch
+            if (pitch > 0)
+            {
+                newPitch += UnityEngine.Random.Range(-pitch, pitch);
+                newPitch = Mathf.Clamp(newPitch, 0, 3);
+            }
+            if (audioFile.playReversed) newPitch = -Mathf.Abs(newPitch);
+
+            return newPitch;
         }
 
         //private void LateUpdate()
@@ -281,57 +314,45 @@ namespace JSAM
         {
             {
                 AudioChorusFilter component;
-#if UNITY_2019_4_OR_NEWER
-                TryGetComponent(out component);
-#else
-                component = GetComponent<AudioChorusFilter>();
-#endif
-                if (component) component.enabled = false;
+                if (this.TryForComponent(out component))
+                {
+                    component.enabled = false;
+                }
             }
             {
                 AudioDistortionFilter component;
-#if UNITY_2019_4_OR_NEWER
-                TryGetComponent(out component);
-#else
-                component = GetComponent<AudioDistortionFilter>();
-#endif
-                if (component) component.enabled = false;
+                if (this.TryForComponent(out component))
+                {
+                    component.enabled = false;
+                }
             }
             {
                 AudioEchoFilter component;
-#if UNITY_2019_4_OR_NEWER
-                TryGetComponent(out component);
-#else
-                component = GetComponent<AudioEchoFilter>();
-#endif
-                if (component) component.enabled = false;
+                if (this.TryForComponent(out component))
+                {
+                    component.enabled = false;
+                }
             }
             {
                 AudioHighPassFilter component;
-#if UNITY_2019_4_OR_NEWER
-                TryGetComponent(out component);
-#else
-                component = GetComponent<AudioHighPassFilter>();
-#endif
-                if (component) component.enabled = false;
+                if (this.TryForComponent(out component))
+                {
+                    component.enabled = false;
+                }
             }
             {
                 AudioLowPassFilter component;
-#if UNITY_2019_4_OR_NEWER
-                TryGetComponent(out component);
-#else
-                component = GetComponent<AudioLowPassFilter>();
-#endif
-                if (component) component.enabled = false;
+                if (this.TryForComponent(out component))
+                {
+                    component.enabled = false;
+                }
             }
             {
                 AudioReverbFilter component;
-#if UNITY_2019_4_OR_NEWER
-                TryGetComponent(out component);
-#else
-                component = GetComponent<AudioReverbFilter>();
-#endif
-                if (component) component.enabled = false;
+                if (this.TryForComponent(out component))
+                {
+                    component.enabled = false;
+                }
             }
         }
 

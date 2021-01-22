@@ -7,10 +7,8 @@ namespace JSAM.JSAMEditor
 {
     [CustomEditor(typeof(AudioFileSoundObject))]
     [CanEditMultipleObjects]
-    public class AudioFileObjectEditor : Editor
+    public class AudioFileSoundObjectEditor : BaseAudioFileObjectEditor<AudioFileSoundObjectEditor>
     {
-        AudioFileSoundObject myScript;
-
         Color buttonPressedColor = new Color(0.475f, 0.475f, 0.475f);
 
         AudioClip playingClip;
@@ -24,53 +22,28 @@ namespace JSAM.JSAMEditor
         GUIContent openIcon;
 
         static bool showFadeTool;
-        static bool showPlaybackTool;
-        static bool showHowTo;
-
-        bool isPreset;
-
-        public static AudioFileObjectEditor instance;
-
-        SerializedProperty safeName;
-        SerializedProperty presetDescription;
-
-        SerializedProperty file;
-        SerializedProperty files;
-        SerializedProperty relativeVolume;
-        SerializedProperty spatialize;
-        SerializedProperty maxDistance;
 
         SerializedProperty neverRepeat;
         SerializedProperty fadeInDuration;
         SerializedProperty fadeOutDuration;
 
-        void OnEnable()
+        new protected void OnEnable()
         {
-            myScript = (AudioFileSoundObject)target;
-            instance = this;
+            base.OnEnable();
 
             EditorApplication.update += Update;
             Undo.undoRedoPerformed += OnUndoRedo;
             Undo.postprocessModifications += ApplyHelperEffects;
 
-            isPreset = string.IsNullOrEmpty(AssetDatabase.GetAssetPath(myScript));
-
-            safeName = serializedObject.FindProperty("safeName");
             if (target.name.Length > 0) // Creating from right-click dialog throws error here because name is invalid when first selected
             {
-                safeName.stringValue = JSAMEditorHelper.ConvertToAlphanumeric(target.name);
+                //safeName.stringValue = JSAMEditorHelper.ConvertToAlphanumeric(target.name);
             }
-
-            file = serializedObject.FindProperty(nameof(myScript.files));
-            files = serializedObject.FindProperty("files");
 
             neverRepeat = serializedObject.FindProperty("neverRepeat");
 
             fadeInDuration = serializedObject.FindProperty("fadeInDuration");
             fadeOutDuration = serializedObject.FindProperty("fadeOutDuration");
-            relativeVolume = serializedObject.FindProperty("relativeVolume");
-            spatialize = serializedObject.FindProperty("spatialize");
-            maxDistance = serializedObject.FindProperty("maxDistance");
 
             bypassEffects = serializedObject.FindProperty("bypassEffects");
             bypassListenerEffects = serializedObject.FindProperty("bypassListenerEffects");
@@ -78,7 +51,7 @@ namespace JSAM.JSAMEditor
 
             openIcon = EditorGUIUtility.TrIconContent("d_ScaleTool", "Click to open Playback Preview in a standalone window");
 
-            AudioPlaybackToolEditor.CreateAudioHelper(myScript.GetFirstAvailableFile());
+            AudioPlaybackToolEditor.CreateAudioHelper(asset.GetFirstAvailableFile());
         }
 
         void OnDisable()
@@ -94,58 +67,20 @@ namespace JSAM.JSAMEditor
 #endif
         public override void OnInspectorGUI()
         {
-            if (myScript == null) return;
+            if (asset == null) return;
 
             serializedObject.Update();
 
 #region Category Inspector
             EditorGUILayout.BeginHorizontal();
-            GUIContent blontent = new GUIContent("Category", "An optional field that lets you further sort your AudioFileObjects for better organization in AudioManager's library view.");
-            string newCategory = EditorGUILayout.DelayedTextField(blontent, myScript.category);
-            List<string> categories = new List<string>();
-            if (EditorGUILayout.DropdownButton(GUIContent.none, FocusType.Keyboard, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
-            {
-                GUI.FocusControl(null);
-                // Check if we're modifying this AudioFileObject in a valid scene
-                if (AudioManager.instance != null)
-                {
-                    //categories.AddRange(AudioManager.instance.GetCategories());
-                    categories.AddRange(AudioFileSoundObject.GetCategories());
-                }
-                GenericMenu newMenu = new GenericMenu();
-                int i = 0;
-                // To reduce the number of boolean comparisons we do as we iterate
-                for (; i < categories.Count; i++)
-                {
-                    if (myScript.category == categories[i])
-                    {
-                        newMenu.AddItem(new GUIContent(categories[i]), true, SetCategory, categories[i]);
-                        break;
-                    }
-                    else
-                    {
-                        newMenu.AddItem(new GUIContent(categories[i]), false, SetCategory, categories[i]);
-                    }
-                }   
-                for (; i < categories.Count; i++)
-                {
-                    newMenu.AddItem(new GUIContent(categories[i]), false, SetCategory, categories[i]);
-                }
-                newMenu.AddSeparator("");
-                newMenu.AddItem(new GUIContent("Hidden"), myScript.category == "Hidden", SetCategory, "Hidden");
-                newMenu.ShowAsContext();
-            }
-            if (newCategory != myScript.category)
-            {
-                SetCategory(newCategory);
-            }
+            EditorGUILayout.PropertyField(category);
             EditorGUILayout.EndHorizontal();
 #endregion
 
             List<string> excludedProperties = new List<string>() { "m_Script", "file", "files", "safeName",
                 "relativeVolume", "spatialize", "maxDistance" };
 
-            if (myScript.UsingLibrary()) // Swap file with files
+            if (asset.UsingLibrary()) // Swap file with files
             {
 #if UNITY_2019_3_OR_NEWER
                 EditorGUILayout.PropertyField(files);
@@ -173,39 +108,39 @@ namespace JSAM.JSAMEditor
                 }
             }
 
-            blontent = new GUIContent("Use Library", "If true, the single AudioFile will be changed to a list of AudioFiles. AudioManager will choose a random AudioClip from this list when you play this sound");
-            bool oldValue = myScript.useLibrary;
+            GUIContent blontent = new GUIContent("Use Library", "If true, the single AudioFile will be changed to a list of AudioFiles. AudioManager will choose a random AudioClip from this list when you play this sound");
+            bool oldValue = asset.useLibrary;
             bool newValue = EditorGUILayout.Toggle(blontent, oldValue);
             if (newValue != oldValue) // If you clicked the toggle
             {
                 if (newValue)
                 {
-                    if (myScript.files.Count == 0)
+                    if (asset.files.Count == 0)
                     {
-                        if (myScript.file != null)
+                        if (asset.file != null)
                         {
-                            myScript.files.Add(myScript.file);
+                            asset.files.Add(asset.file);
                         }
                     }
-                    else if (myScript.files.Count == 1)
+                    else if (asset.files.Count == 1)
                     {
-                        if (myScript.files[0] == null)
+                        if (asset.files[0] == null)
                         {
-                            myScript.files[0] = myScript.file;
+                            asset.files[0] = asset.file;
                         }
                     }
                 }
                 else
                 {
-                    if (myScript.files.Count > 0 && myScript.file == null)
+                    if (asset.files.Count > 0 && asset.file == null)
                     {
-                        myScript.file = myScript.files[0];
+                        asset.file = asset.files[0];
                     }
                 }
-                myScript.useLibrary = newValue;
+                asset.useLibrary = newValue;
             }
 
-            if (myScript.useLibrary)
+            if (asset.useLibrary)
             {
                 blontent = new GUIContent("Never Repeat", "Sometimes, AudioManager will allow the same sound from the Audio " +
                 "library to play twice in a row, enabling this option will ensure that this audio file never plays the same " +
@@ -213,7 +148,7 @@ namespace JSAM.JSAMEditor
                 EditorGUILayout.PropertyField(neverRepeat, blontent);
             }
 
-            bool noFiles = myScript.GetFile() == null && myScript.IsLibraryEmpty();
+            bool noFiles = asset.GetFile() == null && asset.IsLibraryEmpty();
 
             if (noFiles)
             {
@@ -238,30 +173,30 @@ namespace JSAM.JSAMEditor
             {
                 EditorGUILayout.HelpBox("Error! Add an audio file before running!", MessageType.Error);
             }
-            if (myScript.name.Contains("NEW AUDIO FILE") || myScript.name.Equals("None") || myScript.name.Equals("GameObject"))
+            if (asset.name.Contains("NEW AUDIO FILE") || asset.name.Equals("None") || asset.name.Equals("GameObject"))
             {
                 EditorGUILayout.HelpBox("Warning! Change the name of the gameObject to something different or things will break!", MessageType.Warning);
             }
 
             if (playingClip == null)
             {
-                DesignateActiveAudioClip(myScript);
+                DesignateActiveAudioClip(asset);
             }
-            if (!noFiles && !AudioPlaybackToolEditor.WindowOpen) DrawPlaybackTool(myScript);
+            if (!noFiles && !AudioPlaybackToolEditor.WindowOpen) DrawPlaybackTool();
 
 #region Fade Tools
-            using (new EditorGUI.DisabledScope(myScript.fadeMode == FadeMode.None))
+            using (new EditorGUI.DisabledScope(asset.fadeMode == FadeMode.None))
             {
-                if (!myScript.IsLibraryEmpty())
+                if (!asset.IsLibraryEmpty())
                 {
                     showFadeTool = EditorCompatability.SpecialFoldouts(showFadeTool, new GUIContent("Fade Tools", "Show/Hide the Audio Fade previewer"));
-                    if (showFadeTool && myScript.fadeMode != FadeMode.None)
+                    if (showFadeTool && asset.fadeMode != FadeMode.None)
                     {
                         GUIContent fContent = new GUIContent();
                         GUIStyle rightJustified = new GUIStyle(EditorStyles.label);
                         rightJustified.alignment = TextAnchor.UpperRight;
                         rightJustified.padding = new RectOffset(0, 15, 0, 0);
-                        switch (myScript.fadeMode)
+                        switch (asset.fadeMode)
                         {
                             case FadeMode.FadeIn:
                                 EditorGUILayout.BeginHorizontal();
@@ -300,7 +235,7 @@ namespace JSAM.JSAMEditor
             }
 #endregion
 
-            if (!noFiles) DrawAudioEffectTools(myScript);
+            if (!noFiles) DrawAudioEffectTools();
 
             if (serializedObject.hasModifiedProperties)
             {
@@ -308,15 +243,15 @@ namespace JSAM.JSAMEditor
                 serializedObject.ApplyModifiedProperties();
 
                 // Manually fix variables
-                if (myScript.delay < 0)
+                if (asset.delay < 0)
                 {
-                    myScript.delay = 0;
-                    Undo.RecordObject(myScript, "Fixed negative delay");
+                    asset.delay = 0;
+                    Undo.RecordObject(asset, "Fixed negative delay");
                 }
-                if (myScript.maxDistance < 0)
+                if (asset.maxDistance < 0)
                 {
-                    myScript.maxDistance = 0;
-                    Undo.RecordObject(myScript, "Fixed negative distance");
+                    asset.maxDistance = 0;
+                    Undo.RecordObject(asset, "Fixed negative distance");
                 }
             }
 
@@ -352,7 +287,7 @@ namespace JSAM.JSAMEditor
 #endregion
         }
 
-        void DrawPlaybackTool(AudioFileSoundObject myScript)
+        void DrawPlaybackTool()
         {
             GUIContent fContent = new GUIContent("Audio Playback Preview", 
                 "Allows you to preview how your AudioFileObject will sound during runtime right here in the inspector. " +
@@ -385,7 +320,7 @@ namespace JSAM.JSAMEditor
                             AudioPlaybackToolEditor.DoForceRepaint(true);
                             playingRandom = false;
                         }
-                        StartFading(myScript);
+                        StartFading();
                     }
                     else
                     {
@@ -393,13 +328,13 @@ namespace JSAM.JSAMEditor
                     }
                 }
                 GUI.backgroundColor = colorbackup;
-                using (new EditorGUI.DisabledScope(myScript.GetFileCount() < 2))
+                using (new EditorGUI.DisabledScope(asset.GetFileCount() < 2))
                 {
                     if (GUILayout.Button(new GUIContent("Play Random", "Preview settings with a random track from your library. Only usable if this Audio File has \"Use Library\" enabled.")))
                     {
-                        DesignateRandomAudioClip(myScript);
+                        DesignateRandomAudioClip();
                         helperSource.Stop();
-                        StartFading(myScript);
+                        StartFading();
                     }
                 }
 
@@ -413,12 +348,12 @@ namespace JSAM.JSAMEditor
             EditorCompatability.EndSpecialFoldoutGroup();
         }
 
-        public void DesignateActiveAudioClip(AudioFileSoundObject myScript)
+        public void DesignateActiveAudioClip(BaseAudioFileObject asset)
         {
             AudioClip theClip = null;
-            if (!myScript.IsLibraryEmpty())
+            if (!asset.IsLibraryEmpty())
             {
-                theClip = myScript.GetFirstAvailableFile();
+                theClip = asset.GetFirstAvailableFile();
             }
             if (theClip != null)
             {
@@ -426,12 +361,12 @@ namespace JSAM.JSAMEditor
             }
         }
 
-        public AudioClip DesignateRandomAudioClip(AudioFileSoundObject myScript)
+        public AudioClip DesignateRandomAudioClip()
         {
             AudioClip theClip = playingClip;
-            if (!myScript.IsLibraryEmpty())
+            if (!asset.IsLibraryEmpty())
             {
-                List<AudioClip> files = myScript.GetFiles();
+                List<AudioClip> files = asset.GetFiles();
                 while (theClip == null || theClip == playingClip)
                 {
                     theClip = files[Random.Range(0, files.Count)];
@@ -445,8 +380,8 @@ namespace JSAM.JSAMEditor
 
         void Update()
         {
-            if (myScript == null) return; // This can happen on the same frame it's deleted
-            AudioClip clip = myScript.GetFirstAvailableFile();
+            if (asset == null) return; // This can happen on the same frame it's deleted
+            AudioClip clip = asset.GetFirstAvailableFile();
             if (playingClip != null && clip != null)
             {
                 if (!AudioPlaybackToolEditor.WindowOpen)
@@ -454,13 +389,13 @@ namespace JSAM.JSAMEditor
                     if (clip != cachedClip)
                     {
                         AudioPlaybackToolEditor.DoForceRepaint(true);
-                        cachedClip = myScript.GetFirstAvailableFile();
+                        cachedClip = asset.GetFirstAvailableFile();
                         playingClip = cachedClip;
                     }
 
                     if (!clipPlaying && playingRandom)
                     {
-                        DesignateActiveAudioClip(myScript);
+                        DesignateActiveAudioClip(asset);
                     }
                 }
 
@@ -469,13 +404,13 @@ namespace JSAM.JSAMEditor
                     Repaint();
                 }
 
-                if (myScript.fadeMode != FadeMode.None)
+                if (asset.fadeMode != FadeMode.None)
                 {
-                    HandleFading(myScript);
+                    HandleFading(asset);
                 }
                 else
                 {
-                    AudioPlaybackToolEditor.helperSource.volume = myScript.relativeVolume;
+                    AudioPlaybackToolEditor.helperSource.volume = asset.relativeVolume;
                 }
             }
             clipPlaying = (playingClip != null && AudioPlaybackToolEditor.helperSource.isPlaying);
@@ -499,7 +434,7 @@ namespace JSAM.JSAMEditor
         GameObject helperObject;
         float fadeInTime, fadeOutTime;
 
-        public void HandleFading(AudioFileSoundObject myScript)
+        public void HandleFading(BaseAudioFileObject asset)
         {
             var helperSource = AudioPlaybackToolEditor.helperSource;
             if (helperSource.isPlaying)
@@ -512,25 +447,25 @@ namespace JSAM.JSAMEditor
                         {
                             if (fadeInTime == float.Epsilon)
                             {
-                                helperSource.volume = myScript.relativeVolume;
+                                helperSource.volume = asset.relativeVolume;
                             }
                             else
                             {
-                                helperSource.volume = Mathf.Lerp(0, myScript.relativeVolume, helperSource.time / fadeInTime);
+                                helperSource.volume = Mathf.Lerp(0, asset.relativeVolume, helperSource.time / fadeInTime);
                             }
                         }
-                        else helperSource.volume = myScript.relativeVolume;
+                        else helperSource.volume = asset.relativeVolume;
                         break;
                     case FadeMode.FadeOut:
                         if (helperSource.time >= playingClip.length - fadeOutTime)
                         {
                             if (fadeOutTime == float.Epsilon)
                             {
-                                helperSource.volume = myScript.relativeVolume;
+                                helperSource.volume = asset.relativeVolume;
                             }
                             else
                             {
-                                helperSource.volume = Mathf.Lerp(0, myScript.relativeVolume, (playingClip.length - helperSource.time) / fadeOutTime);
+                                helperSource.volume = Mathf.Lerp(0, asset.relativeVolume, (playingClip.length - helperSource.time) / fadeOutTime);
                             }
                         }
                         break;
@@ -539,22 +474,22 @@ namespace JSAM.JSAMEditor
                         {
                             if (fadeInTime == float.Epsilon)
                             {
-                                helperSource.volume = myScript.relativeVolume;
+                                helperSource.volume = asset.relativeVolume;
                             }
                             else
                             {
-                                helperSource.volume = Mathf.Lerp(0, myScript.relativeVolume, helperSource.time / fadeInTime);
+                                helperSource.volume = Mathf.Lerp(0, asset.relativeVolume, helperSource.time / fadeInTime);
                             }
                         }
                         else
                         {
                             if (fadeOutTime == float.Epsilon)
                             {
-                                helperSource.volume = myScript.relativeVolume;
+                                helperSource.volume = asset.relativeVolume;
                             }
                             else
                             {
-                                helperSource.volume = Mathf.Lerp(0, myScript.relativeVolume, (playingClip.length - helperSource.time) / fadeOutTime);
+                                helperSource.volume = Mathf.Lerp(0, asset.relativeVolume, (playingClip.length - helperSource.time) / fadeOutTime);
                             }
                         }
                         break;
@@ -562,20 +497,20 @@ namespace JSAM.JSAMEditor
             }
         }
 
-        public void StartFading(AudioFileSoundObject myScript, AudioClip overrideClip = null)
+        public void StartFading(AudioClip overrideClip = null)
         {
-            fadeMode = myScript.fadeMode;
+            fadeMode = asset.fadeMode;
             if (!overrideClip)
                 AudioPlaybackToolEditor.helperSource.clip = playingClip;
             else
                 AudioPlaybackToolEditor.helperSource.clip = overrideClip;
-            fadeInTime = myScript.fadeInDuration * AudioPlaybackToolEditor.helperSource.clip.length;
-            fadeOutTime = myScript.fadeOutDuration * AudioPlaybackToolEditor.helperSource.clip.length;
+            fadeInTime = asset.fadeInDuration * AudioPlaybackToolEditor.helperSource.clip.length;
+            fadeOutTime = asset.fadeOutDuration * AudioPlaybackToolEditor.helperSource.clip.length;
             // To prevent divisions by 0
             if (fadeInTime == 0) fadeInTime = float.Epsilon;
             if (fadeOutTime == 0) fadeOutTime = float.Epsilon;
             
-            AudioPlaybackToolEditor.helperHelper.PlayDebug(myScript, false);
+            AudioPlaybackToolEditor.helperHelper.PlayDebug(asset, false);
         }
 
         /// <summary>
@@ -652,8 +587,8 @@ namespace JSAM.JSAMEditor
                 s++;
             }
 
-            float fadeInDuration = myScript.fadeInDuration;
-            float fadeOutDuration = myScript.fadeOutDuration;
+            float fadeInDuration = asset.fadeInDuration;
+            float fadeOutDuration = asset.fadeOutDuration;
 
             Color lightShade = new Color(0.3f, 0.3f, 0.3f);
             int halfHeight = height / 2;
@@ -662,7 +597,7 @@ namespace JSAM.JSAMEditor
             float fadeStart = leftValue * halfHeight;
             float fadeEnd = rightValue * halfHeight;
 
-            switch (myScript.fadeMode)
+            switch (asset.fadeMode)
             {
                 case FadeMode.None:
                     {
@@ -845,7 +780,7 @@ namespace JSAM.JSAMEditor
             for (int x = 0; x < Mathf.Clamp(rightSide, 0, width); x++)
             {
                 // Scale the wave vertically relative to half the rect height and the relative volume
-                float heightLimit = waveform[x] * halfHeight * myScript.relativeVolume;
+                float heightLimit = waveform[x] * halfHeight * asset.relativeVolume;
 
                 for (int y = (int)heightLimit; y >= 0; y--)
                 {
@@ -872,24 +807,6 @@ namespace JSAM.JSAMEditor
             return string.Format("{0:00}:{1:00}:{2:000}", minutes, seconds, milliseconds);
         }
 
-        /// <summary>
-        /// Allows for multi-editing of categories
-        /// </summary>
-        /// <param name="category"></param>
-        void SetCategory(object category)
-        {
-            string c = category.ToString();
-            Undo.RecordObjects(Selection.objects, "Modified Category");
-            foreach (var g in Selection.objects)
-            {
-                AudioFileSoundObject obj = (AudioFileSoundObject)g;
-                if (obj != null){
-                    obj.category = c;
-                }
-            }
-            AudioManager.instance.UpdateAudioFileObjectCategories();
-        }
-
 #region Audio Effect Rendering
         static bool showAudioEffects;
         static bool chorusFoldout;
@@ -899,11 +816,7 @@ namespace JSAM.JSAMEditor
         static bool lowPassFoldout;
         static bool reverbFoldout;
 
-        SerializedProperty bypassEffects;
-        SerializedProperty bypassListenerEffects;
-        SerializedProperty bypassReverbZones;
-
-        void DrawAudioEffectTools(AudioFileSoundObject myScript)
+        void DrawAudioEffectTools()
         {
             GUIContent blontent = new GUIContent("Audio Effects Stack", "");
             showAudioEffects = EditorCompatability.SpecialFoldouts(showAudioEffects, blontent);
@@ -912,7 +825,7 @@ namespace JSAM.JSAMEditor
                 EditorGUILayout.PropertyField(bypassEffects);
                 EditorGUILayout.PropertyField(bypassListenerEffects);
                 EditorGUILayout.PropertyField(bypassReverbZones);
-                if (myScript.chorusFilter.enabled)
+                if (asset.chorusFilter.enabled)
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                     string arrow = (chorusFoldout) ? "▼" : "▶";
@@ -924,38 +837,38 @@ namespace JSAM.JSAMEditor
                     blontent = new GUIContent("x", "Remove this filter");
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {
-                        Undo.RecordObject(myScript, "Removed Chorus Filter");
-                        myScript.chorusFilter.enabled = false;
+                        Undo.RecordObject(asset, "Removed Chorus Filter");
+                        asset.chorusFilter.enabled = false;
                     }
                     EditorGUILayout.EndHorizontal();
                     if (chorusFoldout)
                     {
-                        Undo.RecordObject(myScript, "Modified Distortion Filter");
+                        Undo.RecordObject(asset, "Modified Distortion Filter");
                         blontent = new GUIContent("Dry Mix", "Volume of original signal to pass to output");
-                        myScript.chorusFilter.dryMix = 
-                            EditorGUILayout.Slider(blontent, myScript.chorusFilter.dryMix, 0, 1);
+                        asset.chorusFilter.dryMix = 
+                            EditorGUILayout.Slider(blontent, asset.chorusFilter.dryMix, 0, 1);
                         blontent = new GUIContent("Wet Mix 1", "Volume of 1st chorus tap");
-                        myScript.chorusFilter.wetMix1 =
-                            EditorGUILayout.Slider(blontent, myScript.chorusFilter.wetMix1, 0, 1);
+                        asset.chorusFilter.wetMix1 =
+                            EditorGUILayout.Slider(blontent, asset.chorusFilter.wetMix1, 0, 1);
                         blontent = new GUIContent("Wet Mix 2", "Volume of 2nd chorus tap");
-                        myScript.chorusFilter.wetMix2 =
-                            EditorGUILayout.Slider(blontent, myScript.chorusFilter.wetMix2, 0, 1);
+                        asset.chorusFilter.wetMix2 =
+                            EditorGUILayout.Slider(blontent, asset.chorusFilter.wetMix2, 0, 1);
                         blontent = new GUIContent("Wet Mix 3", "Volume of 2nd chorus tap");
-                        myScript.chorusFilter.wetMix3 =
-                            EditorGUILayout.Slider(blontent, myScript.chorusFilter.wetMix3, 0, 1);
+                        asset.chorusFilter.wetMix3 =
+                            EditorGUILayout.Slider(blontent, asset.chorusFilter.wetMix3, 0, 1);
                         blontent = new GUIContent("Delay", "Chorus delay in ms");
-                        myScript.chorusFilter.delay =
-                            EditorGUILayout.Slider(blontent, myScript.chorusFilter.delay, 0, 100);
+                        asset.chorusFilter.delay =
+                            EditorGUILayout.Slider(blontent, asset.chorusFilter.delay, 0, 100);
                         blontent = new GUIContent("Rate", "Chorus modulation rate in hertz");
-                        myScript.chorusFilter.rate =
-                            EditorGUILayout.Slider(blontent, myScript.chorusFilter.rate, 0, 20);
+                        asset.chorusFilter.rate =
+                            EditorGUILayout.Slider(blontent, asset.chorusFilter.rate, 0, 20);
                         blontent = new GUIContent("Depth", "Chorus modulation depth");
-                        myScript.chorusFilter.depth =
-                            EditorGUILayout.Slider(blontent, myScript.chorusFilter.depth, 0, 1);
+                        asset.chorusFilter.depth =
+                            EditorGUILayout.Slider(blontent, asset.chorusFilter.depth, 0, 1);
                     }
                     EditorGUILayout.EndVertical();
                 }
-                if (myScript.distortionFilter.enabled)
+                if (asset.distortionFilter.enabled)
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                     string arrow = (distortionFoldout) ? "▼" : "▶";
@@ -965,26 +878,26 @@ namespace JSAM.JSAMEditor
                     blontent = new GUIContent("x", "Remove this filter");
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {
-                        Undo.RecordObject(myScript, "Removed Distortion Filter");
-                        myScript.distortionFilter.enabled = false;
+                        Undo.RecordObject(asset, "Removed Distortion Filter");
+                        asset.distortionFilter.enabled = false;
                     }
                     EditorGUILayout.EndHorizontal();
                     if (distortionFoldout)
                     {
                         blontent = new GUIContent("Distortion Level", "Amount of distortion to apply");
-                        float cf = myScript.highPassFilter.cutoffFrequency;
+                        float cf = asset.highPassFilter.cutoffFrequency;
                         cf = EditorGUILayout.Slider(
-                            blontent, myScript.distortionFilter.distortionLevel, 0, 1);
+                            blontent, asset.distortionFilter.distortionLevel, 0, 1);
 
-                        if (cf != myScript.distortionFilter.distortionLevel)
+                        if (cf != asset.distortionFilter.distortionLevel)
                         {
-                            Undo.RecordObject(myScript, "Modified Distortion Filter");
-                            myScript.distortionFilter.distortionLevel = cf;
+                            Undo.RecordObject(asset, "Modified Distortion Filter");
+                            asset.distortionFilter.distortionLevel = cf;
                         }
                     }
                     EditorGUILayout.EndVertical();
                 }
-                if (myScript.echoFilter.enabled)
+                if (asset.echoFilter.enabled)
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                     string arrow = (echoFoldout) ? "▼" : "▶";
@@ -994,34 +907,34 @@ namespace JSAM.JSAMEditor
                     blontent = new GUIContent("x", "Remove this filter");
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {
-                        Undo.RecordObject(myScript, "Removed Echo Filter");
-                        myScript.echoFilter.enabled = false;
+                        Undo.RecordObject(asset, "Removed Echo Filter");
+                        asset.echoFilter.enabled = false;
                     }
                     EditorGUILayout.EndHorizontal();
                     if (echoFoldout)
                     {
-                        Undo.RecordObject(myScript, "Modified Echo Filter");
+                        Undo.RecordObject(asset, "Modified Echo Filter");
                         blontent = new GUIContent("Delay", "Echo delay in ms");
-                        myScript.echoFilter.delay =
-                            EditorGUILayout.Slider(blontent, myScript.echoFilter.delay, 10, 5000);
+                        asset.echoFilter.delay =
+                            EditorGUILayout.Slider(blontent, asset.echoFilter.delay, 10, 5000);
 
                         blontent = new GUIContent("Decay Ratio", "Echo decay per delay");
-                        myScript.echoFilter.decayRatio =
-                            EditorGUILayout.Slider(blontent, myScript.echoFilter.decayRatio, 0, 1);
+                        asset.echoFilter.decayRatio =
+                            EditorGUILayout.Slider(blontent, asset.echoFilter.decayRatio, 0, 1);
 
                         blontent = new GUIContent("Wet Mix", "Volume of echo signal to pass to output");
-                        myScript.echoFilter.wetMix =
-                            EditorGUILayout.Slider(blontent, myScript.echoFilter.wetMix, 0, 1);
+                        asset.echoFilter.wetMix =
+                            EditorGUILayout.Slider(blontent, asset.echoFilter.wetMix, 0, 1);
 
                         blontent = new GUIContent("Dry Mix", "Volume of original signal to pass to output");
-                        myScript.echoFilter.dryMix =
-                            EditorGUILayout.Slider(blontent, myScript.echoFilter.dryMix, 0, 1);
+                        asset.echoFilter.dryMix =
+                            EditorGUILayout.Slider(blontent, asset.echoFilter.dryMix, 0, 1);
 
                         EditorGUILayout.HelpBox("Note: Echoes are best tested during runtime as they do not behave properly in-editor.", MessageType.None);
                     }
                     EditorGUILayout.EndVertical();
                 }
-                if (myScript.lowPassFilter.enabled)
+                if (asset.lowPassFilter.enabled)
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                     string arrow = (lowPassFoldout) ? "▼" : "▶";
@@ -1031,32 +944,32 @@ namespace JSAM.JSAMEditor
                     blontent = new GUIContent("x", "Remove this filter");
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {
-                        Undo.RecordObject(myScript, "Removed Low Pass Filter");
-                        myScript.lowPassFilter.enabled = false;
+                        Undo.RecordObject(asset, "Removed Low Pass Filter");
+                        asset.lowPassFilter.enabled = false;
                     }
                     EditorGUILayout.EndHorizontal();
                     if (lowPassFoldout)
                     {
                         blontent = new GUIContent("Cutoff Frequency", "Low-pass cutoff frequency in hertz");
-                        float cf = myScript.lowPassFilter.cutoffFrequency;
+                        float cf = asset.lowPassFilter.cutoffFrequency;
                         cf = EditorGUILayout.Slider(
-                            blontent, myScript.lowPassFilter.cutoffFrequency, 10, 22000);
+                            blontent, asset.lowPassFilter.cutoffFrequency, 10, 22000);
 
                         blontent = new GUIContent("Low Pass Resonance Q", "Determines how much the filter's self-resonance is dampened");
-                        float q = myScript.lowPassFilter.lowpassResonanceQ;
+                        float q = asset.lowPassFilter.lowpassResonanceQ;
                         q = EditorGUILayout.Slider(
-                            blontent, myScript.lowPassFilter.lowpassResonanceQ, 1, 10);
+                            blontent, asset.lowPassFilter.lowpassResonanceQ, 1, 10);
 
-                        if (cf != myScript.lowPassFilter.cutoffFrequency || q != myScript.lowPassFilter.lowpassResonanceQ)
+                        if (cf != asset.lowPassFilter.cutoffFrequency || q != asset.lowPassFilter.lowpassResonanceQ)
                         {
-                            Undo.RecordObject(myScript, "Modified Low Pass Filter");
-                            myScript.lowPassFilter.cutoffFrequency = cf;
-                            myScript.lowPassFilter.lowpassResonanceQ = q;
+                            Undo.RecordObject(asset, "Modified Low Pass Filter");
+                            asset.lowPassFilter.cutoffFrequency = cf;
+                            asset.lowPassFilter.lowpassResonanceQ = q;
                         }
                     }
                     EditorGUILayout.EndVertical();
                 }
-                if (myScript.highPassFilter.enabled)
+                if (asset.highPassFilter.enabled)
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                     string arrow = (highPassFoldout) ? "▼" : "▶";
@@ -1066,32 +979,32 @@ namespace JSAM.JSAMEditor
                     blontent = new GUIContent("x", "Remove this filter");
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {
-                        Undo.RecordObject(myScript, "Removed High Pass Filter");
-                        myScript.highPassFilter.enabled = false;
+                        Undo.RecordObject(asset, "Removed High Pass Filter");
+                        asset.highPassFilter.enabled = false;
                     }
                     EditorGUILayout.EndHorizontal();
                     if (highPassFoldout)
                     {
                         blontent = new GUIContent("Cutoff Frequency", "High-pass cutoff frequency in hertz");
-                        float cf = myScript.highPassFilter.cutoffFrequency;
+                        float cf = asset.highPassFilter.cutoffFrequency;
                         cf = EditorGUILayout.Slider(
-                            blontent, myScript.highPassFilter.cutoffFrequency, 10, 22000);
+                            blontent, asset.highPassFilter.cutoffFrequency, 10, 22000);
 
                         blontent = new GUIContent("High Pass Resonance Q", "Determines how much the filter's self-resonance is dampened");
-                        float q = myScript.highPassFilter.highpassResonanceQ;
+                        float q = asset.highPassFilter.highpassResonanceQ;
                         q = EditorGUILayout.Slider(
-                            blontent, myScript.highPassFilter.highpassResonanceQ, 1, 10);
+                            blontent, asset.highPassFilter.highpassResonanceQ, 1, 10);
 
-                        if (cf != myScript.highPassFilter.cutoffFrequency || q != myScript.highPassFilter.highpassResonanceQ)
+                        if (cf != asset.highPassFilter.cutoffFrequency || q != asset.highPassFilter.highpassResonanceQ)
                         {
-                            Undo.RecordObject(myScript, "Modified High Pass Filter");
-                            myScript.highPassFilter.cutoffFrequency = cf;
-                            myScript.highPassFilter.highpassResonanceQ = q;
+                            Undo.RecordObject(asset, "Modified High Pass Filter");
+                            asset.highPassFilter.cutoffFrequency = cf;
+                            asset.highPassFilter.highpassResonanceQ = q;
                         }
                     }
                     EditorGUILayout.EndVertical();
                 }
-                if (myScript.reverbFilter.enabled)
+                if (asset.reverbFilter.enabled)
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                     string arrow = (reverbFoldout) ? "▼" : "▶";
@@ -1101,61 +1014,61 @@ namespace JSAM.JSAMEditor
                     blontent = new GUIContent("x", "Remove this filter");
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
                     {
-                        Undo.RecordObject(myScript, "Removed Reverb Filter");
-                        myScript.reverbFilter.enabled = false;
+                        Undo.RecordObject(asset, "Removed Reverb Filter");
+                        asset.reverbFilter.enabled = false;
                     }
                     EditorGUILayout.EndHorizontal();
                     if (reverbFoldout)
                     {
-                        Undo.RecordObject(myScript, "Modified Reverb Filter");
+                        Undo.RecordObject(asset, "Modified Reverb Filter");
                         blontent = new GUIContent("Reverb Preset", "Custom reverb presets, select \"User\" to create your own customized reverb effects. You are highly recommended to use a preset.");
-                        myScript.reverbFilter.reverbPreset = (AudioReverbPreset)EditorGUILayout.EnumPopup(
-                            blontent, myScript.reverbFilter.reverbPreset);
+                        asset.reverbFilter.reverbPreset = (AudioReverbPreset)EditorGUILayout.EnumPopup(
+                            blontent, asset.reverbFilter.reverbPreset);
 
-                        using (new EditorGUI.DisabledScope(myScript.reverbFilter.reverbPreset != AudioReverbPreset.User))
+                        using (new EditorGUI.DisabledScope(asset.reverbFilter.reverbPreset != AudioReverbPreset.User))
                         {
                             blontent = new GUIContent("Dry Level", "Mix level of dry signal in output in mB");
-                            myScript.reverbFilter.dryLevel = EditorGUILayout.Slider(
-                                blontent, myScript.reverbFilter.dryLevel, -10000, 0);
+                            asset.reverbFilter.dryLevel = EditorGUILayout.Slider(
+                                blontent, asset.reverbFilter.dryLevel, -10000, 0);
                             blontent = new GUIContent("Room", "Room effect level at low frequencies in mB");
-                            myScript.reverbFilter.room = EditorGUILayout.Slider(
-                                blontent, myScript.reverbFilter.room, -10000, 0);
+                            asset.reverbFilter.room = EditorGUILayout.Slider(
+                                blontent, asset.reverbFilter.room, -10000, 0);
                             blontent = new GUIContent("Room HF", "Room effect high-frequency level in mB");
-                            myScript.reverbFilter.roomHF = EditorGUILayout.Slider(
-                                blontent, myScript.reverbFilter.roomHF, -10000, 0);
+                            asset.reverbFilter.roomHF = EditorGUILayout.Slider(
+                                blontent, asset.reverbFilter.roomHF, -10000, 0);
                             blontent = new GUIContent("Room LF", "Room effect low-frequency level in mB");
-                            myScript.reverbFilter.roomLF = EditorGUILayout.Slider(
-                                blontent, myScript.reverbFilter.roomLF, -10000, 0);
+                            asset.reverbFilter.roomLF = EditorGUILayout.Slider(
+                                blontent, asset.reverbFilter.roomLF, -10000, 0);
                             blontent = new GUIContent("Decay Time", "Reverberation decay time at low-frequencies in seconds");
-                            myScript.reverbFilter.decayTime = EditorGUILayout.Slider(
-                                blontent, myScript.reverbFilter.decayTime, 0.1f, 20);
+                            asset.reverbFilter.decayTime = EditorGUILayout.Slider(
+                                blontent, asset.reverbFilter.decayTime, 0.1f, 20);
                             blontent = new GUIContent("Decay HFRatio", "Decay HF Ratio : High-frequency to low-frequency decay time ratio");
-                            myScript.reverbFilter.decayHFRatio = EditorGUILayout.Slider(
-                                blontent, myScript.reverbFilter.decayHFRatio, 0.1f, 20);
+                            asset.reverbFilter.decayHFRatio = EditorGUILayout.Slider(
+                                blontent, asset.reverbFilter.decayHFRatio, 0.1f, 20);
                             blontent = new GUIContent("Reflections Level", "Early reflections level relative to room effect in mB");
-                            myScript.reverbFilter.reflectionsLevel = EditorGUILayout.Slider(
-                                blontent, myScript.reverbFilter.reflectionsLevel, -10000, 1000);
+                            asset.reverbFilter.reflectionsLevel = EditorGUILayout.Slider(
+                                blontent, asset.reverbFilter.reflectionsLevel, -10000, 1000);
                             blontent = new GUIContent("Reflections Delay", "Early reflections delay time relative to room effect in mB");
-                            myScript.reverbFilter.reflectionsDelay = EditorGUILayout.Slider(
-                                blontent, myScript.reverbFilter.reflectionsDelay, 0, 0.3f);
+                            asset.reverbFilter.reflectionsDelay = EditorGUILayout.Slider(
+                                blontent, asset.reverbFilter.reflectionsDelay, 0, 0.3f);
                             blontent = new GUIContent("Reverb Level", "Late reverberation level relative to room effect in mB");
-                            myScript.reverbFilter.reverbLevel = EditorGUILayout.Slider(
-                                blontent, myScript.reverbFilter.reverbLevel, -10000, 2000);
+                            asset.reverbFilter.reverbLevel = EditorGUILayout.Slider(
+                                blontent, asset.reverbFilter.reverbLevel, -10000, 2000);
                             blontent = new GUIContent("Reverb Delay", "Late reverberation delay time relative to first reflection in seconds");
-                            myScript.reverbFilter.reverbDelay = EditorGUILayout.Slider(
-                                blontent, myScript.reverbFilter.reverbDelay, 0, 0.1f);
+                            asset.reverbFilter.reverbDelay = EditorGUILayout.Slider(
+                                blontent, asset.reverbFilter.reverbDelay, 0, 0.1f);
                             blontent = new GUIContent("HFReference", "Reference high frequency in Hz");
-                            myScript.reverbFilter.hFReference = EditorGUILayout.Slider(
-                                blontent, myScript.reverbFilter.hFReference, 1000, 20000);
+                            asset.reverbFilter.hFReference = EditorGUILayout.Slider(
+                                blontent, asset.reverbFilter.hFReference, 1000, 20000);
                             blontent = new GUIContent("LFReference", "Reference low frequency in Hz");
-                            myScript.reverbFilter.lFReference = EditorGUILayout.Slider(
-                                blontent, myScript.reverbFilter.lFReference, 20, 1000);
+                            asset.reverbFilter.lFReference = EditorGUILayout.Slider(
+                                blontent, asset.reverbFilter.lFReference, 20, 1000);
                             blontent = new GUIContent("Diffusion", "Reverberation diffusion (echo density) in percent");
-                            myScript.reverbFilter.diffusion = EditorGUILayout.Slider(
-                                blontent, myScript.reverbFilter.diffusion, 0, 100);
+                            asset.reverbFilter.diffusion = EditorGUILayout.Slider(
+                                blontent, asset.reverbFilter.diffusion, 0, 100);
                             blontent = new GUIContent("Density", "Reverberation density (modal density) in percent");
-                            myScript.reverbFilter.density = EditorGUILayout.Slider(
-                                blontent, myScript.reverbFilter.density, 0, 100);
+                            asset.reverbFilter.density = EditorGUILayout.Slider(
+                                blontent, asset.reverbFilter.density, 0, 100);
                         }
                     }
                     EditorGUILayout.EndVertical();
@@ -1168,22 +1081,22 @@ namespace JSAM.JSAMEditor
                 {
                     GenericMenu menu = new GenericMenu();
                     blontent = new GUIContent("Chorus Filter");
-                    if (myScript.chorusFilter.enabled) menu.AddDisabledItem(blontent);
+                    if (asset.chorusFilter.enabled) menu.AddDisabledItem(blontent);
                     else menu.AddItem(blontent, false, EnableChorus);
                     blontent = new GUIContent("Distortion Filter");
-                    if (myScript.distortionFilter.enabled) menu.AddDisabledItem(blontent);
+                    if (asset.distortionFilter.enabled) menu.AddDisabledItem(blontent);
                     else menu.AddItem(blontent, false, EnableDistortion);
                     blontent = new GUIContent("Echo Filter");
-                    if (myScript.echoFilter.enabled) menu.AddDisabledItem(blontent);
+                    if (asset.echoFilter.enabled) menu.AddDisabledItem(blontent);
                     else menu.AddItem(blontent, false, EnableEcho);
                     blontent = new GUIContent("High Pass Filter");
-                    if (myScript.highPassFilter.enabled) menu.AddDisabledItem(blontent);
+                    if (asset.highPassFilter.enabled) menu.AddDisabledItem(blontent);
                     else menu.AddItem(blontent, false, EnableHighPass);
                     blontent = new GUIContent("Low Pass Filter");
-                    if (myScript.lowPassFilter.enabled) menu.AddDisabledItem(blontent);
+                    if (asset.lowPassFilter.enabled) menu.AddDisabledItem(blontent);
                     else menu.AddItem(blontent, false, EnableLowPass);
                     blontent = new GUIContent("Reverb Filter");
-                    if (myScript.reverbFilter.enabled) menu.AddDisabledItem(blontent);
+                    if (asset.reverbFilter.enabled) menu.AddDisabledItem(blontent);
                     else menu.AddItem(blontent, false, EnableReverb);
                     menu.ShowAsContext();
                 }
@@ -1196,69 +1109,69 @@ namespace JSAM.JSAMEditor
 
         void EnableChorus()
         {
-            Undo.RecordObject(myScript, "Added Effect");
-            myScript.chorusFilter.enabled = true;
-            myScript.chorusFilter.dryMix = 0.5f;
-            myScript.chorusFilter.wetMix1 = 0.5f;
-            myScript.chorusFilter.wetMix2 = 0.5f;
-            myScript.chorusFilter.wetMix3 = 0.5f;
-            myScript.chorusFilter.delay = 40;
-            myScript.chorusFilter.rate = 0.8f;
-            myScript.chorusFilter.depth = 0.03f;
+            Undo.RecordObject(asset, "Added Effect");
+            asset.chorusFilter.enabled = true;
+            asset.chorusFilter.dryMix = 0.5f;
+            asset.chorusFilter.wetMix1 = 0.5f;
+            asset.chorusFilter.wetMix2 = 0.5f;
+            asset.chorusFilter.wetMix3 = 0.5f;
+            asset.chorusFilter.delay = 40;
+            asset.chorusFilter.rate = 0.8f;
+            asset.chorusFilter.depth = 0.03f;
         }
 
         void EnableDistortion()
         {
-            Undo.RecordObject(myScript, "Added Effect");
-            myScript.distortionFilter.enabled = true;
-            myScript.distortionFilter.distortionLevel = 0.5f;
+            Undo.RecordObject(asset, "Added Effect");
+            asset.distortionFilter.enabled = true;
+            asset.distortionFilter.distortionLevel = 0.5f;
         }
 
         void EnableEcho()
         {
-            Undo.RecordObject(myScript, "Added Effect");
-            myScript.echoFilter.enabled = true;
-            myScript.echoFilter.delay = 500;
-            myScript.echoFilter.decayRatio = 0.5f;
-            myScript.echoFilter.wetMix = 1;
-            myScript.echoFilter.dryMix = 1;
+            Undo.RecordObject(asset, "Added Effect");
+            asset.echoFilter.enabled = true;
+            asset.echoFilter.delay = 500;
+            asset.echoFilter.decayRatio = 0.5f;
+            asset.echoFilter.wetMix = 1;
+            asset.echoFilter.dryMix = 1;
         }
 
         void EnableHighPass()
         {
-            Undo.RecordObject(myScript, "Added Effect");
-            myScript.highPassFilter.enabled = true;
-            myScript.highPassFilter.cutoffFrequency = 5000;
-            myScript.highPassFilter.highpassResonanceQ = 1;
+            Undo.RecordObject(asset, "Added Effect");
+            asset.highPassFilter.enabled = true;
+            asset.highPassFilter.cutoffFrequency = 5000;
+            asset.highPassFilter.highpassResonanceQ = 1;
         }
 
         void EnableLowPass()
         {
-            Undo.RecordObject(myScript, "Added Effect");
-            myScript.lowPassFilter.enabled = true;
-            myScript.lowPassFilter.cutoffFrequency = 5000;
-            myScript.lowPassFilter.lowpassResonanceQ = 1;
+            Undo.RecordObject(asset, "Added Effect");
+            asset.lowPassFilter.enabled = true;
+            asset.lowPassFilter.cutoffFrequency = 5000;
+            asset.lowPassFilter.lowpassResonanceQ = 1;
         }
 
         void EnableReverb()
         {
-            Undo.RecordObject(myScript, "Added Effect");
-            myScript.reverbFilter.enabled = true;
-            myScript.reverbFilter.reverbPreset = AudioReverbPreset.Generic;
-            myScript.reverbFilter.dryLevel = 0;
-            myScript.reverbFilter.room = 0;
-            myScript.reverbFilter.roomHF = 0;
-            myScript.reverbFilter.roomLF = 0;
-            myScript.reverbFilter.decayTime = 1;
-            myScript.reverbFilter.decayHFRatio = 0.5f;
-            myScript.reverbFilter.reflectionsLevel = -10000.0f;
-            myScript.reverbFilter.reflectionsDelay = 0;
-            myScript.reverbFilter.reverbLevel = 0;
-            myScript.reverbFilter.reverbDelay = 0.04f;
-            myScript.reverbFilter.hFReference = 5000;
-            myScript.reverbFilter.lFReference = 250;
-            myScript.reverbFilter.diffusion = 100;
-            myScript.reverbFilter.density = 100;
+            Undo.RecordObject(asset, "Added Effect");
+            asset.reverbFilter.enabled = true;
+            asset.reverbFilter.reverbPreset = AudioReverbPreset.Generic;
+            asset.reverbFilter.dryLevel = 0;
+            asset.reverbFilter.room = 0;
+            asset.reverbFilter.roomHF = 0;
+            asset.reverbFilter.roomLF = 0;
+            asset.reverbFilter.decayTime = 1;
+            asset.reverbFilter.decayHFRatio = 0.5f;
+            asset.reverbFilter.reflectionsLevel = -10000.0f;
+            asset.reverbFilter.reflectionsDelay = 0;
+            asset.reverbFilter.reverbLevel = 0;
+            asset.reverbFilter.reverbDelay = 0.04f;
+            asset.reverbFilter.hFReference = 5000;
+            asset.reverbFilter.lFReference = 250;
+            asset.reverbFilter.diffusion = 100;
+            asset.reverbFilter.density = 100;
         }
         #endregion
     }

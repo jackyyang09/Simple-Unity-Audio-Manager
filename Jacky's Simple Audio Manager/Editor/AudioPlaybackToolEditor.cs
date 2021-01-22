@@ -160,7 +160,7 @@ namespace JSAM.JSAMEditor
                                     // Play the sound
                                     selectedClip = sound;
                                     helperSource.clip = selectedClip;
-                                    AudioFileObjectEditor.instance.StartFading(selectedSound, helperSource.clip);
+                                    AudioFileSoundObjectEditor.instance.StartFading(helperSource.clip);
                                     clipPlaying = true;
                                 }
                                 //EditorGUILayout.EndHorizontal();
@@ -301,7 +301,7 @@ namespace JSAM.JSAMEditor
                     // However, writing a value to helperSource.time changes timeSamples to the appropriate value just fine
                     if (selectedSound)
                     {
-                        AudioFileObjectEditor.instance.StartFading(selectedSound, helperSource.clip);
+                        AudioFileSoundObjectEditor.instance.StartFading(helperSource.clip);
                     }
                     else if (selectedMusic)
                     {
@@ -360,10 +360,10 @@ namespace JSAM.JSAMEditor
                 {
                     if (GUILayout.Button(new GUIContent("Play Random", "Preview settings with a random track from your library. Only usable if this Audio File has \"Use Library\" enabled.")))
                     {
-                        selectedClip = AudioFileObjectEditor.instance.DesignateRandomAudioClip(selectedSound);
+                        selectedClip = AudioFileSoundObjectEditor.instance.DesignateRandomAudioClip();
                         clipPlaying = true;
                         helperSource.Stop();
-                        AudioFileObjectEditor.instance.StartFading(selectedSound, selectedClip);
+                        AudioFileSoundObjectEditor.instance.StartFading(selectedClip);
                     }
                 }
             }
@@ -526,7 +526,7 @@ namespace JSAM.JSAMEditor
             {
                 helperSource.Stop();
             }
-            if (!WindowOpen && !AudioFileObjectEditor.instance && !AudioFileMusicObjectEditor.instance)
+            if (!WindowOpen && !AudioFileSoundObjectEditor.instance && !AudioFileMusicObjectEditor.instance)
             {
                 DestroyImmediate(helperObject);
             }
@@ -553,7 +553,7 @@ namespace JSAM.JSAMEditor
                 Texture2D waveformTexture;
                 if (selectedSound)
                 {
-                    waveformTexture = AudioFileObjectEditor.instance.PaintWaveformSpectrum(helperSource.clip, (int)rect.width, (int)rect.height, new Color(1, 0.5f, 0));
+                    waveformTexture = AudioFileSoundObjectEditor.instance.PaintWaveformSpectrum(helperSource.clip, (int)rect.width, (int)rect.height, new Color(1, 0.5f, 0));
                 }
                 else if (selectedMusic)
                 {
@@ -609,7 +609,7 @@ namespace JSAM.JSAMEditor
                     {
                         if (selectedSound.fadeMode != FadeMode.None)
                         {
-                            AudioFileObjectEditor.instance.HandleFading(selectedSound);
+                            AudioFileSoundObjectEditor.instance.HandleFading(selectedSound);
                         }
                         else
                         {
