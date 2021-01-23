@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c05f484ca36268440bf6ca1f6aedf5ef, type: 3}
   m_Name: JSAMSettings
   m_EditorClassIdentifier: 
-  packagePath: 
-  presetsPath: 
-  enumPath: 
+  packagePath: Assets/Jacky's Simple Audio Manager
+  presetsPath: Assets/Jacky's Simple Audio Manager/Presets
+  generatedEnumsPath: Assets/JSAMGenerated

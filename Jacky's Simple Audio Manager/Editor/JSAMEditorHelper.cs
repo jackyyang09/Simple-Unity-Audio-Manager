@@ -57,6 +57,15 @@ namespace JSAM.JSAMEditor
             return path;
         }
 
+        public static string TimeToString(float time)
+        {
+            time *= 1000;
+            int minutes = (int)time / 60000;
+            int seconds = (int)time / 1000 - 60 * minutes;
+            int milliseconds = (int)time - minutes * 60000 - 1000 * seconds;
+            return string.Format("{0:00}:{1:00}:{2:000}", minutes, seconds, milliseconds);
+        }
+
         public static void GenerateFolderStructure(string filePath, bool ask = false)
         {
             if (!AssetDatabase.IsValidFolder(filePath))

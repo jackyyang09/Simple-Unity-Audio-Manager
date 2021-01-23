@@ -2900,12 +2900,6 @@ namespace JSAM
         }
 
 #if UNITY_EDITOR
-        [SerializeField, HideInInspector]
-        string audioFolderLocation = "";
-
-        List<string> categories = new List<string>();
-        List<string> categoriesMusic = new List<string>();
-        bool initialCategoryCheck = false;
 
         /// <summary>
         /// A MonoBehaviour function called when the script is loaded or a value is changed in the inspector (Called in the editor only).
@@ -2914,7 +2908,6 @@ namespace JSAM
         {
             EstablishSingletonDominance(false);
             if (GetListener() == null) FindNewListener();
-            if (audioFolderLocation == "") audioFolderLocation = "Assets";
             ValidateSourcePrefab();
 
             if (!doneLoading) return;

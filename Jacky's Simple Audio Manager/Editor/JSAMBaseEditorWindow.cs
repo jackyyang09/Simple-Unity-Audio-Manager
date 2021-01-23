@@ -5,13 +5,9 @@ using UnityEditor;
 
 namespace JSAM.JSAMEditor
 {
-    public abstract class JSAMBaseEditorWindow<Asset, T> : EditorWindow
-        where Asset : ScriptableObject
+    public abstract class JSAMBaseEditorWindow<T> : EditorWindow
         where T : EditorWindow
     {
-        protected static SerializedObject serializedObject;
-        protected static Asset asset;
-
         protected static T window;
         public static T Window
         {
@@ -24,6 +20,16 @@ namespace JSAM.JSAMEditor
                 return window;
             }
         }
+        
+        protected abstract void SetWindowTitle();
+    }
+
+    public abstract class JSAMSerializedEditorWindow<Asset, T> : JSAMBaseEditorWindow<T>
+        where Asset : ScriptableObject
+        where T : EditorWindow
+    {
+        protected static SerializedObject serializedObject;
+        protected static Asset asset;
 
         protected virtual void OnEnable()
         {
@@ -34,8 +40,6 @@ namespace JSAM.JSAMEditor
         {
             return serializedObject.FindProperty(prop);
         }
-
-        protected abstract void SetWindowTitle();
 
         protected abstract void DesignateSerializedProperties();
     }

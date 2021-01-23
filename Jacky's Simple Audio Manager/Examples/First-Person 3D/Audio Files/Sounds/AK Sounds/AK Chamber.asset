@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d15ae218647a2d4f85e14306846c10c, type: 3}
   m_Name: AK Chamber
   m_EditorClassIdentifier: 
+  safeName: AKChamber
+  presetDescription: 
+  category: AK Sounds
   file: {fileID: 8300000, guid: 42f211e8d68e33941ad2f8c969326171, type: 3}
   files: []
   useLibrary: 0
-  neverRepeat: 0
-  lastClipIndex: -1
-  category: AK Sounds
   relativeVolume: 1
   spatialize: 1
   maxDistance: 0
@@ -33,7 +33,6 @@ MonoBehaviour:
   bypassEffects: 0
   bypassListenerEffects: 0
   bypassReverbZones: 0
-  safeName: AKChamber
   chorusFilter:
     enabled: 0
     dryMix: 0
@@ -77,3 +76,5 @@ MonoBehaviour:
     lFReference: 0
     diffusion: 0
     density: 0
+  neverRepeat: 0
+  lastClipIndex: -1

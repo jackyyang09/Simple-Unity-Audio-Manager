@@ -20,18 +20,21 @@ namespace JSAM.JSAMEditor
             }
         }
         string category;
+        bool isMusic;
 
         public AudioList()
         {
 
         }
 
-        public AudioList(SerializedObject obj, SerializedProperty prop, string category, bool isMusic)
+        public AudioList(SerializedObject obj, SerializedProperty prop, string _category, bool _isMusic)
         {
             list = new ReorderableList(obj, prop, true, false, false, false);
             list.drawElementCallback += DrawElement;
             list.headerHeight = 1;
             list.footerHeight = 0;
+            category = _category;
+            isMusic = _isMusic;
         }
 
         private void DrawElement(Rect rect, int index, bool isActive, bool isFocused)
@@ -79,10 +82,12 @@ namespace JSAM.JSAMEditor
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Category Options: ", new GUILayoutOption[] { GUILayout.Width(105) });
 
-            GUIContent blontent = new GUIContent("Rename");
-            if (GUILayout.Button(blontent, new GUILayoutOption[]{ GUILayout.ExpandWidth(false) }))
+            GUIContent blontent = new GUIContent("Rename", "Change the name of this category, also changes the category field for all Audio File objects that share this category");
+            if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
             {
-
+                var utility = JSAMUtilityWindow.Init("Enter New Category Name", true, true);
+                utility.AddField(new GUIContent("New Category Name"), category);
+                JSAMUtilityWindow.onSubmitField += RenameCategory;
             }
 
             blontent = new GUIContent("Move Up");
@@ -106,9 +111,21 @@ namespace JSAM.JSAMEditor
             JSAMEditorHelper.EndColourChange();
             EditorGUILayout.EndHorizontal();
         }
+
+        public void RenameCategory(string[] input)
+        {
+            if (isMusic)
+            {
+
+            }
+            else
+            {
+                AudioLibraryEditor.Window.RenameSoundCategory(category, input[0]);
+            }
+        }
     }
 
-    public class AudioLibraryEditor : JSAMBaseEditorWindow<AudioLibrary, AudioLibraryEditor>
+    public class AudioLibraryEditor : JSAMSerializedEditorWindow<AudioLibrary, AudioLibraryEditor>
     {
         const string CATEGORY_NONE = "Uncategorized";
 
@@ -170,6 +187,8 @@ namespace JSAM.JSAMEditor
         }
 
         SerializedProperty safeName;
+        SerializedProperty soundEnumName;
+        SerializedProperty musicEnumName;
 
         SerializedProperty sounds;
         SerializedProperty soundFoldout;
@@ -182,6 +201,8 @@ namespace JSAM.JSAMEditor
             serializedObject = new SerializedObject(asset);
 
             safeName = FindProp("safeName");
+            soundEnumName = FindProp(nameof(asset.soundEnumName));
+            musicEnumName = FindProp(nameof(asset.musicEnumName));
 
             sounds = FindProp(nameof(asset.sounds));
             soundCategories = FindProp(nameof(asset.soundCategories));
@@ -321,7 +342,9 @@ namespace JSAM.JSAMEditor
                 blontent = new GUIContent("Add New Category", "Add a new sound category");
                 if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
                 {
-                    
+                    var utility = JSAMUtilityWindow.Init("Enter Category Name", true, true);
+                    utility.AddField(new GUIContent("Category Name"), "New Category");
+                    JSAMUtilityWindow.onSubmitField += AddNewSoundCategory;
                 }
                 EditorGUILayout.EndHorizontal();
 
@@ -375,7 +398,7 @@ namespace JSAM.JSAMEditor
         {
             if (serializedObject != null)
             {
-                window.Repaint();
+                DesignateSerializedProperties();
             }
         }
 
@@ -447,9 +470,16 @@ namespace JSAM.JSAMEditor
             }
         }
 
-        void AddNewSoundCategory(string category)
+        void AddNewSoundCategory(string[] input)
         {
-            if (asset.soundCategories.Contains(category))
+            string category = input[0];
+            if (category.IsNullEmptyOrWhiteSpace())
+            {
+                EditorUtility.DisplayDialog("Category Name Error",
+                    "Category name field was left blank, please enter a valid name.", "OK");
+                GUIUtility.ExitGUI();
+            }
+            else if (asset.soundCategories.Contains(category))
             {
                 EditorUtility.DisplayDialog("Duplicate Category!",
                     "A category with this name already exists in the sound library!", "OK");
@@ -462,6 +492,45 @@ namespace JSAM.JSAMEditor
             var element = soundCategoriesToList.AddNewArrayElement();
             element.FindPropertyRelative("name").stringValue = category;
             element.FindPropertyRelative("foldout").boolValue = true;
+
+            ApplyChanges();
+        }
+
+        public void RenameSoundCategory(string prevName, string newName)
+        {
+            if (prevName.Equals(newName))
+            {
+                EditorUtility.DisplayDialog("Category Rename Error",
+                    "Category name is identical to previous name!", "OK");
+                FocusWindowIfItsOpen<JSAMUtilityWindow>();
+                GUIUtility.ExitGUI();
+            }
+
+            var index = asset.soundCategories.IndexOf(prevName);
+            soundCategories.GetArrayElementAtIndex(index).stringValue = newName;
+
+            // Category with this name exists, delete this one to complete merge
+            if (categoryToSoundStructs.ContainsKey(newName))
+            {
+                if (!prevName.Equals(string.Empty))
+                {
+                    categoryToSoundStructs[prevName].DeleteCommand();
+                }
+                soundCategories.DeleteArrayElementAtIndex(index);
+            }
+            else
+            {
+                categoryToSoundStructs[prevName].FindPropertyRelative("name").stringValue = newName;
+            }
+
+            var array = categoryToSoundStructs[prevName].FindPropertyRelative("files");
+            for (int i = 0; i < array.arraySize; i++)
+            {
+                var file = array.GetArrayElementAtIndex(i);
+                file.FindPropertyRelative("category").stringValue = newName;
+            }
+            
+            Debug.Log(prevName);
 
             ApplyChanges();
         }
@@ -610,8 +679,8 @@ namespace JSAM.JSAMEditor
             AssetDatabase.ImportAsset(filePath);
             AssetDatabase.Refresh();
 
-            asset.soundEnumName = "JSAM." + safeLibraryName + "Sounds";
-            asset.musicEnumName = "JSAM." + safeLibraryName + "Music";
+            soundEnumName.stringValue = "JSAM." + safeLibraryName + "Sounds";
+            musicEnumName.stringValue = "JSAM." + safeLibraryName + "Music";
             safeName.stringValue = safeLibraryName;
             serializedObject.ApplyModifiedProperties();
 

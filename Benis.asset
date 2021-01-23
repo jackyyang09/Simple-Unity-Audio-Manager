@@ -14,13 +14,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   soundCategories:
   - 
+  - AK Sounds
+  - BK Sounds
   sounds:
   - {fileID: 11400000, guid: a03d93398434809489558195c45c68f7, type: 2}
+  - {fileID: 11400000, guid: 6c801ee681c34444e88308ac2d32cb30, type: 2}
+  - {fileID: 11400000, guid: 5efb77fdb105d624ea52f06673135762, type: 2}
   music: []
+  soundEnumName: JSAM.BenisSounds
+  musicEnumName: JSAM.BenisMusic
   soundCategoriesToList:
   - name: 
+    files:
+    - {fileID: 11400000, guid: a03d93398434809489558195c45c68f7, type: 2}
+    foldout: 1
+  - name: AK Sounds
+    files:
+    - {fileID: 11400000, guid: 5efb77fdb105d624ea52f06673135762, type: 2}
+    - {fileID: 11400000, guid: 6c801ee681c34444e88308ac2d32cb30, type: 2}
+    foldout: 1
+  - name: BK Sounds
     files: []
     foldout: 1
-  safeName: 
+  safeName: Benis
   soundFoldout: 1
   musicFoldout: 0

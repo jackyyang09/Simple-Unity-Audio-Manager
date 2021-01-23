@@ -13,12 +13,6 @@ namespace JSAM.JSAMEditor
     [CustomEditor(typeof(AudioManager))]
     public class AudioManagerEditor : Editor
     {
-        struct SPandName
-        {
-            public SerializedProperty sp;
-            public string name;
-        }
-
         AudioManager myScript;
 
         SerializedProperty masterVolume;
