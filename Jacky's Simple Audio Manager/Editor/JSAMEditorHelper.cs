@@ -123,6 +123,16 @@ namespace JSAM.JSAMEditor
             return new List<T>();
         }
 
+        /// <summary>
+        /// Copies the given string to your clipboard
+        /// </summary>
+        /// <param name="text"></param>
+        public static void CopyToClipboard(string text)
+        {
+            EditorGUIUtility.systemCopyBuffer = text;
+            AudioManager.instance.DebugLog("Copied " + text + " to clipboard!");
+        }
+
         static Color guiColor;
         public static void BeginColourChange(Color color)
         {
@@ -131,5 +141,19 @@ namespace JSAM.JSAMEditor
         }
 
         public static void EndColourChange() => GUI.color = guiColor;
+
+        public static GUIStyle ApplyTextAnchorToStyle(GUIStyle referenceStyle, Color color)
+        {
+            var style = new GUIStyle(referenceStyle);
+            style.normal.textColor = color;
+            return style;
+        }
+
+        public static GUIStyle ApplyTextAnchorToStyle(GUIStyle referenceStyle, TextAnchor anchor)
+        {
+            var style = new GUIStyle(referenceStyle);
+            style.alignment = anchor;
+            return style;
+        }
     }
 }

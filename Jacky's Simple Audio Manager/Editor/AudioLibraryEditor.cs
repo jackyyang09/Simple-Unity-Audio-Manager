@@ -6,6 +6,7 @@ using UnityEditorInternal;
 using UnityEditor.Callbacks;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace JSAM.JSAMEditor
 {
@@ -30,48 +31,183 @@ namespace JSAM.JSAMEditor
         public AudioList(SerializedObject obj, SerializedProperty prop, string _category, bool _isMusic)
         {
             list = new ReorderableList(obj, prop, true, false, false, false);
-            list.drawElementCallback += DrawElement;
+            isMusic = _isMusic;
+            if (isMusic)
+            {
+                list.drawElementCallback += DrawMusicElement;
+            }
+            else
+            {
+                list.drawElementCallback += DrawSoundElement;
+            }
             list.headerHeight = 1;
             list.footerHeight = 0;
             category = _category;
-            isMusic = _isMusic;
         }
 
-        private void DrawElement(Rect rect, int index, bool isActive, bool isFocused)
+        private void DrawMusicElement(Rect rect, int index, bool isActive, bool isFocused)
         {
             var element = list.serializedProperty.GetArrayElementAtIndex(index);
-            var file = element.objectReferenceValue as AudioFileSoundObject;
-
+            var file = element.objectReferenceValue as BaseAudioFileObject;
 
             Rect prevRect = new Rect(rect);
             Rect currentRect = new Rect(prevRect);
 
             currentRect.xMax = currentRect.xMin + 20;
-            GUIContent blontent = new GUIContent("X", "Change the category of this Audio File object");
-            EditorGUI.DropdownButton(currentRect, blontent, FocusType.Passive);
+            GUIContent blontent = new GUIContent("T", "Change the category of this Audio File object");
+            if (EditorGUI.DropdownButton(currentRect, blontent, FocusType.Passive))
+            {
+                GenericMenu menu = new GenericMenu();
 
+                menu.AddItem(new GUIContent(AudioLibraryEditor.CATEGORY_NONE), category.Equals(string.Empty),
+                    SetAudioFileCategory, new Tuple<BaseAudioFileObject, string>(file, string.Empty));
+                var categories = AudioLibraryEditor.Asset.musicCategories;
+                for (int i = 0; i < categories.Count; i++)
+                {
+                    menu.AddItem(new GUIContent(categories[i]), category.Equals(categories[i]),
+                        SetAudioFileCategory, new Tuple<BaseAudioFileObject, string>(file, categories[i]));
+                }
+                menu.ShowAsContext();
+            }
+
+            string enumName = string.Empty;
+            bool registered = AudioLibraryEditor.Window.GetMusicEnumName(file, out enumName);
             using (new EditorGUI.DisabledScope(true))
             {
                 prevRect = new Rect(currentRect);
                 currentRect.xMin = prevRect.xMax + 5;
                 currentRect.xMax = rect.xMax - 110;
-                blontent = new GUIContent(file.SafeName);
-                EditorGUI.PropertyField(currentRect, element, blontent);
+                if (registered)
+                {
+                    blontent = new GUIContent(file.SafeName, enumName);
+                }
+                else
+                {
+                    blontent = new GUIContent("( ! ) " + file.SafeName, "Re-generate your Audio Library to get this Audio File's enum name");
+                }
+            }
+            // Force a normal-colored label in a disabled scope
+            JSAMEditorHelper.BeginColourChange(Color.clear);
+            Rect decoyRect = EditorGUI.PrefixLabel(currentRect, blontent);
+            JSAMEditorHelper.EndColourChange();
+            if (!registered) JSAMEditorHelper.BeginColourChange(Color.yellow);
+            EditorGUI.LabelField(currentRect, blontent);
+            JSAMEditorHelper.EndColourChange();
+            using (new EditorGUI.DisabledScope(true))
+            {
+                EditorGUI.PropertyField(decoyRect, element, GUIContent.none);
             }
 
-            prevRect = new Rect(currentRect);
-            currentRect.xMin = prevRect.xMax + 4;
-            currentRect.xMax = currentRect.xMax + 85;
-            if (GUI.Button(currentRect, "Copy Enum"))
+            using (new EditorGUI.DisabledScope(!registered))
             {
-
+                prevRect = new Rect(currentRect);
+                currentRect.xMin = prevRect.xMax + 2;
+                currentRect.xMax = currentRect.xMax + 85;
+                if (registered)
+                {
+                    blontent = new GUIContent("Copy Enum", "Click to copy this Audio File's enum name to your clipboard");
+                }
+                else
+                {
+                    blontent = new GUIContent("Copy Enum", "Re-generate your Audio Library to copy this Audio File's enum name");
+                }
+                if (GUI.Button(currentRect, blontent))
+                {
+                    JSAMEditorHelper.CopyToClipboard(enumName);
+                }
             }
 
             JSAMEditorHelper.BeginColourChange(Color.red);
             prevRect = new Rect(currentRect);
-            currentRect.xMin = prevRect.xMax + 1;
+            currentRect.xMin = prevRect.xMax + 2;
             currentRect.xMax = currentRect.xMax + 25;
-            GUI.Button(currentRect, "X");
+            if (GUI.Button(currentRect, "X"))
+            {
+                AudioLibraryEditor.Window.RemoveAudioFile(file, isMusic);
+            }
+            JSAMEditorHelper.EndColourChange();
+        }
+
+        private void DrawSoundElement(Rect rect, int index, bool isActive, bool isFocused)
+        {
+            var element = list.serializedProperty.GetArrayElementAtIndex(index);
+            var file = element.objectReferenceValue as BaseAudioFileObject;
+
+            Rect prevRect = new Rect(rect);
+            Rect currentRect = new Rect(prevRect);
+
+            currentRect.xMax = currentRect.xMin + 20;
+            GUIContent blontent = new GUIContent("T", "Change the category of this Audio File object");
+            if (EditorGUI.DropdownButton(currentRect, blontent, FocusType.Passive))
+            {
+                GenericMenu menu = new GenericMenu();
+
+                menu.AddItem(new GUIContent(AudioLibraryEditor.CATEGORY_NONE), category.Equals(string.Empty),
+                    SetAudioFileCategory, new Tuple<BaseAudioFileObject, string>(file, string.Empty));
+                var categories = AudioLibraryEditor.Asset.soundCategories;
+                for (int i = 0; i < categories.Count; i++)
+                {
+                    menu.AddItem(new GUIContent(categories[i]), category.Equals(categories[i]),
+                        SetAudioFileCategory, new Tuple<BaseAudioFileObject, string>(file, categories[i]));
+                }
+                menu.ShowAsContext();
+            }
+
+            string enumName = string.Empty;
+            bool registered = AudioLibraryEditor.Window.GetSoundEnumName(file, out enumName);
+            using (new EditorGUI.DisabledScope(true))
+            {
+                prevRect = new Rect(currentRect);
+                currentRect.xMin = prevRect.xMax + 5;
+                currentRect.xMax = rect.xMax - 110;
+                if (registered)
+                {
+                    blontent = new GUIContent(file.SafeName, enumName);
+                }
+                else
+                {
+                    blontent = new GUIContent("( ! ) " + file.SafeName, "Re-generate your Audio Library to get this Audio File's enum name");
+                }
+            }
+            // Force a normal-colored label in a disabled scope
+            JSAMEditorHelper.BeginColourChange(Color.clear);
+            Rect decoyRect = EditorGUI.PrefixLabel(currentRect, blontent);
+            JSAMEditorHelper.EndColourChange();
+            if (!registered) JSAMEditorHelper.BeginColourChange(Color.yellow);
+            EditorGUI.LabelField(currentRect, blontent);
+            JSAMEditorHelper.EndColourChange();
+            using (new EditorGUI.DisabledScope(true))
+            {
+                EditorGUI.PropertyField(decoyRect, element, GUIContent.none);
+            }
+
+            using (new EditorGUI.DisabledScope(!registered))
+            {
+                prevRect = new Rect(currentRect);
+                currentRect.xMin = prevRect.xMax + 2;
+                currentRect.xMax = currentRect.xMax + 85;
+                if (registered)
+                {
+                    blontent = new GUIContent("Copy Enum", "Click to copy this Audio File's enum name to your clipboard");
+                }
+                else
+                {
+                    blontent = new GUIContent("Copy Enum", "Re-generate your Audio Library to copy this Audio File's enum name");
+                }
+                if (GUI.Button(currentRect, blontent))
+                {
+                    JSAMEditorHelper.CopyToClipboard(enumName);
+                }
+            }
+
+            JSAMEditorHelper.BeginColourChange(Color.red);
+            prevRect = new Rect(currentRect);
+            currentRect.xMin = prevRect.xMax + 2;
+            currentRect.xMax = currentRect.xMax + 25;
+            if (GUI.Button(currentRect, "X"))
+            {
+                AudioLibraryEditor.Window.RemoveAudioFile(file, isMusic);
+            }
             JSAMEditorHelper.EndColourChange();
         }
 
@@ -79,7 +215,7 @@ namespace JSAM.JSAMEditor
         {
             list.DoLayoutList();
 
-            EditorGUILayout.BeginHorizontal();
+            Rect rect = EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Category Options: ", new GUILayoutOption[] { GUILayout.Width(105) });
 
             GUIContent blontent = new GUIContent("Rename", "Change the name of this category, also changes the category field for all Audio File objects that share this category");
@@ -90,47 +226,68 @@ namespace JSAM.JSAMEditor
                 JSAMUtilityWindow.onSubmitField += RenameCategory;
             }
 
-            blontent = new GUIContent("Move Up");
-            if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+            using (new EditorGUI.DisabledScope(AudioLibraryEditor.Window.CanCategoryMove(category, true, isMusic)))
             {
-
+                blontent = new GUIContent("Move Up");
+                if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+                {
+                    AudioLibraryEditor.Window.MoveCategory(category, true, isMusic);
+                }
             }
 
-            blontent = new GUIContent("Move Down");
-            if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+            using (new EditorGUI.DisabledScope(AudioLibraryEditor.Window.CanCategoryMove(category, false, isMusic)))
             {
-
+                blontent = new GUIContent("Move Down");
+                if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+                {
+                    AudioLibraryEditor.Window.MoveCategory(category, false, isMusic);
+                }
             }
 
             JSAMEditorHelper.BeginColourChange(Color.red);
             blontent = new GUIContent("Delete");
             if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
             {
-
+                AudioLibraryEditor.Window.DeleteCategory(category, isMusic);
             }
             JSAMEditorHelper.EndColourChange();
+
+            rect.xMin = rect.xMax - 100;
+            GUI.Label(rect, "File Count: " + list.serializedProperty.arraySize,
+                JSAMEditorHelper.ApplyTextAnchorToStyle(EditorStyles.label, TextAnchor.MiddleRight));
+
             EditorGUILayout.EndHorizontal();
         }
 
         public void RenameCategory(string[] input)
         {
-            if (isMusic)
-            {
+            AudioLibraryEditor.Window.RenameCategory(category, input[0], isMusic);
+        }
 
-            }
-            else
-            {
-                AudioLibraryEditor.Window.RenameSoundCategory(category, input[0]);
-            }
+        public void SetAudioFileCategory(object input)
+        {
+            Tuple<BaseAudioFileObject, string> tuple = (Tuple<BaseAudioFileObject, string>)input;
+            AudioLibraryEditor.Window.ChangeAudioFileCategory(tuple.Item1, tuple.Item2);
         }
     }
 
     public class AudioLibraryEditor : JSAMSerializedEditorWindow<AudioLibrary, AudioLibraryEditor>
     {
-        const string CATEGORY_NONE = "Uncategorized";
+        public const string CATEGORY_NONE = "Uncategorized";
 
+        List<string> newSoundNames = new List<string>();
+        List<string> missingSoundNames = new List<string>();
+        List<AudioFileSoundObject> registeredSounds = new List<AudioFileSoundObject>();
         Dictionary<string, SerializedProperty> categoryToSoundStructs = new Dictionary<string, SerializedProperty>();
-        Dictionary<string, AudioList> reorderableLists = new Dictionary<string, AudioList>();
+        Dictionary<string, AudioList> reorderableSoundLists = new Dictionary<string, AudioList>();
+
+        List<string> newMusicNames = new List<string>();
+        List<string> missingMusicNames = new List<string>();
+        List<AudioFileMusicObject> registeredMusic = new List<AudioFileMusicObject>();
+        Dictionary<string, SerializedProperty> categoryToMusicStructs = new Dictionary<string, SerializedProperty>();
+        Dictionary<string, AudioList> reorderableMusicLists = new Dictionary<string, AudioList>();
+
+        static Vector2 scrollProgress;
 
         [OnOpenAsset]
         public static bool OnOpenAsset(int instanceID, int line)
@@ -195,121 +352,264 @@ namespace JSAM.JSAMEditor
         SerializedProperty soundCategories;
         SerializedProperty soundCategoriesToList;
 
+        SerializedProperty music;
+        SerializedProperty musicFoldout;
+        SerializedProperty musicCategories;
+        SerializedProperty musicCategoriesToList;
+
         protected override void DesignateSerializedProperties()
         {
             Debug.Log("Designating");
             serializedObject = new SerializedObject(asset);
 
             safeName = FindProp("safeName");
+
             soundEnumName = FindProp(nameof(asset.soundEnumName));
-            musicEnumName = FindProp(nameof(asset.musicEnumName));
 
             sounds = FindProp(nameof(asset.sounds));
             soundCategories = FindProp(nameof(asset.soundCategories));
             soundFoldout = FindProp(nameof(asset.soundFoldout));
             soundCategoriesToList = FindProp("soundCategoriesToList");
 
+            musicEnumName = FindProp(nameof(asset.musicEnumName));
+
+            music = FindProp(nameof(asset.music));
+            musicCategories = FindProp(nameof(asset.musicCategories));
+            musicFoldout = FindProp(nameof(asset.musicFoldout));
+            musicCategoriesToList = FindProp("musicCategoriesToList");
+
             InitializeCategories();
+            DocumentAudioFiles();
 
             Window.Repaint();
+        }
+
+        void DocumentAudioFiles()
+        {
+            if (!soundEnumName.stringValue.IsNullEmptyOrWhiteSpace())
+            {
+                var type = AudioLibrary.GetEnumType(soundEnumName.stringValue);
+                List<string> registeredNames = new List<string>(Enum.GetNames(type));
+                List<string> libraryNames = new List<string>();
+                for (int i = 0; i < asset.sounds.Count; i++)
+                {
+                    libraryNames.Add(asset.sounds[i].SafeName);
+                }
+                // Get all sound names that are registered but not in the library
+                missingSoundNames = new List<string>(registeredNames.Except(libraryNames));
+                // Get all sound names that are in the library but aren't registered
+                newSoundNames = new List<string>(libraryNames.Except(registeredNames));
+            }
+            if (missingSoundNames == null) missingSoundNames = new List<string>();
+            if (newSoundNames == null) newSoundNames = new List<string>();
         }
 
         void InitializeCategories()
         {
             // Add new Categories from Audio File arrays
-            for (int i = 0; i < sounds.arraySize; i++)
             {
-                var s = sounds.GetArrayElementAtIndex(i).objectReferenceValue as AudioFileSoundObject;
-                if (!asset.soundCategories.Contains(s.category))
+                // Sounds
+                for (int i = 0; i < sounds.arraySize; i++)
                 {
-                    var newCategory = soundCategories.AddNewArrayElement();
-                    newCategory.stringValue = s.category;
-                    serializedObject.ApplyModifiedProperties();
+                    var s = sounds.GetArrayElementAtIndex(i).objectReferenceValue as BaseAudioFileObject;
+                    if (!asset.soundCategories.Contains(s.category))
+                    {
+                        var newCategory = soundCategories.AddNewArrayElement();
+                        newCategory.stringValue = s.category;
+                        serializedObject.ApplyModifiedProperties();
+                    }
+                }
+
+                // Music
+                for (int i = 0; i < music.arraySize; i++)
+                {
+                    var m = music.GetArrayElementAtIndex(i).objectReferenceValue as BaseAudioFileObject;
+                    if (!asset.musicCategories.Contains(m.category))
+                    {
+                        var newCategory = musicCategories.AddNewArrayElement();
+                        newCategory.stringValue = m.category;
+                        serializedObject.ApplyModifiedProperties();
+                    }
                 }
             }
 
             // Link existing Category-to-Structs to Categories
-            categoryToSoundStructs = new Dictionary<string, SerializedProperty>();
-            for (int i = 0; i < soundCategoriesToList.arraySize; i++)
             {
-                var element = soundCategoriesToList.GetArrayElementAtIndex(i);
-                string name = element.FindPropertyRelative("name").stringValue;
-                categoryToSoundStructs[name] = element;
-            }
-
-            // Repopulate Library Category structs
-            List<AudioFileSoundObject> soundsToSort = new List<AudioFileSoundObject>(asset.sounds);
-
-            for (int i = 0; i < asset.soundCategories.Count/* && soundsToSort.Count > 0*/; i++)
-            {
-                string category = asset.soundCategories[i];
-                // If new category encountered
-                if (!categoryToSoundStructs.ContainsKey(category))
-                {
-                    var element = soundCategoriesToList.AddNewArrayElement();
-                    element.FindPropertyRelative("name").stringValue = category;
-
-                    var array = element.FindPropertyRelative("files");
-                    array.ClearArray();
-                    for (int j = soundsToSort.Count - 1; j > -1; j--)
-                    {
-                        if (soundsToSort[j].category.Equals(category))
-                        {
-                            array.AddNewArrayElement().objectReferenceValue = soundsToSort[j];
-                            soundsToSort.RemoveAt(j);
-                        }
-                    }
-                    // Save new struct to Dictionary
-                    categoryToSoundStructs[category] = element;
-                }
-                else
+                // Sound
+                categoryToSoundStructs = new Dictionary<string, SerializedProperty>();
+                for (int i = 0; i < soundCategoriesToList.arraySize; i++)
                 {
                     var element = soundCategoriesToList.GetArrayElementAtIndex(i);
+                    string name = element.FindPropertyRelative("name").stringValue;
+                    categoryToSoundStructs[name] = element;
+                }
 
-                    var array = element.FindPropertyRelative("files");
-                    var newFiles = new List<AudioFileSoundObject>();
-                    // Copy over sorted files
-                    for (int j = 0; j < array.arraySize; j++)
+                // Music
+                categoryToMusicStructs = new Dictionary<string, SerializedProperty>();
+                for (int i = 0; i < musicCategoriesToList.arraySize; i++)
+                {
+                    var element = musicCategoriesToList.GetArrayElementAtIndex(i);
+                    string name = element.FindPropertyRelative("name").stringValue;
+                    categoryToMusicStructs[name] = element;
+                }
+            }
+
+            List<BaseAudioFileObject> audioToSort = null;
+            // Repopulate Library Category structs
+            {
+                // Sounds
+                audioToSort = new List<BaseAudioFileObject>(asset.sounds);
+                for (int i = 0; i < asset.soundCategories.Count/* && audioToSort.Count > 0*/; i++)
+                {
+                    string category = asset.soundCategories[i];
+                    // If new category encountered
+                    if (!categoryToSoundStructs.ContainsKey(category))
                     {
-                        var subElement = array.GetArrayElementAtIndex(j).objectReferenceValue as AudioFileSoundObject;
-                        if (subElement.category.Equals(category))
+                        var element = soundCategoriesToList.AddNewArrayElement();
+                        element.FindPropertyRelative("name").stringValue = category;
+
+                        var array = element.FindPropertyRelative("files");
+                        array.ClearArray();
+                        for (int j = audioToSort.Count - 1; j > -1; j--)
                         {
-                            newFiles.Add(subElement);
-                            // File has been sorted
-                            soundsToSort.Remove(subElement);
+                            if (audioToSort[j].category.Equals(category))
+                            {
+                                array.AddNewArrayElement().objectReferenceValue = audioToSort[j];
+                                audioToSort.RemoveAt(j);
+                            }
+                        }
+                        // Save new struct to Dictionary
+                        categoryToSoundStructs[category] = element;
+                    }
+                    else
+                    {
+                        var element = soundCategoriesToList.GetArrayElementAtIndex(i);
+
+                        var array = element.FindPropertyRelative("files");
+                        var newFiles = new List<BaseAudioFileObject>();
+                        // Copy over sorted files
+                        for (int j = 0; j < array.arraySize; j++)
+                        {
+                            var subElement = array.GetArrayElementAtIndex(j).objectReferenceValue as AudioFileSoundObject;
+                            if (subElement.category.Equals(category))
+                            {
+                                newFiles.Add(subElement);
+                                // File has been sorted
+                                audioToSort.Remove(subElement);
+                            }
+                        }
+                        // Add new files
+                        for (int j = audioToSort.Count - 1; j > -1; j--)
+                        {
+                            if (audioToSort[j].category.Equals(category))
+                            {
+                                newFiles.Add(audioToSort[j]);
+                                // File has been sorted
+                                audioToSort.RemoveAt(j);
+                            }
+                        }
+
+                        // Apply changes
+                        array.ClearArray();
+                        for (int j = 0; j < newFiles.Count; j++)
+                        {
+                            array.AddNewArrayElement().objectReferenceValue = newFiles[j];
                         }
                     }
-                    // Add new files
-                    for (int j = soundsToSort.Count - 1; j > -1; j--)
-                    {
-                        if (soundsToSort[j].category.Equals(category))
-                        {
-                            newFiles.Add(soundsToSort[j]);
-                            // File has been sorted
-                            soundsToSort.RemoveAt(j);
-                        }   
-                    }
+                }
 
-                    // Apply changes
-                    array.ClearArray();
-                    for (int j = 0; j < newFiles.Count; j++)
+                // Music
+                audioToSort = new List<BaseAudioFileObject>(asset.music);
+                for (int i = 0; i < asset.musicCategories.Count/* && audioToSort.Count > 0*/; i++)
+                {
+                    string category = asset.musicCategories[i];
+                    // If new category encountered
+                    if (!categoryToMusicStructs.ContainsKey(category))
                     {
-                        array.AddNewArrayElement().objectReferenceValue = newFiles[j];
+                        var element = musicCategoriesToList.AddNewArrayElement();
+                        element.FindPropertyRelative("name").stringValue = category;
+
+                        var array = element.FindPropertyRelative("files");
+                        array.ClearArray();
+                        for (int j = audioToSort.Count - 1; j > -1; j--)
+                        {
+                            if (audioToSort[j].category.Equals(category))
+                            {
+                                array.AddNewArrayElement().objectReferenceValue = audioToSort[j];
+                                audioToSort.RemoveAt(j);
+                            }
+                        }
+                        // Save new struct to Dictionary
+                        categoryToMusicStructs[category] = element;
+                    }
+                    else
+                    {
+                        var element = musicCategoriesToList.GetArrayElementAtIndex(i);
+
+                        var array = element.FindPropertyRelative("files");
+                        var newFiles = new List<BaseAudioFileObject>();
+                        // Copy over sorted files
+                        for (int j = 0; j < array.arraySize; j++)
+                        {
+                            var subElement = array.GetArrayElementAtIndex(j).objectReferenceValue as BaseAudioFileObject;
+                            if (subElement.category.Equals(category))
+                            {
+                                newFiles.Add(subElement);
+                                // File has been sorted
+                                audioToSort.Remove(subElement);
+                            }
+                        }
+                        // Add new files
+                        for (int j = audioToSort.Count - 1; j > -1; j--)
+                        {
+                            if (audioToSort[j].category.Equals(category))
+                            {
+                                newFiles.Add(audioToSort[j]);
+                                // File has been sorted
+                                audioToSort.RemoveAt(j);
+                            }
+                        }
+
+                        // Apply changes
+                        array.ClearArray();
+                        for (int j = 0; j < newFiles.Count; j++)
+                        {
+                            array.AddNewArrayElement().objectReferenceValue = newFiles[j];
+                        }
                     }
                 }
-                serializedObject.ApplyModifiedProperties();
+
+                if (serializedObject.hasModifiedProperties)
+                {
+                    serializedObject.ApplyModifiedProperties();
+                }
             }
 
             // Initialize reorderable sound lists
-            reorderableLists = new Dictionary<string, AudioList>();
-            var keys = new string[categoryToSoundStructs.Keys.Count];
-            categoryToSoundStructs.Keys.CopyTo(keys, 0);
-            for (int i = 0; i < keys.Length; i++)
             {
-                var files = categoryToSoundStructs[keys[i]].FindPropertyRelative("files");
-                var category = categoryToSoundStructs[keys[i]].FindPropertyRelative("name").stringValue;
-                AudioList newList = new AudioList(serializedObject, files, category, false);
-                reorderableLists[category] = newList;
+                reorderableSoundLists = new Dictionary<string, AudioList>();
+                reorderableMusicLists = new Dictionary<string, AudioList>();
+
+                // Sounds
+                var keys = new string[categoryToSoundStructs.Keys.Count];
+                categoryToSoundStructs.Keys.CopyTo(keys, 0);
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    var files = categoryToSoundStructs[keys[i]].FindPropertyRelative("files");
+                    var category = categoryToSoundStructs[keys[i]].FindPropertyRelative("name").stringValue;
+                    AudioList newList = new AudioList(serializedObject, files, category, false);
+                    reorderableSoundLists[category] = newList;
+                }
+
+                keys = new string[categoryToMusicStructs.Keys.Count];
+                categoryToMusicStructs.Keys.CopyTo(keys, 0);
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    var files = categoryToMusicStructs[keys[i]].FindPropertyRelative("files");
+                    var category = categoryToMusicStructs[keys[i]].FindPropertyRelative("name").stringValue;
+                    AudioList newList = new AudioList(serializedObject, files, category, true);
+                    reorderableMusicLists[category] = newList;
+                }
             }
 
             if (serializedObject.hasModifiedProperties)
@@ -334,43 +634,151 @@ namespace JSAM.JSAMEditor
 
                 GUIContent blontent = new GUIContent();
 
-                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-                string arrow = (soundFoldout.boolValue) ? "▼" : "▶";
-                blontent = new GUIContent(arrow + " Sound Library");
-                EditorGUILayout.BeginHorizontal();
-                soundFoldout.boolValue = EditorGUILayout.Foldout(soundFoldout.boolValue, blontent, true, EditorStyles.boldLabel);
-                blontent = new GUIContent("Add New Category", "Add a new sound category");
-                if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+                if (missingSoundNames.Count > 0)
                 {
-                    var utility = JSAMUtilityWindow.Init("Enter Category Name", true, true);
-                    utility.AddField(new GUIContent("Category Name"), "New Category");
-                    JSAMUtilityWindow.onSubmitField += AddNewSoundCategory;
+                    EditorGUILayout.HelpBox("Generated Audio Library files have been removed! " +
+                        "Please re-generate your Audio Library to prevent errors during runtime!", 
+                        MessageType.Warning);
                 }
+
+                scrollProgress = EditorGUILayout.BeginScrollView(scrollProgress);
+
+                EditorGUILayout.BeginHorizontal();
+                //JSAMEditorHelper.BeginColourChange(GUI.color.Subtract(new Color(0.15f, 0.15f, 0.15f, 0)));
+                if (GUILayout.Button("Sound (New: 1)", EditorStyles.miniButtonLeft))
+                {
+                    //
+                }
+                //JSAMEditorHelper.EndColourChange();
+                if (GUILayout.Button("Music", EditorStyles.miniButtonRight))
+                {
+                    //
+                }
+                //JSAMEditorHelper.EndColourChange();
                 EditorGUILayout.EndHorizontal();
 
-                if (soundFoldout.boolValue)
+                // Sound Library
                 {
-                    for (int i = 0; i < asset.soundCategories.Count; i++)
+                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                    string arrow = (soundFoldout.boolValue) ? "▼" : "▶";
+                    string title = "Sound Library";
+                    if (newSoundNames.Count > 0) title += " (New: " + newSoundNames.Count + ")";
+                    blontent = new GUIContent(arrow + " " + title);
+                    EditorGUILayout.BeginHorizontal();
+                    soundFoldout.boolValue = EditorGUILayout.Foldout(soundFoldout.boolValue, blontent, true, EditorStyles.boldLabel);
+                    blontent = new GUIContent("Hide All", "Collapse all category foldouts in the Sound Library");
+
+                    if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
                     {
-                        string category = asset.soundCategories[i];
-                        string categoryName = category;
-                        if (category.Equals(string.Empty)) categoryName = CATEGORY_NONE;
-                        bool foldout = categoryToSoundStructs[category].FindPropertyRelative("foldout").boolValue;
-                        EditorGUI.BeginChangeCheck();
-                        foldout = EditorCompatability.SpecialFoldouts(foldout, categoryName);
-                        if (EditorGUI.EndChangeCheck())
+                        for (int i = 0; i < asset.soundCategories.Count; i++)
                         {
-                            categoryToSoundStructs[category].FindPropertyRelative("foldout").boolValue = foldout;
+                            SetSoundCategoryFoldout(asset.soundCategories[i], false);
                         }
-                        if (foldout)
-                        {
-                            reorderableLists[category].Draw();
-                        }
-                        EditorCompatability.EndSpecialFoldoutGroup();
                     }
+                    blontent = new GUIContent("Show All", "Expand all category foldouts in the Sound Library");
+                    if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+                    {
+                        for (int i = 0; i < asset.soundCategories.Count; i++)
+                        {
+                            SetSoundCategoryFoldout(asset.soundCategories[i], true);
+                        }
+                    }
+                    blontent = new GUIContent("Add New Category", "Add a new sound category");
+                    if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+                    {
+                        var utility = JSAMUtilityWindow.Init("Enter Category Name", true, true);
+                        utility.AddField(new GUIContent("Category Name"), "New Category");
+                        JSAMUtilityWindow.onSubmitField += AddNewSoundCategory;
+                    }
+
+                    EditorGUILayout.EndHorizontal();
+
+                    if (soundFoldout.boolValue)
+                    {
+                        for (int i = 0; i < asset.soundCategories.Count; i++)
+                        {
+                            string category = asset.soundCategories[i];
+                            string categoryName = category;
+                            if (category.Equals(string.Empty)) categoryName = CATEGORY_NONE;
+                            bool foldout = GetSoundCategoryFoldout(category);
+                            EditorGUI.BeginChangeCheck();
+                            foldout = EditorCompatability.SpecialFoldouts(foldout, categoryName);
+                            if (EditorGUI.EndChangeCheck())
+                            {
+                                SetSoundCategoryFoldout(category, foldout);
+                            }
+                            if (foldout)
+                            {
+                                reorderableSoundLists[category].Draw();
+                            }
+                            EditorCompatability.EndSpecialFoldoutGroup();
+                        }
+                    }
+
+                    EditorGUILayout.EndVertical();
                 }
 
-                EditorGUILayout.EndVertical();
+                // Music Library
+                {
+                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                    string arrow = (musicFoldout.boolValue) ? "▼" : "▶";
+                    string title = "Music Library";
+                    if (newMusicNames.Count > 0) title += " (New: " + newMusicNames.Count + ")";
+                    blontent = new GUIContent(arrow + " " + title);
+                    EditorGUILayout.BeginHorizontal();
+                    musicFoldout.boolValue = EditorGUILayout.Foldout(musicFoldout.boolValue, blontent, true, EditorStyles.boldLabel);
+                    blontent = new GUIContent("Hide All", "Collapse all category foldouts in the Music Library");
+
+                    if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+                    {
+                        for (int i = 0; i < asset.musicCategories.Count; i++)
+                        {
+                            SetMusicCategoryFoldout(asset.musicCategories[i], false);
+                        }
+                    }
+                    blontent = new GUIContent("Show All", "Expand all category foldouts in the Music Library");
+                    if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+                    {
+                        for (int i = 0; i < asset.musicCategories.Count; i++)
+                        {
+                            SetMusicCategoryFoldout(asset.musicCategories[i], true);
+                        }
+                    }
+                    blontent = new GUIContent("Add New Category", "Add a new sound category");
+                    if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+                    {
+                        var utility = JSAMUtilityWindow.Init("Enter Category Name", true, true);
+                        utility.AddField(new GUIContent("Category Name"), "New Category");
+                        JSAMUtilityWindow.onSubmitField += AddNewMusicCategory;
+                    }
+
+                    EditorGUILayout.EndHorizontal();
+
+                    if (musicFoldout.boolValue)
+                    {
+                        for (int i = 0; i < asset.musicCategories.Count; i++)
+                        {
+                            string category = asset.musicCategories[i];
+                            string categoryName = category;
+                            if (category.Equals(string.Empty)) categoryName = CATEGORY_NONE;
+                            bool foldout = GetMusicCategoryFoldout(category);
+                            EditorGUI.BeginChangeCheck();
+                            foldout = EditorCompatability.SpecialFoldouts(foldout, categoryName);
+                            if (EditorGUI.EndChangeCheck())
+                            {
+                                SetMusicCategoryFoldout(category, foldout);
+                            }
+                            if (foldout)
+                            {
+                                reorderableMusicLists[category].Draw();
+                            }
+                            EditorCompatability.EndSpecialFoldoutGroup();
+                        }
+                    }
+                    EditorGUILayout.EndVertical();
+                }
+
+                EditorGUILayout.EndScrollView();
 
                 if (GUILayout.Button("Re-Generate Audio Library"))
                 {
@@ -390,6 +798,7 @@ namespace JSAM.JSAMEditor
             {
                 serializedObject.ApplyModifiedProperties();
                 InitializeCategories();
+                DocumentAudioFiles();
                 window.Repaint();
             }
         }
@@ -432,12 +841,24 @@ namespace JSAM.JSAMEditor
                 }
                 else if (Event.current.type == EventType.DragPerform)
                 {
-                    List<AudioFileSoundObject> duplicates = new List<AudioFileSoundObject>();
+                    List<BaseAudioFileObject> duplicates = new List<BaseAudioFileObject>();
 
                     for (int i = 0; i < DragAndDrop.objectReferences.Length; i++)
                     {
                         string filePath = AssetDatabase.GetAssetPath(DragAndDrop.objectReferences[i]);
+                        var mimport = JSAMEditorHelper.ImportAssetsOrFoldersAtPath<AudioFileMusicObject>(filePath);
                         var simport = JSAMEditorHelper.ImportAssetsOrFoldersAtPath<AudioFileSoundObject>(filePath);
+
+                        for (int j = 0; j < mimport.Count; j++)
+                        {
+                            if (asset.music.Contains(mimport[j]))
+                            {
+                                duplicates.Add(mimport[j]);
+                                continue;
+                            }
+
+                            music.AddNewArrayElement().objectReferenceValue = mimport[j];
+                        }
 
                         for (int j = 0; j < simport.Count; j++)
                         {
@@ -470,6 +891,95 @@ namespace JSAM.JSAMEditor
             }
         }
 
+        /// <summary>
+        /// Returns true if this sound is registered in the library
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        public bool GetSoundEnumName(BaseAudioFileObject file, out string enumName)
+        {
+            enumName = soundEnumName.stringValue + "." + file.SafeName;
+            return !newSoundNames.Contains(file.SafeName);
+        }
+
+        /// <summary>
+        /// Returns true if this sound is registered in the library
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        public bool GetMusicEnumName(BaseAudioFileObject file, out string enumName)
+        {
+            Debug.Log(file == null);
+            Debug.Log(musicEnumName == null);
+
+            enumName = musicEnumName.stringValue + "." + file.SafeName;
+            return !newMusicNames.Contains(file.SafeName);
+        }
+
+        public void RemoveAudioFile(BaseAudioFileObject file, bool isMusic)
+        {
+            SerializedProperty array = null;
+            Dictionary<string, SerializedProperty> categoryToStruct = null;
+
+            if (isMusic)
+            {
+                array = music;
+                categoryToStruct = categoryToMusicStructs;
+            }
+            else
+            {
+                array = sounds;
+                categoryToStruct = categoryToSoundStructs;
+            }
+
+            for (int i = 0; i < array.arraySize; i++)
+            {
+                if (array.GetArrayElementAtIndex(i).objectReferenceValue == file)
+                {
+                    // Twice again I guess
+                    array.DeleteArrayElementAtIndex(i);
+                    array.DeleteArrayElementAtIndex(i);
+                    break;
+                }
+            }
+
+            // Delete the category listing too
+            SerializedProperty ctl = categoryToStruct[file.category].FindPropertyRelative("files");
+            for (int i = 0; i < ctl.arraySize; i++)
+            {
+                if (ctl.GetArrayElementAtIndex(i).objectReferenceValue == file)
+                {
+                    ctl.DeleteArrayElementAtIndex(i);
+                    ctl.DeleteArrayElementAtIndex(i);
+                    break;
+                }
+            }
+
+            ApplyChanges();
+        }
+
+        #region Category Operations
+
+        bool GetSoundCategoryFoldout(string category)
+        {
+            return categoryToSoundStructs[category].FindPropertyRelative("foldout").boolValue;
+        }
+
+        void SetSoundCategoryFoldout(string category, bool state)
+        {
+            categoryToSoundStructs[category].FindPropertyRelative("foldout").boolValue = state;
+        }
+
+        bool GetMusicCategoryFoldout(string category)
+        {
+            return categoryToMusicStructs[category].FindPropertyRelative("foldout").boolValue;
+        }
+
+        void SetMusicCategoryFoldout(string category, bool state)
+        {
+            categoryToMusicStructs[category].FindPropertyRelative("foldout").boolValue = state;
+        }
+
         void AddNewSoundCategory(string[] input)
         {
             string category = input[0];
@@ -496,7 +1006,33 @@ namespace JSAM.JSAMEditor
             ApplyChanges();
         }
 
-        public void RenameSoundCategory(string prevName, string newName)
+        void AddNewMusicCategory(string[] input)
+        {
+            string category = input[0];
+            if (category.IsNullEmptyOrWhiteSpace())
+            {
+                EditorUtility.DisplayDialog("Category Name Error",
+                    "Category name field was left blank, please enter a valid name.", "OK");
+                GUIUtility.ExitGUI();
+            }
+            else if (asset.musicCategories.Contains(category))
+            {
+                EditorUtility.DisplayDialog("Duplicate Category!",
+                    "A category with this name already exists in the music library!", "OK");
+                GUIUtility.ExitGUI();
+                return;
+            }
+
+            musicCategories.AddNewArrayElement().stringValue = category;
+
+            var element = musicCategoriesToList.AddNewArrayElement();
+            element.FindPropertyRelative("name").stringValue = category;
+            element.FindPropertyRelative("foldout").boolValue = true;
+
+            ApplyChanges();
+        }
+
+        public void RenameCategory(string prevName, string newName, bool isMusic)
         {
             if (prevName.Equals(newName))
             {
@@ -505,35 +1041,263 @@ namespace JSAM.JSAMEditor
                 FocusWindowIfItsOpen<JSAMUtilityWindow>();
                 GUIUtility.ExitGUI();
             }
-
-            var index = asset.soundCategories.IndexOf(prevName);
-            soundCategories.GetArrayElementAtIndex(index).stringValue = newName;
-
-            // Category with this name exists, delete this one to complete merge
-            if (categoryToSoundStructs.ContainsKey(newName))
+            else if (newName.Equals(CATEGORY_NONE))
             {
-                if (!prevName.Equals(string.Empty))
-                {
-                    categoryToSoundStructs[prevName].DeleteCommand();
-                }
-                soundCategories.DeleteArrayElementAtIndex(index);
+                newName = string.Empty;
+            }
+
+            int index = 0;
+            SerializedProperty categories = null;
+            Dictionary<string, SerializedProperty> categoryToStructs = null;
+            if (isMusic)
+            {
+
             }
             else
             {
-                categoryToSoundStructs[prevName].FindPropertyRelative("name").stringValue = newName;
-            }
+                categories = soundCategories;
+                categoryToStructs = categoryToSoundStructs;
 
-            var array = categoryToSoundStructs[prevName].FindPropertyRelative("files");
-            for (int i = 0; i < array.arraySize; i++)
-            {
-                var file = array.GetArrayElementAtIndex(i);
-                file.FindPropertyRelative("category").stringValue = newName;
+                // This category should not be renamed, clone it
+                //if (prevName.Equals(string.Empty))
+                //{
+                //    soundCategories.AddNewArrayElement();
+                //    index = soundCategories.arraySize - 1;
+                //}
+                // Proceed as normal otherwise
+                //else
+                {
+                }
+                index = asset.soundCategories.IndexOf(prevName);
             }
             
-            Debug.Log(prevName);
+            categories.GetArrayElementAtIndex(index).stringValue = newName;
+
+            var array = categoryToStructs[prevName].FindPropertyRelative("files");
+            for (int i = 0; i < array.arraySize; i++)
+            {
+                ChangeAudioFileCategory(array.GetArrayElementAtIndex(i).objectReferenceValue as BaseAudioFileObject, newName);
+            }
+
+            // Category with this name exists, delete this one to complete merge
+            if (categoryToStructs.ContainsKey(newName))
+            {
+                // Don't actually delete if you're the important category
+                if (!prevName.Equals(string.Empty))
+                {
+                    categoryToStructs[prevName].DeleteCommand();
+                }
+                categories.DeleteArrayElementAtIndex(index);
+            }
+            else
+            {
+                categoryToStructs[prevName].FindPropertyRelative("name").stringValue = newName;
+            }
 
             ApplyChanges();
         }
+
+        public void ChangeAudioFileCategory(BaseAudioFileObject file, string category)
+        {
+            var so = new SerializedObject(file);
+            so.FindProperty("category").stringValue = category;
+            so.ApplyModifiedProperties();
+        }
+
+        public bool CanCategoryMove(string category, bool isUp, bool isMusic)
+        {
+            List<string> categoryList = null;
+            if (isMusic)
+            {
+                categoryList = asset.musicCategories;
+            }
+            else
+            {
+                categoryList = asset.soundCategories;
+            }
+
+            if (isUp)
+            {
+                return categoryList.IndexOf(category) == 0;
+            }
+            else
+            {
+                return categoryList.IndexOf(category) == categoryList.Count - 1;
+            }
+        }
+
+        /// <summary>
+        /// Moving up at the top and down at the bottom disabled 
+        /// Out of scope for the time being
+        /// </summary>
+        /// <param name="categoryName"></param>
+        /// <param name="isUp"></param>
+        /// <param name="isMusic"></param>
+        public void MoveCategory(string categoryName, bool isUp, bool isMusic)
+        {
+            // Initialize variables
+            int startIndex = -1;
+            SerializedProperty propCategories = null;
+            SerializedProperty propCategoriesToList = null;
+            int ogSize = -1;
+            int startOffset = -1;
+            int destinationIndex = -1;
+            int destinationOffset = -1;
+            int deletionTarget = -1;
+            string destinationCategory = string.Empty;
+
+            if (isMusic)
+            {
+                // Search for start position of category
+                startIndex = asset.musicCategories.IndexOf(categoryName);
+
+                // Cache initial size of category array
+                ogSize = musicCategories.arraySize;
+
+                propCategories = musicCategories;
+                propCategoriesToList = musicCategoriesToList;
+            }
+            else
+            {
+                // Search for start position of category
+                startIndex = asset.soundCategories.IndexOf(categoryName);
+
+                // Cache initial size of category array
+                ogSize = soundCategories.arraySize;
+
+                propCategories = soundCategories;
+                propCategoriesToList = soundCategoriesToList;
+            }
+
+            // Insert a helper element into array
+            propCategories.InsertArrayElementAtIndex(startIndex);
+            propCategoriesToList.InsertArrayElementAtIndex(startIndex);
+
+            if (isUp)
+            {
+                startOffset = startIndex + 1;
+                // Moving up while at the top
+                if (startIndex == 0)
+                {
+                    destinationIndex = ogSize;
+                    destinationCategory = propCategories.GetArrayElementAtIndex(destinationIndex).stringValue;
+                }
+                else
+                {
+                    destinationIndex = startIndex - 1;
+                    destinationCategory = propCategories.GetArrayElementAtIndex(destinationIndex).stringValue;
+                }
+                destinationOffset = destinationIndex;
+
+                deletionTarget = startOffset;
+            }
+            else
+            {
+                startOffset = startIndex + 1;
+                // Moving down while at the bottom
+                if (startIndex == ogSize - 1)
+                {
+                    destinationIndex = 0;
+                    destinationOffset = destinationIndex + 1;
+                    destinationCategory = propCategories.GetArrayElementAtIndex(destinationIndex).stringValue;
+                    deletionTarget = ogSize;
+                }
+                else
+                {
+                    destinationIndex = startOffset;
+                    destinationOffset = destinationIndex + 1;
+                    destinationCategory = propCategories.GetArrayElementAtIndex(destinationOffset).stringValue;
+                    deletionTarget = destinationOffset;
+                }
+            }
+
+            // Move destination to original position
+            propCategories.GetArrayElementAtIndex(startIndex).stringValue = destinationCategory;
+            propCategoriesToList.GetArrayElementAtIndex(startIndex).FindPropertyRelative("name").stringValue = destinationCategory;
+            var startArray = propCategoriesToList.GetArrayElementAtIndex(startIndex).FindPropertyRelative("files");
+            var destArray = propCategoriesToList.GetArrayElementAtIndex(destinationOffset).FindPropertyRelative("files");
+            startArray.ClearArray();
+            for (int i = 0; i < destArray.arraySize; i++)
+            {
+                var element = startArray.AddNewArrayElement();
+                element.objectReferenceValue = destArray.GetArrayElementAtIndex(i).objectReferenceValue;
+            }
+
+            // Move original to destination
+            propCategories.GetArrayElementAtIndex(destinationIndex).stringValue = categoryName;
+            propCategoriesToList.GetArrayElementAtIndex(destinationIndex).FindPropertyRelative("name").stringValue = categoryName;
+            var startOffsetArray = propCategoriesToList.GetArrayElementAtIndex(startOffset).FindPropertyRelative("files");
+            destArray.ClearArray();
+            for (int i = 0; i < startOffsetArray.arraySize; i++)
+            {
+                var element = destArray.AddNewArrayElement();
+                element.objectReferenceValue = startOffsetArray.GetArrayElementAtIndex(i).objectReferenceValue;
+            }
+
+            // Delete the outlying index
+            propCategories.DeleteArrayElementAtIndex(deletionTarget);
+            propCategoriesToList.DeleteArrayElementAtIndex(deletionTarget);
+
+            ApplyChanges();
+        }
+
+        public void DeleteCategory(string categoryName, bool isMusic)
+        {
+            Dictionary<string, SerializedProperty> categoryToStruct = null;
+            SerializedProperty categories = null;
+            SerializedProperty audioProp = null;
+            int index = -1;
+            
+            if (isMusic)
+            {
+                categoryToStruct = categoryToMusicStructs;
+                index = asset.musicCategories.IndexOf(categoryName);
+                categories = musicCategories;
+                audioProp = music;
+            }
+            else
+            {
+                categoryToStruct = categoryToSoundStructs;
+                index = asset.soundCategories.IndexOf(categoryName);
+                categories = soundCategories;
+                audioProp = sounds;
+            }
+
+            int categorySize = categoryToStruct[categoryName].FindPropertyRelative("files").arraySize;
+            if (categorySize > 0)
+            {
+                bool cancel = EditorUtility.DisplayDialog("Delete Category?", "This category holds " + categorySize + " Audio File object(s). " +
+                    "Are you sure you want to remove the category as well all its Audio Files from this library?\n" +
+                    "(Note: This process can be undone with Edit -> Undo)", "Yes", "No");
+                if (!cancel)
+                {
+                    GUIUtility.ExitGUI();
+                    return;
+                }
+            }
+
+            categories.DeleteArrayElementAtIndex(index);
+            for (int i = 0; i < audioProp.arraySize; i++)
+            {
+                var audio = audioProp.GetArrayElementAtIndex(i).objectReferenceValue as BaseAudioFileObject;
+                if (audio.category.Equals(categoryName))
+                {
+                    // A dirty hack, but Unity serialization is real messy
+                    // https://answers.unity.com/questions/555724/serializedpropertydeletearrayelementatindex-leaves.html
+                    if (audioProp.GetArrayElementAtIndex(i) != null)
+                        audioProp.DeleteArrayElementAtIndex(i);
+                    audioProp.DeleteArrayElementAtIndex(i);
+                    i--; // Decrement current index so we can keep iterating through the array scot-free
+                }
+            }
+
+            categoryToStruct[categoryName].DeleteCommand();
+
+            ApplyChanges();
+            GUIUtility.ExitGUI();
+        }
+
+        #endregion
 
         /// <summary>
         /// With help from Daniel Robledo

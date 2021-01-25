@@ -1973,14 +1973,9 @@ namespace JSAM
             instance.StopSoundInternal(instance.library.sounds[s], trans);
         }
 
-        /// <summary>
-        /// Stops any sound playing through PlaySound and it's variants immediately 
-        /// </summary>
-        /// <param name="s">The sound to be stopped</param>
-        /// <param name="t">For sources, helps with duplicate sounds</param>
         public void StopSoundInternal(int s, Transform t = null)
         {
-            StopSoundLoopInternal(library.sounds[s], t);
+            StopSoundInternal(library.sounds[s], t);
         }
 
         /// <summary>

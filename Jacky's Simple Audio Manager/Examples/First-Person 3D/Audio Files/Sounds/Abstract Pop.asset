@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d15ae218647a2d4f85e14306846c10c, type: 3}
   m_Name: Abstract Pop
   m_EditorClassIdentifier: 
+  safeName: AbstractPop
+  presetDescription: 
+  category: 
   file: {fileID: 8300000, guid: 1a3ec11eedd102f4488b169670fcef28, type: 3}
   files:
   - {fileID: 8300000, guid: 1a3ec11eedd102f4488b169670fcef28, type: 3}
   useLibrary: 0
-  neverRepeat: 0
-  lastClipIndex: -1
-  category: 
   relativeVolume: 1
   spatialize: 1
   maxDistance: 0
@@ -34,7 +34,6 @@ MonoBehaviour:
   bypassEffects: 0
   bypassListenerEffects: 0
   bypassReverbZones: 0
-  safeName: AbstractPop
   chorusFilter:
     enabled: 0
     dryMix: 0
@@ -78,3 +77,5 @@ MonoBehaviour:
     lFReference: 250
     diffusion: 100
     density: 100
+  neverRepeat: 0
+  lastClipIndex: -1

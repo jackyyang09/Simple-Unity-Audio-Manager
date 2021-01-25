@@ -70,5 +70,27 @@ namespace JSAM
 
             return new string(arr);
         }
+
+        public static Color Add(this Color thisColor, Color otherColor)
+        {
+            return new Color
+            {
+                r = Mathf.Clamp01(thisColor.r + otherColor.r),
+                g = Mathf.Clamp01(thisColor.g + otherColor.g),
+                b = Mathf.Clamp01(thisColor.b + otherColor.g),
+                a = Mathf.Clamp01(thisColor.a + otherColor.a)
+            };
+        }
+
+        public static Color Subtract(this Color thisColor, Color otherColor)
+        {
+            return new Color
+            {
+                r = Mathf.Clamp01(thisColor.r - otherColor.r),
+                g = Mathf.Clamp01(thisColor.g - otherColor.g),
+                b = Mathf.Clamp01(thisColor.b - otherColor.g),
+                a = Mathf.Clamp01(thisColor.a - otherColor.a)
+            };
+        }
     }
 }

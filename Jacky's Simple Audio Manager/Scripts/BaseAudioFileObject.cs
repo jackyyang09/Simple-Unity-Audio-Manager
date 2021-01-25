@@ -122,7 +122,7 @@ namespace JSAM
             {
                 if (safeName.IsNullEmptyOrWhiteSpace())
                 {
-                    safeName = safeName.ConvertToAlphanumeric();
+                    safeName = name.ConvertToAlphanumeric();
                 }
                 return safeName;
             }

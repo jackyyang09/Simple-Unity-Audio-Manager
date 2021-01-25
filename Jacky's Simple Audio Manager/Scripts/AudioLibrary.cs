@@ -11,11 +11,12 @@ namespace JSAM
         public struct CategoryToList
         {
             public string name;
-            public List<AudioFileSoundObject> files;
+            public List<BaseAudioFileObject> files;
             public bool foldout;
         }
 
         public List<string> soundCategories;
+        public List<string> musicCategories;
 
         public List<AudioFileSoundObject> sounds = new List<AudioFileSoundObject>();
         public List<AudioFileMusicObject> music = new List<AudioFileMusicObject>();
@@ -24,6 +25,7 @@ namespace JSAM
         public string musicEnumName;
 
         [SerializeField] List<CategoryToList> soundCategoriesToList;
+        [SerializeField] List<CategoryToList> musicCategoriesToList;
 
         public string safeName;
         public bool soundFoldout;
@@ -32,11 +34,13 @@ namespace JSAM
         void Reset()
         {
             soundCategories.Add(string.Empty);
+            musicCategories.Add(string.Empty);
 
             var ctl = new CategoryToList();
             ctl.name = string.Empty;
             ctl.foldout = true;
             soundCategoriesToList.Add(ctl);
+            musicCategoriesToList.Add(ctl);
         }
 
         /// <summary>

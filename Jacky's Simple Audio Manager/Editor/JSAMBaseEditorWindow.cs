@@ -24,12 +24,19 @@ namespace JSAM.JSAMEditor
         protected abstract void SetWindowTitle();
     }
 
-    public abstract class JSAMSerializedEditorWindow<Asset, T> : JSAMBaseEditorWindow<T>
-        where Asset : ScriptableObject
+    public abstract class JSAMSerializedEditorWindow<AssetType, T> : JSAMBaseEditorWindow<T>
+        where AssetType : ScriptableObject
         where T : EditorWindow
     {
         protected static SerializedObject serializedObject;
-        protected static Asset asset;
+        protected static AssetType asset;
+        public static AssetType Asset
+        {
+            get
+            {
+                return asset;
+            }
+        }
 
         protected virtual void OnEnable()
         {
