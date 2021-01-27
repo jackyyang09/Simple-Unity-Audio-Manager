@@ -2566,6 +2566,7 @@ namespace JSAM
         /// <summary>
         /// Ensures that the AudioManager you think you're referring to actually exists in this scene
         /// </summary>
+        [RuntimeInitializeOnLoadMethod]
         public void EstablishSingletonDominance(bool killSelf = true)
         {
             if (instance == null)

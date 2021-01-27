@@ -2069,7 +2069,7 @@ MonoBehaviour:
   spatialSound: 1
   loopSound: 0
   priority: 128
-  pitchShift: 1
+  pitchShift: 0.05
   delay: 0
   ignoreTimeScale: 0
   sound: {fileID: 11400000, guid: a03d93398434809489558195c45c68f7, type: 2}
@@ -9406,7 +9406,7 @@ MonoBehaviour:
   spatialSound: 1
   loopSound: 0
   priority: 128
-  pitchShift: 1
+  pitchShift: 0.05
   delay: 0
   ignoreTimeScale: 0
   sound: {fileID: 11400000, guid: a03d93398434809489558195c45c68f7, type: 2}

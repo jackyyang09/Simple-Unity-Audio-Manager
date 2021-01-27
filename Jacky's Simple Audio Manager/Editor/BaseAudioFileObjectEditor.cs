@@ -57,6 +57,15 @@ namespace JSAM.JSAMEditor
         {
         }
 
+        protected void RenderPresetDescription()
+        {
+            if (isPreset)
+            {
+                EditorGUILayout.LabelField("Preset Description");
+                presetDescription.stringValue = EditorGUILayout.TextArea(presetDescription.stringValue);
+            }
+        }
+
         #region Audio Effect Rendering
         static bool showAudioEffects;
         static bool chorusFoldout;

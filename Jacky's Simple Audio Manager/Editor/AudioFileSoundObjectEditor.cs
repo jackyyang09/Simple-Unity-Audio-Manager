@@ -75,7 +75,9 @@ namespace JSAM.JSAMEditor
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.PropertyField(category);
             EditorGUILayout.EndHorizontal();
-#endregion
+            #endregion
+
+            RenderPresetDescription();
 
             List<string> excludedProperties = new List<string>() { "m_Script", "file", "files", "safeName",
                 "relativeVolume", "spatialize", "maxDistance" };

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.Presets;
 
 namespace JSAM.JSAMEditor
 {
@@ -18,6 +19,18 @@ namespace JSAM.JSAMEditor
             int index = prop.arraySize;
             prop.InsertArrayElementAtIndex(index);
             return prop.GetArrayElementAtIndex(index);
+        }
+
+        public static PropertyModification FindProp(this Preset preset, string propName)
+        {
+            for (int i = 0; i < preset.PropertyModifications.Length; i++)
+            {
+                if (preset.PropertyModifications[i].propertyPath.Equals(propName))
+                {
+                    return preset.PropertyModifications[i];
+                }
+            }
+            return null;
         }
     }
 
@@ -50,10 +63,7 @@ namespace JSAM.JSAMEditor
             }
             else a = AudioManager.instance;
             string path = AssetDatabase.GetAssetPath(MonoScript.FromMonoBehaviour(a));
-            if (!AudioManager.instance)
-            {
-                Object.DestroyImmediate(g);
-            }
+            if (g != null) Object.DestroyImmediate(g);
             return path;
         }
 
@@ -153,6 +163,13 @@ namespace JSAM.JSAMEditor
         {
             var style = new GUIStyle(referenceStyle);
             style.alignment = anchor;
+            return style;
+        }
+
+        public static GUIStyle ApplyFontSizeToStyle(GUIStyle referenceStyle, int fontSize)
+        {
+            var style = new GUIStyle(referenceStyle);
+            style.fontSize = fontSize;
             return style;
         }
 

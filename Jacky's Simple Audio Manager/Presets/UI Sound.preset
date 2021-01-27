@@ -26,6 +26,28 @@ Preset:
     value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}
+    propertyPath: safeName
+    value: 
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: presetDescription
+    value: '<Default Preset>
+
+      - Sound meant to be played in the game''s UI
+
+      -
+      Spatialization is disabled
+
+      - No pitch shift applied
+
+      - Ignores
+      time scale'
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: category
+    value: 
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
     propertyPath: file
     value: 
     objectReference: {fileID: 8300000, guid: 1a3ec11eedd102f4488b169670fcef28, type: 3}
@@ -36,18 +58,6 @@ Preset:
   - target: {fileID: 0}
     propertyPath: useLibrary
     value: 0
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: neverRepeat
-    value: 0
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: lastClipIndex
-    value: -1
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: category
-    value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: relativeVolume
@@ -108,10 +118,6 @@ Preset:
   - target: {fileID: 0}
     propertyPath: bypassReverbZones
     value: 0
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: safeName
-    value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: chorusFilter.enabled
@@ -261,3 +267,13 @@ Preset:
     propertyPath: reverbFilter.density
     value: 0
     objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: neverRepeat
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: lastClipIndex
+    value: -1
+    objectReference: {fileID: 0}
+  m_ExcludedProperties:
+  - file
