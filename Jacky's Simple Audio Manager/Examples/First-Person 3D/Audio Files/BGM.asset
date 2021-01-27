@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bfb8002b44af6934a9ae327c8311d458, type: 3}
   m_Name: BGM
   m_EditorClassIdentifier: 
+  safeName: BGM
+  presetDescription: 
+  category: Looping
   file: {fileID: 8300000, guid: fe06d48e659b1434ba98e89445a43760, type: 3}
   files: []
   useLibrary: 0
-  neverRepeat: 0
-  lastClipIndex: -1
-  category: Looping
   relativeVolume: 0.4
   spatialize: 0
   maxDistance: 0
@@ -33,7 +33,6 @@ MonoBehaviour:
   bypassEffects: 0
   bypassListenerEffects: 0
   bypassReverbZones: 0
-  safeName: BGM
   chorusFilter:
     enabled: 0
     dryMix: 0.5

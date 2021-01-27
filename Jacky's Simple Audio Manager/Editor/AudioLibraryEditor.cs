@@ -61,9 +61,11 @@ namespace JSAM.JSAMEditor
 
                 menu.AddItem(new GUIContent(AudioLibraryEditor.CATEGORY_NONE), category.Equals(string.Empty),
                     SetAudioFileCategory, new Tuple<BaseAudioFileObject, string>(file, string.Empty));
+                menu.AddSeparator(string.Empty);
                 var categories = AudioLibraryEditor.Asset.musicCategories;
                 for (int i = 0; i < categories.Count; i++)
                 {
+                    if (categories[i].Equals(string.Empty)) continue;
                     menu.AddItem(new GUIContent(categories[i]), category.Equals(categories[i]),
                         SetAudioFileCategory, new Tuple<BaseAudioFileObject, string>(file, categories[i]));
                 }
@@ -83,14 +85,14 @@ namespace JSAM.JSAMEditor
                 }
                 else
                 {
-                    blontent = new GUIContent("( ! ) " + file.SafeName, "Re-generate your Audio Library to get this Audio File's enum name");
+                    blontent = new GUIContent(file.SafeName + "*", "Re-generate your Audio Library to get this Audio File's enum name");
                 }
             }
             // Force a normal-colored label in a disabled scope
             JSAMEditorHelper.BeginColourChange(Color.clear);
             Rect decoyRect = EditorGUI.PrefixLabel(currentRect, blontent);
             JSAMEditorHelper.EndColourChange();
-            if (!registered) JSAMEditorHelper.BeginColourChange(Color.yellow);
+            if (!registered) JSAMEditorHelper.BeginColourChange(new Color(0.75f, 0.75f, 0.75f));
             EditorGUI.LabelField(currentRect, blontent);
             JSAMEditorHelper.EndColourChange();
             using (new EditorGUI.DisabledScope(true))
@@ -121,7 +123,8 @@ namespace JSAM.JSAMEditor
             prevRect = new Rect(currentRect);
             currentRect.xMin = prevRect.xMax + 2;
             currentRect.xMax = currentRect.xMax + 25;
-            if (GUI.Button(currentRect, "X"))
+            blontent = new GUIContent("X", "Remove this Audio File from the library, can be undone with Edit -> Undo");
+            if (GUI.Button(currentRect, blontent))
             {
                 AudioLibraryEditor.Window.RemoveAudioFile(file, isMusic);
             }
@@ -145,8 +148,10 @@ namespace JSAM.JSAMEditor
                 menu.AddItem(new GUIContent(AudioLibraryEditor.CATEGORY_NONE), category.Equals(string.Empty),
                     SetAudioFileCategory, new Tuple<BaseAudioFileObject, string>(file, string.Empty));
                 var categories = AudioLibraryEditor.Asset.soundCategories;
+                menu.AddSeparator(string.Empty);
                 for (int i = 0; i < categories.Count; i++)
                 {
+                    if (categories[i].Equals(string.Empty)) continue;
                     menu.AddItem(new GUIContent(categories[i]), category.Equals(categories[i]),
                         SetAudioFileCategory, new Tuple<BaseAudioFileObject, string>(file, categories[i]));
                 }
@@ -166,14 +171,14 @@ namespace JSAM.JSAMEditor
                 }
                 else
                 {
-                    blontent = new GUIContent("( ! ) " + file.SafeName, "Re-generate your Audio Library to get this Audio File's enum name");
+                    blontent = new GUIContent(file.SafeName + "*", "Re-generate your Audio Library to get this Audio File's enum name");
                 }
             }
             // Force a normal-colored label in a disabled scope
             JSAMEditorHelper.BeginColourChange(Color.clear);
             Rect decoyRect = EditorGUI.PrefixLabel(currentRect, blontent);
             JSAMEditorHelper.EndColourChange();
-            if (!registered) JSAMEditorHelper.BeginColourChange(Color.yellow);
+            if (!registered) JSAMEditorHelper.BeginColourChange(new Color(0.75f, 0.75f, 0.75f));
             EditorGUI.LabelField(currentRect, blontent);
             JSAMEditorHelper.EndColourChange();
             using (new EditorGUI.DisabledScope(true))
@@ -204,7 +209,8 @@ namespace JSAM.JSAMEditor
             prevRect = new Rect(currentRect);
             currentRect.xMin = prevRect.xMax + 2;
             currentRect.xMax = currentRect.xMax + 25;
-            if (GUI.Button(currentRect, "X"))
+            blontent = new GUIContent("X", "Remove this Audio File from the library, can be undone with Edit -> Undo");
+            if (GUI.Button(currentRect, blontent))
             {
                 AudioLibraryEditor.Window.RemoveAudioFile(file, isMusic);
             }
@@ -216,7 +222,7 @@ namespace JSAM.JSAMEditor
             list.DoLayoutList();
 
             Rect rect = EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Category Options: ", new GUILayoutOption[] { GUILayout.Width(105) });
+            //EditorGUILayout.LabelField("Category Options: ", new GUILayoutOption[] { GUILayout.Width(105) });
 
             GUIContent blontent = new GUIContent("Rename", "Change the name of this category, also changes the category field for all Audio File objects that share this category");
             if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
@@ -228,7 +234,7 @@ namespace JSAM.JSAMEditor
 
             using (new EditorGUI.DisabledScope(AudioLibraryEditor.Window.CanCategoryMove(category, true, isMusic)))
             {
-                blontent = new GUIContent("Move Up");
+                blontent = new GUIContent("Move Up", "Swap the order of this category with the one above it");
                 if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
                 {
                     AudioLibraryEditor.Window.MoveCategory(category, true, isMusic);
@@ -237,7 +243,7 @@ namespace JSAM.JSAMEditor
 
             using (new EditorGUI.DisabledScope(AudioLibraryEditor.Window.CanCategoryMove(category, false, isMusic)))
             {
-                blontent = new GUIContent("Move Down");
+                blontent = new GUIContent("Move Down", "Swap the order of this category with the one below it");
                 if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
                 {
                     AudioLibraryEditor.Window.MoveCategory(category, false, isMusic);
@@ -245,7 +251,7 @@ namespace JSAM.JSAMEditor
             }
 
             JSAMEditorHelper.BeginColourChange(Color.red);
-            blontent = new GUIContent("Delete");
+            blontent = new GUIContent("Delete", "Remove this category and any Audio Files inside it from the library");
             if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
             {
                 AudioLibraryEditor.Window.DeleteCategory(category, isMusic);
@@ -347,13 +353,13 @@ namespace JSAM.JSAMEditor
         SerializedProperty soundEnumName;
         SerializedProperty musicEnumName;
 
+        SerializedProperty showMusic;
+
         SerializedProperty sounds;
-        SerializedProperty soundFoldout;
         SerializedProperty soundCategories;
         SerializedProperty soundCategoriesToList;
 
         SerializedProperty music;
-        SerializedProperty musicFoldout;
         SerializedProperty musicCategories;
         SerializedProperty musicCategoriesToList;
 
@@ -363,19 +369,18 @@ namespace JSAM.JSAMEditor
             serializedObject = new SerializedObject(asset);
 
             safeName = FindProp("safeName");
+            showMusic = FindProp(nameof(asset.showMusic));
 
             soundEnumName = FindProp(nameof(asset.soundEnumName));
 
             sounds = FindProp(nameof(asset.sounds));
             soundCategories = FindProp(nameof(asset.soundCategories));
-            soundFoldout = FindProp(nameof(asset.soundFoldout));
             soundCategoriesToList = FindProp("soundCategoriesToList");
 
             musicEnumName = FindProp(nameof(asset.musicEnumName));
 
             music = FindProp(nameof(asset.music));
             musicCategories = FindProp(nameof(asset.musicCategories));
-            musicFoldout = FindProp(nameof(asset.musicFoldout));
             musicCategoriesToList = FindProp("musicCategoriesToList");
 
             InitializeCategories();
@@ -402,6 +407,23 @@ namespace JSAM.JSAMEditor
             }
             if (missingSoundNames == null) missingSoundNames = new List<string>();
             if (newSoundNames == null) newSoundNames = new List<string>();
+
+            if (!musicEnumName.stringValue.IsNullEmptyOrWhiteSpace())
+            {
+                var type = AudioLibrary.GetEnumType(musicEnumName.stringValue);
+                List<string> registeredNames = new List<string>(Enum.GetNames(type));
+                List<string> libraryNames = new List<string>();
+                for (int i = 0; i < asset.music.Count; i++)
+                {
+                    libraryNames.Add(asset.music[i].SafeName);
+                }
+                // Get all sound names that are registered but not in the library
+                missingMusicNames = new List<string>(registeredNames.Except(libraryNames));
+                // Get all sound names that are in the library but aren't registered
+                newMusicNames = new List<string>(libraryNames.Except(registeredNames));
+            }
+            if (missingMusicNames == null) missingMusicNames = new List<string>();
+            if (newMusicNames == null) newMusicNames = new List<string>();
         }
 
         void InitializeCategories()
@@ -467,6 +489,7 @@ namespace JSAM.JSAMEditor
                     {
                         var element = soundCategoriesToList.AddNewArrayElement();
                         element.FindPropertyRelative("name").stringValue = category;
+                        element.FindPropertyRelative("foldout").boolValue = true;
 
                         var array = element.FindPropertyRelative("files");
                         array.ClearArray();
@@ -528,6 +551,7 @@ namespace JSAM.JSAMEditor
                     {
                         var element = musicCategoriesToList.AddNewArrayElement();
                         element.FindPropertyRelative("name").stringValue = category;
+                        element.FindPropertyRelative("foldout").boolValue = true;
 
                         var array = element.FindPropertyRelative("files");
                         array.ClearArray();
@@ -644,28 +668,38 @@ namespace JSAM.JSAMEditor
                 scrollProgress = EditorGUILayout.BeginScrollView(scrollProgress);
 
                 EditorGUILayout.BeginHorizontal();
-                //JSAMEditorHelper.BeginColourChange(GUI.color.Subtract(new Color(0.15f, 0.15f, 0.15f, 0)));
-                if (GUILayout.Button("Sound (New: 1)", EditorStyles.miniButtonLeft))
+
+                if (showMusic.boolValue) JSAMEditorHelper.BeginColourChange(GUI.color.Subtract(new Color(0.2f, 0.2f, 0.2f, 0)));
+                string topLabel = "Sound Library";
+                if (newSoundNames.Count > 0 || missingSoundNames.Count > 0) topLabel += "*";
+                if (GUILayout.Button(topLabel, JSAMEditorHelper.ApplyTextColorToStyle(EditorStyles.miniButtonLeft, Color.white)))
                 {
-                    //
+                    showMusic.boolValue = false;
                 }
-                //JSAMEditorHelper.EndColourChange();
-                if (GUILayout.Button("Music", EditorStyles.miniButtonRight))
+                if (showMusic.boolValue) JSAMEditorHelper.EndColourChange();
+
+                topLabel = "Music Library";
+                if (!showMusic.boolValue) JSAMEditorHelper.BeginColourChange(GUI.color.Subtract(new Color(0.2f, 0.2f, 0.2f, 0)));
+                if (newMusicNames.Count > 0 || missingMusicNames.Count > 0) topLabel += "*";
+                if (GUILayout.Button(topLabel, EditorStyles.miniButtonRight))
                 {
-                    //
+                    showMusic.boolValue = true;
                 }
-                //JSAMEditorHelper.EndColourChange();
+                if (!showMusic.boolValue) JSAMEditorHelper.EndColourChange();
+
                 EditorGUILayout.EndHorizontal();
 
                 // Sound Library
+                if (!showMusic.boolValue)
                 {
-                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-                    string arrow = (soundFoldout.boolValue) ? "▼" : "▶";
-                    string title = "Sound Library";
-                    if (newSoundNames.Count > 0) title += " (New: " + newSoundNames.Count + ")";
-                    blontent = new GUIContent(arrow + " " + title);
+                    string title = string.Empty;
+                    title += "New: " + newSoundNames.Count + " | ";
+                    title += "Missing: " + missingSoundNames.Count + " | ";
+                    title += "Total Files: " + asset.sounds.Count + " | ";
+                    title += "Categories: " + soundCategories.arraySize;
+                    blontent = new GUIContent(title);
                     EditorGUILayout.BeginHorizontal();
-                    soundFoldout.boolValue = EditorGUILayout.Foldout(soundFoldout.boolValue, blontent, true, EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField(blontent);
                     blontent = new GUIContent("Hide All", "Collapse all category foldouts in the Sound Library");
 
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
@@ -693,40 +727,38 @@ namespace JSAM.JSAMEditor
 
                     EditorGUILayout.EndHorizontal();
 
-                    if (soundFoldout.boolValue)
+                    for (int i = 0; i < asset.soundCategories.Count; i++)
                     {
-                        for (int i = 0; i < asset.soundCategories.Count; i++)
+                        string category = asset.soundCategories[i];
+                        string categoryName = category;
+                        if (category.Equals(string.Empty)) categoryName = CATEGORY_NONE;
+                        bool foldout = GetSoundCategoryFoldout(category);
+                        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                        EditorGUI.BeginChangeCheck();
+                        foldout = EditorCompatability.SpecialFoldouts(foldout, categoryName);
+                        if (EditorGUI.EndChangeCheck())
                         {
-                            string category = asset.soundCategories[i];
-                            string categoryName = category;
-                            if (category.Equals(string.Empty)) categoryName = CATEGORY_NONE;
-                            bool foldout = GetSoundCategoryFoldout(category);
-                            EditorGUI.BeginChangeCheck();
-                            foldout = EditorCompatability.SpecialFoldouts(foldout, categoryName);
-                            if (EditorGUI.EndChangeCheck())
-                            {
-                                SetSoundCategoryFoldout(category, foldout);
-                            }
-                            if (foldout)
-                            {
-                                reorderableSoundLists[category].Draw();
-                            }
-                            EditorCompatability.EndSpecialFoldoutGroup();
+                            SetSoundCategoryFoldout(category, foldout);
                         }
+                        if (foldout)
+                        {
+                            reorderableSoundLists[category].Draw();
+                        }
+                        EditorCompatability.EndSpecialFoldoutGroup();
+                        EditorGUILayout.EndVertical();
                     }
-
-                    EditorGUILayout.EndVertical();
                 }
-
+                else
                 // Music Library
                 {
-                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-                    string arrow = (musicFoldout.boolValue) ? "▼" : "▶";
-                    string title = "Music Library";
-                    if (newMusicNames.Count > 0) title += " (New: " + newMusicNames.Count + ")";
-                    blontent = new GUIContent(arrow + " " + title);
+                    string title = string.Empty;
+                    title += "New: " + newMusicNames.Count + " | ";
+                    title += "Missing: " + missingMusicNames.Count + " | ";
+                    title += "Total Files: " + asset.music.Count + " | ";
+                    title += "Categories: " + musicCategories.arraySize;
+                    blontent = new GUIContent(title);
                     EditorGUILayout.BeginHorizontal();
-                    musicFoldout.boolValue = EditorGUILayout.Foldout(musicFoldout.boolValue, blontent, true, EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField(blontent);
                     blontent = new GUIContent("Hide All", "Collapse all category foldouts in the Music Library");
 
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
@@ -754,33 +786,33 @@ namespace JSAM.JSAMEditor
 
                     EditorGUILayout.EndHorizontal();
 
-                    if (musicFoldout.boolValue)
+                    for (int i = 0; i < asset.musicCategories.Count; i++)
                     {
-                        for (int i = 0; i < asset.musicCategories.Count; i++)
+                        string category = asset.musicCategories[i];
+                        string categoryName = category;
+                        if (category.Equals(string.Empty)) categoryName = CATEGORY_NONE;
+                        bool foldout = GetMusicCategoryFoldout(category);
+                        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                        EditorGUI.BeginChangeCheck();
+                        foldout = EditorCompatability.SpecialFoldouts(foldout, categoryName);
+                        if (EditorGUI.EndChangeCheck())
                         {
-                            string category = asset.musicCategories[i];
-                            string categoryName = category;
-                            if (category.Equals(string.Empty)) categoryName = CATEGORY_NONE;
-                            bool foldout = GetMusicCategoryFoldout(category);
-                            EditorGUI.BeginChangeCheck();
-                            foldout = EditorCompatability.SpecialFoldouts(foldout, categoryName);
-                            if (EditorGUI.EndChangeCheck())
-                            {
-                                SetMusicCategoryFoldout(category, foldout);
-                            }
-                            if (foldout)
-                            {
-                                reorderableMusicLists[category].Draw();
-                            }
-                            EditorCompatability.EndSpecialFoldoutGroup();
+                            SetMusicCategoryFoldout(category, foldout);
                         }
+                        if (foldout)
+                        {
+                            reorderableMusicLists[category].Draw();
+                        }
+                        EditorCompatability.EndSpecialFoldoutGroup();
+                        EditorGUILayout.EndVertical();
                     }
-                    EditorGUILayout.EndVertical();
                 }
 
                 EditorGUILayout.EndScrollView();
 
-                if (GUILayout.Button("Re-Generate Audio Library"))
+                blontent = new GUIContent("Re-Generate Audio Library", "Click to generate your Audio enums and make the files in your Audio Library usable. " +
+                    "Do this every time you Add/Remove Audio File objects in your library.");
+                if (GUILayout.Button(blontent))
                 {
                     GenerateEnumFile(JSAMSettings.Settings.GeneratedEnumsPath);
                 }
@@ -842,6 +874,7 @@ namespace JSAM.JSAMEditor
                 else if (Event.current.type == EventType.DragPerform)
                 {
                     List<BaseAudioFileObject> duplicates = new List<BaseAudioFileObject>();
+                    int showPriority = 0;
 
                     for (int i = 0; i < DragAndDrop.objectReferences.Length; i++)
                     {
@@ -857,6 +890,7 @@ namespace JSAM.JSAMEditor
                                 continue;
                             }
 
+                            showPriority++;
                             music.AddNewArrayElement().objectReferenceValue = mimport[j];
                         }
 
@@ -868,9 +902,13 @@ namespace JSAM.JSAMEditor
                                 continue;
                             }
 
+                            showPriority--;
                             sounds.AddNewArrayElement().objectReferenceValue = simport[j];
                         }
                     }
+
+                    // Active library changes depending on ratio of Audio added
+                    if (showPriority != 0) showMusic.boolValue = showPriority > 0;
 
                     Event.current.Use();
 
@@ -909,9 +947,6 @@ namespace JSAM.JSAMEditor
         /// <returns></returns>
         public bool GetMusicEnumName(BaseAudioFileObject file, out string enumName)
         {
-            Debug.Log(file == null);
-            Debug.Log(musicEnumName == null);
-
             enumName = musicEnumName.stringValue + "." + file.SafeName;
             return !newMusicNames.Contains(file.SafeName);
         }
@@ -956,6 +991,7 @@ namespace JSAM.JSAMEditor
             }
 
             ApplyChanges();
+            GUIUtility.ExitGUI();
         }
 
         #region Category Operations
@@ -1368,12 +1404,12 @@ namespace JSAM.JSAMEditor
                     continue; // We're overwriting this anyway
                 }
                 else if (assetName.Equals(prevName))
-                if (EditorUtility.DisplayDialog("Old AudioEnums file Found!", "An AudioEnums file whose name matches this library's " +
-                    "previous name has been found. It is likely a remnant left behind after this library was renamed. " +
-                    "Would you like to delete this Audio Enums file?", "Yes", "No"))
-                {
-                    AssetDatabase.DeleteAsset(assetPath);
-                }
+                    if (EditorUtility.DisplayDialog("Old AudioEnums file Found!", "An AudioEnums file whose name matches this library's " +
+                        "previous name has been found. It is likely a remnant left behind after this library was renamed. " +
+                        "Would you like to delete this Audio Enums file?", "Yes", "No"))
+                    {
+                        AssetDatabase.DeleteAsset(assetPath);
+                    }
             }
 
             // Check for existing Enums of the same name
@@ -1403,7 +1439,11 @@ namespace JSAM.JSAMEditor
             filePath += fileName;
             File.WriteAllText(filePath, string.Empty);
             StreamWriter writer = new StreamWriter(filePath, true);
-            writer.WriteLine("namespace JSAM {");
+            string namespaceName = JSAMSettings.Settings.EnumNamespace;
+            if (JSAMSettings.Settings.UseNamespace)
+            {
+                writer.WriteLine("namespace " + name + "{");
+            }
 
             writer.WriteLine("    public enum " + safeLibraryName + "Sounds" + " {");
 
@@ -1436,15 +1476,26 @@ namespace JSAM.JSAMEditor
             }
 
             writer.WriteLine("    }");
-            writer.WriteLine("}");
+            if (JSAMSettings.Settings.UseNamespace)
+            {
+                writer.WriteLine("}");
+            }
             writer.Close();
 
             //Re-import the file to update the reference in the editor
             AssetDatabase.ImportAsset(filePath);
             AssetDatabase.Refresh();
 
-            soundEnumName.stringValue = "JSAM." + safeLibraryName + "Sounds";
-            musicEnumName.stringValue = "JSAM." + safeLibraryName + "Music";
+            if (JSAMSettings.Settings.UseNamespace)
+            {
+                soundEnumName.stringValue = namespaceName + "." + safeLibraryName + "Sounds";
+                musicEnumName.stringValue = namespaceName + "." + safeLibraryName + "Music";
+            }
+            else
+            {
+                soundEnumName.stringValue = safeLibraryName + "Sounds";
+                musicEnumName.stringValue = safeLibraryName + "Music";
+            }
             safeName.stringValue = safeLibraryName;
             serializedObject.ApplyModifiedProperties();
 

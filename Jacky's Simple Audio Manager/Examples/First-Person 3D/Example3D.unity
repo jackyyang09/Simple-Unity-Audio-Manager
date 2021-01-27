@@ -9533,23 +9533,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7241a3e106230140bd9d59ff2d17ccd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioFileObjects:
-  - {fileID: 11400000, guid: a03d93398434809489558195c45c68f7, type: 2}
-  - {fileID: 11400000, guid: 6c801ee681c34444e88308ac2d32cb30, type: 2}
-  - {fileID: 11400000, guid: 9ff50a64d0492694ab13119cd8afd75a, type: 2}
-  - {fileID: 11400000, guid: ec7f24a6693535441b1aab719e6c65d9, type: 2}
-  - {fileID: 11400000, guid: 4c3c4b167d2c8b343b75a9fc8f65d110, type: 2}
-  - {fileID: 11400000, guid: 5efb77fdb105d624ea52f06673135762, type: 2}
-  - {fileID: 11400000, guid: 710a6cb5046c91947a846ebe06cde67d, type: 2}
-  - {fileID: 11400000, guid: 96398ed6e06769044b2d992828fa51d8, type: 2}
-  - {fileID: 11400000, guid: 38dc31c11b7578b45b7127f83db23b96, type: 2}
-  - {fileID: 11400000, guid: 64df0c54db9ea73419da5e47fa52bb0f, type: 2}
-  - {fileID: 11400000, guid: 530f7a308da40784e9e25b5f252961da, type: 2}
-  - {fileID: 11400000, guid: b5061c426d2ebb54b83d9a3f5bae9492, type: 2}
-  audioFileMusicObjects:
-  - {fileID: 11400000, guid: 53d013968086c2a4b9dde34f761fbb70, type: 2}
-  sceneSoundEnumName: JSAM.SoundsExample3D
-  sceneMusicEnumName: JSAM.MusicExample3D
   masterVolume: 1
   masterMuted: 0
   soundVolume: 1
@@ -9564,13 +9547,11 @@ MonoBehaviour:
   stopOnSceneLoad: 0
   spatializeLateUpdate: 0
   timeScaledSounds: 1
-  instancedEnums: 1
-  wasInstancedBefore: 1
+  settings: {fileID: 0}
+  library: {fileID: 11400000, guid: 80379792b87189b41b83f847a372c55f, type: 2}
   listener: {fileID: 1934637672}
   sourcePrefab: {fileID: 3048837711066349604, guid: cf11aed7e0e56ae45afe7eaebe30a616,
     type: 3}
-  audioFolderLocation: Assets/Jacky's Simple Audio Manager/Examples/First-Person
-    3D/Audio Files
 --- !u!4 &4502563657454752320
 Transform:
   m_ObjectHideFlags: 0

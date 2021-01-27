@@ -45,6 +45,23 @@ namespace JSAM.JSAMEditor
             }
         }
 
+        [SerializeField] bool useNamespace = false;
+        public bool UseNamespace
+        {
+            get
+            {
+                return useNamespace;
+            }
+        }
+        [SerializeField] string enumNamespace = "JSAM";
+        public string EnumNamespace
+        {
+            get
+            {
+                return enumNamespace;
+            }
+        }
+
         static string settingsAssetName = "JSAMSettings.asset";
 
         public static string SettingsSavePath
@@ -84,6 +101,16 @@ namespace JSAM.JSAMEditor
                 return new SerializedObject(Settings);
             }
         }
+
+        public void Reset()
+        {
+            packagePath = JSAMEditorHelper.GetAudioManagerPath();
+            packagePath = packagePath.Remove(packagePath.IndexOf("/Scripts/AudioManager.cs"));
+            presetsPath = packagePath + "/Presets";
+            generatedEnumsPath = packagePath + "/JSAMGenerated";
+            useNamespace = false;
+            enumNamespace = "JSAM";
+        }
     }
 
     // Register a SettingsProvider using IMGUI for the drawing framework:
@@ -105,16 +132,21 @@ namespace JSAM.JSAMEditor
                     SerializedProperty packagePath = settings.FindProperty("packagePath");
                     SerializedProperty presetsPath = settings.FindProperty("presetsPath");
                     SerializedProperty enumPath = settings.FindProperty("generatedEnumsPath");
+                    SerializedProperty useNamespace = settings.FindProperty("useNamespace");
+                    SerializedProperty enumNamespace = settings.FindProperty("enumNamespace");
 
                     EditorGUILayout.PropertyField(packagePath);
                     EditorGUILayout.PropertyField(presetsPath);
                     EditorGUILayout.PropertyField(enumPath);
+                    EditorGUILayout.PropertyField(useNamespace);
+                    using (new EditorGUI.DisabledScope(!useNamespace.boolValue))
+                    {
+                        EditorGUILayout.PropertyField(enumNamespace);
+                    }
+
                     if (GUILayout.Button("Reset to Default", new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
                     {
-                        packagePath.stringValue = JSAMEditorHelper.GetAudioManagerPath();
-                        packagePath.stringValue = packagePath.stringValue.Remove(packagePath.stringValue.IndexOf("/Scripts/AudioManager.cs"));
-                        presetsPath.stringValue = packagePath.stringValue + "/Presets";
-                        enumPath.stringValue = packagePath.stringValue + "/JSAMGenerated";
+                        JSAMSettings.Settings.Reset();
                     }
 
                     if (settings.hasModifiedProperties)

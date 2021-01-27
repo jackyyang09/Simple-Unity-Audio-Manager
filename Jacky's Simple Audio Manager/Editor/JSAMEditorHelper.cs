@@ -142,7 +142,7 @@ namespace JSAM.JSAMEditor
 
         public static void EndColourChange() => GUI.color = guiColor;
 
-        public static GUIStyle ApplyTextAnchorToStyle(GUIStyle referenceStyle, Color color)
+        public static GUIStyle ApplyTextColorToStyle(GUIStyle referenceStyle, Color color)
         {
             var style = new GUIStyle(referenceStyle);
             style.normal.textColor = color;
@@ -153,6 +153,13 @@ namespace JSAM.JSAMEditor
         {
             var style = new GUIStyle(referenceStyle);
             style.alignment = anchor;
+            return style;
+        }
+
+        public static GUIStyle ApplyBoldTextToStyle(GUIStyle referenceStyle)
+        {
+            var style = new GUIStyle(referenceStyle);
+            style.fontStyle = FontStyle.Bold;
             return style;
         }
     }

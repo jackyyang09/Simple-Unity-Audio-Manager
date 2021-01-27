@@ -159,7 +159,7 @@ namespace JSAM
         [Tooltip("Changes the pitch of sounds according to Time.timeScale. When Time.timeScale is set to 0, pauses all sounds instead")]
         public bool timeScaledSounds = true;
 
-        [SerializeField] AudioManagerSettings settings;
+        [SerializeField] AudioManagerSettings settings = null;
         public AudioManagerSettings Settings
         {
             get
@@ -168,7 +168,7 @@ namespace JSAM
             }
         }
 
-        [SerializeField] AudioLibrary library;
+        [SerializeField] AudioLibrary library = null;
         public AudioLibrary Library
         {
             get

@@ -24,12 +24,11 @@ namespace JSAM
         public string soundEnumName;
         public string musicEnumName;
 
-        [SerializeField] List<CategoryToList> soundCategoriesToList;
-        [SerializeField] List<CategoryToList> musicCategoriesToList;
+        [SerializeField] List<CategoryToList> soundCategoriesToList = null;
+        [SerializeField] List<CategoryToList> musicCategoriesToList = null;
 
         public string safeName;
-        public bool soundFoldout;
-        public bool musicFoldout;
+        public bool showMusic;
 
         void Reset()
         {
