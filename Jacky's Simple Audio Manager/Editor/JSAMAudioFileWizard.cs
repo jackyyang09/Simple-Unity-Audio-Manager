@@ -17,6 +17,7 @@ namespace JSAM.JSAMEditor
     {
         public List<AudioClip> files = new List<AudioClip>();
         public AudioFileType fileType = AudioFileType.Sound;
+        public string outputFolder = "Assets";
 
         static string helperAssetName = "JSAMAudioFileWizard.asset";
 
@@ -95,6 +96,7 @@ namespace JSAM.JSAMEditor
 
         SerializedProperty files;
         SerializedProperty fileType;
+        SerializedProperty outputFolder;
 
         protected override void DesignateSerializedProperties()
         {
@@ -103,6 +105,7 @@ namespace JSAM.JSAMEditor
 
             files = FindProp(nameof(asset.files));
             fileType = FindProp(nameof(asset.fileType));
+            outputFolder = FindProp(nameof(asset.outputFolder));
         }
 
         private void OnGUI()
@@ -194,9 +197,15 @@ namespace JSAM.JSAMEditor
             {
                 blontent = new GUIContent(presetToProp[selectedPreset].value);
             }
-            EditorGUILayout.LabelField(new GUIContent("Preset Description"), blontent, JSAMEditorHelper.ApplyTextAnchorToStyle(GUI.skin.box, TextAnchor.UpperLeft), new GUILayoutOption[] { GUILayout.ExpandWidth(true) });
+
+            // Text shows up black for some reason? Why?
+            //var skin = JSAMEditorHelper.ApplyTextAnchorToStyle(GUI.skin.box, TextAnchor.UpperLeft);
+
+            var skin = JSAMEditorHelper.ApplyTextColorToStyle(JSAMEditorHelper.ApplyTextAnchorToStyle(GUI.skin.box, TextAnchor.UpperLeft), GUI.skin.label.normal.textColor);
+            EditorGUILayout.LabelField(new GUIContent("Preset Description"), blontent, skin, new GUILayoutOption[] { GUILayout.ExpandWidth(true) });
             EditorGUILayout.EndHorizontal();
 
+            JSAMEditorHelper.SmartFolderField(outputFolder);
 
             blontent = new GUIContent("Generate Audio File Objects", 
                 "Create audio file objects with the provided Audio Clips according to the selected preset. " +
