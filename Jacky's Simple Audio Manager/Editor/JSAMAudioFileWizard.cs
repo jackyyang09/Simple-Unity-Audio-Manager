@@ -154,7 +154,7 @@ namespace JSAM.JSAMEditor
             blontent = new GUIContent("Clear Files", "Remove all files from the above list. This process can be undone with Edit -> Undo");
             if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
             {
-
+                files.ClearArray();
             }
 
             blontent = new GUIContent("Audio File Type", "The type of Audio File you want to generate from these Audio Clips");
@@ -197,6 +197,10 @@ namespace JSAM.JSAMEditor
             {
                 blontent = new GUIContent(presetToProp[selectedPreset].value);
             }
+            else
+            {
+                blontent = new GUIContent("No preset selected");
+            }
 
             // Text shows up black for some reason? Why?
             //var skin = JSAMEditorHelper.ApplyTextAnchorToStyle(GUI.skin.box, TextAnchor.UpperLeft);
@@ -212,9 +216,21 @@ namespace JSAM.JSAMEditor
                 "Audio File objects will be saved to the output folder.");
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.Space();
-            if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
-            {
 
+            bool cantGenerate = files.arraySize == 0 || selectedPreset == null;
+            using (new EditorGUI.DisabledScope(cantGenerate))
+            {
+                if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+                {
+                    if (fileType.enumValueIndex == 0)
+                    {
+                        GenerateAudioFileObjects<AudioFileMusicObject>(selectedPreset);
+                    }
+                    else
+                    {
+                        GenerateAudioFileObjects<AudioFileSoundObject>(selectedPreset);
+                    }
+                }
             }
             EditorGUILayout.Space();
             EditorGUILayout.EndHorizontal();
@@ -261,6 +277,20 @@ namespace JSAM.JSAMEditor
 
                 presetToProp[presets[i]] = presets[i].FindProp("presetDescription");
             }
+        }
+
+        void GenerateAudioFileObjects<T>(Preset preset) where T : BaseAudioFileObject
+        {
+            string folder = outputFolder.stringValue;
+            for (int i = 0; i < asset.files.Count; i++)
+            {
+                var newObject = CreateInstance<T>();
+                preset.ApplyTo(newObject);
+                newObject.file = asset.files[i];
+                string finalPath = folder + "/" + asset.files[i].name + ".asset";
+                JSAMEditorHelper.CreateAssetSafe(newObject, finalPath);
+            }
+            EditorUtility.FocusProjectWindow();
         }
 
         void HandleDragAndDrop()

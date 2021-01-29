@@ -15,8 +15,8 @@ namespace JSAM
             public bool foldout;
         }
 
-        public List<string> soundCategories;
-        public List<string> musicCategories;
+        public List<string> soundCategories = new List<string>();
+        public List<string> musicCategories = new List<string>();
 
         public List<AudioFileSoundObject> sounds = new List<AudioFileSoundObject>();
         public List<AudioFileMusicObject> music = new List<AudioFileMusicObject>();
@@ -24,8 +24,8 @@ namespace JSAM
         public string soundEnumName;
         public string musicEnumName;
 
-        [SerializeField] List<CategoryToList> soundCategoriesToList = null;
-        [SerializeField] List<CategoryToList> musicCategoriesToList = null;
+        [SerializeField] List<CategoryToList> soundCategoriesToList = new List<CategoryToList>();
+        [SerializeField] List<CategoryToList> musicCategoriesToList = new List<CategoryToList>();
 
         public string safeName;
         public bool showMusic;

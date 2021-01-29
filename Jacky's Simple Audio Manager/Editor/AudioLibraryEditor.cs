@@ -305,8 +305,7 @@ namespace JSAM.JSAMEditor
                 Init();
                 if (newAsset != asset)
                 {
-                    asset = newAsset;
-                    window.DesignateSerializedProperties();
+                    window.AssignAsset(newAsset);
                 }
                 return true;
             }
@@ -318,8 +317,7 @@ namespace JSAM.JSAMEditor
             AudioLibrary newLibrary = Selection.activeObject as AudioLibrary;
             if (newLibrary)
             {
-                asset = newLibrary;
-                DesignateSerializedProperties();
+                AssignAsset(newLibrary);
             }
         }
 
@@ -339,14 +337,40 @@ namespace JSAM.JSAMEditor
 
         protected override void OnEnable()
         {
+            Debug.Log("Enabled!");
             base.OnEnable();
             Undo.undoRedoPerformed += OnUndoRedoPerformed;
             Window.wantsMouseEnterLeaveWindow = true;
+            AssignAsset();
         }
 
         private void OnDisable()
         {
             Undo.undoRedoPerformed -= OnUndoRedoPerformed;
+        }
+
+        void AssignAsset(AudioLibrary newAsset = null)
+        {
+            if (newAsset != null) asset = newAsset;
+
+            // Assign selected asset to settings
+            if (JSAMSettings.Settings.SelectedLibrary != asset && asset != null)
+            {
+                if (asset != null)
+                {
+                    JSAMSettings.Settings.SelectedLibrary = asset;
+                }
+            }
+            else if (asset == null)
+            {
+                asset = JSAMSettings.Settings.SelectedLibrary;
+            }
+
+            if (asset != null)
+            {
+                serializedObject = new SerializedObject(asset);
+                DesignateSerializedProperties();
+            }
         }
 
         SerializedProperty safeName;
@@ -366,7 +390,6 @@ namespace JSAM.JSAMEditor
         protected override void DesignateSerializedProperties()
         {
             Debug.Log("Designating");
-            serializedObject = new SerializedObject(asset);
 
             safeName = FindProp("safeName");
             showMusic = FindProp(nameof(asset.showMusic));
@@ -646,7 +669,7 @@ namespace JSAM.JSAMEditor
         {
             if (serializedObject == null)
             {
-
+                EditorGUILayout.LabelField("Select an Audio Library asset to get started!");
             }
             else
             {

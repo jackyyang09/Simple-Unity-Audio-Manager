@@ -12,12 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27e51d38e4c293f4cbdf6025e7240cc2, type: 3}
   m_Name: JSAMAudioFileWizard
   m_EditorClassIdentifier: 
-  files:
-  - {fileID: 8300000, guid: 42f211e8d68e33941ad2f8c969326171, type: 3}
-  - {fileID: 8300000, guid: 782941a1d268cbe4a9277ed4d2861198, type: 3}
-  - {fileID: 8300000, guid: 0cd3a8d2ccc66b842a4d372d1aacf11b, type: 3}
-  - {fileID: 8300000, guid: e7aa0634b69bd3d4eb06c5aca1e576dc, type: 3}
-  - {fileID: 8300000, guid: e3a9751c127b4ee4697063fb5703b49b, type: 3}
-  - {fileID: 8300000, guid: 8ae0df106b9083f41b332c8807370a68, type: 3}
-  - {fileID: 8300000, guid: b6076c919cd5e3d4491c8bfde482ff38, type: 3}
+  files: []
   fileType: 1
+  outputFolder: Assets/JSAMGenerated

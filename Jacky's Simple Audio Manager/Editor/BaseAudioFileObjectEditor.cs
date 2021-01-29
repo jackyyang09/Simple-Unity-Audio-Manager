@@ -66,6 +66,22 @@ namespace JSAM.JSAMEditor
             }
         }
 
+        protected void RenderGeneratePresetButton()
+        {
+            if (!isPreset)
+            {
+                if (GUILayout.Button("Create Preset from Audio File"))
+                {
+                    var window = JSAMUtilityWindow.Init("JSAM Preset Wizard", false, true);
+                    window.AddField(new GUIContent("Preset Name"), "New Preset", true);
+                    window.AddField(new GUIContent("Preset Description"), "", true);
+                    JSAMUtilityWindow.onSubmitField += OnCreatePreset;
+                }
+            }
+        }
+
+        protected abstract void OnCreatePreset(string[] input);
+
         #region Audio Effect Rendering
         static bool showAudioEffects;
         static bool chorusFoldout;

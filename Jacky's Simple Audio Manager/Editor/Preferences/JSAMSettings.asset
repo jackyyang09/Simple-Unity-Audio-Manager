@@ -17,3 +17,4 @@ MonoBehaviour:
   generatedEnumsPath: Assets/JSAMGenerated
   useNamespace: 0
   enumNamespace: JSAM
+  selectedLibrary: Assets/Benis.asset

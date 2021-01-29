@@ -94,11 +94,24 @@ namespace JSAM.JSAMEditor
             }
         }
         
-        public static SerializedObject SerializedObject
+        public static SerializedObject SerializedSettings
         {
             get
             {
                 return new SerializedObject(Settings);
+            }
+        }
+
+        [SerializeField] string selectedLibrary;
+        public AudioLibrary SelectedLibrary
+        {
+            get
+            {
+                return AssetDatabase.LoadAssetAtPath<AudioLibrary>(selectedLibrary);
+            }
+            set
+            {
+                selectedLibrary = AssetDatabase.GetAssetPath(value);
             }
         }
 
@@ -128,16 +141,17 @@ namespace JSAM.JSAMEditor
                 // Create the SettingsProvider and initialize its drawing (IMGUI) function in place:
                 guiHandler = (searchContext) =>
                 {
-                    var settings = JSAMSettings.SerializedObject;
+                    var settings = JSAMSettings.SerializedSettings;
                     SerializedProperty packagePath = settings.FindProperty("packagePath");
                     SerializedProperty presetsPath = settings.FindProperty("presetsPath");
                     SerializedProperty enumPath = settings.FindProperty("generatedEnumsPath");
                     SerializedProperty useNamespace = settings.FindProperty("useNamespace");
                     SerializedProperty enumNamespace = settings.FindProperty("enumNamespace");
 
-                    EditorGUILayout.PropertyField(packagePath);
-                    EditorGUILayout.PropertyField(presetsPath);
-                    EditorGUILayout.PropertyField(enumPath);
+                    JSAMEditorHelper.SmartFolderField(packagePath);
+                    JSAMEditorHelper.SmartFolderField(presetsPath);
+                    JSAMEditorHelper.SmartFolderField(enumPath);
+                    JSAMEditorHelper.SmartFolderField(packagePath);
                     EditorGUILayout.PropertyField(useNamespace);
                     using (new EditorGUI.DisabledScope(!useNamespace.boolValue))
                     {

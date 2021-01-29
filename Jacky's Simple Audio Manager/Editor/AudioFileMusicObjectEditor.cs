@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.Presets;
 using ATL.AudioData;
 
 namespace JSAM.JSAMEditor
@@ -50,6 +51,39 @@ namespace JSAM.JSAMEditor
         SerializedProperty loopStartProperty;
         SerializedProperty loopEndProperty;
 
+        new protected void OnEnable()
+        {
+            base.OnEnable();
+            myScript = target as AudioFileMusicObject;
+
+            SetupIcons();
+            EditorApplication.update += Update;
+            Undo.undoRedoPerformed += OnUndoRedo;
+            AudioPlaybackToolEditor.CreateAudioHelper(myScript.GetFile(), true);
+            Undo.postprocessModifications += ApplyHelperEffects;
+
+            loopMode = FindProp("loopMode");
+            clampToLoopPoints = FindProp("clampToLoopPoints");
+            loopStartProperty = FindProp("loopStart");
+            loopEndProperty = FindProp("loopEnd");
+        }
+
+        void OnDisable()
+        {
+            EditorApplication.update -= Update;
+            Undo.undoRedoPerformed -= OnUndoRedo;
+            AudioPlaybackToolEditor.DestroyAudioHelper();
+            Undo.postprocessModifications -= ApplyHelperEffects;
+        }
+
+        protected override void OnCreatePreset(string[] input)
+        {
+            presetDescription.stringValue = input[1];
+            Preset newPreset = new Preset(asset as AudioFileMusicObject);
+            string path = JSAMSettings.Settings.PresetsPath + "/" + input[0];
+            JSAMEditorHelper.CreateAssetSafe(newPreset, path);
+        }
+
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
@@ -61,6 +95,10 @@ namespace JSAM.JSAMEditor
             #endregion
 
             RenderPresetDescription();
+
+            EditorGUILayout.Space();
+
+            RenderGeneratePresetButton();
 
             List<string> propertiesToExclude = new List<string>() { "spatialSound", "loopSound", "priority",
                 "pitchShift", "loopMode", "fadeMode", "playReversed", "safeName", "maxDistance" };
@@ -670,23 +708,6 @@ namespace JSAM.JSAMEditor
             }
         }
 
-        new protected void OnEnable()
-        {
-            base.OnEnable();
-            myScript = target as AudioFileMusicObject;
-
-            SetupIcons();
-            EditorApplication.update += Update;
-            Undo.undoRedoPerformed += OnUndoRedo;
-            AudioPlaybackToolEditor.CreateAudioHelper(myScript.GetFile(), true);
-            Undo.postprocessModifications += ApplyHelperEffects;
-
-            loopMode = FindProp("loopMode");
-            clampToLoopPoints = FindProp("clampToLoopPoints");
-            loopStartProperty = FindProp("loopStart");
-            loopEndProperty = FindProp("loopEnd");
-        }
-
         public UndoPropertyModification[] ApplyHelperEffects(UndoPropertyModification[] modifications)
         {
             if (AudioPlaybackToolEditor.helperSource.isPlaying)
@@ -694,14 +715,6 @@ namespace JSAM.JSAMEditor
                 AudioPlaybackToolEditor.helperHelper.ApplyEffects();
             }
             return modifications;
-        }
-
-        void OnDisable()
-        {
-            EditorApplication.update -= Update;
-            Undo.undoRedoPerformed -= OnUndoRedo;
-            AudioPlaybackToolEditor.DestroyAudioHelper();
-            Undo.postprocessModifications -= ApplyHelperEffects;
         }
 
         void OnUndoRedo()

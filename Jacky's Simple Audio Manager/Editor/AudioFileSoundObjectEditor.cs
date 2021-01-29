@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.Presets;
 
 namespace JSAM.JSAMEditor
 {
@@ -62,6 +63,14 @@ namespace JSAM.JSAMEditor
             Undo.postprocessModifications -= ApplyHelperEffects;
         }
 
+        protected override void OnCreatePreset(string[] input)
+        {
+            presetDescription.stringValue = input[1];
+            Preset newPreset = new Preset(asset as AudioFileSoundObject);
+            string path = JSAMSettings.Settings.PresetsPath + "/" + input[0];
+            JSAMEditorHelper.CreateAssetSafe(newPreset, path);
+        }
+
 #if !UNITY_2019_3_OR_NEWER
         static bool filesFoldout;
 #endif
@@ -78,6 +87,10 @@ namespace JSAM.JSAMEditor
             #endregion
 
             RenderPresetDescription();
+
+            EditorGUILayout.Space();
+
+            RenderGeneratePresetButton();
 
             List<string> excludedProperties = new List<string>() { "m_Script", "file", "files", "safeName",
                 "relativeVolume", "spatialize", "maxDistance" };
