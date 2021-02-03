@@ -79,8 +79,12 @@ namespace JSAM.JSAMEditor
         protected override void OnCreatePreset(string[] input)
         {
             presetDescription.stringValue = input[1];
+            serializedObject.ApplyModifiedProperties();
             Preset newPreset = new Preset(asset as AudioFileMusicObject);
-            string path = JSAMSettings.Settings.PresetsPath + "/" + input[0];
+            newPreset.excludedProperties = new string[] {
+                "file", "files", "useLibrary", "category"
+            };
+            string path = JSAMSettings.Settings.PresetsPath + "/" + input[0] + ".preset";
             JSAMEditorHelper.CreateAssetSafe(newPreset, path);
         }
 

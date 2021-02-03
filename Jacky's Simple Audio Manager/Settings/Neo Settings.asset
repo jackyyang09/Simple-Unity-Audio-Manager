@@ -12,12 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: faf681c40246bb0439a31cb8707b9782, type: 3}
   m_Name: Neo Settings
   m_EditorClassIdentifier: 
-  sceneSoundEnumName: Sounds
-  sceneMusicEnumName: Music
-  masterVolume: 1
-  masterMuted: 0
-  soundVolume: 1
-  soundMuted: 0
-  musicVolume: 1
-  musicMuted: 0
   spatialSound: 1
+  startingAudioSources: 16
+  disableConsoleLogs: 0
+  dontDestroyOnLoad: 1
+  dynamicSourceAllocation: 1
+  stopSoundsOnSceneLoad: 0
+  spatializeLateUpdate: 0
+  timeScaledSounds: 1

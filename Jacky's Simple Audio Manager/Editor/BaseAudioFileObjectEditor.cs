@@ -70,7 +70,10 @@ namespace JSAM.JSAMEditor
         {
             if (!isPreset)
             {
-                if (GUILayout.Button("Create Preset from Audio File"))
+                blontent = new GUIContent("Create Preset from this Audio File", 
+                    "Create a new preset using this Audio File object as a base. " +
+                    "You are highly recommended to create presets through this interface rather than Unity's built-in interface.");
+                if (GUILayout.Button(blontent))
                 {
                     var window = JSAMUtilityWindow.Init("JSAM Preset Wizard", false, true);
                     window.AddField(new GUIContent("Preset Name"), "New Preset", true);

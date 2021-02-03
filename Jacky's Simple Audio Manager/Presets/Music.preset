@@ -6,10 +6,10 @@ Preset:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Spatial Sound
+  m_Name: Music
   m_TargetType:
     m_NativeTypeID: 114
-    m_ManagedTypePPtr: {fileID: 11500000, guid: 0d15ae218647a2d4f85e14306846c10c,
+    m_ManagedTypePPtr: {fileID: 11500000, guid: bfb8002b44af6934a9ae327c8311d458,
       type: 3}
     m_ManagedTypeFallback: 
   m_Properties:
@@ -27,46 +27,35 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: safeName
-    value: SpatialSound
+    value: BGM
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: presetDescription
-    value: '<Default Preset>
-
-      - Sound meant to be played in the game world
-
-      -
-      Spatialization is enabled
-
-      - Minor pitch shift is applied'
+    value: <Default Preset>
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: category
-    value: 
+    value: Looping
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: file
     value: 
-    objectReference: {fileID: 8300000, guid: fd102914e9315024e993441b636b1aab, type: 3}
+    objectReference: {fileID: 8300000, guid: fe06d48e659b1434ba98e89445a43760, type: 3}
   - target: {fileID: 0}
     propertyPath: files.Array.size
-    value: 1
+    value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
-    propertyPath: files.Array.data[0]
-    value: 
-    objectReference: {fileID: 8300000, guid: fd102914e9315024e993441b636b1aab, type: 3}
-  - target: {fileID: 0}
     propertyPath: useLibrary
-    value: 1
+    value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: relativeVolume
-    value: 1
+    value: 0.4
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: spatialize
-    value: 1
+    value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: maxDistance
@@ -74,7 +63,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: priority
-    value: 192
+    value: 128
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: startingPitch
@@ -82,7 +71,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: pitchShift
-    value: 0.05
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playReversed
@@ -126,31 +115,31 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: chorusFilter.dryMix
-    value: 0
+    value: 0.5
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: chorusFilter.wetMix1
-    value: 0
+    value: 0.5
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: chorusFilter.wetMix2
-    value: 0
+    value: 0.5
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: chorusFilter.wetMix3
-    value: 0
+    value: 0.5
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: chorusFilter.delay
-    value: 0
+    value: 40
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: chorusFilter.rate
-    value: 0
+    value: 0.8
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: chorusFilter.depth
-    value: 0
+    value: 0.03
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: distortionFilter.enabled
@@ -158,7 +147,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: distortionFilter.distortionLevel
-    value: 0
+    value: 0.5
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: echoFilter.enabled
@@ -166,19 +155,19 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: echoFilter.delay
-    value: 0
+    value: 500
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: echoFilter.decayRatio
-    value: 0
+    value: 0.5
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: echoFilter.wetMix
-    value: 0
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: echoFilter.dryMix
-    value: 0
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: lowPassFilter.enabled
@@ -186,11 +175,11 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: lowPassFilter.cutoffFrequency
-    value: 0
+    value: 1712
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: lowPassFilter.lowpassResonanceQ
-    value: 0
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: highPassFilter.enabled
@@ -198,11 +187,11 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: highPassFilter.cutoffFrequency
-    value: 0
+    value: 5000
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: highPassFilter.highpassResonanceQ
-    value: 0
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: reverbFilter.enabled
@@ -210,7 +199,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: reverbFilter.reverbPreset
-    value: 0
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: reverbFilter.dryLevel
@@ -230,15 +219,15 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: reverbFilter.decayTime
-    value: 0
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: reverbFilter.decayHFRatio
-    value: 0
+    value: 0.5
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: reverbFilter.reflectionsLevel
-    value: 0
+    value: -10000
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: reverbFilter.reflectionsDelay
@@ -250,33 +239,46 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: reverbFilter.reverbDelay
-    value: 0
+    value: 0.04
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: reverbFilter.hFReference
-    value: 0
+    value: 5000
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: reverbFilter.lFReference
-    value: 0
+    value: 250
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: reverbFilter.diffusion
-    value: 0
+    value: 100
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: reverbFilter.density
+    value: 100
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: clampToLoopPoints
     value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
-    propertyPath: neverRepeat
+    propertyPath: loopMode
     value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
-    propertyPath: lastClipIndex
-    value: -1
+    propertyPath: loopStart
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: loopEnd
+    value: 12.800001
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: bpm
+    value: 160
     objectReference: {fileID: 0}
   m_ExcludedProperties:
+  - file
   - files
-  - neverRepeat
+  - useLibrary
   - category

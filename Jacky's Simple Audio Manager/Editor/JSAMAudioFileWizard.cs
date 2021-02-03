@@ -162,7 +162,8 @@ namespace JSAM.JSAMEditor
 
             Preset selectedPreset = null;
 
-            blontent = new GUIContent("Preset to Apply");
+            EditorGUILayout.BeginHorizontal();
+            blontent = new GUIContent("Preset to Apply", "Audio File objects created through the Audio File Wizard will be created using this preset as a template.");
             // Music
             if (fileType.enumValueIndex == 0)
             {
@@ -191,6 +192,16 @@ namespace JSAM.JSAMEditor
                     selectedPreset = soundPresets[selectedSoundPreset];
                 }
             }
+
+            blontent = new GUIContent("Refresh Presets", "Reload your assets from your configured preset folder. " +
+                "\nPress this button if you recently created a new Audio File preset and don't see it in the drop-down menu. " +
+                "\nYou can change your preset folder location in Project Settings -> Audio - JSAM");
+            if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+            {
+                LoadPresets();
+                GUIUtility.ExitGUI();
+            }
+            EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
             if (selectedPreset != null)

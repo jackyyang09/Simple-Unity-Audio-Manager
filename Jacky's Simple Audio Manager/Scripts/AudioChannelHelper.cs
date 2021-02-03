@@ -183,7 +183,7 @@ namespace JSAM
             float pitch = audioFile.pitchShift;
             float newPitch = audioFile.startingPitch;
             bool ignoreTimeScale = audioFile.ignoreTimeScale;
-            if (AudioManager.instance.timeScaledSounds && !ignoreTimeScale)
+            if (AudioManager.instance.Settings.TimeScaledSounds && !ignoreTimeScale)
             {
                 newPitch *= Time.timeScale;
                 if (Time.timeScale == 0)

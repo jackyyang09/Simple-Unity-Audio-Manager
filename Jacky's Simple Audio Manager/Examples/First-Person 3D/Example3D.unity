@@ -9539,15 +9539,7 @@ MonoBehaviour:
   soundMuted: 0
   musicVolume: 0.37
   musicMuted: 0
-  spatialSound: 1
-  audioSources: 32
-  disableConsoleLogs: 0
-  dontDestroyOnLoad: 0
-  dynamicSourceAllocation: 0
-  stopOnSceneLoad: 0
-  spatializeLateUpdate: 0
-  timeScaledSounds: 1
-  settings: {fileID: 0}
+  settings: {fileID: 11400000, guid: 6b6fa5823069a2b4d91294064912048b, type: 2}
   library: {fileID: 11400000, guid: 80379792b87189b41b83f847a372c55f, type: 2}
   listener: {fileID: 1934637672}
   sourcePrefab: {fileID: 3048837711066349604, guid: cf11aed7e0e56ae45afe7eaebe30a616,

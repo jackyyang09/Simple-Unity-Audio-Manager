@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: AK Chamber
   m_EditorClassIdentifier: 
   safeName: AKChamber
-  presetDescription: 
+  presetDescription: etddd
   category: AK Sounds
   file: {fileID: 8300000, guid: 42f211e8d68e33941ad2f8c969326171, type: 3}
   files: []

@@ -277,6 +277,26 @@ namespace JSAM.JSAMEditor
         }
     }
 
+    [CustomEditor(typeof(AudioLibrary))]
+    public class AudioLibraryInspector : Editor
+    {
+        bool DEBUG_MODE = false;
+        public override void OnInspectorGUI()
+        {
+            if (DEBUG_MODE) DrawDefaultInspector();
+            else
+            {
+                if (!AudioLibraryEditor.IsOpen)
+                {
+                    if (GUILayout.Button("Open Audio Library"))
+                    {
+                        AudioLibraryEditor.Init();
+                    }
+                }
+            }
+        }
+    }
+
     public class AudioLibraryEditor : JSAMSerializedEditorWindow<AudioLibrary, AudioLibraryEditor>
     {
         public const string CATEGORY_NONE = "Uncategorized";
@@ -293,7 +313,13 @@ namespace JSAM.JSAMEditor
         Dictionary<string, SerializedProperty> categoryToMusicStructs = new Dictionary<string, SerializedProperty>();
         Dictionary<string, AudioList> reorderableMusicLists = new Dictionary<string, AudioList>();
 
+        public static int selectedLibrary = 0;
+        public static List<string> projectLibrariesNames = null;
+        public static List<AudioLibrary> projectLibraries = null;
+
         static Vector2 scrollProgress;
+
+        public static bool renamingLibrary = false;
 
         [OnOpenAsset]
         public static bool OnOpenAsset(int instanceID, int line)
@@ -323,7 +349,7 @@ namespace JSAM.JSAMEditor
 
         // Add menu named "My Window" to the Window menu
         [MenuItem("Window/JSAM/Audio Library")]
-        static void Init()
+        public static void Init()
         {
             // Get existing open window or if none, make a new one:
             Window.Show();
@@ -337,16 +363,38 @@ namespace JSAM.JSAMEditor
 
         protected override void OnEnable()
         {
-            Debug.Log("Enabled!");
             base.OnEnable();
             Undo.undoRedoPerformed += OnUndoRedoPerformed;
             Window.wantsMouseEnterLeaveWindow = true;
-            AssignAsset();
+            LoadLibraries();
         }
 
         private void OnDisable()
         {
             Undo.undoRedoPerformed -= OnUndoRedoPerformed;
+        }
+
+        void LoadLibraries(string toBeSelected = "")
+        {
+            var libraries = JSAMEditorHelper.ImportAssetsOrFoldersAtPath<AudioLibrary>(JSAMSettings.Settings.LibraryPath);
+
+            projectLibraries = new List<AudioLibrary>();
+            projectLibrariesNames = new List<string>();
+            for (int i = 0; i < libraries.Count; i++)
+            {
+                projectLibraries.Add(libraries[i]);
+                projectLibrariesNames.Add(libraries[i].name);
+            }
+
+            if (!toBeSelected.Equals(string.Empty))
+            {
+                selectedLibrary = projectLibrariesNames.IndexOf(toBeSelected);
+                AssignAsset(projectLibraries[selectedLibrary]);
+            }
+            else
+            {
+                AssignAsset();
+            }
         }
 
         void AssignAsset(AudioLibrary newAsset = null)
@@ -361,14 +409,33 @@ namespace JSAM.JSAMEditor
                     JSAMSettings.Settings.SelectedLibrary = asset;
                 }
             }
+            // Load asset if none cached
             else if (asset == null)
             {
                 asset = JSAMSettings.Settings.SelectedLibrary;
+                // Couldn't load anything, default to first index
+                if (asset == null)
+                {
+                    asset = projectLibraries[0];
+                }
             }
 
             if (asset != null)
             {
-                serializedObject = new SerializedObject(asset);
+                selectedLibrary = projectLibraries.IndexOf(asset);
+                if (serializedObject == null)
+                {
+                    serializedObject = new SerializedObject(asset);
+                    Debug.Log("NEW SO");
+                }
+                else if (serializedObject != null)
+                {
+                    if (serializedObject.targetObject != asset)
+                    {
+                        serializedObject = new SerializedObject(asset);
+                        Debug.Log("NEW SO");
+                    }
+                }
                 DesignateSerializedProperties();
             }
         }
@@ -389,7 +456,7 @@ namespace JSAM.JSAMEditor
 
         protected override void DesignateSerializedProperties()
         {
-            Debug.Log("Designating");
+            Debug.Log("Designated");
 
             safeName = FindProp("safeName");
             showMusic = FindProp(nameof(asset.showMusic));
@@ -665,8 +732,78 @@ namespace JSAM.JSAMEditor
             }
         }
 
+        static bool showHowTo;
+
         private void OnGUI()
         {
+            GUIContent blontent = new GUIContent();
+
+            // Apply leftover rename operation
+            if (renamingLibrary)
+            {
+                AssetDatabase.SaveAssets();
+                renamingLibrary = false;
+            }
+
+            EditorGUILayout.BeginHorizontal();
+            blontent = new GUIContent("Selected Library", "The library you're currently modifying, " +
+                "use the drop-down menu to choose a different library");
+            EditorGUI.BeginChangeCheck();
+            selectedLibrary = EditorGUILayout.Popup(blontent, selectedLibrary, projectLibrariesNames.ToArray());
+            if (EditorGUI.EndChangeCheck())
+            {
+                AssignAsset(projectLibraries[selectedLibrary]);
+            }
+
+            blontent = new GUIContent(" Create ", "Click to create a new Audio Library asset");
+            if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+            {
+                var window = JSAMUtilityWindow.Init("Enter new library name", true, true);
+                window.AddField(GUIContent.none, "New Library", false);
+                JSAMUtilityWindow.onSubmitField += OnCreateLibrary;
+            }
+            blontent = new GUIContent(" Rename ", "Click to rename this Audio Library asset");
+            if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+            {
+                var window = JSAMUtilityWindow.Init("Enter new library name", true, true);
+                window.AddField(GUIContent.none, projectLibrariesNames[selectedLibrary], false);
+                JSAMUtilityWindow.onSubmitField += OnRenameLibrary;
+            }
+            blontent = new GUIContent(" Duplicate ", "Click to make a copy of this Audio Library asset");
+            if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+            {
+                bool result = EditorUtility.DisplayDialog("Confirm Asset Duplication", 
+                    "Are you sure you want to create a duplicate of this Audio Library asset? " +
+                    "This process cannot be undone.", "Yes", "No");
+                if (result)
+                {
+                    string ogPath = AssetDatabase.GetAssetPath(projectLibraries[selectedLibrary]);
+                    string path = ogPath;
+                    path = path.Remove(path.IndexOf(".asset")) + " - Copy.asset";
+                    AssetDatabase.CopyAsset(ogPath, path);
+                    LoadLibraries(projectLibrariesNames[selectedLibrary] + " - Copy");
+                }
+                GUIUtility.ExitGUI();
+            }
+            JSAMEditorHelper.BeginColourChange(Color.red);
+            blontent = new GUIContent(" Delete ", "Click to create a new Audio Library asset");
+            if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+            {
+                bool result = EditorUtility.DisplayDialog("Confirm Library Deletion", "Are you sure you want to delete this library? " +
+                    "This process cannot be undone.", "Yes", "No");
+                if (result)
+                {
+                    string path = JSAMSettings.Settings.LibraryPath + "/" + projectLibrariesNames[selectedLibrary] + ".asset";
+                    AssetDatabase.DeleteAsset(path);
+                    LoadLibraries();
+                }
+                GUIUtility.ExitGUI();
+            }
+            JSAMEditorHelper.EndColourChange();
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginVertical(GUI.skin.box);
+
             if (serializedObject == null)
             {
                 EditorGUILayout.LabelField("Select an Audio Library asset to get started!");
@@ -679,12 +816,10 @@ namespace JSAM.JSAMEditor
 
                 HandleDragAndDrop();
 
-                GUIContent blontent = new GUIContent();
-
-                if (missingSoundNames.Count > 0)
+                if (missingSoundNames.Count > 0 || missingMusicNames.Count > 0)
                 {
                     EditorGUILayout.HelpBox("Generated Audio Library files have been removed! " +
-                        "Please re-generate your Audio Library to prevent errors during runtime!", 
+                        "Please re-generate your Audio Library to prevent errors during runtime!",
                         MessageType.Warning);
                 }
 
@@ -845,6 +980,20 @@ namespace JSAM.JSAMEditor
                     serializedObject.ApplyModifiedProperties();
                 }
             }
+
+            EditorGUILayout.EndVertical();
+
+            string[] howToText = new string[] {
+                    "Overview",
+                    "Your Audio Library functions as a bank of Audio Files that your AudioManager will pull from when " +
+                    "playing audio.",
+                    "Do click the button to regenerate your Audio Library enum script every time you add/remove an Audio File Object.",
+                    "Tips",
+                    "You can batch import multiple Audio File objects by multi-selecting them in the project window and " +
+                    "dragging them in at once, or by dragging and dropping an entire folder.",
+                    "Click the Copy Enum button to quickly get the entire enum name of your Audio File object!",
+                };
+            showHowTo = JSAMEditorHelper.RenderQuickReferenceGuide(showHowTo, howToText);
         }
 
         void ApplyChanges()
@@ -854,8 +1003,14 @@ namespace JSAM.JSAMEditor
                 serializedObject.ApplyModifiedProperties();
                 InitializeCategories();
                 DocumentAudioFiles();
-                window.Repaint();
+                Window.Repaint();
             }
+        }
+
+        void ApplyChangesHard()
+        {
+            serializedObject.ApplyModifiedProperties();
+            LoadLibraries();
         }
 
         void OnUndoRedoPerformed()
@@ -863,7 +1018,46 @@ namespace JSAM.JSAMEditor
             if (serializedObject != null)
             {
                 DesignateSerializedProperties();
+                window.Repaint();
             }
+        }
+
+        void OnCreateLibrary(string[] input)
+        {
+            if (input[0].IsNullEmptyOrWhiteSpace())
+            {
+                EditorUtility.DisplayDialog("Create Library Error",
+                    "Your Audio Library name cannot be left blank", "OK");
+            }
+            else if (projectLibrariesNames.Contains(input[0]))
+            {
+                EditorUtility.DisplayDialog("Create Library Error",
+                    "An Audio Library with this name already exists! Please use a different name.", "OK");
+            }
+            var newLibrary = CreateInstance<AudioLibrary>();
+            newLibrary.name = input[0];
+            string path = JSAMSettings.Settings.LibraryPath + "/" + input[0] + ".asset";
+            JSAMEditorHelper.CreateAssetSafe(newLibrary, path);
+            LoadLibraries(newLibrary.name);
+        }
+
+        void OnRenameLibrary(string[] input)
+        {
+            if (input[0].IsNullEmptyOrWhiteSpace())
+            {
+                EditorUtility.DisplayDialog("Create Library Error",
+                    "Your Audio Library name cannot be left blank", "OK");
+            }
+            else if (projectLibrariesNames.Contains(input[0]))
+            {
+                EditorUtility.DisplayDialog("Create Library Error",
+                    "An Audio Library with this name already exists! Please use a different name.", "OK");
+            }
+            var targetLibrary = projectLibraries[selectedLibrary];
+            string path = AssetDatabase.GetAssetPath(targetLibrary);
+            AssetDatabase.RenameAsset(path, input[0]);
+            LoadLibraries(targetLibrary.name);
+            renamingLibrary = true;
         }
 
         void HandleMouseEnterLeave()
@@ -1129,7 +1323,7 @@ namespace JSAM.JSAMEditor
                 }
                 index = asset.soundCategories.IndexOf(prevName);
             }
-            
+
             categories.GetArrayElementAtIndex(index).stringValue = newName;
 
             var array = categoryToStructs[prevName].FindPropertyRelative("files");
@@ -1306,7 +1500,7 @@ namespace JSAM.JSAMEditor
             SerializedProperty categories = null;
             SerializedProperty audioProp = null;
             int index = -1;
-            
+
             if (isMusic)
             {
                 categoryToStruct = categoryToMusicStructs;

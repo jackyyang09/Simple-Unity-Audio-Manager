@@ -20,6 +20,14 @@ namespace JSAM.JSAMEditor
                 return window;
             }
         }
+
+        public static bool IsOpen
+        {
+            get
+            {
+                return window != null;
+            }
+        }
         
         protected abstract void SetWindowTitle();
     }

@@ -51,7 +51,10 @@ namespace JSAM.JSAMEditor
         {
             for (int i = 0; i < fields.Count; i++)
             {
-                EditorGUILayout.LabelField(fields[i].content);
+                if (fields[i].content != GUIContent.none)
+                {
+                    EditorGUILayout.LabelField(fields[i].content);
+                }
                 if (!focused) GUI.SetNextControlName("TextBox");
                 if (!fields[i].useTextArea)
                 {

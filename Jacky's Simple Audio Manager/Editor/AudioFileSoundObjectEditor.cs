@@ -66,8 +66,12 @@ namespace JSAM.JSAMEditor
         protected override void OnCreatePreset(string[] input)
         {
             presetDescription.stringValue = input[1];
+            serializedObject.ApplyModifiedProperties();
             Preset newPreset = new Preset(asset as AudioFileSoundObject);
-            string path = JSAMSettings.Settings.PresetsPath + "/" + input[0];
+            newPreset.excludedProperties = new string[] {
+                "file", "files", "useLibrary", "category"
+            };
+            string path = JSAMSettings.Settings.PresetsPath + "/" + input[0] + ".preset";
             JSAMEditorHelper.CreateAssetSafe(newPreset, path);
         }
 
@@ -274,34 +278,23 @@ namespace JSAM.JSAMEditor
             }
 
 #region Quick Reference Guide
-            showHowTo = EditorCompatability.SpecialFoldouts(showHowTo, "Quick Reference Guide");
-            if (showHowTo)
+            string[] howToText = new string[]
             {
-                EditorGUILayout.Space();
+                "Overview",
+                "Audio File Objects are containers that hold your sound files to be read by Audio Manager.",
+                "No matter the filename or folder location, this Audio File will be referred to as it's name above",
+                "Tips",
+                "If your one sound has many different variations available, try enabling the \"Use Library\" option " +
+                    "just below the name field. This let's AudioManager play a random different sound whenever you choose to play from this audio file object.",
+                "Relative volume only helps to reduce how loud a sound is. To increase how loud an individual sound is, you'll have to " +
+                    "edit it using a sound editor.",
+                "You can always check what audio file objects you have loaded in AudioManager's library by selecting the AudioManager " +
+                    "in the inspector and clicking on the drop-down near the bottom.",
+                "If you want to better organize your audio file objects in AudioManager's library, you can assign a "+ 
+                "category to this audio file object."
+            };
 
-                EditorGUILayout.LabelField("Overview", EditorStyles.boldLabel);
-                EditorGUILayout.HelpBox("Audio File Objects are containers that hold your sound files to be read by Audio Manager."
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("No matter the filename or folder location, this Audio File will be referred to as it's name above"
-                    , MessageType.None);
-
-                EditorGUILayout.Space();
-
-                EditorGUILayout.LabelField("Tips", EditorStyles.boldLabel);
-                EditorGUILayout.HelpBox("If your one sound has many different variations available, try enabling the \"Use Library\" option " +
-                    "just below the name field. This let's AudioManager play a random different sound whenever you choose to play from this audio file object."
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("Relative volume only helps to reduce how loud a sound is. To increase how loud an individual sound is, you'll have to " +
-                    "edit it using a sound editor."
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("You can always check what audio file objects you have loaded in AudioManager's library by selecting the AudioManager " +
-                    "in the inspector and clicking on the drop-down near the bottom."
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("If you want to better organize your audio file objects in AudioManager's library, you can assign a " +
-                    "category to this audio file object. Use the \"Hidden\" category to hide your audio file object from the library list completely."
-                    , MessageType.None);
-            }
-            EditorCompatability.EndSpecialFoldoutGroup();
+            showHowTo = JSAMEditorHelper.RenderQuickReferenceGuide(showHowTo, howToText);
 #endregion
         }
 

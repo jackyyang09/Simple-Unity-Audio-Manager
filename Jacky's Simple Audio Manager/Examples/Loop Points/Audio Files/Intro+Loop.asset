@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Intro+Loop
   m_EditorClassIdentifier: 
   safeName: IntroLoop
-  presetDescription: 
-  category: Test
+  presetDescription: <Default Preset>
+  category: 
   file: {fileID: 8300000, guid: 4cd473ea326bb224499d94db7251c75c, type: 3}
   files: []
   useLibrary: 0

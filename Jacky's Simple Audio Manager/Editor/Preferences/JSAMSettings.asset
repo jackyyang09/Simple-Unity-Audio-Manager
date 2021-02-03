@@ -17,4 +17,7 @@ MonoBehaviour:
   generatedEnumsPath: Assets/JSAMGenerated
   useNamespace: 0
   enumNamespace: JSAM
+  quickReferenceFontSize: 12
+  hideStartupMessage: 1
   selectedLibrary: Assets/Benis.asset
+  selectedSettings: Assets/Neo Settings.asset

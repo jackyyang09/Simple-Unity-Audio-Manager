@@ -54,16 +54,24 @@ namespace JSAM.JSAMEditor
 
         public static string GetAudioManagerPath()
         {
-            AudioManager a = null;
+            MonoScript a = null;
             GameObject g = null;
+            bool alt = false;
             if (!AudioManager.instance)
             {
                 g = new GameObject();
-                a = g.AddComponent<AudioManager>();
+                // Audio Events just so its saferd
+                a = MonoScript.FromMonoBehaviour(g.AddComponent<AudioEvents>());
+                alt = true;
             }
-            else a = AudioManager.instance;
-            string path = AssetDatabase.GetAssetPath(MonoScript.FromMonoBehaviour(a));
+            else a = MonoScript.FromMonoBehaviour(AudioManager.instance);
+            string path = AssetDatabase.GetAssetPath(a);
             if (g != null) Object.DestroyImmediate(g);
+            if (alt)
+            {
+                path = path.Remove(path.IndexOf("AudioEvents.cs"));
+                path += "AudioManager.cs";
+            }
             return path;
         }
 
@@ -206,6 +214,30 @@ namespace JSAM.JSAMEditor
             AudioManager.instance.DebugLog("Copied " + text + " to clipboard!");
         }
 
+        public static bool RenderQuickReferenceGuide(bool foldout, string[] text)
+        {
+            foldout = EditorCompatability.SpecialFoldouts(foldout, "Quick Reference Guide");
+            if (foldout)
+            {
+                for (int i = 0; i < text.Length; i++)
+                {
+                    if (text[i].Equals("Overview") || text[i].Equals("Tips"))
+                    {
+                        EditorGUILayout.LabelField(text[i], ApplyFontSizeToStyle(EditorStyles.boldLabel, JSAMSettings.Settings.QuickReferenceFontSize));
+                        continue;
+                    }
+                    RenderHelpbox(text[i]);
+                }
+            }
+            EditorCompatability.EndSpecialFoldoutGroup();
+            return foldout;
+        }
+
+        public static void RenderHelpbox(string text)
+        {
+            EditorGUILayout.LabelField(text, ApplyFontSizeToStyle(EditorStyles.helpBox, JSAMSettings.Settings.QuickReferenceFontSize));
+        }
+
         static Color guiColor;
         public static void BeginColourChange(Color color)
         {
@@ -214,6 +246,13 @@ namespace JSAM.JSAMEditor
         }
 
         public static void EndColourChange() => GUI.color = guiColor;
+
+        public static GUIStyle ApplyRichTextToStyle(GUIStyle referenceStyle)
+        {
+            var style = new GUIStyle(referenceStyle);
+            style.richText = true;
+            return style;
+        }
 
         public static GUIStyle ApplyTextColorToStyle(GUIStyle referenceStyle, Color color)
         {

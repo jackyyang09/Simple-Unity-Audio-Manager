@@ -277,3 +277,4 @@ Preset:
     objectReference: {fileID: 0}
   m_ExcludedProperties:
   - file
+  - category

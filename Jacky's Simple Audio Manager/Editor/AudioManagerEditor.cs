@@ -15,64 +15,115 @@ namespace JSAM.JSAMEditor
     {
         AudioManager myScript;
 
+        static bool showVolumeSettings = true;
+        //static bool showAdvancedSettings;
+
+        static bool showHowTo;
+
+        int libraryIndex = 0;
+
         SerializedProperty masterVolume;
         SerializedProperty musicVolume;
         SerializedProperty soundVolume;
         SerializedProperty listener;
         SerializedProperty sourcePrefab;
 
-        static bool showVolumeSettings = true;
-        static bool showAdvancedSettings;
+        SerializedProperty library;
+        SerializedProperty settings;
 
-        static bool showHowTo;
+        private void OnEnable()
+        {
+            myScript = (AudioManager)target;
 
-        static GUIContent copyIcon;
+            myScript.EstablishSingletonDominance();
+
+            masterVolume = serializedObject.FindProperty("masterVolume");
+            musicVolume = serializedObject.FindProperty("musicVolume");
+            soundVolume = serializedObject.FindProperty("soundVolume");
+            listener = serializedObject.FindProperty("listener");
+            sourcePrefab = serializedObject.FindProperty("sourcePrefab");
+
+            library = serializedObject.FindProperty("library");
+            settings = serializedObject.FindProperty("settings");
+
+            Application.logMessageReceived += UnityDebugLog;
+
+            LoadLibraries();
+        }
+
+        private void OnDisable()
+        {
+            Application.logMessageReceived -= UnityDebugLog;
+        }
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-
                     
-            List<string> excludedProperties = new List<string> { "m_Script", "audioFileObjects", "audioFileMusicObjects" };
+            List<string> excludedProperties = new List<string> { "m_Script" };
 
-            GUIContent content;
+            GUIContent blontent;
 
-            if (!showAdvancedSettings)
-            {
-                excludedProperties.AddRange(new List<string>
-                {
-                    "m_Script", "audioSources",
-                    "spatializeLateUpdate", "timeScaledSounds",
-                    "stopOnSceneLoad", "dontDestroyOnLoad",
-                    "dynamicSourceAllocation", "disableConsoleLogs"
-                });
-
-                content = new GUIContent("↓ Show Advanced Settings ↓", "Toggle this if you're an experienced Unity user");
-            }
-            else
-            {
-                content = new GUIContent("↑ Hide Advanced Settings ↑", "Toggle this if you're an experienced Unity user");
-            }
+            //if (!showAdvancedSettings)
+            //{
+            //    excludedProperties.AddRange(new List<string>
+            //    {
+            //
+            //    });
+            //
+            //    blontent = new GUIContent("↓ Show Advanced Settings ↓", "Toggle this if you're an experienced Unity user");
+            //}
+            //else
+            //{
+            //    blontent = new GUIContent("↑ Hide Advanced Settings ↑", "Toggle this if you're an experienced Unity user");
+            //}
             excludedProperties.AddRange(new List<string> { "listener", "sourcePrefab" });
 
-            if (GUILayout.Button(content))
-            {
-                showAdvancedSettings = !showAdvancedSettings;
-            }
+            //if (GUILayout.Button(blontent))
+            //{
+            //    showAdvancedSettings = !showAdvancedSettings;
+            //}
 
-            EditorGUILayout.Space();
+            //EditorGUILayout.Space();
 
-            content = new GUIContent("Volume Controls", "Change the volume levels of all AudioManager-controlled audio channels here");
-            showVolumeSettings = EditorCompatability.SpecialFoldouts(showVolumeSettings, content);
+            blontent = new GUIContent("Volume Controls", "Change the volume levels of all AudioManager-controlled audio channels here");
+            showVolumeSettings = EditorCompatability.SpecialFoldouts(showVolumeSettings, blontent);
             if (showVolumeSettings)
             {
                 DrawAdvancedVolumeControls(myScript);
             }
             EditorCompatability.EndSpecialFoldoutGroup();
 
+            EditorGUILayout.Space();
+
+            EditorGUILayout.BeginHorizontal();
+            blontent = new GUIContent("Library");
+            EditorGUI.BeginChangeCheck();
+            libraryIndex = EditorGUILayout.Popup(blontent, libraryIndex, AudioLibraryEditor.projectLibrariesNames.ToArray());
+            if (EditorGUI.EndChangeCheck())
+            {
+                library.objectReferenceValue = AudioLibraryEditor.projectLibraries[libraryIndex];
+            }
+            blontent = new GUIContent(" Open ");
+            if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+            {
+                AudioLibraryEditor.Init();
+            }
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            blontent = new GUIContent("Settings");
+            EditorGUILayout.PropertyField(settings);
+            blontent = new GUIContent(" Open ");
+            if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+            {
+                AudioManagerSettingsEditor.Init();
+            }
+            EditorGUILayout.EndHorizontal();
+
             DrawPropertiesExcluding(serializedObject, excludedProperties.ToArray());
 
-            if (myScript.GetListenerInternal() == null || showAdvancedSettings)
+            //if (myScript.GetListenerInternal() == null || showAdvancedSettings)
             {
                 EditorGUILayout.PropertyField(listener);
             }
@@ -132,7 +183,7 @@ namespace JSAM.JSAMEditor
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
             }
-            else if (myScript.SourcePrefabExists() && showAdvancedSettings)
+            else if (myScript.SourcePrefabExists()/* && showAdvancedSettings*/)
             {
                 EditorGUILayout.PropertyField(sourcePrefab);
             }
@@ -145,13 +196,9 @@ namespace JSAM.JSAMEditor
                 serializedObject.ApplyModifiedProperties();
             }
 
-            EditorGUILayout.Space();
-
             if (myScript.GetMasterVolumeInternal() == 0) EditorGUILayout.HelpBox("Note: Master Volume is set to 0!", MessageType.Info);
             if (myScript.GetSoundVolumeInternal() == 0) EditorGUILayout.HelpBox("Note: Sound is set to 0!", MessageType.Info);
             if (myScript.GetMusicVolumeInternal() == 0) EditorGUILayout.HelpBox("Note: Music is set to 0!", MessageType.Info);
-
-            EditorGUILayout.Space();
 
             #region Quick Reference Guide
             showHowTo = EditorCompatability.SpecialFoldouts(showHowTo, "Quick Reference Guide");
@@ -162,21 +209,6 @@ namespace JSAM.JSAMEditor
                 EditorGUILayout.LabelField("Overview", EditorStyles.boldLabel);
                 EditorGUILayout.HelpBox("This component is the backbone of the entire JSAM Audio Manager system and ideally should occupy it's own gameobject."
                     , MessageType.None);
-                EditorGUILayout.HelpBox("Click on these links here for more info on getting started and for full documentation!"
-                    , MessageType.None);
-                EditorGUILayout.BeginHorizontal();
-                GUILayout.FlexibleSpace();
-                if (GUILayout.Button(new GUIContent("Getting Started", "Click on me open the wiki in a new browser window"), new GUILayoutOption[]{ GUILayout.MinWidth(100) }))
-                {
-                    Application.OpenURL("https://github.com/jackyyang09/Simple-Unity-Audio-Manager/wiki/2.-Getting-Started-with-JSAM");
-                }
-                GUILayout.FlexibleSpace();
-                if (GUILayout.Button(new GUIContent("Documentation", "Click on me to check out the documentation"), new GUILayoutOption[] { GUILayout.MinWidth(100) }))
-                {
-                    Application.OpenURL("https://jackyyang09.github.io/Simple-Unity-Audio-Manager/class_j_s_a_m_1_1_audio_manager.html");
-                }
-                GUILayout.FlexibleSpace();
-                EditorGUILayout.EndHorizontal();
                 EditorGUILayout.HelpBox("Remember to mouse over the settings in this and other windows to learn more about them!", MessageType.None);
                 EditorGUILayout.HelpBox("Please ensure that you don't have multiple AudioManagers in one scene."
                     , MessageType.None);
@@ -222,29 +254,6 @@ namespace JSAM.JSAMEditor
             #endregion  
         }
 
-        private void OnEnable()
-        {
-            myScript = (AudioManager)target;
-
-            myScript.EstablishSingletonDominance();
-
-            masterVolume = serializedObject.FindProperty("masterVolume");
-            musicVolume = serializedObject.FindProperty("musicVolume");
-            soundVolume = serializedObject.FindProperty("soundVolume");
-            listener = serializedObject.FindProperty("listener");
-            sourcePrefab = serializedObject.FindProperty("sourcePrefab");
-
-            //copyIcon = EditorGUIUtility.TrIconContent("winbtn_win_restore_h", "Click to Copy Enum Name to Clipboard");
-            copyIcon = new GUIContent("Copy", "Click to Copy Enum Name to Clipboard");
-
-            Application.logMessageReceived += UnityDebugLog;
-        }
-
-        private void OnDisable()
-        {
-            Application.logMessageReceived -= UnityDebugLog;
-        }
-
         static void UnityDebugLog(string message, string stackTrace, LogType logType)
         {
             // Code from this steffen-itterheim
@@ -252,30 +261,6 @@ namespace JSAM.JSAMEditor
             // if we receive a Debug.LogError we can assume that compilation failed
             if (logType == LogType.Error)
                 EditorUtility.ClearProgressBar();
-        }
-
-        void RenderAudioFileListing(SerializedProperty ao, string soundName, string enumName)
-        {
-            GUIContent sName = new GUIContent(soundName, enumName + "." + soundName);
-            Rect clickArea = EditorGUILayout.BeginHorizontal();
-            GUI.enabled = false;
-            EditorGUILayout.ObjectField(ao, sName);
-            GUI.enabled = true;
-            if (GUILayout.Button(copyIcon, new GUILayoutOption[] { GUILayout.MaxWidth(40) }))
-            {
-                CopyToClipboard(sName.tooltip);
-            }
-            // Thank you JJCrawley https://answers.unity.com/questions/1326881/right-click-in-custom-editor.html
-            // Deprecated as of Unity 2020
-            //if (clickArea.Contains(Event.current.mousePosition) && Event.current.type == EventType.ContextClick)
-            //{
-            //    Debug.Log("TEST");
-            //    GenericMenu menu = new GenericMenu();
-            //
-            //    menu.AddItem(new GUIContent("Copy \"" + sName.tooltip + "\" to Clipboard"), false, CopyToClipboard, sName.tooltip);
-            //    menu.ShowAsContext();
-            //}
-            EditorGUILayout.EndHorizontal();
         }
 
         /// <summary>
@@ -287,15 +272,19 @@ namespace JSAM.JSAMEditor
             EditorUtility.ClearProgressBar();
         }
 
-        /// <summary>
-        /// Copies the given string to your clipboard
-        /// </summary>
-        /// <param name="text"></param>
-        void CopyToClipboard(object text)
+        void LoadLibraries()
         {
-            string s = text.ToString();
-            EditorGUIUtility.systemCopyBuffer = s;
-            AudioManager.instance.DebugLog("Copied " + s + " to clipboard!");
+            var libraries = JSAMEditorHelper.ImportAssetsOrFoldersAtPath<AudioLibrary>(JSAMSettings.Settings.LibraryPath);
+
+            AudioLibraryEditor.projectLibraries = new List<AudioLibrary>();
+            AudioLibraryEditor.projectLibrariesNames = new List<string>();
+            for (int i = 0; i < libraries.Count; i++)
+            {
+                AudioLibraryEditor.projectLibraries.Add(libraries[i]);
+                AudioLibraryEditor.projectLibrariesNames.Add(libraries[i].name);
+            }
+
+            libraryIndex = AudioLibraryEditor.projectLibraries.IndexOf(library.objectReferenceValue as AudioLibrary);
         }
 
         [MenuItem("GameObject/Audio/JSAM/Audio Manager", false, 1)]

@@ -1,4 +1,4 @@
-    public enum BenisSounds {
+    public enum FPSExampleSounds {
         AKChamber,
         AKDryFire,
         AKEquip,
@@ -7,12 +7,12 @@
         AKMagRemove,
         AKMagTap,
         Gunshot,
-        AbstractPop,
         Crouch,
+        AbstractPop,
         Running,
         Walk
     }
-    public enum BenisMusic {
-        BGM,
-        IntroLoop
+    public enum FPSExampleMusic {
+        IntroLoop,
+        BGM
     }

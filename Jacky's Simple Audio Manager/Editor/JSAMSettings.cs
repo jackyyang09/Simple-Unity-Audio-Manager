@@ -7,6 +7,7 @@ namespace JSAM.JSAMEditor
 {
     public class JSAMSettings : ScriptableObject
     {
+        [Tooltip("The root folder of JSAM")]
         [SerializeField] string packagePath;
         public string PackagePath
         {
@@ -20,6 +21,8 @@ namespace JSAM.JSAMEditor
                 return packagePath;
             }
         }
+
+        [Tooltip("The folder that holds all JSAM-related presets. Audio File object presets will be saved here automatically.")]
         [SerializeField] string presetsPath;
         public string PresetsPath
         {
@@ -32,6 +35,8 @@ namespace JSAM.JSAMEditor
                 return presetsPath;
             }
         }
+
+        [Tooltip("C# scripts that contain JSAM-related enums will be generated here automatically.")]
         [SerializeField] string generatedEnumsPath;
         public string GeneratedEnumsPath
         {
@@ -45,6 +50,21 @@ namespace JSAM.JSAMEditor
             }
         }
 
+        [Tooltip("Audio Libraries will be saved here automatically.")]
+        [SerializeField] string libraryPath;
+        public string LibraryPath
+        {
+            get
+            {
+                if (libraryPath.IsNullEmptyOrWhiteSpace())
+                {
+                    libraryPath = PackagePath + "/Libraries";
+                }
+                return libraryPath;
+            }
+        }
+
+        [Tooltip("If true, JSAM enums are generated under a namespace of your choosing")]
         [SerializeField] bool useNamespace = false;
         public bool UseNamespace
         {
@@ -53,12 +73,34 @@ namespace JSAM.JSAMEditor
                 return useNamespace;
             }
         }
+
+        [Tooltip("The namespace that new JSAM enum files will be generated under.")]
         [SerializeField] string enumNamespace = "JSAM";
         public string EnumNamespace
         {
             get
             {
                 return enumNamespace;
+            }
+        }
+
+        [Tooltip("The font size used when rendering \"quick reference guides\" in JSAM editor windows")]
+        [SerializeField] int quickReferenceFontSize = 10;
+        public int QuickReferenceFontSize
+        {
+            get
+            {
+                return quickReferenceFontSize;
+            }
+        }
+
+        [Tooltip("If true, prevents this window from showing up on Unity startup. You can find this window under Window -> JSAM -> JSAM Startup")]
+        [SerializeField] bool hideStartupMessage = false;
+        public bool HideStartupMessage
+        {
+            get
+            {
+                return hideStartupMessage;
             }
         }
 
@@ -115,6 +157,19 @@ namespace JSAM.JSAMEditor
             }
         }
 
+        [SerializeField] string selectedSettings;
+        public AudioManagerSettings SelectedSettings
+        {
+            get
+            {
+                return AssetDatabase.LoadAssetAtPath<AudioManagerSettings>(selectedSettings);
+            }
+            set
+            {
+                selectedSettings = AssetDatabase.GetAssetPath(value);
+            }
+        }
+
         public void Reset()
         {
             packagePath = JSAMEditorHelper.GetAudioManagerPath();
@@ -141,22 +196,40 @@ namespace JSAM.JSAMEditor
                 // Create the SettingsProvider and initialize its drawing (IMGUI) function in place:
                 guiHandler = (searchContext) =>
                 {
+                    EditorGUIUtility.labelWidth += 50;
+
                     var settings = JSAMSettings.SerializedSettings;
                     SerializedProperty packagePath = settings.FindProperty("packagePath");
                     SerializedProperty presetsPath = settings.FindProperty("presetsPath");
+                    SerializedProperty libraryPath = settings.FindProperty("libraryPath");
                     SerializedProperty enumPath = settings.FindProperty("generatedEnumsPath");
                     SerializedProperty useNamespace = settings.FindProperty("useNamespace");
                     SerializedProperty enumNamespace = settings.FindProperty("enumNamespace");
+                    SerializedProperty fontSize = settings.FindProperty("quickReferenceFontSize");
+                    SerializedProperty hideStartup = settings.FindProperty("hideStartupMessage");
 
                     JSAMEditorHelper.SmartFolderField(packagePath);
                     JSAMEditorHelper.SmartFolderField(presetsPath);
+                    JSAMEditorHelper.SmartFolderField(libraryPath);
                     JSAMEditorHelper.SmartFolderField(enumPath);
-                    JSAMEditorHelper.SmartFolderField(packagePath);
                     EditorGUILayout.PropertyField(useNamespace);
                     using (new EditorGUI.DisabledScope(!useNamespace.boolValue))
                     {
                         EditorGUILayout.PropertyField(enumNamespace);
                     }
+
+                    EditorGUILayout.BeginHorizontal();
+
+                    EditorGUILayout.PropertyField(fontSize, new GUILayoutOption[] { GUILayout.ExpandWidth(false)});
+                    if (GUILayout.Button("<", new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+                    {
+                        fontSize.intValue--;
+                    }
+                    else if (GUILayout.Button(">", new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+                    {
+                        fontSize.intValue++;
+                    }
+                    EditorGUILayout.EndHorizontal();
 
                     if (GUILayout.Button("Reset to Default", new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
                     {
@@ -167,11 +240,13 @@ namespace JSAM.JSAMEditor
                     {
                         settings.ApplyModifiedProperties();
                     }
+
+                    EditorGUIUtility.labelWidth -= 50;
                 },
 
                 // Populate the search keywords to enable smart search filtering and label highlighting:
                 keywords = new HashSet<string>(new[] { "JSAM", "AudioManager", "Package", "Presets", "Enums" })
-            };
+        };
     
             return provider;
         }

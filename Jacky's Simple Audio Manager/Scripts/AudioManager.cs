@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -94,9 +93,6 @@ namespace JSAM
 
         [Header("General Settings")]
 
-        [SerializeField]
-        [Tooltip("If true, enables 3D spatialized audio for all sound effects, does not effect music")]
-        bool spatialSound = true;
 
         public static AudioManager instance;
 
@@ -114,52 +110,8 @@ namespace JSAM
         bool loopTrackAfterStopping = false;
         bool clampBetweenLoopPoints = false;
 
-        [Header("System Settings")]
-
-        /// <summary>
-        /// Number of Audio Sources to be created on start
-        /// </summary>
-        [SerializeField]
-        [Tooltip("Number of Audio Sources to be created on start")]
-        int audioSources = 16;
-
-        /// <summary>
-        /// If true, AudioManager no longer prints info to the console. Does not affect AudioManager errors/warnings
-        /// </summary>
-        [Tooltip("If true, AudioManager no longer prints info to the console. Does not affect AudioManager errors/warnings")]
-        [SerializeField]
-        bool disableConsoleLogs = false;
-
-        /// <summary>
-        /// If true, keeps AudioManager alive through scene loads. You're recommended to disable this if your AudioManager is instanced
-        /// </summary>
-        [Tooltip("If true, keeps AudioManager alive through scene loads. You're recommended to disable this if your AudioManager is instanced")]
-        [SerializeField]
-        bool dontDestroyOnLoad = true;
-
-        /// <summary>
-        /// If true, adds more Audio Sources automatically if you exceed the starting count, you are recommended to keep this enabled
-        /// </summary>
-        [Tooltip("If true, adds more Audio Sources automatically if you exceed the starting count, you are recommended to keep this enabled")]
-        [SerializeField]
-        bool dynamicSourceAllocation = true;
-
-        /// <summary>
-        /// If true, stops all sounds when you load a scene
-        /// </summary>
-        [Tooltip("If true, stops all sounds when you load a scene")]
-        [SerializeField]
-        bool stopOnSceneLoad = false;
-
-        [SerializeField]
-        [Tooltip("Use if spatialized sounds are spatializing late when playing in-editor, often happens with OVR")]
-        bool spatializeLateUpdate = false;
-
-        [SerializeField]
-        [Tooltip("Changes the pitch of sounds according to Time.timeScale. When Time.timeScale is set to 0, pauses all sounds instead")]
-        public bool timeScaledSounds = true;
-
-        [SerializeField] AudioManagerSettings settings = null;
+        [Tooltip("The settings used for this AudioManager")]
+        [SerializeField, HideInInspector] AudioManagerSettings settings = null;
         public AudioManagerSettings Settings
         {
             get
@@ -168,7 +120,8 @@ namespace JSAM
             }
         }
 
-        [SerializeField] AudioLibrary library = null;
+        [Tooltip("The Audio Library that this AudioManager should use")]
+        [SerializeField, HideInInspector] AudioLibrary library = null;
         public AudioLibrary Library
         {
             get
@@ -219,7 +172,7 @@ namespace JSAM
         void Awake()
         {
             // AudioManager is important, keep it between scenes
-            if (dontDestroyOnLoad)
+            if (settings.DontDestroyOnLoad)
             {
                 DontDestroyOnLoad(gameObject);
             }
@@ -237,7 +190,7 @@ namespace JSAM
                 sourceHolder = new GameObject("Sources");
                 sourceHolder.transform.SetParent(transform);
 
-                for (int i = 0; i < audioSources; i++)
+                for (int i = 0; i < settings.StartingAudioSources; i++)
                 {
                     sources.Add(Instantiate(sourcePrefab, sourceHolder.transform).GetComponent<AudioSource>());
                     helpers.Add(sources[i].gameObject.GetComponent<AudioChannelHelper>());
@@ -282,7 +235,7 @@ namespace JSAM
 
                 //Set sources properties based on current settings
                 ApplyVolumeGlobal();
-                SetSpatialSound(spatialSound);
+                SetSpatialSound(Settings.Spatialize);
 
                 // Find the listener if not manually set
                 FindNewListener();
@@ -336,7 +289,7 @@ namespace JSAM
             ApplyMusicVolume();
 
             FindNewListener();
-            if (stopOnSceneLoad)
+            if (Settings.StopSoundsOnSceneLoad)
             {
                 StopAllSounds();
             }
@@ -349,7 +302,7 @@ namespace JSAM
         private void Update()
         {
             // Don't want these functions to fire when music is allegedly paused
-            if ((Time.timeScale > 0 && !gamePaused) && timeScaledSounds || !timeScaledSounds)
+            if ((Time.timeScale > 0 && !gamePaused) && Settings.TimeScaledSounds || !Settings.TimeScaledSounds)
             {
                 if (enableLoopPoints)
                 {
@@ -386,12 +339,12 @@ namespace JSAM
                 }
             }
 
-            if (spatialSound)
+            if (Settings.Spatialize)
             {
                 TrackSounds();
             }
 
-            if (timeScaledSounds)
+            if (Settings.TimeScaledSounds)
             {
                 if (Time.timeScale == 0 && !gamePaused)
                 {
@@ -464,11 +417,10 @@ namespace JSAM
         /// <param name="b">Enable spatial sound if true</param>
         public void SetSpatialSound(bool b)
         {
-            spatialSound = b;
             float val = (b) ? 1 : 0;
-            foreach (AudioSource s in sources)
+            for (int i = 0; i < sources.Count; i++)
             {
-                s.spatialBlend = val;
+                sources[i].spatialBlend = val;
             }
         }
 
@@ -552,7 +504,7 @@ namespace JSAM
             musicSources[0].spatialBlend = 0;
 
             bool ignoreTimeScale = track.ignoreTimeScale;
-            if (timeScaledSounds && !ignoreTimeScale)
+            if (settings.TimeScaledSounds && !ignoreTimeScale)
             {
                 if (Time.timeScale == 0)
                 {
@@ -661,7 +613,7 @@ namespace JSAM
             clampBetweenLoopPoints = track.clampToLoopPoints;
 
             bool ignoreTimeScale = track.ignoreTimeScale;
-            if (timeScaledSounds && !ignoreTimeScale)
+            if (settings.TimeScaledSounds && !ignoreTimeScale)
             {
                 if (Time.timeScale == 0)
                 {
@@ -984,7 +936,7 @@ namespace JSAM
             }
 
             bool ignoreTimeScale = track.ignoreTimeScale;
-            if (timeScaledSounds && !ignoreTimeScale)
+            if (settings.TimeScaledSounds && !ignoreTimeScale)
             {
                 if (Time.timeScale == 0)
                 {
@@ -1120,7 +1072,7 @@ namespace JSAM
             }
 
             bool ignoreTimeScale = track.ignoreTimeScale;
-            if (timeScaledSounds && !ignoreTimeScale)
+            if (settings.TimeScaledSounds && !ignoreTimeScale)
             {
                 if (Time.timeScale == 0)
                 {
@@ -1285,7 +1237,7 @@ namespace JSAM
             }
 
             bool ignoreTimeScale = track.ignoreTimeScale;
-            if (timeScaledSounds && !ignoreTimeScale)
+            if (settings.TimeScaledSounds && !ignoreTimeScale)
             {
                 if (Time.timeScale == 0)
                 {
@@ -1452,7 +1404,7 @@ namespace JSAM
 
         void TrackSounds()
         {
-            if (spatialSound) // Only do this part if we have 3D sound enabled
+            if (settings.Spatialize) // Only do this part if we have 3D sound enabled
             {
                 for (int i = 0; i < sources.Count; i++) // Search every source
                 {
@@ -1581,7 +1533,7 @@ namespace JSAM
             {
                 sourcePositions.Add(a, trans);
                 a.transform.position = trans.position;
-                if (spatialSound)
+                if (settings.Spatialize)
                 {
                     a.spatialBlend = 1;
                 }
@@ -1594,14 +1546,14 @@ namespace JSAM
             else
             {
                 a.transform.position = listener.transform.position;
-                if (spatialSound)
+                if (settings.Spatialize)
                 {
                     a.spatialBlend = 0;
                 }
             }
 
             bool ignoreTimeScale = s.ignoreTimeScale;
-            if (timeScaledSounds && !ignoreTimeScale)
+            if (settings.TimeScaledSounds && !ignoreTimeScale)
             {
                 if (Time.timeScale == 0)
                 {
@@ -1680,7 +1632,7 @@ namespace JSAM
             if (s.spatialize)
             {
                 a.transform.position = position;
-                if (spatialSound)
+                if (settings.Spatialize)
                 {
                     a.spatialBlend = 1;
                 }
@@ -1693,14 +1645,14 @@ namespace JSAM
             else
             {
                 a.transform.position = listener.transform.position;
-                if (spatialSound)
+                if (settings.Spatialize)
                 {
                     a.spatialBlend = 0;
                 }
             }
 
             bool ignoreTimeScale = s.ignoreTimeScale;
-            if (timeScaledSounds && !ignoreTimeScale)
+            if (settings.TimeScaledSounds && !ignoreTimeScale)
             {
                 if (Time.timeScale == 0)
                 {
@@ -1825,10 +1777,10 @@ namespace JSAM
 
             bool ignoreTimeScale = s.ignoreTimeScale;
 
-            a.spatialBlend = (spatialSound && s.spatialize) ? 1 : 0;
+            a.spatialBlend = (settings.Spatialize && s.spatialize) ? 1 : 0;
             a.priority = (int)s.priority;
 
-            if (timeScaledSounds && !ignoreTimeScale)
+            if (settings.TimeScaledSounds && !ignoreTimeScale)
             {
                 if (Time.timeScale == 0)
                 {
@@ -1900,10 +1852,10 @@ namespace JSAM
 
             bool ignoreTimeScale = s.ignoreTimeScale;
 
-            a.spatialBlend = (spatialSound && s.spatialize) ? 1 : 0;
+            a.spatialBlend = (settings.Spatialize && s.spatialize) ? 1 : 0;
             a.priority = (int)s.priority;
 
-            if (timeScaledSounds && !ignoreTimeScale)
+            if (settings.TimeScaledSounds && !ignoreTimeScale)
             {
                 if (Time.timeScale == 0)
                 {
@@ -2623,7 +2575,7 @@ namespace JSAM
         }
 
         /// <summary>
-        /// Returns null if all sources are used
+        /// Returns -1 if all sources are used
         /// </summary>
         /// <returns></returns>
         int GetAvailableSource()
@@ -2636,7 +2588,7 @@ namespace JSAM
                 }
             }
 
-            if (dynamicSourceAllocation)
+            if (settings.DynamicSourceAllocation)
             {
                 AudioSource newSource = Instantiate(sourcePrefab, sourceHolder.transform).GetComponent<AudioSource>();
                 AudioChannelHelper newHelper = newSource.gameObject.AddComponent<AudioChannelHelper>();
@@ -2650,7 +2602,7 @@ namespace JSAM
             {
                 Debug.LogError("AudioManager Error: Ran out of Audio Sources!");
             }
-            return 0;
+            return -1;
         }
 
         /// <summary>
@@ -2847,7 +2799,7 @@ namespace JSAM
         /// <param name="consoleOutput"></param>
         public void DebugLog(string consoleOutput)
         {
-            if (disableConsoleLogs) return;
+            if (Settings.DisableConsoleLogs) return;
             Debug.Log(consoleOutput);
         }
 
@@ -2908,7 +2860,7 @@ namespace JSAM
 
             if (!doneLoading) return;
 
-            SetSpatialSound(spatialSound);
+            SetSpatialSound(Settings.Spatialize);
         }
 
         public bool SourcePrefabExists()
@@ -2930,7 +2882,7 @@ namespace JSAM
 
         private void LateUpdate()
         {
-            if (spatialSound && spatializeLateUpdate)
+            if (settings.Spatialize && settings.SpatializeOnLateUpdate)
             {
                 TrackSounds();
             }
