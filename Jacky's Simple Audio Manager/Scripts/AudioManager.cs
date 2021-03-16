@@ -306,17 +306,20 @@ namespace JSAM
             {
                 if (enableLoopPoints)
                 {
-                    if (musicSources[0].isPlaying)
+                    if (musicSources[0].clip != null)
                     {
-                        if (musicSources[0].timeSamples >= loopEndTime)
+                        if (musicSources[0].isPlaying)
+                        {
+                            if (musicSources[0].timeSamples >= loopEndTime)
+                            {
+                                musicSources[0].timeSamples = (int)loopStartTime;
+                            }
+                        }
+                        else if (loopTrackAfterStopping && fadeInRoutine == null)
                         {
                             musicSources[0].timeSamples = (int)loopStartTime;
+                            musicSources[0].Play();
                         }
-                    }
-                    else if (loopTrackAfterStopping && fadeInRoutine == null)
-                    {
-                        musicSources[0].timeSamples = (int)loopStartTime;
-                        musicSources[0].Play();
                     }
 #if UNITY_EDITOR
                     if (Mathf.Abs((float)(loopStartTime - loopEndTime)) < 1)
@@ -348,8 +351,9 @@ namespace JSAM
             {
                 if (Time.timeScale == 0 && !gamePaused)
                 {
-                    foreach (AudioSource a in sources)
+                    for (int i = 0; i < sources.Count; i++)
                     {
+                        var a = sources[i];
                         // Check to make sure this sound wasn't designated to ignore timescale
                         if (ignoringTimeScale.Contains(a)) continue;
                         if (a.isPlaying)
@@ -358,8 +362,9 @@ namespace JSAM
                         }
                     }
                     // No mercy for music either
-                    foreach (AudioSource a in musicSources)
+                    for (int i = 0; i < musicSources.Length; i++)
                     {
+                        var a = musicSources[i];
                         if (ignoringTimeScale.Contains(a)) continue;
                         if (a.isPlaying)
                         {
@@ -370,15 +375,17 @@ namespace JSAM
                 }
                 else if (Time.timeScale != 0 && gamePaused)
                 {
-                    foreach (AudioSource a in sources)
+                    for(int i = 0; i < sources.Count; i++)
                     {
+                        var a = sources[i];
                         // Check to make sure this sound wasn't designated to ignore timescale
                         if (ignoringTimeScale.Contains(a)) continue;
                         a.UnPause();
                     }
 
-                    foreach (AudioSource a in musicSources)
+                    for (int i = 0; i < musicSources.Length; i++)
                     {
+                        var a = musicSources[i];
                         if (ignoringTimeScale.Contains(a)) continue;
                         a.UnPause();
                     }
@@ -388,8 +395,9 @@ namespace JSAM
                 // Update AudioSource pitches if timeScale changed
                 if (Mathf.Abs(Time.timeScale - prevTimeScale) > 0)
                 {
-                    foreach (AudioSource a in sources)
+                    for (int i = 0; i < sources.Count; i++)
                     {
+                        var a = sources[i];
                         if (ignoringTimeScale.Contains(a)) continue;
                         float offset = a.pitch - prevTimeScale;
                         bool reversed = a.pitch < 0;
@@ -397,8 +405,9 @@ namespace JSAM
                         a.pitch += offset;
                         if (reversed) a.pitch = -Mathf.Abs(a.pitch);
                     }
-                    foreach (AudioSource a in musicSources)
+                    for (int i = 0; i < musicSources.Length; i++)
                     {
+                        var a = musicSources[i];
                         if (ignoringTimeScale.Contains(a)) continue;
                         float offset = a.pitch - prevTimeScale;
                         bool reversed = a.pitch < 0;
@@ -1956,6 +1965,31 @@ namespace JSAM
         }
 
         /// <summary>
+        /// A shorthand for wrapping StopSound in an IsSoundPlaying if-statement
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sound"></param>
+        /// <param name="trans"></param>
+        public static void StopSoundIfPlaying<T>(T sound, Transform trans = null) where T : Enum
+        {
+            if (!instance) return;
+            int s = Convert.ToInt32(sound);
+            instance.StopSoundIfPlayingInternal(instance.library.sounds[s], trans);
+        }
+
+        /// <summary>
+        /// A shorthand for wrapping StopSound in an IsSoundPlaying if-statement 
+        /// Use this variant if you have a reference to the object itself
+        /// </summary>
+        /// <param name="sound"></param>
+        /// <param name="trans"></param>
+        public void StopSoundIfPlayingInternal(AudioFileSoundObject sound, Transform trans = null)
+        {
+            if (!IsSoundPlayingInternal(sound)) return;
+            StopSoundInternal(sound, trans);
+        }
+
+        /// <summary>
         /// Stops a looping sound played using PlaySoundLoop and it's variants. 
         /// To stop a basic a sound that was played through PlaySound and it's variants, use StopSound instead
         /// </summary>
@@ -1966,7 +2000,7 @@ namespace JSAM
         {
             if (!instance) return;
             int s = Convert.ToInt32(sound);
-            instance.StopSoundLoopInternal(instance.library.sounds[s], stopInstantly, null);
+            instance.StopSoundLoopInternal(instance.library.sounds[s], null, stopInstantly);
         }
 
         /// <summary>
@@ -1980,7 +2014,7 @@ namespace JSAM
         {
             if (!instance) return;
             int s = Convert.ToInt32(sound);
-            instance.StopSoundLoopInternal(instance.library.sounds[s], stopInstantly, trans);
+            instance.StopSoundLoopInternal(instance.library.sounds[s], trans, stopInstantly);
         }
 
         /// <summary>
@@ -1989,9 +2023,9 @@ namespace JSAM
         /// <param name="s"></param>
         /// <param name="stopInstantly">Stops sound instantly if true</param>
         /// <param name="t">Transform of the object playing the looping sound</param>
-        public void StopSoundLoopInternal(int s, bool stopInstantly = false, Transform t = null)
+        public void StopSoundLoopInternal(int s, Transform t = null, bool stopInstantly = false)
         {
-            StopSoundLoopInternal(library.sounds[s], stopInstantly, t);
+            StopSoundLoopInternal(library.sounds[s], t, stopInstantly);
         }
 
         /// <summary>
@@ -2000,7 +2034,7 @@ namespace JSAM
         /// <param name="s"></param>
         /// <param name="stopInstantly"></param>
         /// <param name="t"></param>
-        public void StopSoundLoopInternal(AudioFileSoundObject s, bool stopInstantly = false, Transform t = null)
+        public void StopSoundLoopInternal(AudioFileSoundObject s, Transform t = null, bool stopInstantly = false)
         {
             for (int i = 0; i < loopingSources.Count; i++)
             {
@@ -2021,6 +2055,58 @@ namespace JSAM
                     loopingSources.RemoveAt(i);
                 }
             }
+        }
+
+        /// <summary>
+        /// A shorthand for wrapping StopSoundLoop in an IsSoundLooping if-statement
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sound"></param>
+        /// <param name="trans"></param>
+        public static void StopSoundIfLooping<T>(T sound, Transform trans = null) where T : Enum
+        {
+            if (!instance) return;
+            int s = Convert.ToInt32(sound);
+            instance.StopSoundIfLoopingInternal(instance.library.sounds[s], trans);
+        }
+
+        /// <summary>
+        /// A shorthand for wrapping StopSound in an IsSoundPlaying if-statement 
+        /// Use this variant if you have a reference to the object itself
+        /// </summary>
+        /// <param name="sound"></param>
+        /// <param name="trans"></param>
+        public void StopSoundIfLoopingInternal(AudioFileSoundObject sound, Transform trans = null)
+        {
+            if (!IsSoundLoopingInternal(sound)) return;
+            StopSoundLoopInternal(sound, trans);
+        }
+
+        /// <summary>
+        /// A shorthand for wrapping StopSoundLoop in an IsSoundLooping if-statement
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sound"></param>
+        /// <param name="trans"></param>
+        /// <param name="stopInstantly">If true, stop the sound immediately</param>
+        public static void StopSoundIfLooping<T>(T sound, Transform trans = null, bool stopInstantly = false) where T : Enum
+        {
+            if (!instance) return;
+            int s = Convert.ToInt32(sound);
+            instance.StopSoundIfLoopingInternal(instance.library.sounds[s], trans, stopInstantly);
+        }
+
+        /// <summary>
+        /// A shorthand for wrapping StopSound in an IsSoundPlaying if-statement 
+        /// Use this variant if you have a reference to the object itself
+        /// </summary>
+        /// <param name="sound"></param>
+        /// <param name="trans"></param>
+        /// <param name="stopInstantly">If true, stop the sound immediately</param>
+        public void StopSoundIfLoopingInternal(AudioFileSoundObject sound, Transform trans = null, bool stopInstantly = false)
+        {
+            if (!IsSoundLoopingInternal(sound)) return;
+            StopSoundLoopInternal(sound, trans, stopInstantly);
         }
 
         /// <summary>
@@ -2452,12 +2538,11 @@ namespace JSAM
         void ApplySoundVolume()
         {
             if (helpers == null) return;
-            if (helpers.Count == 0) return;
-            foreach (AudioChannelHelper a in helpers)
+            for (int i = 0; i < helpers.Count; i++)
             {
-                if (a != null)
+                if (helpers[i] != null)
                 {
-                    a.ApplyVolumeChanges();
+                    helpers[i].ApplyVolumeChanges();
                 }
             }
         }
@@ -2465,12 +2550,11 @@ namespace JSAM
         void ApplyMusicVolume()
         {
             if (musicHelpers == null) return;
-            if (musicHelpers.Count == 0) return;
-            foreach (AudioChannelHelper a in musicHelpers)
+            for (int i = 0; i < musicHelpers.Count; i++)
             {
-                if (a != null)
+                if (musicHelpers[i] != null)
                 {
-                    a.ApplyVolumeChanges();
+                    musicHelpers[i].ApplyVolumeChanges();
                 }
             }
         }
@@ -2716,9 +2800,9 @@ namespace JSAM
         /// <returns></returns>
         public bool IsMusicPlayingInternal(AudioFileMusicObject a)
         {
-            foreach (AudioSource m in musicSources)
+            for (int i = 0; i < musicSources.Length; i++)
             {
-                if (m.clip == a.GetFile() && m.isPlaying)
+                if (musicSources[i].clip == a.GetFile() && musicSources[i].isPlaying)
                 {
                     return true;
                 }
@@ -2764,10 +2848,10 @@ namespace JSAM
 
         public bool IsSoundLoopingInternal(AudioFileSoundObject sound)
         {
-            foreach (AudioSource c in loopingSources)
+            for (int i = 0; i < loopingSources.Count; i++)
             {
-                if (c == null) continue;
-                if (sound.HasAudioClip(c.clip))
+                if (loopingSources[i] == null) continue;
+                if (sound.HasAudioClip(loopingSources[i].clip))
                 {
                     return true;
                 }

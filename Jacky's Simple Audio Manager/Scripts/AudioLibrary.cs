@@ -24,8 +24,8 @@ namespace JSAM
         public string soundEnumName;
         public string musicEnumName;
 
-        [SerializeField] List<CategoryToList> soundCategoriesToList = new List<CategoryToList>();
-        [SerializeField] List<CategoryToList> musicCategoriesToList = new List<CategoryToList>();
+        [SerializeField] public List<CategoryToList> soundCategoriesToList = new List<CategoryToList>();
+        [SerializeField] public List<CategoryToList> musicCategoriesToList = new List<CategoryToList>();
 
         public string safeName;
         public bool showMusic;
@@ -50,9 +50,10 @@ namespace JSAM
         /// <returns></returns>
         public static System.Type GetEnumType(string enumName)
         {
-            foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
+            var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+            for (int i = 0; i < assemblies.Length; i++)
             {
-                var type = assembly.GetType(enumName);
+                var type = assemblies[i].GetType(enumName);
                 if (type == null)
                     continue;
                 if (type.IsEnum)

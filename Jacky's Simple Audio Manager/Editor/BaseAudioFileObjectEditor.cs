@@ -38,6 +38,10 @@ namespace JSAM.JSAMEditor
             relativeVolume = FindProp(nameof(asset.relativeVolume));
             spatialize = FindProp(nameof(asset.spatialize));
             maxDistance = FindProp(nameof(asset.maxDistance));
+
+            bypassEffects = FindProp(nameof(asset.bypassEffects));
+            bypassListenerEffects = serializedObject.FindProperty(nameof(asset.bypassListenerEffects));
+            bypassReverbZones = serializedObject.FindProperty(nameof(asset.bypassReverbZones));
         }
 
         protected SerializedProperty safeName;

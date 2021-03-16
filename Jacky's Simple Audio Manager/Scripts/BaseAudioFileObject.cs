@@ -224,9 +224,9 @@ namespace JSAM
         {
             if (useLibrary)
             {
-                foreach (AudioClip f in files)
+                for (int i = 0; i < files.Count; i++)
                 {
-                    if (f != null) return f;
+                    if (files[i] != null) return files[i];
                 }
             }
             else
@@ -240,9 +240,9 @@ namespace JSAM
         {
             if (!useLibrary) return (file == null) ? 0 : 1;
             int count = 0;
-            foreach (AudioClip a in files)
+            for (int i = 0; i < files.Count; i++)
             {
-                if (a != null)
+                if (files[i] != null)
                 {
                     count++;
                 }
@@ -258,9 +258,9 @@ namespace JSAM
             }
             else
             {
-                foreach (AudioClip a in files)
+                for (int i = 0; i < files.Count; i++)
                 {
-                    if (a != null)
+                    if (files[i] != null)
                     {
                         return false;
                     }

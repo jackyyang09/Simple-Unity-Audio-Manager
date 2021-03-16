@@ -92,12 +92,6 @@ namespace JSAM.JSAMEditor
         {
             serializedObject.Update();
 
-            #region Category Inspector
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.PropertyField(category);
-            EditorGUILayout.EndHorizontal();
-            #endregion
-
             RenderPresetDescription();
 
             EditorGUILayout.Space();
@@ -367,37 +361,23 @@ namespace JSAM.JSAMEditor
             showHowTo = EditorCompatability.SpecialFoldouts(showHowTo, "Quick Reference Guide");
             if (showHowTo)
             {
-                EditorGUILayout.Space();
+                JSAMEditorHelper.RenderHelpbox("Overview");
 
-                EditorGUILayout.LabelField("Overview", EditorStyles.boldLabel);
-                EditorGUILayout.HelpBox("Audio File Music Objects are containers that hold your music files to be read by Audio Manager."
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("No matter the filename or folder location, this Audio File will be referred to as it's name above"
-                    , MessageType.None);
+                JSAMEditorHelper.RenderHelpbox("Audio File Music Objects are containers that hold your music.");
+                JSAMEditorHelper.RenderHelpbox("These Audio File objects are to be stored in an Audio Library where it is " +
+                    "then read and played through the Audio Manager");
 
-                EditorGUILayout.Space();
+                JSAMEditorHelper.RenderHelpbox("Tips");
 
-                EditorGUILayout.LabelField("Tips", EditorStyles.boldLabel);
-                EditorGUILayout.HelpBox("You can always check what audio file music objects you have loaded in AudioManager's library by selecting the AudioManager " +
-                    "in the inspector and clicking on the drop-down near the bottom."
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("If you want to better organize your audio file music objects in AudioManager's library, you can assign a " +
-                    "category to this audio file music object. Use the \"Hidden\" category to hide your audio file music object from the library list completely."
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("Relative volume only helps to reduce how loud a sound is. To increase how loud an individual sound is, you'll have to " +
-                    "edit it using a sound editor."
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("Before you cut up your music into an intro and looping portion, try using the loop point tools!"
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("By designating your loop points in the loop point tools and setting your music's loop mode to " +
-                    "\"Loop with Loop Points\", you can easily get AudioManager to play your intro portion once and repeat the looping portion forever!"
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("If your music is saved in the WAV format, you can use external programs to set loop points in the file itself! " +
-                    "After that, click the \"Import Loop Points from .WAV Metadata\" button above to have AudioManager to read them in."
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("You can designate loop points in your .WAV file using programs like Wavosaur and Goldwave! Click the links " +
-                    "below to learn more about how to get these free tools and create loop points with them!"
-                    , MessageType.None);
+                JSAMEditorHelper.RenderHelpbox("Relative volume only helps to reduce how loud a sound is. To increase how loud an individual sound is, you'll have to " +
+                    "edit it using a sound editor.");
+                JSAMEditorHelper.RenderHelpbox("Before you cut up your music into an intro and looping portion, try using the loop point tools!");
+                JSAMEditorHelper.RenderHelpbox("By designating your loop points in the loop point tools and setting your music's loop mode to " +
+                    "\"Loop with Loop Points\", you can easily get AudioManager to play your intro portion once and repeat the looping portion forever!");
+                JSAMEditorHelper.RenderHelpbox("If your music is saved in the WAV format, you can use external programs to set loop points in the file itself! " +
+                    "After that, click the \"Import Loop Points from .WAV Metadata\" button above to have AudioManager to read them in.");
+                JSAMEditorHelper.RenderHelpbox("You can designate loop points in your .WAV file using programs like Wavosaur and Goldwave! Click the links " +
+                    "below to learn more about how to get these free tools and create loop points with them!");
 
                 EditorGUILayout.BeginHorizontal();
                 GUIContent buttonC = new GUIContent("Wavosaur", "Click here to download Wavosaur!");
@@ -423,11 +403,9 @@ namespace JSAM.JSAMEditor
                     Application.OpenURL("https://developer.valvesoftware.com/wiki/Looping_a_Sound");
                 }
                 EditorGUILayout.EndHorizontal();
-                EditorGUILayout.HelpBox("Otherwise, using BPM input to set your loop points is strongly recommended!"
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("You can also choose to export your loop point data by clicking the \"Save Loop Points to File\" button " +
-                    "to use in other programs!"
-                    , MessageType.None);
+                JSAMEditorHelper.RenderHelpbox("Otherwise, using BPM input to set your loop points is strongly recommended!");
+                JSAMEditorHelper.RenderHelpbox("You can also choose to export your loop point data by clicking the \"Save Loop Points to File\" button " +
+                    "to use in other programs!");
             }
             EditorCompatability.EndSpecialFoldoutGroup();
             #endregion  

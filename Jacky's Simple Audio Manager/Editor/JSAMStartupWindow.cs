@@ -70,6 +70,7 @@ namespace JSAM.JSAMEditor
                 Application.OpenURL("https://jackyyang09.github.io/Simple-Unity-Audio-Manager/class_j_s_a_m_1_1_audio_manager.html");
             }
             EditorGUILayout.EndHorizontal();
+
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(new GUIContent("Report a Bug", "Click on me to go to the bug report page in a new browser window"), new GUILayoutOption[] { GUILayout.MinWidth(100) }))
             {

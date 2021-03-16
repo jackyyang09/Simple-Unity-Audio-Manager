@@ -102,33 +102,21 @@ namespace JSAM
             switch (moveState)
             {
                 case MovementStates.Idle:
-                    if (AudioManager.IsSoundLooping(SoundsExample3D.Walk))
-                    {
-                        AudioManager.StopSoundLoop(SoundsExample3D.Walk, transform, true);
-                    }
-                    if (AudioManager.IsSoundLooping(SoundsExample3D.Running))
-                    {
-                        AudioManager.StopSoundLoop(SoundsExample3D.Running, transform, true);
-                    }
+                    AudioManager.StopSoundIfLooping(FPSExampleSounds.Walk, transform, true);
+                    AudioManager.StopSoundIfLooping(FPSExampleSounds.Running, transform, true);
                     break;
                 case MovementStates.Walking:
-                    if (AudioManager.IsSoundLooping(SoundsExample3D.Running))
+                    AudioManager.StopSoundIfLooping(FPSExampleSounds.Running, transform, true);
+                    if (!AudioManager.IsSoundLooping(FPSExampleSounds.Walk))
                     {
-                        AudioManager.StopSoundLoop(SoundsExample3D.Running, transform, true);
-                    }
-                    if (!AudioManager.IsSoundLooping(SoundsExample3D.Walk))
-                    {
-                        AudioManager.PlaySoundLoop(SoundsExample3D.Walk, transform);
+                        AudioManager.PlaySoundLoop(FPSExampleSounds.Walk, transform);
                     }
                     break;
                 case MovementStates.Running:
-                    if (AudioManager.IsSoundLooping(SoundsExample3D.Walk))
+                    AudioManager.StopSoundIfLooping(FPSExampleSounds.Walk, transform, true);
+                    if (!AudioManager.IsSoundLooping(FPSExampleSounds.Running))
                     {
-                        AudioManager.StopSoundLoop(SoundsExample3D.Walk, transform, true);
-                    }
-                    if (!AudioManager.IsSoundLooping(SoundsExample3D.Running))
-                    {
-                        AudioManager.PlaySoundLoop(SoundsExample3D.Running, transform);
+                        AudioManager.PlaySoundLoop(FPSExampleSounds.Running, transform);
                     }
                     break;
             }

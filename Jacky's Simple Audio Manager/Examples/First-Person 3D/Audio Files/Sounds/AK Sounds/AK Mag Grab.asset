@@ -12,12 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d15ae218647a2d4f85e14306846c10c, type: 3}
   m_Name: AK Mag Grab
   m_EditorClassIdentifier: 
+  safeName: AKMagGrab
+  presetDescription: 
+  category: benis
   file: {fileID: 8300000, guid: e7aa0634b69bd3d4eb06c5aca1e576dc, type: 3}
   files: []
   useLibrary: 0
-  category: AK Sounds
   relativeVolume: 1
   spatialize: 0
+  maxDistance: 0
   priority: 128
   startingPitch: 1
   pitchShift: 0.05
@@ -27,7 +30,9 @@ MonoBehaviour:
   fadeMode: 0
   fadeInDuration: 0
   fadeOutDuration: 0
-  safeName: AKMagGrab
+  bypassEffects: 0
+  bypassListenerEffects: 0
+  bypassReverbZones: 0
   chorusFilter:
     enabled: 0
     dryMix: 0
@@ -71,3 +76,5 @@ MonoBehaviour:
     lFReference: 0
     diffusion: 0
     density: 0
+  neverRepeat: 0
+  lastClipIndex: -1

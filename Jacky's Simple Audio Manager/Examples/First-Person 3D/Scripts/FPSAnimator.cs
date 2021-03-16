@@ -83,7 +83,7 @@ namespace JSAM
                         {
                             if (bullets > 1)
                             {
-                                AudioManager.PlaySound(SoundsExample3D.Gunshot);
+                                AudioManager.PlaySound(FPSExampleSounds.Gunshot);
                                 StartCoroutine(ShootDelay());
                                 anim.SetTrigger("Fire");
                                 bullets--;
@@ -95,7 +95,7 @@ namespace JSAM
                                 StartCoroutine(ShootDelay());
                                 bullets--;
                                 ammoText.text = bullets.ToString();
-                                AudioManager.PlaySound(SoundsExample3D.AKDryFire);
+                                AudioManager.PlaySound(FPSExampleSounds.AKDryFire);
                             }
                         }
                         else if (Input.GetKeyUp(KeyCode.Mouse0))

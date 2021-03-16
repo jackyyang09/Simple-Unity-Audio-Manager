@@ -204,17 +204,25 @@ namespace JSAM.JSAMEditor
             showHowTo = EditorCompatability.SpecialFoldouts(showHowTo, "Quick Reference Guide");
             if (showHowTo)
             {
+                JSAMEditorHelper.RenderHelpbox("Overview");
+                JSAMEditorHelper.RenderHelpbox("This component is the backbone of the entire JSAM Audio Manager system and ideally should occupy it's own gameobject.");
+                JSAMEditorHelper.RenderHelpbox("Remember to mouse over the various menu options in this and other JSAM windows to learn more about them!");
+                JSAMEditorHelper.RenderHelpbox("Please ensure that you don't have multiple AudioManagers in one scene.");
+                JSAMEditorHelper.RenderHelpbox(
+                    "If you have any questions, suggestions or bug reports, feel free to open a new issue " +
+                    "on Github repository's Issues page or send me an email directly!"
+                    );
+
                 EditorGUILayout.Space();
 
-                EditorGUILayout.LabelField("Overview", EditorStyles.boldLabel);
-                EditorGUILayout.HelpBox("This component is the backbone of the entire JSAM Audio Manager system and ideally should occupy it's own gameobject."
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("Remember to mouse over the settings in this and other windows to learn more about them!", MessageType.None);
-                EditorGUILayout.HelpBox("Please ensure that you don't have multiple AudioManagers in one scene."
-                    , MessageType.None);
-                EditorGUILayout.HelpBox("If you have any questions, suggestions or bug reports, feel free to open a new issue " +
-                    "on Github repository's Issues page or send me an email directly!", MessageType.None);
-                EditorGUILayout.HelpBox("The Github Repository is usually more up to date with bug fixes than what's shown on the Unity Asset Store, so give it a look just in case!", MessageType.None);
+                JSAMEditorHelper.RenderHelpbox("Tips");
+                JSAMEditorHelper.RenderHelpbox(
+                    "The Github Repository is usually more up to date with bug fixes " + 
+                    "than what's shown on the Unity Asset Store, so give it a look just in case!"
+                    );
+                JSAMEditorHelper.RenderHelpbox(
+                    "Here are some helpful links, more of which can be found under\nWindows -> JSAM -> JSAM Startup"
+                    );
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
                 if (GUILayout.Button(new GUIContent("Report a Bug", "Click on me to go to the bug report page in a new browser window"), new GUILayoutOption[] { GUILayout.MinWidth(100) }))
@@ -233,22 +241,6 @@ namespace JSAM.JSAMEditor
                 }
                 GUILayout.FlexibleSpace();
                 EditorGUILayout.EndHorizontal();
-
-                EditorGUILayout.Space();
-
-                EditorGUILayout.LabelField("Tips", EditorStyles.boldLabel);
-
-                EditorGUILayout.HelpBox("AudioManager uses Unity's AudioSources as a basis for all audio playing. As such, spatialized 3D sound " +
-                    "will play within a distance of 7 units from the listener before fading completely. If you want to change the way sounds are " +
-                    "spatialized, you can either locate the Audio Channel prefab and modify the settings there " +
-                    "or replace the existing prefab with your own."
-                    , MessageType.None);
-
-                EditorGUILayout.HelpBox("AudioManager works best as a global system where each scene's AudioManager draws from the same AudioFiles." +
-                    " However, if you want scenes to draw from separate groups of Audio Files, you can select the option to enable instanced Audio Enums under" +
-                    " AudioManager's advanced settings and regenerate the Audio Library. This let's AudioManager use it's own designated Audio Files separate to ones" +
-                    " used in other scenes. It's with this system that allows AudioManager to hold many different example projects as sub folders!"
-                    , MessageType.None);
             }
             EditorCompatability.EndSpecialFoldoutGroup();
             #endregion  

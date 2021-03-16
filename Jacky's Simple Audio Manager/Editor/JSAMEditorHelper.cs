@@ -235,7 +235,14 @@ namespace JSAM.JSAMEditor
 
         public static void RenderHelpbox(string text)
         {
-            EditorGUILayout.LabelField(text, ApplyFontSizeToStyle(EditorStyles.helpBox, JSAMSettings.Settings.QuickReferenceFontSize));
+            if (text.Equals("Overview") || text.Equals("Tips"))
+            {
+                EditorGUILayout.LabelField(text, ApplyFontSizeToStyle(EditorStyles.boldLabel, JSAMSettings.Settings.QuickReferenceFontSize));
+            }
+            else
+            {
+                EditorGUILayout.LabelField(text, ApplyFontSizeToStyle(EditorStyles.helpBox, JSAMSettings.Settings.QuickReferenceFontSize));
+            }
         }
 
         static Color guiColor;

@@ -46,10 +46,6 @@ namespace JSAM.JSAMEditor
             fadeInDuration = serializedObject.FindProperty("fadeInDuration");
             fadeOutDuration = serializedObject.FindProperty("fadeOutDuration");
 
-            bypassEffects = serializedObject.FindProperty("bypassEffects");
-            bypassListenerEffects = serializedObject.FindProperty("bypassListenerEffects");
-            bypassReverbZones = serializedObject.FindProperty("bypassReverbZones");
-
             openIcon = EditorGUIUtility.TrIconContent("d_ScaleTool", "Click to open Playback Preview in a standalone window");
 
             AudioPlaybackToolEditor.CreateAudioHelper(asset.GetFirstAvailableFile());
@@ -83,12 +79,6 @@ namespace JSAM.JSAMEditor
             if (asset == null) return;
 
             serializedObject.Update();
-
-#region Category Inspector
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.PropertyField(category);
-            EditorGUILayout.EndHorizontal();
-            #endregion
 
             RenderPresetDescription();
 

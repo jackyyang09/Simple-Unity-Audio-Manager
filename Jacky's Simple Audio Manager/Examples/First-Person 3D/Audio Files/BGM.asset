@@ -53,7 +53,7 @@ MonoBehaviour:
     dryMix: 1
   lowPassFilter:
     enabled: 0
-    cutoffFrequency: 1712
+    cutoffFrequency: 5000
     lowpassResonanceQ: 1
   highPassFilter:
     enabled: 0

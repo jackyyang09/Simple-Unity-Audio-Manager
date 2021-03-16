@@ -1,18 +1,17 @@
     public enum FPSExampleSounds {
         AKChamber,
         AKDryFire,
-        AKEquip,
         AKMagGrab,
         AKMagInsert,
         AKMagRemove,
         AKMagTap,
         Gunshot,
-        Crouch,
         AbstractPop,
+        Crouch,
         Running,
-        Walk
+        Walk,
+        AKEquip
     }
     public enum FPSExampleMusic {
-        IntroLoop,
         BGM
     }
