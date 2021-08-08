@@ -128,7 +128,7 @@ namespace JSAM
             {
                 if (am.IsSoundLoopingInternal(sound))
                 {
-                    am.StopSoundLoopInternal(sound, sTransform, true);
+                    am.StopSoundLoopInternal(sound, true, sTransform);
                 }
             }
         }

@@ -15,7 +15,7 @@ namespace JSAM.JSAMEditor
             {
                 if (packagePath.IsNullEmptyOrWhiteSpace())
                 {
-                    packagePath = JSAMEditorHelper.GetAudioManagerPath();
+                    packagePath = JSAMEditorHelper.GetAudioManagerPath;
                     packagePath = packagePath.Remove(packagePath.IndexOf("/Scripts/AudioManager.cs"));
                 }
                 return packagePath;
@@ -110,7 +110,7 @@ namespace JSAM.JSAMEditor
         {
             get
             {
-                string path = JSAMEditorHelper.GetAudioManagerPath();
+                string path = JSAMEditorHelper.GetAudioManagerPath;
                 path = path.Remove(path.IndexOf("/Scripts/AudioManager.cs"));
                 path += "/Editor/Preferences";
                 return path;
@@ -172,9 +172,10 @@ namespace JSAM.JSAMEditor
 
         public void Reset()
         {
-            packagePath = JSAMEditorHelper.GetAudioManagerPath();
+            packagePath = JSAMEditorHelper.GetAudioManagerPath;
             packagePath = packagePath.Remove(packagePath.IndexOf("/Scripts/AudioManager.cs"));
             presetsPath = packagePath + "/Presets";
+            libraryPath = PackagePath + "/Libraries";
             generatedEnumsPath = packagePath + "/JSAMGenerated";
             useNamespace = false;
             enumNamespace = "JSAM";

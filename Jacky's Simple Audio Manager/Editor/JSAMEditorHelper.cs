@@ -52,27 +52,33 @@ namespace JSAM.JSAMEditor
             AssetDatabase.CreateAsset(asset, path);
         }
 
-        public static string GetAudioManagerPath()
+        /// <summary>
+        /// This operation manipulates the active scene, so cache this value whenever possible
+        /// </summary>
+        public static string GetAudioManagerPath
         {
-            MonoScript a = null;
-            GameObject g = null;
-            bool alt = false;
-            if (!AudioManager.instance)
+            get
             {
-                g = new GameObject();
-                // Audio Events just so its saferd
-                a = MonoScript.FromMonoBehaviour(g.AddComponent<AudioEvents>());
-                alt = true;
+                MonoScript a = null;
+                GameObject g = null;
+                bool alt = false;
+                if (!AudioManager.instance)
+                {
+                    g = new GameObject();
+                    // Audio Events just so its safer
+                    a = MonoScript.FromMonoBehaviour(g.AddComponent<AudioEvents>());
+                    alt = true;
+                }
+                else a = MonoScript.FromMonoBehaviour(AudioManager.instance);
+                string path = AssetDatabase.GetAssetPath(a);
+                if (g != null) Object.DestroyImmediate(g);
+                if (alt)
+                {
+                    path = path.Remove(path.IndexOf("AudioEvents.cs"));
+                    path += "AudioManager.cs";
+                }
+                return path;
             }
-            else a = MonoScript.FromMonoBehaviour(AudioManager.instance);
-            string path = AssetDatabase.GetAssetPath(a);
-            if (g != null) Object.DestroyImmediate(g);
-            if (alt)
-            {
-                path = path.Remove(path.IndexOf("AudioEvents.cs"));
-                path += "AudioManager.cs";
-            }
-            return path;
         }
 
         public static string TimeToString(float time)
@@ -148,6 +154,19 @@ namespace JSAM.JSAMEditor
             SmartBrowseButton(folderProp);
             EditorGUILayout.EndHorizontal();
         }
+		
+		public static void OpenSmartSaveFileDialog<T>(string defaultName = "New Object", string startingPath = "Assets") where T : ScriptableObject
+        {
+            string savePath = EditorUtility.SaveFilePanel("Designate save path", startingPath, defaultName, "asset");
+            if (savePath != "") // Make sure user didn't press "Cancel"
+            {
+                var asset = ScriptableObject.CreateInstance<T>();
+                savePath = savePath.Remove(0, savePath.IndexOf("Assets/"));
+                CreateAssetSafe(asset, savePath);
+                EditorUtility.FocusProjectWindow();
+                Selection.activeObject = asset;
+            }
+        }
 
         public static void SmartBrowseButton(SerializedProperty folderProp)
         {
@@ -155,7 +174,7 @@ namespace JSAM.JSAMEditor
             if (GUILayout.Button(buttonContent, new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.MaxWidth(55) }))
             {
                 string filePath = folderProp.stringValue;
-                filePath = EditorUtility.OpenFolderPanel("Specify folder a new folder", filePath, string.Empty);
+                filePath = EditorUtility.OpenFolderPanel("Specify a new folder", filePath, string.Empty);
 
                 // If the user presses "cancel"
                 if (filePath.Equals(string.Empty))

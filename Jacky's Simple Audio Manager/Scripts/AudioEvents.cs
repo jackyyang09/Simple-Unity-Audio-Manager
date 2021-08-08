@@ -57,7 +57,7 @@ namespace JSAM
             {
                 if (AudioManager.instance.IsSoundLoopingInternal(index))
                 {
-                    AudioManager.instance.StopSoundLoopInternal(index, transform, false);
+                    AudioManager.instance.StopSoundLoopInternal(index, false, transform);
                 }
             }
         }

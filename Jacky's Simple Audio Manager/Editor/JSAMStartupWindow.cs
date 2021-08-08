@@ -8,7 +8,20 @@ namespace JSAM.JSAMEditor
     [InitializeOnLoad]
     public class JSAMStartupWindow : JSAMBaseEditorWindow<JSAMStartupWindow>
     {
-        const string startupGraphicPath = "Assets/Jacky's Simple Audio Manager/Editor/Startup/JSAM card image.png";
+        const string startupGraphicFileName = "JSAM card image.png";
+        string startupGraphicPath
+        {
+            get
+            {
+                return System.IO.Path.Combine(new string[] 
+                {
+                    JSAMSettings.Settings.PackagePath,
+                    "Editor",
+                    "Startup",
+                    startupGraphicFileName
+                });
+            }
+        }
 
         static JSAMStartupWindow()
         {
@@ -44,7 +57,8 @@ namespace JSAM.JSAMEditor
 
         private void OnEnable()
         {
-            startupGraphic = AssetDatabase.LoadAssetAtPath<Texture2D>(startupGraphicPath);  
+            startupGraphic = AssetDatabase.LoadAssetAtPath<Texture2D>(startupGraphicPath);
+            Debug.Log(startupGraphicPath);
         }
 
         protected override void SetWindowTitle()

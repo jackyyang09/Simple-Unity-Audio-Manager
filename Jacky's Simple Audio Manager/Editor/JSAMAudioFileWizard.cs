@@ -141,6 +141,8 @@ namespace JSAM.JSAMEditor
                     if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
                     {
                         files.DeleteArrayElementAtIndex(i);
+                        files.DeleteArrayElementAtIndex(i);
+                        serializedObject.ApplyModifiedProperties();
                         GUIUtility.ExitGUI();
                     }
                     JSAMEditorHelper.EndColourChange();
@@ -302,6 +304,7 @@ namespace JSAM.JSAMEditor
                 JSAMEditorHelper.CreateAssetSafe(newObject, finalPath);
             }
             EditorUtility.FocusProjectWindow();
+            EditorGUIUtility.PingObject(AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(folder));
         }
 
         void HandleDragAndDrop()

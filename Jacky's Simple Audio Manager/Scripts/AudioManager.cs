@@ -2000,7 +2000,7 @@ namespace JSAM
         {
             if (!instance) return;
             int s = Convert.ToInt32(sound);
-            instance.StopSoundLoopInternal(instance.library.sounds[s], null, stopInstantly);
+            instance.StopSoundLoopInternal(instance.library.sounds[s], stopInstantly, null);
         }
 
         /// <summary>
@@ -2010,11 +2010,11 @@ namespace JSAM
         /// <param name="sound">The enum value for the sound in question. Check AudioManager for the proper value</param>
         /// <param name="stopInstantly">Stops sound instantly if true</param>
         /// <param name="trans">Transform of the object playing the looping sound</param>
-        public static void StopSoundLoop<T>(T sound, Transform trans, bool stopInstantly = false) where T : Enum
+        public static void StopSoundLoop<T>(T sound, bool stopInstantly = false, Transform trans = null) where T : Enum
         {
             if (!instance) return;
             int s = Convert.ToInt32(sound);
-            instance.StopSoundLoopInternal(instance.library.sounds[s], trans, stopInstantly);
+            instance.StopSoundLoopInternal(instance.library.sounds[s], stopInstantly, trans);
         }
 
         /// <summary>
@@ -2023,9 +2023,9 @@ namespace JSAM
         /// <param name="s"></param>
         /// <param name="stopInstantly">Stops sound instantly if true</param>
         /// <param name="t">Transform of the object playing the looping sound</param>
-        public void StopSoundLoopInternal(int s, Transform t = null, bool stopInstantly = false)
+        public void StopSoundLoopInternal(int s, bool stopInstantly = false, Transform t = null)
         {
-            StopSoundLoopInternal(library.sounds[s], t, stopInstantly);
+            StopSoundLoopInternal(library.sounds[s], stopInstantly, t);
         }
 
         /// <summary>
@@ -2034,7 +2034,7 @@ namespace JSAM
         /// <param name="s"></param>
         /// <param name="stopInstantly"></param>
         /// <param name="t"></param>
-        public void StopSoundLoopInternal(AudioFileSoundObject s, Transform t = null, bool stopInstantly = false)
+        public void StopSoundLoopInternal(AudioFileSoundObject s, bool stopInstantly = false, Transform t = null)
         {
             for (int i = 0; i < loopingSources.Count; i++)
             {
@@ -2058,25 +2058,12 @@ namespace JSAM
         }
 
         /// <summary>
-        /// A shorthand for wrapping StopSoundLoop in an IsSoundLooping if-statement
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="sound"></param>
-        /// <param name="trans"></param>
-        public static void StopSoundIfLooping<T>(T sound, Transform trans = null) where T : Enum
-        {
-            if (!instance) return;
-            int s = Convert.ToInt32(sound);
-            instance.StopSoundIfLoopingInternal(instance.library.sounds[s], trans);
-        }
-
-        /// <summary>
         /// A shorthand for wrapping StopSound in an IsSoundPlaying if-statement 
         /// Use this variant if you have a reference to the object itself
         /// </summary>
         /// <param name="sound"></param>
         /// <param name="trans"></param>
-        public void StopSoundIfLoopingInternal(AudioFileSoundObject sound, Transform trans = null)
+        public void StopSoundIfLoopingInternal(AudioFileSoundObject sound, bool stopInstantly = false, Transform trans = null)
         {
             if (!IsSoundLoopingInternal(sound)) return;
             StopSoundLoopInternal(sound, trans);
@@ -2089,11 +2076,11 @@ namespace JSAM
         /// <param name="sound"></param>
         /// <param name="trans"></param>
         /// <param name="stopInstantly">If true, stop the sound immediately</param>
-        public static void StopSoundIfLooping<T>(T sound, Transform trans = null, bool stopInstantly = false) where T : Enum
+        public static void StopSoundIfLooping<T>(T sound, bool stopInstantly = false, Transform trans = null) where T : Enum
         {
             if (!instance) return;
             int s = Convert.ToInt32(sound);
-            instance.StopSoundIfLoopingInternal(instance.library.sounds[s], trans, stopInstantly);
+            instance.StopSoundIfLoopingInternal(instance.library.sounds[s], stopInstantly, trans);
         }
 
         /// <summary>
@@ -2106,7 +2093,7 @@ namespace JSAM
         public void StopSoundIfLoopingInternal(AudioFileSoundObject sound, Transform trans = null, bool stopInstantly = false)
         {
             if (!IsSoundLoopingInternal(sound)) return;
-            StopSoundLoopInternal(sound, trans, stopInstantly);
+            StopSoundLoopInternal(sound, stopInstantly, trans);
         }
 
         /// <summary>
@@ -2738,6 +2725,7 @@ namespace JSAM
         /// <returns></returns>
         public bool IsSoundPlayingInternal(AudioFileSoundObject s, Transform trans = null)
         {
+            if (sources == null) return false;
             for (int i = 0; i < sources.Count; i++) // Loop through all sources
             {
                 if (sources[i] == null) continue;

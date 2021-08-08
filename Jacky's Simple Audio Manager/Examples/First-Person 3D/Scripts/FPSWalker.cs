@@ -102,18 +102,18 @@ namespace JSAM
             switch (moveState)
             {
                 case MovementStates.Idle:
-                    AudioManager.StopSoundIfLooping(FPSExampleSounds.Walk, transform, true);
-                    AudioManager.StopSoundIfLooping(FPSExampleSounds.Running, transform, true);
+                    AudioManager.StopSoundIfLooping(FPSExampleSounds.Walk, true, transform);
+                    AudioManager.StopSoundIfLooping(FPSExampleSounds.Running, true, transform);
                     break;
                 case MovementStates.Walking:
-                    AudioManager.StopSoundIfLooping(FPSExampleSounds.Running, transform, true);
+                    AudioManager.StopSoundIfLooping(FPSExampleSounds.Running, true, transform);
                     if (!AudioManager.IsSoundLooping(FPSExampleSounds.Walk))
                     {
                         AudioManager.PlaySoundLoop(FPSExampleSounds.Walk, transform);
                     }
                     break;
                 case MovementStates.Running:
-                    AudioManager.StopSoundIfLooping(FPSExampleSounds.Walk, transform, true);
+                    AudioManager.StopSoundIfLooping(FPSExampleSounds.Walk, true, transform);
                     if (!AudioManager.IsSoundLooping(FPSExampleSounds.Running))
                     {
                         AudioManager.PlaySoundLoop(FPSExampleSounds.Running, transform);

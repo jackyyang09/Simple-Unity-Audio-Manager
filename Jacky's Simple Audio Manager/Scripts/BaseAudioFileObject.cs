@@ -120,11 +120,7 @@ namespace JSAM
         {
             get
             {
-                if (safeName.IsNullEmptyOrWhiteSpace())
-                {
-                    safeName = name.ConvertToAlphanumeric();
-                }
-                return safeName;
+                return name.ConvertToAlphanumeric();
             }
         }
         [SerializeField, HideInInspector] string presetDescription;
