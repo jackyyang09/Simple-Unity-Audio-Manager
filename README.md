@@ -1,5 +1,9 @@
 ![](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/Media/Media/Homepage%20Promo/JSAM%20card%20image.png)
 
+**UPDATE: JSAM is currently undergoing massive overhauls for a version 3.0 release!**
+
+**I cannot give a definite timeline for when it can release, as I'm currently beset by a full-time job and some higher priority projects. As of now the latest release is the most stable version to use, but it may run into issues in Unity 2020.3, so do so at your own risk!**
+
 Tired of having to manage a billion AudioSources lying about? That will no longer be a reality!
 Never worry about sounds and music ever again!
 
