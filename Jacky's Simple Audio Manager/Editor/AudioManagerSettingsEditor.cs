@@ -61,6 +61,7 @@ namespace JSAM.JSAMEditor
             // Get existing open window or if none, make a new one:
             Window.Show();
             window.SetWindowTitle();
+            window.Focus();
         }
 
         protected override void SetWindowTitle()

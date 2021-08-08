@@ -8,6 +8,16 @@ namespace JSAM.JSAMEditor
     public abstract class JSAMBaseEditorWindow<T> : EditorWindow
         where T : EditorWindow
     {
+        // Source
+        // https://answers.unity.com/questions/403782/find-instance-of-editorwindow-without-creating-new.html
+        public static T FindFirstInstance()
+        {
+            var windows = (T[])Resources.FindObjectsOfTypeAll(typeof(T));
+            if (windows.Length == 0)
+                return null;
+            return windows[0];
+        }
+
         protected static T window;
         public static T Window
         {
@@ -15,7 +25,9 @@ namespace JSAM.JSAMEditor
             {
                 if (window == null)
                 {
-                    window = GetWindow<T>();
+                    window = FindFirstInstance();
+                    if (window == null)
+                        window = GetWindow<T>();
                 }
                 return window;
             }

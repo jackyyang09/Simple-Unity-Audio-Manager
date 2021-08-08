@@ -121,16 +121,16 @@ namespace JSAM.JSAMEditor
         {
             get
             {
-                var settings = AssetDatabase.LoadAssetAtPath<JSAMSettings>(SettingsSavePath + "/" + settingsAssetName);
+                string settingsSavePath = SettingsSavePath;
+                var settings = AssetDatabase.LoadAssetAtPath<JSAMSettings>(settingsSavePath + "/" + settingsAssetName);
                 if (settings == null)
                 {
-                    if (!AssetDatabase.IsValidFolder(SettingsSavePath))
+                    if (JSAMEditorHelper.GenerateFolderStructureAt(settingsSavePath, false))
                     {
-                        JSAMEditorHelper.GenerateFolderStructure(SettingsSavePath, true);
+                        settings = ScriptableObject.CreateInstance<JSAMSettings>();
+                        JSAMEditorHelper.CreateAssetSafe(settings, settingsSavePath + "/" + settingsAssetName);
+                        AssetDatabase.SaveAssets();
                     }
-                    settings = ScriptableObject.CreateInstance<JSAMSettings>();
-                    JSAMEditorHelper.CreateAssetSafe(settings, SettingsSavePath + "/" + settingsAssetName);
-                    AssetDatabase.SaveAssets();
                 }
                 return settings;
             }
@@ -200,12 +200,12 @@ namespace JSAM.JSAMEditor
                     EditorGUIUtility.labelWidth += 50;
 
                     var settings = JSAMSettings.SerializedSettings;
-                    SerializedProperty packagePath = settings.FindProperty("packagePath");
-                    SerializedProperty presetsPath = settings.FindProperty("presetsPath");
-                    SerializedProperty libraryPath = settings.FindProperty("libraryPath");
+                    SerializedProperty packagePath = settings.FindProperty(nameof(packagePath));
+                    SerializedProperty presetsPath = settings.FindProperty(nameof(presetsPath));
+                    SerializedProperty libraryPath = settings.FindProperty(nameof(libraryPath));
                     SerializedProperty enumPath = settings.FindProperty("generatedEnumsPath");
-                    SerializedProperty useNamespace = settings.FindProperty("useNamespace");
-                    SerializedProperty enumNamespace = settings.FindProperty("enumNamespace");
+                    SerializedProperty useNamespace = settings.FindProperty(nameof(useNamespace));
+                    SerializedProperty enumNamespace = settings.FindProperty(nameof(enumNamespace));
                     SerializedProperty fontSize = settings.FindProperty("quickReferenceFontSize");
                     SerializedProperty hideStartup = settings.FindProperty("hideStartupMessage");
 

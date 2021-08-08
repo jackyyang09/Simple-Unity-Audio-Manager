@@ -40,7 +40,7 @@ namespace JSAM.JSAMEditor
                 {
                     if (!AssetDatabase.IsValidFolder(HelperSavePath))
                     {
-                        JSAMEditorHelper.GenerateFolderStructure(HelperSavePath, true);
+                        JSAMEditorHelper.GenerateFolderStructureAt(HelperSavePath, true);
                     }
                     settings = ScriptableObject.CreateInstance<JSAMAudioFileWizard>();
                     JSAMEditorHelper.CreateAssetSafe(settings, HelperSavePath + "/" + helperAssetName);

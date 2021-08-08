@@ -107,6 +107,10 @@ namespace JSAM.JSAMEditor
             blontent = new GUIContent(" Open ");
             if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
             {
+                if (library != null)
+                {
+                    JSAMSettings.Settings.SelectedLibrary = library.objectReferenceValue as AudioLibrary;
+                }
                 AudioLibraryEditor.Init();
             }
             EditorGUILayout.EndHorizontal();
@@ -118,6 +122,7 @@ namespace JSAM.JSAMEditor
             if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
             {
                 AudioManagerSettingsEditor.Init();
+                JSAMSettings.Settings.SelectedSettings = settings.objectReferenceValue as AudioManagerSettings;
             }
             EditorGUILayout.EndHorizontal();
 

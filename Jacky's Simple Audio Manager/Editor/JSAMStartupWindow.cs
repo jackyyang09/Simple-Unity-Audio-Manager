@@ -58,7 +58,6 @@ namespace JSAM.JSAMEditor
         private void OnEnable()
         {
             startupGraphic = AssetDatabase.LoadAssetAtPath<Texture2D>(startupGraphicPath);
-            Debug.Log(startupGraphicPath);
         }
 
         protected override void SetWindowTitle()

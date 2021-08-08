@@ -73,6 +73,7 @@ namespace JSAM.JSAMEditor
             // Get existing open window or if none, make a new one:
             window = GetWindow<AudioPlaybackToolEditor>();
             window.Show();
+            window.Focus();
             window.titleContent.text = "JSAM Playback Tool";
             // Refresh window contents
             window.OnSelectionChange();
