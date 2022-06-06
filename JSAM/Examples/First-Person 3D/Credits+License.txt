@@ -1,0 +1,39 @@
+All assets used in the "First-Person 3D" example project can be used royalty-free
+
+====Models====
+The following sounds are released under the CC0 1.0 Universal Public Domain Dedication license
+https://creativecommons.org/publicdomain/zero/1.0/
+
+machinegunlauncher.obj
+
+You are free to use this model however you wish
+
+====Sound====
+
+The following sounds are released under the CC0 1.0 Universal Public Domain Dedication license
+https://creativecommons.org/publicdomain/zero/1.0/
+
+371041__morganpurkis__single-gunshot-3.wav
+391725__morganpurkis__battle-rifle.wav
+391847__morganpurkis__single-gunshot-5-4.wav
+390663__morganpurkis__submachine-gun.wav
+abstractpop.wav
+BlacificBlenu.wav
+chamber.wav
+Crouch.wav
+empty.wav
+equip.wav
+machinegun_fire.wav
+mag_grab.wav
+mag_insert.wav
+mag_remove.wav
+mag_tap.wav
+running (loop).wav
+walk (loop).wav
+
+You are free to use these sounds however you wish
+
+====Code====
+
+All code included in this example project is released under the MIT License and is free to use for all purposes
+https://opensource.org/licenses/MIT

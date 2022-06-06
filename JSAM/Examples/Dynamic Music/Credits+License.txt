@@ -1,0 +1,16 @@
+All assets used in the "Crossfade" example project can be used royalty-free
+
+====Music====
+
+This sound is released under the CC0 1.0 Universal Public Domain Dedication license
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Menu(Pitched).ogg
+Menu.ogg
+
+You are free to use this track however you wish
+
+====Code====
+
+All code included in this example project is released under the MIT License and is free to use for all purposes
+https://opensource.org/licenses/MIT

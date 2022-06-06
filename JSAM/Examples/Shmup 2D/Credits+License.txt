@@ -1,0 +1,39 @@
+All assets used in the "Shmup 2D" example project can be used royalty-free
+
+====Graphics====
+
+The following sounds are released under the CC0 1.0 Universal Public Domain Dedication license
+https://creativecommons.org/publicdomain/zero/1.0/
+
+chefSpriteSheetPadded.png
+knife_double_transparent.png
+
+You are free to use these graphics in any project however you wish
+
+====Sound====
+
+The following sounds are released under the CC0 1.0 Universal Public Domain Dedication license
+https://creativecommons.org/publicdomain/zero/1.0/
+
+swordswing1.wav
+swordswing2.wav
+swordswing3.wav
+bulletHit.wav 
+
+You are free to use these sounds however you wish
+
+====Music====
+
+The following tracks are released under the CC0 1.0 Universal Public Domain Dedication license
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Italian Spice ~ Indian Spice
+MainChorusv4.ogg
+MainIntro.ogg
+
+You are free to use these tracks however you wish
+
+====Code====
+
+All code included in this example project is released under the MIT License and is free to use for all purposes
+https://opensource.org/licenses/MIT

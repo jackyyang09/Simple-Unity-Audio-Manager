@@ -1,0 +1,81 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d15ae218647a2d4f85e14306846c10c, type: 3}
+  m_Name: Abstract Pop
+  m_EditorClassIdentifier: 
+  safeName: AbstractPop
+  presetDescription: 
+  category: 
+  file: {fileID: 8300000, guid: 1a3ec11eedd102f4488b169670fcef28, type: 3}
+  files:
+  - {fileID: 8300000, guid: 1a3ec11eedd102f4488b169670fcef28, type: 3}
+  useLibrary: 0
+  relativeVolume: 1
+  spatialize: 1
+  maxDistance: 0
+  priority: 128
+  startingPitch: 1
+  pitchShift: 0.05
+  playReversed: 0
+  delay: 0
+  ignoreTimeScale: 0
+  fadeMode: 0
+  fadeInDuration: 0
+  fadeOutDuration: 0
+  bypassEffects: 0
+  bypassListenerEffects: 0
+  bypassReverbZones: 0
+  chorusFilter:
+    enabled: 0
+    dryMix: 0
+    wetMix1: 0
+    wetMix2: 0
+    wetMix3: 0
+    delay: 0
+    rate: 0
+    depth: 0
+  distortionFilter:
+    enabled: 0
+    distortionLevel: 0.5
+  echoFilter:
+    enabled: 0
+    delay: 0
+    decayRatio: 0
+    wetMix: 0
+    dryMix: 0
+  lowPassFilter:
+    enabled: 0
+    cutoffFrequency: 0
+    lowpassResonanceQ: 0
+  highPassFilter:
+    enabled: 0
+    cutoffFrequency: 0
+    highpassResonanceQ: 0
+  reverbFilter:
+    enabled: 0
+    reverbPreset: 1
+    dryLevel: 0
+    room: 0
+    roomHF: 0
+    roomLF: 0
+    decayTime: 1
+    decayHFRatio: 0.5
+    reflectionsLevel: -10000
+    reflectionsDelay: 0
+    reverbLevel: 0
+    reverbDelay: 0.04
+    hFReference: 5000
+    lFReference: 250
+    diffusion: 100
+    density: 100
+  neverRepeat: 0
+  lastClipIndex: -1

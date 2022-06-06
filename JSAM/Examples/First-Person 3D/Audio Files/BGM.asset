@@ -1,0 +1,82 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfb8002b44af6934a9ae327c8311d458, type: 3}
+  m_Name: BGM
+  m_EditorClassIdentifier: 
+  safeName: BGM
+  presetDescription: <Default Preset>
+  files:
+  - {fileID: 8300000, guid: fe06d48e659b1434ba98e89445a43760, type: 3}
+  loopStart: 0
+  loopEnd: 12.800001
+  bpm: 160
+  relativeVolume: 0.4
+  spatialize: 0
+  maxDistance: 0
+  priority: 128
+  startingPitch: 1
+  pitchShift: 1
+  loopMode: 1
+  delay: 0
+  ignoreTimeScale: 0
+  mixerGroupOverride: {fileID: 0}
+  fadeInOut: 0
+  fadeInDuration: 0
+  fadeOutDuration: 0
+  bypassEffects: 0
+  bypassListenerEffects: 0
+  bypassReverbZones: 0
+  chorusFilter:
+    enabled: 0
+    dryMix: 0.5
+    wetMix1: 0.5
+    wetMix2: 0.5
+    wetMix3: 0.5
+    delay: 40
+    rate: 0.8
+    depth: 0.03
+  distortionFilter:
+    enabled: 0
+    distortionLevel: 0.5
+  echoFilter:
+    enabled: 0
+    delay: 500
+    decayRatio: 0.5
+    wetMix: 1
+    dryMix: 1
+  lowPassFilter:
+    enabled: 0
+    cutoffFrequency: 5000
+    lowpassResonanceQ: 1
+  highPassFilter:
+    enabled: 0
+    cutoffFrequency: 5000
+    highpassResonanceQ: 1
+  reverbFilter:
+    enabled: 0
+    reverbPreset: 1
+    dryLevel: 0
+    room: 0
+    roomHF: 0
+    roomLF: 0
+    decayTime: 1
+    decayHFRatio: 0.5
+    reflectionsLevel: -10000
+    reflectionsDelay: 0
+    reverbLevel: 0
+    reverbDelay: 0.04
+    hFReference: 5000
+    lFReference: 250
+    diffusion: 100
+    density: 100
+  neverRepeat: 0
+  lastClipIndex: -1

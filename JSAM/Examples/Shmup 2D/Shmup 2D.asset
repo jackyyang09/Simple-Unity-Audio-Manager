@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2204bf128383ced4f8a374a536984a4c, type: 3}
+  m_Name: Shmup 2D
+  m_EditorClassIdentifier: 
+  soundCategories:
+  - 
+  musicCategories:
+  - 
+  Sounds:
+  - {fileID: 11400000, guid: 0c17e0236e4346b4a8d3b13a15ed5f38, type: 2}
+  - {fileID: 11400000, guid: 3cd9f654ab42ebd40a3491048aeacc09, type: 2}
+  Music:
+  - {fileID: 11400000, guid: 960ccc6048a725046962d1dd3c40f86f, type: 2}
+  - {fileID: 11400000, guid: ba811883cbf748a44976f08ef6af3671, type: 2}
+  - {fileID: 11400000, guid: 807c84d8fa85b734186e8c3815c42896, type: 2}
+  useCustomNames: 0
+  generatedName: Shmup2D
+  musicEnum: Shmup2DMusic
+  musicEnumGenerated: Shmup2DMusic
+  musicNamespace: 
+  musicNamespaceGenerated: 
+  soundEnum: Shmup2DSounds
+  soundEnumGenerated: Shmup2DSounds
+  soundNamespace: 
+  soundNamespaceGenerated: 
+  soundCategoriesToList:
+  - name: 
+    files:
+    - {fileID: 11400000, guid: 0c17e0236e4346b4a8d3b13a15ed5f38, type: 2}
+    - {fileID: 11400000, guid: 3cd9f654ab42ebd40a3491048aeacc09, type: 2}
+    foldout: 1
+  musicCategoriesToList:
+  - name: 
+    files:
+    - {fileID: 11400000, guid: 960ccc6048a725046962d1dd3c40f86f, type: 2}
+    - {fileID: 11400000, guid: ba811883cbf748a44976f08ef6af3671, type: 2}
+    - {fileID: 11400000, guid: 807c84d8fa85b734186e8c3815c42896, type: 2}
+    foldout: 1

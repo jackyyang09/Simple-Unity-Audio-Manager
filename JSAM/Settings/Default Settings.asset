@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faf681c40246bb0439a31cb8707b9782, type: 3}
+  m_Name: Default Settings
+  m_EditorClassIdentifier: 
+  spatialSound: 1
+  startingSoundChannels: 16
+  startingMusicChannels: 3
+  defaultSoundMaxDistance: 7
+  disableConsoleLogs: 0
+  dontDestroyOnLoad: 1
+  dynamicSourceAllocation: 1
+  stopSoundsOnSceneLoad: 1
+  spatializeLateUpdate: 0
+  spatializationMode: 0
+  timeScaledSounds: 1
+  mixer: {fileID: 24100000, guid: 555edaf44a04f6341a9483f43608463d, type: 2}
+  masterGroup: {fileID: 24300002, guid: 555edaf44a04f6341a9483f43608463d, type: 2}
+  masterVolumeParam: MasterVolume
+  musicGroup: {fileID: -5492615138880799803, guid: 555edaf44a04f6341a9483f43608463d,
+    type: 2}
+  musicVolumeParam: MusicVolume
+  soundGroup: {fileID: 2609797869227875114, guid: 555edaf44a04f6341a9483f43608463d,
+    type: 2}
+  soundVolumeParam: SoundVolume
+  voiceGroup: {fileID: 0}
+  voiceVolumeParam: VoiceVolume
+  saveVolumeToPlayerPrefs: 1
+  masterVolumeKey: JSAM_MASTER_VOL
+  masterMutedKey: JSAM_MASTER_MUTE
+  musicVolumeKey: JSAM_MUSIC_VOL
+  musicMutedKey: JSAM_MUSIC_MUTE
+  soundVolumeKey: JSAM_SOUND_VOL
+  soundMutedKey: JSAM_SOUND_MUTE
