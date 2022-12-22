@@ -96,7 +96,6 @@ namespace JSAM.JSAMEditor
     public class SoundFileObjectEditor : BaseAudioFileObjectEditor<SoundFileObjectEditor>
     {
         Color buttonPressedColor = new Color(0.475f, 0.475f, 0.475f);
-        Vector2 scroll;
 
         AudioClip playingClip;
 
@@ -116,8 +115,11 @@ namespace JSAM.JSAMEditor
 
         SoundEditorFader editorFader;
 
-        const string SHOW_FADETOOL = "JSAM_SFO_SHOWFADETOOL";
-        static bool showFadeTool
+        protected override string SHOW_LIBRARY => "JSAM_SFO_SHOWLIBRARY";
+        protected override string EXPAND_LIBRARY => "JSAM_SFO_EXPANDLIBRARY";
+
+        string SHOW_FADETOOL = "JSAM_SFO_SHOWFADETOOL";
+        bool showFadeTool
         {
             get
             {
@@ -130,40 +132,6 @@ namespace JSAM.JSAMEditor
             set
             {
                 EditorPrefs.SetBool(SHOW_FADETOOL, value);
-            }
-        }
-
-        const string SHOW_LIBRARY = "JSAM_SFO_SHOWLIBRARY";
-        static bool showLibrary
-        {
-            get
-            {
-                if (!EditorPrefs.HasKey(SHOW_LIBRARY))
-                {
-                    EditorPrefs.SetBool(SHOW_LIBRARY, false);
-                }
-                return EditorPrefs.GetBool(SHOW_LIBRARY);
-            }
-            set
-            {
-                EditorPrefs.SetBool(SHOW_LIBRARY, value);
-            }
-        }
-
-        const string EXPAND_LIBRARY = "JSAM_SFO_EXPANDLIBRARY";
-        static bool expandLibrary
-        {
-            get
-            {
-                if (!EditorPrefs.HasKey(EXPAND_LIBRARY))
-                {
-                    EditorPrefs.SetBool(EXPAND_LIBRARY, false);
-                }
-                return EditorPrefs.GetBool(EXPAND_LIBRARY);
-            }
-            set
-            {
-                EditorPrefs.SetBool(EXPAND_LIBRARY, value);
             }
         }
 
@@ -237,7 +205,7 @@ namespace JSAM.JSAMEditor
                 "files", "UsingLibrary", "category"
             };
 #endif
-            string path = JSAMSettings.Settings.PresetsPath + "\"" + input[0] + ".preset";
+            string path = System.IO.Path.Combine(JSAMSettings.Settings.PresetsPath, input[0] + ".preset");
             JSAMEditorHelper.CreateAssetSafe(newPreset, path);
         }
 
@@ -258,64 +226,8 @@ namespace JSAM.JSAMEditor
 
             EditorGUILayout.Space();
 
-#if UNITY_2020_3_OR_NEWER
-            EditorGUILayout.PropertyField(files);
-#else
-#region Library Region
-            if (!isPreset)
-            {
-                Rect overlay = new Rect();
-                EditorGUILayout.BeginHorizontal();
-                showLibrary = EditorCompatability.SpecialFoldouts(showLibrary, "Library");
-                EditorGUILayout.EndHorizontal();
-                if (showLibrary)
-                {
-                    GUILayoutOption[] layoutOptions;
-                    layoutOptions = expandLibrary && files.arraySize > 5 ? new GUILayoutOption[0] : new GUILayoutOption[] { GUILayout.MinHeight(150) };
-                    overlay = EditorGUILayout.BeginVertical(GUI.skin.box, layoutOptions);
+            RenderFileList();
 
-                    scroll = EditorGUILayout.BeginScrollView(scroll);
-
-                    if (files.arraySize > 5) // Magic number haha
-                    {
-                        string label = expandLibrary ? "Retract Library" : "Expand Library";
-                        if (JSAMEditorHelper.CondensedButton(label))
-                        {
-                            expandLibrary = !expandLibrary;
-                        }
-                    }
-
-                    if (files.arraySize > 0)
-                    {
-                        list.Draw();
-                    }
-                    EditorGUILayout.EndScrollView();
-                    EditorGUILayout.EndVertical();
-                }
-
-                EditorCompatability.EndSpecialFoldoutGroup();
-
-                if (showLibrary)
-                {
-                    string normalLabel = files.arraySize == 0 ? "Drag AudioClips here" : string.Empty;
-                    if (JSAMEditorHelper.DragAndDropRegion(overlay, normalLabel, "Release to add AudioClips"))
-                    {
-                        for (int i = 0; i < DragAndDrop.objectReferences.Length; i++)
-                        {
-                            string filePath = AssetDatabase.GetAssetPath(DragAndDrop.objectReferences[i]);
-                            var clips = JSAMEditorHelper.ImportAssetsOrFoldersAtPath<AudioClip>(filePath);
-
-                            for (int j = 0; j < clips.Count; j++)
-                            {
-                                files.AddAndReturnNewArrayElement().objectReferenceValue = clips[j];
-                            }
-                        }
-                    }
-                }
-                EditorGUILayout.LabelField("File Count: " + files.arraySize);
-            }
-#endregion
-#endif
             EditorGUILayout.Space();
 
             blontent = new GUIContent("Never Repeat", "Sometimes, AudioManager will allow the same sound from the Audio " +
@@ -356,7 +268,7 @@ namespace JSAM.JSAMEditor
 
             DrawLoopPointTools(target as JSAMSoundFileObject);
 
-#region Fade Tools
+            #region Fade Tools
             EditorGUILayout.PropertyField(fadeInOut);
 
             using (new EditorGUI.DisabledScope(!fadeInOut.boolValue))
@@ -390,7 +302,7 @@ namespace JSAM.JSAMEditor
                     EditorCompatability.EndSpecialFoldoutGroup();
                 }
             }
-#endregion
+            #endregion
 
             if (!noFiles) DrawAudioEffectTools();
 
@@ -407,7 +319,7 @@ namespace JSAM.JSAMEditor
                 }
             }
 
-#region Quick Reference Guide
+            #region Quick Reference Guide
             string[] howToText = new string[]
             {
                 "Overview",
@@ -418,12 +330,12 @@ namespace JSAM.JSAMEditor
             };
 
             showHowTo = JSAMEditorHelper.RenderQuickReferenceGuide(showHowTo, howToText);
-#endregion
+            #endregion
         }
 
         protected override void DrawPlaybackTool()
         {
-            blontent = new GUIContent("Audio Playback Preview", 
+            blontent = new GUIContent("Audio Playback Preview",
                 "Allows you to preview how your AudioFileObject will sound during runtime right here in the inspector. " +
                 "Some effects, like spatialization, will not be available to preview");
             showPlaybackTool = EditorCompatability.SpecialFoldouts(showPlaybackTool, blontent);
@@ -480,6 +392,14 @@ namespace JSAM.JSAMEditor
                     }
                     GUILayout.FlexibleSpace();
                     EditorGUILayout.EndHorizontal();
+
+                    EditorGUILayout.Space();
+                }
+
+                if (EditorUtility.audioMasterMute)
+                {
+                    JSAMEditorHelper.RenderHelpbox("Audio is muted in the game view, which also mutes audio " +
+                        "playback here. Please un-mute it to hear your audio.");
                 }
             }
             EditorCompatability.EndSpecialFoldoutGroup();

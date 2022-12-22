@@ -8,7 +8,15 @@ namespace JSAM.JSAMEditor
     [InitializeOnLoad]
     public class JSAMStartupWindow : JSAMBaseEditorWindow<JSAMStartupWindow>
     {
-        const string startupGraphicFileName = "JSAM card image.png";
+        [Tooltip("If true, prevents this window from showing up on Unity startup. You can find this window under Window -> JSAM -> JSAM Startup")]
+        const string HIDE_STARTUP_MESSAGE_KEY = "JSAMSTARTUP_HIDEMSG";
+        static bool HideStartupMessage
+        {
+            get { return EditorPrefs.GetBool(HIDE_STARTUP_MESSAGE_KEY, false); }
+            set { EditorPrefs.SetBool(HIDE_STARTUP_MESSAGE_KEY, value); }
+        }
+
+        const string STARTUP_GRAPHIC_FILENAME = "JSAM card image.png";
         string startupGraphicPath
         {
             get
@@ -18,7 +26,7 @@ namespace JSAM.JSAMEditor
                     JSAMSettings.Settings.PackagePath,
                     "Editor",
                     "Startup",
-                    startupGraphicFileName
+                    STARTUP_GRAPHIC_FILENAME
                 });
             }
         }
@@ -30,7 +38,7 @@ namespace JSAM.JSAMEditor
 
         static void RunOnStartup()
         {
-            if (!JSAMSettings.Settings.HideStartupMessage)
+            if (!HideStartupMessage)
             {
                 // Check if started up this session
                 if (!SessionState.GetBool("Startup", false))
@@ -43,7 +51,8 @@ namespace JSAM.JSAMEditor
             EditorApplication.update -= RunOnStartup;
         }
 
-        [MenuItem("Window/JSAM/Startup Message")]
+        const string STARTUP_MSG_MENU_PATH = "Window/JSAM/Startup Message";
+        [MenuItem(STARTUP_MSG_MENU_PATH)]
         public static void Init()
         {
             window = CreateInstance<JSAMStartupWindow>();
@@ -58,6 +67,16 @@ namespace JSAM.JSAMEditor
         private void OnEnable()
         {
             startupGraphic = AssetDatabase.LoadAssetAtPath<Texture2D>(startupGraphicPath);
+        }
+
+        private void OnDisable()
+        {
+            if (HideStartupMessage)
+            {
+                EditorUtility.DisplayDialog("We won't show it to you again",
+                    "But if you want to find it again, navigate to \"" + STARTUP_MSG_MENU_PATH + 
+                    "\" in the toolbar", "OK");
+            }
         }
 
         protected override void SetWindowTitle()
@@ -101,17 +120,10 @@ namespace JSAM.JSAMEditor
 
             GUILayout.FlexibleSpace();
 
-            bool hideStartupMessage = JSAMSettings.Settings.HideStartupMessage;
             EditorGUI.BeginChangeCheck();
             GUIContent blontent = new GUIContent("Don't show this message again", "If true, prevents this window from showing up on Unity startup. " +
-                "You can find this window under Window -> JSAM -> JSAM Startup");
-            hideStartupMessage = EditorGUILayout.ToggleLeft(blontent, hideStartupMessage);
-            if (EditorGUI.EndChangeCheck())
-            {
-                var settings = JSAMSettings.SerializedSettings;
-                settings.FindProperty("hideStartupMessage").boolValue = hideStartupMessage;
-                settings.ApplyModifiedProperties();
-            }
+                "You can find this window under \"" + STARTUP_MSG_MENU_PATH + "\"");
+            HideStartupMessage = EditorGUILayout.ToggleLeft(blontent, HideStartupMessage);
         }
     }
 }

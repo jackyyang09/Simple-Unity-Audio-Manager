@@ -11,7 +11,6 @@ namespace JSAM.JSAMEditor
     {
         AudioPlayer myScript;
 
-        SerializedProperty sound;
         SerializedProperty onStart;
         SerializedProperty onEnable;
         SerializedProperty onDisable;
@@ -19,9 +18,10 @@ namespace JSAM.JSAMEditor
 
         protected override void Setup()
         {
+            base.Setup();
+
             myScript = (AudioPlayer)target;
 
-            sound = serializedObject.FindProperty("sound");
             onStart = serializedObject.FindProperty("onStart");
             onEnable = serializedObject.FindProperty("onEnable");
             onDisable = serializedObject.FindProperty("onDisable");
@@ -34,7 +34,7 @@ namespace JSAM.JSAMEditor
 
             serializedObject.Update();
 
-            DrawSoundDropdown(sound);
+            DrawSoundDropdown();
 
             EditorGUILayout.Space();
 

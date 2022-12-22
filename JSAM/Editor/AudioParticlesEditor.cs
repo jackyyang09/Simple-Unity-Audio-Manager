@@ -11,16 +11,14 @@ namespace JSAM.JSAMEditor
     {
         AudioParticles myScript;
 
-        SerializedProperty sound;
-        SerializedProperty soundFile;
         SerializedProperty playSoundOn;
 
         protected override void Setup()
         {
+            base.Setup();
+
             myScript = (AudioParticles)target;
 
-            sound = serializedObject.FindProperty("sound");
-            soundFile = serializedObject.FindProperty("soundFile");
             playSoundOn = serializedObject.FindProperty("playSoundOn");
         }
 
@@ -30,7 +28,7 @@ namespace JSAM.JSAMEditor
 
             serializedObject.Update();
 
-            DrawSoundDropdown(sound);
+            DrawSoundDropdown();
 
             EditorGUILayout.PropertyField(playSoundOn);
 

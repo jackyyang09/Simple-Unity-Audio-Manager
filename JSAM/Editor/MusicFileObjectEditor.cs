@@ -91,7 +91,7 @@ namespace JSAM.JSAMEditor
                 "useLibrary", "category"
             };
 #endif
-            string path = JSAMSettings.Settings.PresetsPath + "\"" + input[0] + ".preset";
+            string path = System.IO.Path.Combine(JSAMSettings.Settings.PresetsPath, input[0] + ".preset");
             JSAMEditorHelper.CreateAssetSafe(newPreset, path);
         }
 
@@ -354,8 +354,8 @@ namespace JSAM.JSAMEditor
 
                 if (EditorUtility.audioMasterMute)
                 {
-                    EditorGUILayout.HelpBox("Audio is muted in the game view, which also mutes audio " +
-                        "playback here. Please un-mute it to hear your audio.", MessageType.Warning);
+                    JSAMEditorHelper.RenderHelpbox("Audio is muted in the game view, which also mutes audio " +
+                         "playback here. Please un-mute it to hear your audio.");
                 }
             }
             EditorCompatability.EndSpecialFoldoutGroup();

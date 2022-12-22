@@ -12,11 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c05f484ca36268440bf6ca1f6aedf5ef, type: 3}
   m_Name: JSAMSettings
   m_EditorClassIdentifier: 
-  packagePath: Assets/Imported Assets/Jacky's Simple Audio Manager
-  presetsPath: Assets/Imported Assets/Jacky's Simple Audio Manager/Presets
-  generatedEnumsPath: Assets/Imported Assets/Jacky's Simple Audio Manager/JSAMGenerated
-  libraryPath: Assets/Imported Assets/Jacky's Simple Audio Manager/Libraries
+  packagePath: Assets/JSAM
+  presetsPath: Assets/JSAM/Presets
   quickReferenceFontSize: 12
-  hideStartupMessage: 0
-  selectedLibrary: Assets/Audio/Libraries/Game Scene.asset
+  selectedLibrary:
+    savedObject: {fileID: 0}
   selectedSettings: Assets/Imported Assets/Jacky's Simple Audio Manager/Settings/Default.asset

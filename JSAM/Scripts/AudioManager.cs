@@ -24,7 +24,14 @@ namespace JSAM
                 bool missing = false;
                 if (instance == null) missing = true;
                 else if (instance.gameObject.scene == null) missing = true;
-                if (missing) instance = FindObjectOfType<AudioManager>();
+                if (missing)
+                {
+                    instance = FindObjectOfType<AudioManager>();
+                    if (instance == null)
+                    {
+                        DebugError("No AudioManager found in scene " + SceneManager.GetActiveScene().name);
+                    }
+                }
                 return instance;
             }
         }
@@ -149,7 +156,7 @@ namespace JSAM
         {
             if (!library)
             {
-                Debug.LogWarning("AudioManager Warning: No Audio Library specified in AudioManager!");
+                DebugWarning("No Audio Library specified in AudioManager!");
             }
             else
             {
@@ -181,7 +188,7 @@ namespace JSAM
                 }
                 if (listener == null) // In the case that there still isn't an AudioListener
                 {
-                    Debug.LogWarning("AudioManager Warning: Scene is missing an AudioListener!");
+                    DebugWarning("Scene is missing an AudioListener!");
                 }
             }
         }
@@ -192,6 +199,30 @@ namespace JSAM
             if (Settings.StopSoundsOnSceneLoad)
             {
                 StopAllSounds();
+            }
+        }
+
+        public static JSAMSoundFileObject GetSoundSafe<T>(T sound) where T : Enum
+        {
+            int s = Convert.ToInt32(sound);
+            try { return Instance.Library.Sounds[s]; }
+            catch (ArgumentOutOfRangeException)
+            {
+                DebugError("Provided sound \"" + sound + "\" does not exist in library \"" + instance.library.name + "\"!\n" +
+                    "Make sure you're using the correct library or consider re-generating your Library!");
+                return null;
+            }
+        }
+
+        public static JSAMMusicFileObject GetMusicSafe<T>(T music) where T : Enum
+        {
+            int m = Convert.ToInt32(music);
+            try { return Instance.Library.Music[m]; }
+            catch (ArgumentOutOfRangeException)
+            {
+                DebugError("Provided music \"" + music + "\" does not exist in library \"" + instance.library.name + "\"!\n" +
+                    "Make sure you're using the correct library or consider re-generating your Library!");
+                return null;
             }
         }
 
@@ -207,7 +238,7 @@ namespace JSAM
         /// <returns>The Sound Channel Helper playing the sound</returns>
         public static JSAMSoundChannelHelper PlaySound<T>(T sound, Transform transform = null, JSAMSoundChannelHelper helper = null) where T : Enum
         {
-            return InternalInstance.PlaySoundInternal(Instance.Library.Sounds[Convert.ToInt32(sound)], transform, helper);
+            return InternalInstance.PlaySoundInternal(GetSoundSafe(sound), transform, helper);
         }
 
         /// <summary>
@@ -221,7 +252,7 @@ namespace JSAM
         /// <returns><inheritdoc cref="PlaySound{T}(T, Transform, JSAMSoundChannelHelper)" path="/returns"/></returns>
         public static JSAMSoundChannelHelper PlaySound<T>(T sound, Vector3 position, JSAMSoundChannelHelper helper = null) where T : Enum
         {
-            return InternalInstance.PlaySoundInternal(Instance.Library.Sounds[Convert.ToInt32(sound)], position, helper);
+            return InternalInstance.PlaySoundInternal(GetSoundSafe(sound), position, helper);
         }
 
         /// <summary>
@@ -255,7 +286,7 @@ namespace JSAM
         /// a transform in PlaySound, passing the same Transform reference will stop that specific playing instance</param>
         /// <param name="stopInstantly">Optional: If true, stop the sound immediately, you may want to leave this false for looping sounds</param>
         public static void StopSound<T>(T sound, Transform transform = null, bool stopInstantly = true) where T : Enum =>
-            InternalInstance.StopSoundInternal(Instance.Library.Sounds[Convert.ToInt32(sound)], transform, stopInstantly);
+            InternalInstance.StopSoundInternal(GetSoundSafe(sound), transform, stopInstantly);
 
         /// <summary>
         /// <inheritdoc cref="StopSound{T}(T, Transform)"/>
@@ -266,8 +297,8 @@ namespace JSAM
         /// Passing this property will limit playback stopping 
         /// to only the sound playing at this specific position</param>
         /// <param name="stopInstantly">Optional: If true, stop the sound immediately, you may want to leave this false for looping sounds</param>
-        public static void StopSound<T>(T sound, Vector3 position, bool stopInstantly = true) => 
-            InternalInstance.StopSoundInternal(Instance.Library.Sounds[Convert.ToInt32(sound)], position, stopInstantly);
+        public static void StopSound<T>(T sound, Vector3 position, bool stopInstantly = true) where T : Enum => 
+            InternalInstance.StopSoundInternal(GetSoundSafe(sound), position, stopInstantly);
 
         /// <summary>
         /// </summary>
@@ -306,7 +337,7 @@ namespace JSAM
         /// <param name="stopInstantly">Optional: If true, stop the sound immediately, you may want to leave this false for looping sounds</param>
         /// <returns>True if sound was stopped successfully, false if sound wasn't playing</returns>
         public static bool StopSoundIfPlaying<T>(T sound, Transform transform = null, bool stopInstantly = true) where T : Enum =>
-            InternalInstance.StopSoundIfPlayingInternal(Instance.library.Sounds[Convert.ToInt32(sound)], transform, stopInstantly);
+            InternalInstance.StopSoundIfPlayingInternal(GetSoundSafe(sound), transform, stopInstantly);
 
         /// <summary>
         /// <inheritdoc cref="StopSoundIfPlaying{T}(T, Transform)"/>
@@ -318,7 +349,7 @@ namespace JSAM
         /// <param name="stopInstantly">Optional: If true, stop the sound immediately, you may want to leave this false for looping sounds</param>
         /// <returns>True if sound was stopped successfully, false if sound wasn't playing</returns>
         public static bool StopSoundIfPlaying<T>(T sound, Vector3 position, bool stopInstantly = true) where T : Enum =>
-            InternalInstance.StopSoundIfPlayingInternal(Instance.library.Sounds[Convert.ToInt32(sound)], position, stopInstantly);
+            InternalInstance.StopSoundIfPlayingInternal(GetSoundSafe(sound), position, stopInstantly);
 
         /// <summary>
         /// <inheritdoc cref="StopSoundIfPlaying{T}(T, Transform)"/>
@@ -353,7 +384,7 @@ namespace JSAM
         /// <param name="transform">Optional: Only return true if the sound is playing from this transform</param>
         /// <returns>True if a sound that was played using PlaySound is currently playing</returns>
         public static bool IsSoundPlaying<T>(T sound, Transform transform = null) where T : Enum =>
-            InternalInstance.IsSoundPlayingInternal(Instance.Library.Sounds[Convert.ToInt32(sound)], transform);
+            InternalInstance.IsSoundPlayingInternal(GetSoundSafe(sound), transform);
 
         /// <summary>
         /// </summary>
@@ -362,7 +393,7 @@ namespace JSAM
         /// <param name="position">Only return true if the sound is played at this position</param>
         /// <returns><inheritdoc cref="IsSoundPlaying{T}(T, Transform)" path="/returns"/></returns>
         public static bool IsSoundPlaying<T>(T sound, Vector3 position) where T : Enum =>
-            InternalInstance.IsSoundPlayingInternal(Instance.Library.Sounds[Convert.ToInt32(sound)], position);
+            InternalInstance.IsSoundPlayingInternal(GetSoundSafe(sound), position);
 
         /// <summary>
         /// </summary>
@@ -388,7 +419,7 @@ namespace JSAM
         /// <param name="helper">This helper reference will be given a value if the method returns true</param>
         /// <returns>The first Sound Helper that's currently playing the specified music</returns>
         public static bool TryGetPlayingSound<T>(T sound, out JSAMSoundChannelHelper helper) where T : Enum =>
-            InternalInstance.TryGetPlayingSound(Instance.library.Sounds[Convert.ToInt32(sound)], out helper);
+            InternalInstance.TryGetPlayingSound(GetSoundSafe(sound), out helper);
 
         /// <summary>
         /// Very similar use case as TryGetComponent
@@ -412,7 +443,7 @@ namespace JSAM
         /// <returns>The Music Channel helper playing the sound, useful for transitions, like copying the playback position to the next music</returns>
         public static JSAMMusicChannelHelper PlayMusic<T>(T music, bool isMainMusic) where T : Enum
         {
-            return InternalInstance.PlayMusicInternal(Instance.Library.Music[Convert.ToInt32(music)], isMainMusic);
+            return InternalInstance.PlayMusicInternal(GetMusicSafe(music), isMainMusic);
         }
 
         /// <summary>
@@ -438,7 +469,7 @@ namespace JSAM
         /// <returns><inheritdoc cref="PlayMusic{T}(T, bool)" path="/returns"/></returns>
         public static JSAMMusicChannelHelper PlayMusic<T>(T music, Transform transform = null, JSAMMusicChannelHelper helper = null) where T : Enum
         {
-            return InternalInstance.PlayMusicInternal(Instance.Library.Music[Convert.ToInt32(music)], transform, helper);
+            return InternalInstance.PlayMusicInternal(GetMusicSafe(music), transform, helper);
         }
 
         /// <summary>
@@ -452,7 +483,7 @@ namespace JSAM
         /// <returns><inheritdoc cref="PlayMusic{T}(T, bool)" path="/returns"/></returns>
         public static JSAMMusicChannelHelper PlayMusic<T>(T music, Vector3 position, JSAMMusicChannelHelper helper = null) where T : Enum
         {
-            return InternalInstance.PlayMusicInternal(Instance.Library.Music[Convert.ToInt32(music)], position, helper);
+            return InternalInstance.PlayMusicInternal(GetMusicSafe(music), position, helper);
         }
 
         /// <summary>
@@ -487,7 +518,7 @@ namespace JSAM
         /// <returns></returns>
         public static JSAMMusicChannelHelper FadeMusicIn<T>(T music, float fadeInTime, bool isMainmusic = false) where T : Enum
         {
-            return InternalInstance.FadeMusicInInternal(Instance.Library.Music[Convert.ToInt32(music)], fadeInTime, isMainmusic);
+            return InternalInstance.FadeMusicInInternal(GetMusicSafe(music), fadeInTime, isMainmusic);
         }
 
         /// <summary>
@@ -522,7 +553,7 @@ namespace JSAM
         /// <returns></returns>
         public static JSAMMusicChannelHelper FadeMusicOut<T>(T music, float fadeOutTime) where T : Enum
         {
-            return InternalInstance.FadeMusicOutInternal(Instance.Library.Music[Convert.ToInt32(music)], fadeOutTime);
+            return InternalInstance.FadeMusicOutInternal(GetMusicSafe(music), fadeOutTime);
         }
 
         /// <summary>
@@ -544,7 +575,7 @@ namespace JSAM
         /// <param name="music">The enum of the music in question, check AudioManager to see what enums you can use</param>
         /// <returns>True if music that was played through PlayMusic is currently playing</returns>
         public static bool IsMusicPlaying<T>(T music) where T : Enum =>
-            InternalInstance.IsMusicPlayingInternal(Instance.library.Music[Convert.ToInt32(music)]);
+            InternalInstance.IsMusicPlayingInternal(GetMusicSafe(music));
 
         /// <summary>
         /// </summary>
@@ -560,7 +591,7 @@ namespace JSAM
         /// <param name="helper">This helper reference will be given a value if the method returns true</param>
         /// <returns>The first Music Helper that's currently playing the specified music</returns>
         public static bool TryGetPlayingMusic<T>(T music, out JSAMMusicChannelHelper helper) where T : Enum =>
-            InternalInstance.TryGetPlayingMusic(Instance.library.Music[Convert.ToInt32(music)], out helper);
+            InternalInstance.TryGetPlayingMusic(GetMusicSafe(music), out helper);
 
         /// <summary>
         /// Very similar use case as TryGetComponent
@@ -584,7 +615,7 @@ namespace JSAM
         /// <returns>The Music Channel helper playing the sound, useful for transitions, like copying the playback position to the next music</returns>
         public static JSAMMusicChannelHelper StopMusic<T>(T music, Transform transform = null, bool stopInstantly = true) where T : Enum
         {
-            return InternalInstance.StopMusicInternal(Instance.Library.Music[Convert.ToInt32(music)], transform, stopInstantly);
+            return InternalInstance.StopMusicInternal(GetMusicSafe(music), transform, stopInstantly);
         }
 
         /// <summary>
@@ -598,7 +629,7 @@ namespace JSAM
         /// <returns><inheritdoc cref="StopMusic{T}(T, Transform, bool)"/></returns>
         public static JSAMMusicChannelHelper StopMusic<T>(T music, Vector3 position, bool stopInstantly = true) where T : Enum
         {
-            return InternalInstance.StopMusicInternal(Instance.Library.Music[Convert.ToInt32(music)], position, stopInstantly);
+            return InternalInstance.StopMusicInternal(GetMusicSafe(music), position, stopInstantly);
         }
 
         /// <summary>
@@ -638,7 +669,7 @@ namespace JSAM
         /// <returns>True if music was stopped successfully, false if music wasn't playing</returns>
         public static bool StopMusicIfPlaying<T>(T music, Transform transform = null, bool stopInstantly = true) where T : Enum
         {
-            return InternalInstance.StopMusicIfPlayingInternal(Instance.Library.Music[Convert.ToInt32(music)], transform, stopInstantly);
+            return InternalInstance.StopMusicIfPlayingInternal(GetMusicSafe(music), transform, stopInstantly);
         }
 
         /// <summary>
@@ -651,7 +682,7 @@ namespace JSAM
         /// Otherwise, will immediately end playback</param>
         /// <returns><inheritdoc cref="StopMusicIfPlaying{T}(T, Transform, bool)"/></returns>
         public static bool StopMusicIfPlaying<T>(T music, Vector3 position, bool stopInstantly = true) where T : Enum =>
-            InternalInstance.StopMusicIfPlayingInternal(Instance.Library.Music[Convert.ToInt32(music)], position, stopInstantly);
+            InternalInstance.StopMusicIfPlayingInternal(GetMusicSafe(music), position, stopInstantly);
 
         /// <summary>
         /// <inheritdoc cref="StopMusicIfPlaying{T}(T, Transform, bool)"/>
@@ -777,40 +808,28 @@ namespace JSAM
         /// Called internally by AudioManager to output non-error console messages
         /// </summary>
         /// <param name="consoleOutput"></param>
-        public void DebugLog(string consoleOutput)
+        public static void DebugLog(string consoleOutput)
         {
-            if (Settings.DisableConsoleLogs) return;
-            Debug.Log(consoleOutput);
+            if (instance)
+            {
+                if (instance.settings)
+                {
+                    if (instance.settings.DisableConsoleLogs) return;
+                }
+            }
+            Debug.Log("JSAM: " + consoleOutput);
         }
 
-        public void DebugWarning(string consoleOutput)
+        public static void DebugWarning(string consoleOutput)
         {
-            Debug.LogWarning("JSAM Warning! " +
+            Debug.LogWarning("JSAM Warning: " +
                 consoleOutput);
         }
 
-        /// <summary>
-        /// Given an enum, returns the corresponding AudioFileObject
-        /// </summary>
-        /// <typeparam name="T">The audio enum type corresponding to your scene. In most cases, this is just JSAM.Music</typeparam>
-        /// <param name="music"></param>
-        /// <returns></returns>
-        public static JSAMMusicFileObject GetMusic<T>(T music) where T : Enum
+        public static void DebugError(string consoleOutput)
         {
-            int a = Convert.ToInt32(music);
-            return Instance.library.Music[a];
-        }
-
-        /// <summary>
-        /// Given an enum, returns the corresponding AudioFileObject
-        /// </summary>
-        /// <typeparam name="T">The audio enum type corresponding to your scene. In most cases, this is just JSAM.Sound</typeparam>
-        /// <param name="sound"></param>
-        /// <returns></returns>
-        public static JSAMSoundFileObject GetSound<T>(T sound) where T : Enum
-        {
-            int a = Convert.ToInt32(sound);
-            return Instance.library.Sounds[a];
+            Debug.LogError("JSAM ERROR: " +
+                consoleOutput);
         }
 
 #if UNITY_EDITOR

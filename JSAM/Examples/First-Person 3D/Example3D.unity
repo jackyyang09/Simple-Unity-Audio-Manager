@@ -8523,12 +8523,11 @@ MonoBehaviour:
   restartOnReplay: 0
   stopInstantly: 0
   music: {fileID: 11400000, guid: 53d013968086c2a4b9dde34f761fbb70, type: 2}
-  positions:
-  - {x: -17.96645, y: 0.25669998, z: 0}
-  maxDistance:
-  - 12
-  minDistance:
-  - 4
+  keepPlayingWhenAway: 0
+  MusicZones:
+  - Position: {x: -17.96645, y: 0.25669998, z: 0}
+    MaxDistance: 5
+    MinDistance: 1
 --- !u!65 &1699867988
 BoxCollider:
   m_ObjectHideFlags: 0

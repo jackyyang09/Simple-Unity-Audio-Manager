@@ -33,10 +33,11 @@ namespace JSAM.JSAMEditor
             {
                 if (prop.GetArrayElementAtIndex(i).objectReferenceValue == null)
                 {
+                    int size = prop.arraySize;
                     // A dirty hack, but Unity serialization is real messy
                     // https://answers.unity.com/questions/555724/serializedpropertydeletearrayelementatindex-leaves.html
                     prop.DeleteArrayElementAtIndex(i);
-                    if (prop.GetArrayElementAtIndex(i) != null) prop.DeleteArrayElementAtIndex(i);
+                    if (size == prop.arraySize) prop.DeleteArrayElementAtIndex(i);
                 }
             }
             return prop;
@@ -456,7 +457,6 @@ namespace JSAM.JSAMEditor
         public static void CopyToClipboard(string text)
         {
             EditorGUIUtility.systemCopyBuffer = text;
-            AudioManager.Instance.DebugLog("Copied " + text + " to clipboard!");
         }
 
         public static Vector2 lastGuideSize;
@@ -502,6 +502,16 @@ namespace JSAM.JSAMEditor
                 EditorGUILayout.LabelField(text, style);
                 lastGuideSize += style.CalcSize(new GUIContent(text));
             }
+        }
+
+        public static bool RightClickRegion(Rect clickRect)
+        {
+            if (clickRect.Contains(Event.current.mousePosition) && Event.current.type == EventType.ContextClick)
+            {
+                Event.current.Use();
+                return true;
+            }
+            return false;
         }
 
         public static bool IsDragging(Rect dragRect) => dragRect.Contains(Event.current.mousePosition) && DragAndDrop.objectReferences.Length > 0;

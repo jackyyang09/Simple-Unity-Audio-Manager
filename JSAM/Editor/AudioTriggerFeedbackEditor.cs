@@ -11,17 +11,15 @@ namespace JSAM.JSAMEditor
     {
         AudioTriggerFeedback myScript;
 
-        SerializedProperty sound;
-        SerializedProperty soundFile;
         SerializedProperty triggersWith;
         SerializedProperty triggerEvent;
 
         protected override void Setup()
         {
+            base.Setup();
+
             myScript = (AudioTriggerFeedback)target;
 
-            sound = serializedObject.FindProperty("sound");
-            soundFile = serializedObject.FindProperty("soundFile");
             triggersWith = serializedObject.FindProperty("triggersWith");
             triggerEvent = serializedObject.FindProperty("triggerEvent");
         }
@@ -32,7 +30,7 @@ namespace JSAM.JSAMEditor
 
             serializedObject.Update();
 
-            DrawSoundDropdown(sound);
+            DrawSoundDropdown();
             
             EditorGUILayout.PropertyField(triggersWith);
             EditorGUILayout.PropertyField(triggerEvent);

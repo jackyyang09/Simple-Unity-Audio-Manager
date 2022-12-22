@@ -11,15 +11,15 @@ namespace JSAM.JSAMEditor
     {
         AudioCollisionFeedback myScript;
 
-        SerializedProperty sound;
         SerializedProperty collidesWithProperty;
         SerializedProperty triggerEventProperty;
 
         protected override void Setup()
         {
+            base.Setup();
+
             myScript = (AudioCollisionFeedback)target;
 
-            sound = serializedObject.FindProperty("sound");
             collidesWithProperty = serializedObject.FindProperty("collidesWith");
             triggerEventProperty = serializedObject.FindProperty("triggerEvent");
         }
@@ -30,7 +30,7 @@ namespace JSAM.JSAMEditor
 
             serializedObject.Update();
 
-            DrawSoundDropdown(sound);
+            DrawSoundDropdown();
 
             EditorGUILayout.PropertyField(collidesWithProperty);
             EditorGUILayout.PropertyField(triggerEventProperty);

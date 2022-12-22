@@ -7,27 +7,48 @@ namespace JSAM
     [AddComponentMenu("AudioManager/Audio Music Zone")]
     public class AudioMusicZone : BaseAudioMusicFeedback
     {
-        public List<Vector3> positions = new List<Vector3>();
-        public List<float> maxDistance = new List<float>();
-        public List<float> minDistance = new List<float>();
+        [System.Serializable]
+        public class MusicZone
+        {
+            public Vector3 Position;
+            public float MaxDistance;
+            public float MinDistance;
+        }
+
+        public bool keepPlayingWhenAway;
+
+        public List<MusicZone> MusicZones = new List<MusicZone>();
+
+        Transform Listener => AudioManager.AudioListener.transform;
 
         JSAMMusicChannelHelper helper;
+
+        private void Start()
+        {
+            if (keepPlayingWhenAway)
+            {
+                helper = AudioManager.PlayMusic(music, null, helper);
+                helper.Reserved = true;
+            }
+        }
 
         // Update is called once per frame
         void Update()
         {
             float loudest = 0;
-            for (int i = 0; i < positions.Count; i++)
+            for (int i = 0; i < MusicZones.Count; i++)
             {
-                float dist = Vector3.Distance(AudioManager.AudioListener.transform.position, positions[i]);
-                if (dist <= maxDistance[i])
+                var z = MusicZones[i];
+                float dist = Vector3.Distance(Listener.position, z.Position);
+                if (dist <= z.MaxDistance)
                 {
-                    if (!AudioManager.IsMusicPlaying(music))
+                    if (!helper)
                     {
-                        helper = AudioManager.PlayMusic(music);
+                        helper = AudioManager.PlayMusic(music, null, helper);
+                        helper.Reserved = true;
                     }
 
-                    if (dist <= minDistance[i])
+                    if (dist <= z.MinDistance)
                     {
                         // Set to the max volume
                         helper.AudioSource.volume = AudioManager.MusicVolume * music.relativeVolume;
@@ -35,13 +56,13 @@ namespace JSAM
                     }
                     else
                     {
-                        float distanceFactor = Mathf.InverseLerp(maxDistance[i], minDistance[i], dist);
+                        float distanceFactor = Mathf.InverseLerp(z.MaxDistance, z.MinDistance, dist);
                         float newVol = AudioManager.MusicVolume * music.relativeVolume * distanceFactor;
                         if (newVol > loudest) loudest = newVol;
                     }
                 }
             }
-            if (AudioManager.IsMusicPlaying(music)) helper.AudioSource.volume = loudest;
+            if (helper) helper.AudioSource.volume = loudest;
         }
     }
 }

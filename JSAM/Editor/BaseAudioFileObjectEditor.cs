@@ -27,23 +27,42 @@ namespace JSAM.JSAMEditor
 
         public AudioClipList(SerializedObject obj, SerializedProperty prop)
         {
-            list = new ReorderableList(obj, prop, true, false, false, false);
+            list = new ReorderableList(obj, prop, true, false, true, true);
+
+            list.onRemoveCallback += OnRemoveElement;
             list.drawElementCallback += DrawElement;
+
             list.headerHeight = 1;
             list.footerHeight = 0;
             serializedObject = obj;
             property = prop;
         }
 
+        private void OnRemoveElement(ReorderableList list)
+        {
+            int listSize = property.arraySize;
+            property.DeleteArrayElementAtIndex(list.index);
+            if (listSize == property.arraySize)
+            {
+                property.DeleteArrayElementAtIndex(list.index);
+            }
+
+            if (serializedObject.hasModifiedProperties) serializedObject.ApplyModifiedProperties();
+        }
+
         private void DrawElement(Rect rect, int index, bool isActive, bool isFocused)
         {
             var element = list.serializedProperty.GetArrayElementAtIndex(index);
+
             var file = element.objectReferenceValue as AudioClip;
 
             Rect prevRect = new Rect(rect);
             Rect currentRect = new Rect(prevRect);
 
-            GUIContent blontent = new GUIContent(file.name);
+            string name = "Element " + index;
+            if (file) name = file.name;
+
+            GUIContent blontent = new GUIContent(name);
 
             currentRect.xMax = rect.width * 0.6f;
             // Force a normal-colored label in a disabled scope
@@ -54,30 +73,24 @@ namespace JSAM.JSAMEditor
             EditorGUI.LabelField(currentRect, blontent);
 
             decoyRect.xMin = currentRect.xMax + 5;
-            decoyRect.xMax = rect.xMax - 30;
-            using (new EditorGUI.DisabledScope(true))
-            {
-              EditorGUI.PropertyField(decoyRect, element, GUIContent.none);
-            }
+            decoyRect.xMax = rect.xMax - 2.5f;
 
-            JSAMEditorHelper.BeginColourChange(Color.red);
-            currentRect.xMax = rect.xMax;
-            currentRect.xMin = currentRect.xMax - 25;
-            blontent = new GUIContent("X", "Remove this Audio File from the library, can be undone with Edit -> Undo");
-            if (GUI.Button(currentRect, blontent))
+            EditorGUI.BeginChangeCheck();
+            EditorGUI.PropertyField(decoyRect, element, GUIContent.none);
+            if (EditorGUI.EndChangeCheck())
             {
-                property.DeleteArrayElementAtIndex(index);
-                property.DeleteArrayElementAtIndex(index);
-                serializedObject.ApplyModifiedProperties();
-                GUIUtility.ExitGUI();
+                if (element.objectReferenceValue == null)
+                {
+                    list.index = index;
+                    OnRemoveElement(list);
+                }
             }
-            JSAMEditorHelper.EndColourChange();
         }
 
         public void Draw() => list.DoLayoutList();
     }
 
-    public abstract class BaseAudioFileObjectEditor<EditorType> : Editor 
+    public abstract class BaseAudioFileObjectEditor<EditorType> : Editor
         where EditorType : Editor
     {
         public enum LoopPointTool
@@ -100,6 +113,34 @@ namespace JSAM.JSAMEditor
         protected static bool showLoopPointTool;
         protected static int loopPointInputMode = 0;
 
+        protected virtual string SHOW_LIBRARY => "JSAM_BAFO_SHOWLIBRARY";
+        protected bool showLibrary
+        {
+            get
+            {
+                if (!EditorPrefs.HasKey(SHOW_LIBRARY))
+                {
+                    EditorPrefs.SetBool(SHOW_LIBRARY, false);
+                }
+                return EditorPrefs.GetBool(SHOW_LIBRARY);
+            }
+            set { EditorPrefs.SetBool(SHOW_LIBRARY, value); }
+        }
+
+        protected virtual string EXPAND_LIBRARY => "JSAM_BAFO_EXPANDLIBRARY";
+        protected bool expandLibrary
+        {
+            get
+            {
+                if (!EditorPrefs.HasKey(EXPAND_LIBRARY))
+                {
+                    EditorPrefs.SetBool(EXPAND_LIBRARY, false);
+                }
+                return EditorPrefs.GetBool(EXPAND_LIBRARY);
+            }
+            set { EditorPrefs.SetBool(EXPAND_LIBRARY, value); }
+        }
+
         protected List<string> excludedProperties = new List<string>() { "m_Script" };
 
         Color COLOR_BUTTONPRESSED_2 = new Color(0.75f, 0.75f, 0.75f);
@@ -107,6 +148,8 @@ namespace JSAM.JSAMEditor
         protected AudioClipList list;
 
         protected GUIContent blontent;
+
+        protected Vector2 scroll;
 
         protected SerializedProperty FindProp(string property)
         {
@@ -181,7 +224,7 @@ namespace JSAM.JSAMEditor
         {
             if (!isPreset)
             {
-                blontent = new GUIContent("Create Preset from this Audio File", 
+                blontent = new GUIContent("Create Preset from this Audio File",
                     "Create a new preset using this Audio File object as a base. " +
                     "You are highly recommended to create presets through this interface rather than Unity's built-in interface.");
                 if (GUILayout.Button(blontent))
@@ -192,6 +235,74 @@ namespace JSAM.JSAMEditor
                     JSAMUtilityWindow.onSubmitField += OnCreatePreset;
                 }
             }
+        }
+
+        protected void RenderFileList()
+        {
+#if UNITY_2020_3_OR_NEWER
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(files);
+            if (EditorGUI.EndChangeCheck())
+            {
+                files = files.RemoveNullElementsFromArray();
+                if (serializedObject.hasModifiedProperties) serializedObject.ApplyModifiedProperties();
+            }
+#else
+            #region Library Region
+            if (!isPreset)
+            {
+                Rect overlay = new Rect();
+                EditorGUILayout.BeginHorizontal();
+                showLibrary = EditorCompatability.SpecialFoldouts(showLibrary, "Library");
+                EditorGUILayout.EndHorizontal();
+                if (showLibrary)
+                {
+                    GUILayoutOption[] layoutOptions;
+                    layoutOptions = expandLibrary && files.arraySize > 5 ? new GUILayoutOption[0] : new GUILayoutOption[] { GUILayout.MinHeight(150) };
+                    overlay = EditorGUILayout.BeginVertical(GUI.skin.box, layoutOptions);
+
+                    scroll = EditorGUILayout.BeginScrollView(scroll);
+
+                    if (files.arraySize > 5) // Magic number haha
+                    {
+                        string label = expandLibrary ? "Retract Library" : "Expand Library";
+                        if (JSAMEditorHelper.CondensedButton(label))
+                        {
+                            expandLibrary = !expandLibrary;
+                        }
+                    }
+
+                    if (files.arraySize > 0)
+                    {
+                        list.Draw();
+                    }
+                    EditorGUILayout.EndScrollView();
+                    EditorGUILayout.EndVertical();
+                }
+
+                EditorCompatability.EndSpecialFoldoutGroup();
+
+                if (showLibrary)
+                {
+                    string normalLabel = files.arraySize == 0 ? "Drag AudioClips here" : string.Empty;
+                    if (JSAMEditorHelper.DragAndDropRegion(overlay, normalLabel, "Release to add AudioClips"))
+                    {
+                        for (int i = 0; i < DragAndDrop.objectReferences.Length; i++)
+                        {
+                            string filePath = AssetDatabase.GetAssetPath(DragAndDrop.objectReferences[i]);
+                            var clips = JSAMEditorHelper.ImportAssetsOrFoldersAtPath<AudioClip>(filePath);
+
+                            for (int j = 0; j < clips.Count; j++)
+                            {
+                                files.AddAndReturnNewArrayElement().objectReferenceValue = clips[j];
+                            }
+                        }
+                    }
+                }
+                EditorGUILayout.LabelField("File Count: " + files.arraySize);
+            }
+            #endregion
+#endif
         }
 
         protected abstract void OnCreatePreset(string[] input);
@@ -396,7 +507,7 @@ namespace JSAM.JSAMEditor
                 }
                 EditorCompatability.EndSpecialFoldoutGroup();
             }
-            
+
         }
 
         #region Audio Effect Rendering

@@ -47,16 +47,6 @@ namespace JSAM.JSAMEditor
             }
         }
 
-        [Tooltip("If true, prevents this window from showing up on Unity startup. You can find this window under Window -> JSAM -> JSAM Startup")]
-        [SerializeField] bool hideStartupMessage = false;
-        public bool HideStartupMessage
-        {
-            get
-            {
-                return hideStartupMessage;
-            }
-        }
-
         static string settingsAssetName = "JSAMSettings.asset";
 
         public static string SettingsSavePath

@@ -11,7 +11,6 @@ namespace JSAM.JSAMEditor
     {
         AudioPlayerMusic myScript;
 
-        SerializedProperty musicProperty;
         SerializedProperty keepPlaybackPosition;
         SerializedProperty restartOnReplay;
 
@@ -27,9 +26,10 @@ namespace JSAM.JSAMEditor
 
         protected override void Setup()
         {
+            base.Setup();
+
             myScript = (AudioPlayerMusic)target;
 
-            musicProperty = serializedObject.FindProperty("music");
             keepPlaybackPosition = serializedObject.FindProperty("keepPlaybackPosition");
             restartOnReplay = serializedObject.FindProperty("restartOnReplay");
 
@@ -48,7 +48,7 @@ namespace JSAM.JSAMEditor
 
             serializedObject.Update();
 
-            DrawMusicDropdown(musicProperty);
+            DrawMusicDropdown();
 
             EditorGUILayout.Space();
             

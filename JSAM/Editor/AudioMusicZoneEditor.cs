@@ -15,32 +15,33 @@ namespace JSAM.JSAMEditor
     {
         AudioMusicZone myScript;
 
-        SerializedProperty musicProperty;
-        SerializedProperty positionsProperty;
-        SerializedProperty maxDistanceProperty;
-        SerializedProperty minDistanceProperty;
+        SerializedProperty keepPlayingWhenAway;
+        SerializedProperty musicZones;
 
-        AudioMusicZone[] otherZones;
-        bool othersExist = false;
-        bool isSharing = false;
-
-        static bool hideTransformTool;
+        protected virtual string HIDE_TRANSFORMHANDLE => "JSAM_AMZ_HIDETRANSFORMHANDLE";
+        protected bool hideTransformHandle
+        {
+            get
+            {
+                if (!EditorPrefs.HasKey(HIDE_TRANSFORMHANDLE))
+                {
+                    EditorPrefs.SetBool(HIDE_TRANSFORMHANDLE, false);
+                }
+                return EditorPrefs.GetBool(HIDE_TRANSFORMHANDLE);
+            }
+            set { EditorPrefs.SetBool(HIDE_TRANSFORMHANDLE, value); }
+        }
 
         protected override void Setup()
         {
+            base.Setup();
+
             myScript = (AudioMusicZone)target;
 
-            otherZones = FindObjectsOfType<AudioMusicZone>();
-            if (otherZones.Length > 1) othersExist = true;
+            keepPlayingWhenAway = serializedObject.FindProperty(nameof(keepPlayingWhenAway));
+            musicZones = serializedObject.FindProperty("MusicZones");
 
-            musicProperty = serializedObject.FindProperty("music");
-            positionsProperty = serializedObject.FindProperty("positions");
-            maxDistanceProperty = serializedObject.FindProperty("maxDistance");
-            minDistanceProperty = serializedObject.FindProperty("minDistance");
-
-            CheckIfSharing();
-
-            Tools.hidden = hideTransformTool;
+            Tools.hidden = hideTransformHandle;
         }
 
         private void OnDisable()
@@ -54,29 +55,15 @@ namespace JSAM.JSAMEditor
 
             serializedObject.Update();
 
-            if (isSharing)
-            {
-                EditorGUILayout.HelpBox("Another Audio Music Zone exists in this scene that plays the same music! You can only " +
-                    "have one Audio Music Zone that plays a specific piece of music.", MessageType.Error);
-            }
+            DrawMusicDropdown();
 
-            DrawMusicDropdown(musicProperty);
-
-            List<string> excludedProperties = new List<string>
-            {
-                "m_Script", "musicFile", "playOnStart", "playOnEnable", "spatializeSound", "loopMode",
-                        "stopOnDisable", "stopOnDestroy", "keepPlaybackPosition", "restartOnReplay", "musicFadeInTime",
-                "musicFadeOutTime", "transitionMode", "positions", "maxDistance", "minDistance"
-            };
-
-            DrawPropertiesExcluding(serializedObject, excludedProperties.ToArray());
+            EditorGUILayout.PropertyField(keepPlayingWhenAway);
 
             DrawPositionsEditor();
 
             if (serializedObject.hasModifiedProperties)
             {
                 serializedObject.ApplyModifiedProperties();
-                CheckIfSharing();
             }
 
             DrawQuickReferenceGuide();
@@ -131,17 +118,17 @@ namespace JSAM.JSAMEditor
             else
                 Handles.color = new Color(0.30f, 0.40f, 0.60f, 0.5f);
 
-            for (int i = 0; i < myScript.positions.Count; i++)
+            for (int i = 0; i < myScript.MusicZones.Count; i++)
             {
                 Undo.RecordObject(myScript, "Modified Zone properties");
-                myScript.positions[i] = Handles.PositionHandle(myScript.positions[i], Quaternion.identity);
+                myScript.MusicZones[i].Position = Handles.PositionHandle(myScript.MusicZones[i].Position, Quaternion.identity);
 
-                myScript.minDistance[i] = Handles.RadiusHandle(Quaternion.identity, myScript.positions[i], myScript.minDistance[i], false);
-                if (myScript.minDistance[i] < 0) myScript.minDistance[i] = 0;
-                else if (myScript.minDistance[i] > myScript.maxDistance[i]) myScript.minDistance[i] = myScript.maxDistance[i];
-                myScript.maxDistance[i] = Handles.RadiusHandle(Quaternion.identity, myScript.positions[i], myScript.maxDistance[i], false);
-                if (myScript.maxDistance[i] < 0) myScript.maxDistance[i] = 0;
-                else if (myScript.maxDistance[i] < myScript.minDistance[i]) myScript.maxDistance[i] = myScript.minDistance[i];
+                myScript.MusicZones[i].MinDistance = Handles.RadiusHandle(Quaternion.identity, myScript.MusicZones[i].Position, myScript.MusicZones[i].MinDistance, false);
+                if (myScript.MusicZones[i].MinDistance < 0) myScript.MusicZones[i].MinDistance = 0;
+                else if (myScript.MusicZones[i].MinDistance > myScript.MusicZones[i].MaxDistance) myScript.MusicZones[i].MinDistance = myScript.MusicZones[i].MaxDistance;
+                myScript.MusicZones[i].MaxDistance = Handles.RadiusHandle(Quaternion.identity, myScript.MusicZones[i].Position, myScript.MusicZones[i].MaxDistance, false);
+                if (myScript.MusicZones[i].MaxDistance < 0) myScript.MusicZones[i].MaxDistance = 0;
+                else if (myScript.MusicZones[i].MaxDistance < myScript.MusicZones[i].MinDistance) myScript.MusicZones[i].MaxDistance = myScript.MusicZones[i].MinDistance;
             }
 
             Handles.color = tempColor;
@@ -152,29 +139,41 @@ namespace JSAM.JSAMEditor
 
         public void DrawPositionsEditor()
         {
-            bool hideTool = EditorGUILayout.Toggle("Hide Transform Tool", hideTransformTool);
-            if (hideTool != hideTransformTool)
-            {
-                hideTransformTool = hideTool;
-                Tools.hidden = hideTransformTool;
-                if (SceneView.sceneViews.Count > 0) SceneView.lastActiveSceneView.Repaint();
-            }
-
             List<int> markedForDeletion = new List<int>();
             GUIContent blontent;
 
+#if !UNITY_2020_3_OR_NEWER
             bool previousFoldout = positionsFoldout;
-            positionsFoldout = EditorCompatability.SpecialFoldouts(positionsFoldout, "Music Zone");
+            EditorGUILayout.BeginHorizontal();
+            positionsFoldout = EditorCompatability.SpecialFoldouts(positionsFoldout, "Music Zones");
+            musicZones.arraySize = EditorGUILayout.DelayedIntField(musicZones.arraySize, new GUILayoutOption[] { GUILayout.MaxWidth(48) });
+            EditorGUILayout.EndHorizontal();
             if (previousFoldout != positionsFoldout) // Toggle handles in scene view
             {
                 if (SceneView.sceneViews.Count > 0) SceneView.lastActiveSceneView.Repaint();
             }
             if (positionsFoldout)
+#endif
             {
-                for (int i = 0; i < positionsProperty.arraySize; i++)
+                blontent = new GUIContent("Hide Transform Tool",
+                    "If true, hides the transform handle of this gameObject in the scene view so you can " +
+                    "better work with the handles of Music Zones.");
+                EditorGUI.BeginChangeCheck();
+                bool hideTool = EditorGUILayout.Toggle(blontent, hideTransformHandle);
+                if (EditorGUI.EndChangeCheck())
                 {
+                    hideTransformHandle = hideTool;
+                    Tools.hidden = hideTransformHandle;
+                    if (SceneView.sceneViews.Count > 0) SceneView.lastActiveSceneView.Repaint();
+                }
+
+#if UNITY_2020_3_OR_NEWER
+                EditorGUILayout.PropertyField(musicZones);
+#else
+                for (int i = 0; i < musicZones.arraySize; i++)
+                {
+                    var element = musicZones.GetArrayElementAtIndex(i);
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-                    SerializedProperty position = positionsProperty.GetArrayElementAtIndex(i);
                     if (foldouts.Count < i + 1)
                     {
                         foldouts.Add(false);
@@ -189,16 +188,21 @@ namespace JSAM.JSAMEditor
                     EditorGUILayout.EndHorizontal();
                     if (foldouts[i])
                     {
-                        position.vector3Value = EditorGUILayout.Vector3Field(new GUIContent("Position"), position.vector3Value);
-
-                        SerializedProperty minDistance = minDistanceProperty.GetArrayElementAtIndex(i);
-                        SerializedProperty maxDistance = maxDistanceProperty.GetArrayElementAtIndex(i);
+                        SerializedProperty position = element.FindPropertyRelative("Position");
+                        EditorGUILayout.PropertyField(position);
+                        SerializedProperty minDistance = element.FindPropertyRelative("MinDistance");
+                        SerializedProperty maxDistance = element.FindPropertyRelative("MaxDistance");
 
                         blontent = new GUIContent("Min Distance", "The minimum distance the listener can be at to hear the music " +
                             "in this music zone. The music will be at it's loudest when the listener is equal to or below this distance to this zone.");
-                        minDistance.floatValue = EditorGUILayout.FloatField(blontent, minDistance.floatValue);
-                        if (minDistance.floatValue > maxDistance.floatValue) minDistance.floatValue = maxDistance.floatValue;
-                        else if (minDistance.floatValue < 0) minDistance.floatValue = 0;
+                        EditorGUI.BeginChangeCheck();
+                        EditorGUILayout.PropertyField(minDistance, blontent);
+                        //minDistance.floatValue = EditorGUILayout.FloatField(blontent, minDistance.floatValue);
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            if (minDistance.floatValue > maxDistance.floatValue) minDistance.floatValue = maxDistance.floatValue;
+                            else if (minDistance.floatValue < 0) minDistance.floatValue = 0;
+                        }
 
                         blontent = new GUIContent("Max Distance", "The maximum distance the listener can be at to hear the music " +
                             "in this music zone. Volume of the music will increase as listener approaches the minimum distance.");
@@ -208,62 +212,38 @@ namespace JSAM.JSAMEditor
                     }
                     EditorGUILayout.EndVertical();
                 }
-
+#endif
                 foreach (int item in markedForDeletion)
                 {
                     foldouts.RemoveAt(item);
-                    positionsProperty.DeleteArrayElementAtIndex(item);
+                    musicZones.DeleteArrayElementAtIndex(item);
                 }
+
+                EditorGUILayout.BeginHorizontal();
+                if (GUILayout.Button("Add New Zone At World Center"))
+                {
+                    var e = musicZones.AddAndReturnNewArrayElement();
+                    e.FindPropertyRelative("Position").vector3Value = Vector3.zero;
+                    e.FindPropertyRelative("MaxDistance").floatValue = 15;
+                    e.FindPropertyRelative("MinDistance").floatValue = 10;
+
+                    positionsFoldout = true;
+                    foldouts.Add(true);
+                }
+
+                if (GUILayout.Button("Add New Zone At This Position"))
+                {
+                    var e = musicZones.AddAndReturnNewArrayElement();
+                    e.FindPropertyRelative("Position").vector3Value = myScript.transform.position;
+                    e.FindPropertyRelative("MaxDistance").floatValue = 15;
+                    e.FindPropertyRelative("MinDistance").floatValue = 10;
+
+                    positionsFoldout = true;
+                    foldouts.Add(true);
+                }
+                EditorGUILayout.EndHorizontal();
             }
             EditorCompatability.EndSpecialFoldoutGroup();
-
-            EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("Add New Zone At World Center"))
-            {
-                int index = positionsProperty.arraySize;
-                positionsProperty.InsertArrayElementAtIndex(index);
-                positionsProperty.GetArrayElementAtIndex(index).vector3Value = Vector3.zero;
-
-                maxDistanceProperty.InsertArrayElementAtIndex(index);
-                maxDistanceProperty.GetArrayElementAtIndex(index).floatValue = 15;
-
-                minDistanceProperty.InsertArrayElementAtIndex(index);
-                minDistanceProperty.GetArrayElementAtIndex(index).floatValue = 10;
-
-                positionsFoldout = true;
-                foldouts.Add(true);
-            }
-
-            if (GUILayout.Button("Add New Zone At This Position"))
-            {
-                int index = positionsProperty.arraySize;
-                positionsProperty.InsertArrayElementAtIndex(index);
-                positionsProperty.GetArrayElementAtIndex(index).vector3Value = myScript.transform.position;
-
-                maxDistanceProperty.InsertArrayElementAtIndex(index);
-                maxDistanceProperty.GetArrayElementAtIndex(index).floatValue = 15;
-
-                minDistanceProperty.InsertArrayElementAtIndex(index);
-                minDistanceProperty.GetArrayElementAtIndex(index).floatValue = 10;
-
-                positionsFoldout = true;
-                foldouts.Add(true);
-            }
-            EditorGUILayout.EndHorizontal();
-        }
-
-        public void CheckIfSharing()
-        {
-            if (!othersExist) return;
-            foreach (AudioMusicZone z in otherZones)
-            {
-                if (myScript.music == z.music && z != myScript)
-                {
-                    isSharing = true;
-                    return;
-                }
-            }
-            isSharing = false;
         }
 
         [MenuItem("GameObject/Audio/JSAM/Audio Music Zone", false, 1)]

@@ -257,7 +257,7 @@ namespace JSAM
             }
             else
             {
-                DebugWarning("Music Not Found!", "Cannot fade out track " + music + " because track " +
+                AudioManager.DebugWarning("Cannot fade out track " + music + " because track " +
                     "is not currently playing!");
             }
 
@@ -274,7 +274,7 @@ namespace JSAM
             }
             else
             {
-                DebugError("Music Fade Out Failed!", "Provided Music Channel Helper was null!");
+                AudioManager.DebugError("Music Fade Out Failed! Provided Music Channel Helper was null!");
             }
 
             return helper;
@@ -443,7 +443,7 @@ namespace JSAM
             }
             else
             {
-                DebugError("Ran out of Music Sources!",
+                AudioManager.DebugError("Ran out of Music Sources! " +
                     "Please enable Dynamic Source Allocation in the AudioManager's settings or " +
                     "increase the number of Music Channels created on startup. " +
                     "You might be playing too many sounds at once.");
@@ -596,20 +596,5 @@ namespace JSAM
             return newHelper;
         }
         #endregion
-
-        void DebugLog(string message)
-        {
-            Debug.Log("AudioManager: " + message);
-        }
-
-        void DebugWarning(string title, string reason)
-        {
-            Debug.LogWarning("AudioManager Warning!: " + title + "\n" + reason);
-        }
-
-        void DebugError(string title, string reason)
-        {
-            Debug.LogWarning("AudioManager Warning!: " + title + "\n" + reason);
-        }
     }
 }

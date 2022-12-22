@@ -59,7 +59,7 @@ namespace JSAM
 
             if (file == null)
             {
-                AudioManager.Instance.DebugWarning("Attempted to play a non-existent JSAM Sound File Object!");
+                AudioManager.DebugWarning("Attempted to play a non-existent JSAM Sound File Object!");
                 return AudioSource;
             }
 

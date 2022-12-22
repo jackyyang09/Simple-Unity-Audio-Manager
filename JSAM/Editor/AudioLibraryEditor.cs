@@ -109,6 +109,7 @@ namespace JSAM.JSAMEditor
                 if (GUI.Button(currentRect, blontent))
                 {
                     JSAMEditorHelper.CopyToClipboard(enumName);
+                    AudioManager.DebugLog("Copied " + enumName + " to clipboard!");
                 }
             }
 
@@ -1087,10 +1088,10 @@ namespace JSAM.JSAMEditor
                     string multiLine = string.Empty;
                     for (int i = 0; i < duplicates.Count; i++)
                     {
-                        multiLine = duplicates[i].name + "/n";
+                        multiLine = duplicates[i].name + "\n";
                     }
                     EditorUtility.DisplayDialog("Duplicate Audio Files!",
-                        "The following Audio File Objects are already present in the Audio Library! They have been skipped./n" + multiLine,
+                        "The following Audio File Objects are already present in the Audio Library! They have been skipped.\n" + multiLine,
                         "OK");
                 }
 
@@ -1145,9 +1146,9 @@ namespace JSAM.JSAMEditor
 
         public void RemoveAudioFile(BaseAudioFileObject file, bool isMusic)
         {
-            SerializedProperty array = null;
-            SerializedProperty categoriesToList = null;
-            int index = 0;
+            SerializedProperty array;
+            SerializedProperty categoriesToList;
+            int index;
 
             if (isMusic)
             {
