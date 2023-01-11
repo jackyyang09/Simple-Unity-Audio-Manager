@@ -2,7 +2,9 @@
 
 **UPDATE: JSAM is currently undergoing massive overhauls for a version 3.0 release!**
 
-**I cannot give a definite timeline for when it can release, as I'm currently beset by a full-time job and some higher priority projects. As of now the latest release is the most stable version to use, but it may run into issues in Unity 2020.3, so do so at your own risk!**
+**JSAM 3.0 is at a point that I'd call "usable". If you would like to try a bunch of new features (that may potentially be buggy), do pull directly from the repository into your project! Anything that isn't packaged and uploaded to the Release page is entirely work-in-progress and may be subject to change**
+
+**I cannot give a definite timeline for when it will be finished, as I'm currently beset by a full-time job and some higher priority projects. As of now the latest release is the most stable version to use, but it may run into issues in Unity 2020.3!**
 
 Tired of having to manage a billion AudioSources lying about? That will no longer be a reality!
 Never worry about sounds and music ever again!
