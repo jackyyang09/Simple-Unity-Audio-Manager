@@ -7,7 +7,7 @@ namespace JSAM.JSAMEditor
 {
     [CustomEditor(typeof(AudioTriggerFeedback))]
     [CanEditMultipleObjects]
-    public class AudioTriggerFeedbackEditor : BaseAudioEditor
+    public class AudioTriggerFeedbackEditor : BaseSoundEditor
     {
         AudioTriggerFeedback myScript;
 
@@ -30,7 +30,7 @@ namespace JSAM.JSAMEditor
 
             serializedObject.Update();
 
-            DrawSoundDropdown();
+            DrawAudioProperty();
             
             EditorGUILayout.PropertyField(triggersWith);
             EditorGUILayout.PropertyField(triggerEvent);

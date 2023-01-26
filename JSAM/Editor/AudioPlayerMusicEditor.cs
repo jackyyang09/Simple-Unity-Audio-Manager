@@ -7,7 +7,7 @@ namespace JSAM.JSAMEditor
 {
     [CustomEditor(typeof(AudioPlayerMusic))]
     [CanEditMultipleObjects]
-    public class AudioPlayerMusicEditor : BaseAudioMusicEditor
+    public class AudioPlayerMusicEditor : BaseMusicEditor
     {
         AudioPlayerMusic myScript;
 
@@ -48,7 +48,7 @@ namespace JSAM.JSAMEditor
 
             serializedObject.Update();
 
-            DrawMusicDropdown();
+            DrawAudioProperty();
 
             EditorGUILayout.Space();
             
@@ -61,9 +61,10 @@ namespace JSAM.JSAMEditor
             EditorGUILayout.PropertyField(onDisable);
             EditorGUILayout.PropertyField(onDestroy);
 
+            EditorGUILayout.Space();
             EditorGUILayout.LabelField("Fade Settings", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(fadeBehaviour);
-            using (new EditorGUI.DisabledGroupScope(fadeBehaviour.enumValueIndex == 0))
+            if (fadeBehaviour.enumValueIndex != 0)
             {
                 EditorGUILayout.PropertyField(fadeTime);
             }

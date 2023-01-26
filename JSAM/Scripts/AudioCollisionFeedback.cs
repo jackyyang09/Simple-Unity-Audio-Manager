@@ -5,7 +5,7 @@ using UnityEngine;
 namespace JSAM
 {
     [AddComponentMenu("AudioManager/Audio Collision Feedback")]
-    public class AudioCollisionFeedback : BaseAudioFeedback
+    public class AudioCollisionFeedback : BaseAudioFeedback<JSAMSoundFileObject>
     {
         enum CollisionEvent
         {
@@ -27,7 +27,7 @@ namespace JSAM
         {
             if (collidesWith.Contains(collision.gameObject.layer))
             {
-                AudioManager.PlaySound(sound, collision.GetContact(0).point);
+                AudioManager.PlaySound(audio, collision.GetContact(0).point);
             }
         }
 
@@ -35,7 +35,7 @@ namespace JSAM
         {
             if (collidesWith.Contains(collision.gameObject.layer))
             {
-                AudioManager.PlaySound(sound, collision.GetContact(0).point);
+                AudioManager.PlaySound(audio, collision.GetContact(0).point);
             }
         }
 

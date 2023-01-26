@@ -12,7 +12,7 @@ namespace JSAM
     }
 
     [AddComponentMenu("AudioManager/Audio Player")]
-    public class AudioPlayer : BaseAudioFeedback
+    public class AudioPlayer : BaseAudioFeedback<JSAMSoundFileObject>
     {
         [Tooltip("Behaviour to trigger when the object this is attached to is created")]
         [SerializeField]
@@ -36,7 +36,7 @@ namespace JSAM
         bool activated;
 
         JSAMSoundChannelHelper helper;
-        public JSAMSoundChannelHelper SoundHelper { get { return helper; } }
+        public JSAMSoundChannelHelper SoundHelper => helper;
 
         // Start is called before the first frame update
         protected void Start()
@@ -58,7 +58,7 @@ namespace JSAM
 
         public void Play()
         {
-            helper = AudioManager.PlaySound(sound, transform);
+            helper = AudioManager.PlaySound(audio, transform);
 
             // Ready to play again later
             activated = false;
@@ -74,7 +74,7 @@ namespace JSAM
         /// </summary>
         public void Stop()
         {
-            AudioManager.StopSoundIfPlaying(sound, transform);
+            AudioManager.StopSoundIfPlaying(audio, transform);
         }
 
         private void OnEnable()

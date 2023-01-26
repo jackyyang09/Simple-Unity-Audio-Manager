@@ -7,7 +7,7 @@ namespace JSAM.JSAMEditor
 {
     [CustomEditor(typeof(AudioCollisionFeedback))]
     [CanEditMultipleObjects]
-    public class AudioCollisionFeedbackEditor : BaseAudioEditor
+    public class AudioCollisionFeedbackEditor : BaseSoundEditor
     {
         AudioCollisionFeedback myScript;
 
@@ -30,7 +30,7 @@ namespace JSAM.JSAMEditor
 
             serializedObject.Update();
 
-            DrawSoundDropdown();
+            DrawAudioProperty();
 
             EditorGUILayout.PropertyField(collidesWithProperty);
             EditorGUILayout.PropertyField(triggerEventProperty);

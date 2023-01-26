@@ -29,7 +29,10 @@ namespace JSAM
                     instance = FindObjectOfType<AudioManager>();
                     if (instance == null)
                     {
-                        DebugError("No AudioManager found in scene " + SceneManager.GetActiveScene().name);
+                        if (!isQuitting)
+                        {
+                            DebugError("No AudioManager found in scene " + SceneManager.GetActiveScene().name);
+                        }
                     }
                 }
                 return instance;
@@ -72,7 +75,7 @@ namespace JSAM
         /// This only works if the AudioManager in the current scene has the currently 
         /// playing music registered in it's AudioLibrary
         /// </summary>
-        public static int MainMusicEnumInt
+        public static int MainMusicEnumAsInt
         {
             get
             {
@@ -96,6 +99,8 @@ namespace JSAM
                 return internalInstance;
             }
         }
+
+        static bool isQuitting;
 
         #region Events
         /// <summary>
@@ -145,11 +150,18 @@ namespace JSAM
         private void OnEnable()
         {
             SceneManager.sceneLoaded += OnSceneLoaded;
+            Application.quitting += Quitting;
         }
 
         private void OnDisable()
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
+            Application.quitting -= Quitting;
+        }
+
+        void Quitting()
+        {
+            isQuitting = true;
         }
 
         void Start()

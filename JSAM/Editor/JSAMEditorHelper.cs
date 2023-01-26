@@ -230,17 +230,24 @@ namespace JSAM.JSAMEditor
             return true;
         }
 
-        public static void RenderSmartFolderProperty(GUIContent content, SerializedProperty folderProp, bool limitToAssetFolder = true)
+        public static string RenderSmartFolderProperty(GUIContent content, string folder, bool limitToAssetFolder = true)
         {
+            string[] paths = new string[2];
             EditorGUILayout.BeginHorizontal();
-            SmartFolderField(content, folderProp, limitToAssetFolder);
-            SmartBrowseButton(folderProp, limitToAssetFolder);
+            paths[0] = SmartFolderField(content, folder, limitToAssetFolder);
+            paths[1] = SmartBrowseButton(folder, limitToAssetFolder);
             EditorGUILayout.EndHorizontal();
+            
+            for (int i = 0; i < paths.Length; i++)
+            {
+                if (paths[i] != folder) return paths[i];
+            }
+            return folder;
         }
 
-        public static void SmartFolderField(GUIContent content, SerializedProperty folderProp, bool limitToAssetsFolder = true)
+        public static string SmartFolderField(GUIContent content, string folder, bool limitToAssetsFolder = true)
         {
-            string folderPath = folderProp.stringValue;
+            string folderPath = folder;
             //if (folderPath == string.Empty) folderPath = Application.dataPath;
             bool touchedFolder = false;
             bool touchedString = false;
@@ -249,8 +256,8 @@ namespace JSAM.JSAMEditor
             if (DragAndDropRegion(rect, "", ""))
             {
                 DefaultAsset da = DragAndDrop.objectReferences[0] as DefaultAsset;
-                if (da) folderProp.stringValue = AssetDatabase.GetAssetPath(da);
-                return;
+                if (da) folder = AssetDatabase.GetAssetPath(da);
+                return folder;
             }
             if (limitToAssetsFolder) rect.width *= 2f / 3f;
             EditorGUI.BeginChangeCheck();
@@ -277,7 +284,7 @@ namespace JSAM.JSAMEditor
                 // If the user presses "cancel"
                 if (folderPath.Equals(string.Empty))
                 {
-                    return;
+                    return folder;
                 }
                 // or specifies something outside of this folder, reset filePath and don't proceed
                 else if (limitToAssetsFolder)
@@ -285,7 +292,7 @@ namespace JSAM.JSAMEditor
                     if (!folderPath.Contains("Assets"))
                     {
                         EditorUtility.DisplayDialog("Folder Browsing Error!", "Please choose a different folder inside the project's Assets folder.", "OK");
-                        return;
+                        return folder;
                     }
                     else
                     {
@@ -294,21 +301,21 @@ namespace JSAM.JSAMEditor
                     }
                 }
             }
-            folderProp.stringValue = folderPath;
+            return folderPath;
         }
 
-        public static void SmartBrowseButton(SerializedProperty folderProp, bool limitToAssetFolder = true)
+        public static string SmartBrowseButton(string folder, bool limitToAssetFolder = true)
         {
             GUIContent buttonContent = new GUIContent("Browse", "Designate a New Folder");
             if (GUILayout.Button(buttonContent, new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.MaxWidth(55) }))
             {
-                string filePath = folderProp.stringValue;
+                string filePath = folder;
                 filePath = EditorUtility.OpenFolderPanel("Specify a New Folder", filePath, string.Empty);
 
                 // If the user presses "cancel"
                 if (filePath.Equals(string.Empty))
                 {
-                    return;
+                    return folder;
                 }
                 if (limitToAssetFolder)
                 {
@@ -317,7 +324,7 @@ namespace JSAM.JSAMEditor
                     {
                         EditorUtility.DisplayDialog("Folder Browsing Error!", "AudioManager is a Unity editor tool and can only " +
                             "function inside the project's Assets folder. Please choose a different folder.", "OK");
-                        return;
+                        return folder;
                     }
                     else if (filePath.Contains(Application.dataPath))
                     {
@@ -325,9 +332,10 @@ namespace JSAM.JSAMEditor
                         filePath = filePath.Remove(0, filePath.IndexOf("Assets"));
                     }
                 }
-
-                folderProp.stringValue = filePath;
+                return filePath;
             }
+
+            return folder;
         }
 
         public static void OpenSmartSaveFileDialog<T>(string defaultName = "New Object", string startingPath = "Assets") where T : ScriptableObject

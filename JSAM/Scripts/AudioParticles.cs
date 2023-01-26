@@ -13,7 +13,7 @@ namespace JSAM
 
     [AddComponentMenu("AudioManager/Audio Particles")]
     [RequireComponent(typeof(ParticleSystem))]
-    public class AudioParticles : BaseAudioFeedback
+    public class AudioParticles : BaseAudioFeedback<JSAMSoundFileObject>
     {
         enum ParticleEvent
         {
@@ -41,10 +41,10 @@ namespace JSAM
             switch (playSoundOn)
             {
                 case ParticleEvent.ParticleEmitted:
-                    AudioManager.PlaySound(sound, transform);
+                    AudioManager.PlaySound(audio, transform);
                     break;
                 case ParticleEvent.ParticleDeath:
-                    AudioManager.PlaySound(sound, transform);
+                    AudioManager.PlaySound(audio, transform);
                     break;
             }
         }

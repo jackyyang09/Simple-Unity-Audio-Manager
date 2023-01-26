@@ -11,7 +11,7 @@ namespace JSAM.JSAMEditor
 {
     [CustomEditor(typeof(AudioMusicZone))]
     [CanEditMultipleObjects]
-    public class AudioMusicZoneEditor : BaseAudioMusicEditor
+    public class AudioMusicZoneEditor : BaseMusicEditor
     {
         AudioMusicZone myScript;
 
@@ -55,7 +55,7 @@ namespace JSAM.JSAMEditor
 
             serializedObject.Update();
 
-            DrawMusicDropdown();
+            DrawAudioProperty();
 
             EditorGUILayout.PropertyField(keepPlayingWhenAway);
 

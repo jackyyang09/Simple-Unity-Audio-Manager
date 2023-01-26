@@ -7,7 +7,7 @@ namespace JSAM.JSAMEditor
 {
     [CustomEditor(typeof(AudioPlayer))]
     [CanEditMultipleObjects]
-    public class AudioPlayerEditor : BaseAudioEditor
+    public class AudioPlayerEditor : BaseSoundEditor
     {
         AudioPlayer myScript;
 
@@ -34,7 +34,7 @@ namespace JSAM.JSAMEditor
 
             serializedObject.Update();
 
-            DrawSoundDropdown();
+            DrawAudioProperty();
 
             EditorGUILayout.Space();
 

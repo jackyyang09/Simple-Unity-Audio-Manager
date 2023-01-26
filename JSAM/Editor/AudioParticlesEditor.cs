@@ -7,7 +7,7 @@ namespace JSAM.JSAMEditor
 {
     [CustomEditor(typeof(AudioParticles))]
     [CanEditMultipleObjects]
-    public class AudioParticlesEditor : BaseAudioEditor
+    public class AudioParticlesEditor : BaseSoundEditor
     {
         AudioParticles myScript;
 
@@ -28,7 +28,7 @@ namespace JSAM.JSAMEditor
 
             serializedObject.Update();
 
-            DrawSoundDropdown();
+            DrawAudioProperty();
 
             EditorGUILayout.PropertyField(playSoundOn);
 

@@ -6,7 +6,7 @@ using JSAM;
 namespace JSAM 
 {
     [AddComponentMenu("AudioManager/Audio Trigger Feedback")]
-    public class AudioTriggerFeedback : BaseAudioFeedback
+    public class AudioTriggerFeedback : BaseAudioFeedback<JSAMSoundFileObject>
     {
         enum TriggerEvent
         {
@@ -28,7 +28,7 @@ namespace JSAM
         {
             if (triggersWith.Contains(other.gameObject.layer))
             {
-                AudioManager.PlaySound(sound, transform);
+                AudioManager.PlaySound(audio, transform);
             }
         }
 
@@ -36,7 +36,7 @@ namespace JSAM
         {
             if (triggersWith.Contains(collision.gameObject.layer))
             {
-                AudioManager.PlaySound(sound, transform);
+                AudioManager.PlaySound(audio, transform);
             }
         }
 

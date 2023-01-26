@@ -51,7 +51,7 @@ TextureImporter:
       213: 5473537116722424116
     second: chefSpriteSheetPadded_14
   externalObjects: {}
-  serializedVersion: 10
+  serializedVersion: 12
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -71,6 +71,8 @@ TextureImporter:
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -80,8 +82,8 @@ TextureImporter:
   textureSettings:
     serializedVersion: 2
     filterMode: 0
-    aniso: -1
-    mipBias: -100
+    aniso: 1
+    mipBias: 0
     wrapU: 1
     wrapV: 1
     wrapW: 1
@@ -102,9 +104,14 @@ TextureImporter:
   textureType: 8
   textureShape: 1
   singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
   maxTextureSizeSet: 0
   compressionQualitySet: 0
   textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 1
+  cookieLightType: 1
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
@@ -120,6 +127,18 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 1
   - serializedVersion: 3
     buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 1
+  - serializedVersion: 3
+    buildTarget: Server
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -458,6 +477,22 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      chefSpriteSheetPadded_11: 4879568947353093372
+      chefSpriteSheetPadded_9: -2214617133095875386
+      chefSpriteSheetPadded_12: -5354036875953503541
+      chefSpriteSheetPadded_6: -3076939291887305700
+      chefSpriteSheetPadded_1: 1529747947839878457
+      chefSpriteSheetPadded_13: 7584958609731995547
+      chefSpriteSheetPadded_4: -5054057793003010728
+      chefSpriteSheetPadded_0: 6824545053600512527
+      chefSpriteSheetPadded_10: -3905261601932530268
+      chefSpriteSheetPadded_7: -8595741178957744820
+      chefSpriteSheetPadded_3: 2304225627851375715
+      chefSpriteSheetPadded_14: 5473537116722424116
+      chefSpriteSheetPadded_2: -9018331996665172953
+      chefSpriteSheetPadded_5: 6701546128001277534
+      chefSpriteSheetPadded_8: -1488458483217620053
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace JSAM
 {
-    public abstract class BaseAudioMusicFeedback : MonoBehaviour
+    public abstract class BaseAudioMusicFeedback : BaseAudioFeedback<JSAMMusicFileObject>
     {
         [Tooltip("Play music starting from previous track's playback position, only works when Music Fade Time is greater than 0")]
         [SerializeField] protected bool keepPlaybackPosition = true;

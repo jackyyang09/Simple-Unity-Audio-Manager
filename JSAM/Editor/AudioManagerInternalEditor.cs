@@ -10,6 +10,10 @@ namespace JSAM.JSAMEditor
     {
         public override void OnInspectorGUI()
         {
+            var style = new GUIStyle(EditorStyles.label);
+            style.ApplyWordWrap();
+            style.ApplyTextAnchor(TextAnchor.MiddleCenter);
+            EditorGUILayout.LabelField("Don't touch me! AudioManager needs me!", style);
         }
     }
 }
