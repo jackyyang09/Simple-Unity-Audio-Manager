@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace JSAM
+namespace JSAM.Example.FirstPerson3D
 {
     /// <summary>
     /// A lot of code by this cool dude:

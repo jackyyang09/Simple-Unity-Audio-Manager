@@ -27,10 +27,10 @@ namespace JSAM
         /// Note: If loop points have been embedded into the .wav AudioClip, loop points will be respected</summary>
         Looping,
         /// <summary> Audio will play to the loop end point and loop back between loop points indefinitely. 
-        /// Only compatible with <see cref="JSAMMusicFileObject"/>s</summary>
+        /// Only compatible with <see cref="MusicFileObject"/>s</summary>
         LoopWithLoopPoints,
         /// <summary> Audio will be clamped between loop points
-        /// Only compatible with <see cref="JSAMMusicFileObject"/>s</summary>
+        /// Only compatible with <see cref="MusicFileObject"/>s</summary>
         ClampedLoopPoints
     }
 
@@ -198,6 +198,9 @@ namespace JSAM
 
         [Tooltip("If true, will ignore the \"Time Scaled Sounds\" parameter in AudioManager and will keep playing the sound even when the Time Scale is set to 0")]
         public bool ignoreTimeScale = false;
+
+        [Tooltip("The inclusive maximum number of playing instances this Audio File can take up at once. Helpful for things like gun shots where you can easily fire off 50 of the same Audio File in 1 frame. Leave at 0 if that is what you want.")]
+        public uint maxPlayingInstances = 10;
 
         [Tooltip("If this property is null, audio will play through the mixer group specified in the AudioManager settings.")]
         public UnityEngine.Audio.AudioMixerGroup mixerGroupOverride = null;

@@ -7,7 +7,7 @@ using ATL.AudioData;
 
 namespace JSAM.JSAMEditor
 {
-    [CustomEditor(typeof(JSAMMusicFileObject))]
+    [CustomEditor(typeof(MusicFileObject))]
     [CanEditMultipleObjects]
     public class MusicFileObjectEditor : BaseAudioFileObjectEditor<MusicFileObjectEditor>
     {
@@ -29,7 +29,7 @@ namespace JSAM.JSAMEditor
             }
         }
 
-        JSAMMusicFileObject myScript;
+        MusicFileObject myScript;
 
         Color COLOR_BUTTONPRESSED = new Color(0.475f, 0.475f, 0.475f);
 
@@ -53,7 +53,7 @@ namespace JSAM.JSAMEditor
         new protected void OnEnable()
         {
             base.OnEnable();
-            myScript = target as JSAMMusicFileObject;
+            myScript = target as MusicFileObject;
 
             SetupIcons();
             EditorApplication.update += Update;
@@ -85,7 +85,7 @@ namespace JSAM.JSAMEditor
         {
             presetDescription.stringValue = input[1];
             serializedObject.ApplyModifiedProperties();
-            Preset newPreset = new Preset(asset as JSAMMusicFileObject);
+            Preset newPreset = new Preset(asset as MusicFileObject);
 #if UNITY_2020_OR_NEWER
             newPreset.excludedProperties = new string[] {
                 "useLibrary", "category"
@@ -435,7 +435,7 @@ namespace JSAM.JSAMEditor
 
         void Update()
         {
-            JSAMMusicFileObject myScript = (JSAMMusicFileObject)target;
+            MusicFileObject myScript = (MusicFileObject)target;
             if (myScript == null) return;
             if (asset.Files.Count == 0) return;
             AudioClip music = myScript.Files[0];
@@ -541,7 +541,7 @@ namespace JSAM.JSAMEditor
             AudioPlaybackToolEditor.DoForceRepaint(true);
         }
 
-        public static void DrawPropertyOverlay(JSAMMusicFileObject music, int width, int height)
+        public static void DrawPropertyOverlay(MusicFileObject music, int width, int height)
         {
             if (Event.current.type != EventType.Repaint) return;
 

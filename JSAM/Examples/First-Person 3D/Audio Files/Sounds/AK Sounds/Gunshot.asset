@@ -31,6 +31,7 @@ MonoBehaviour:
   loopMode: 0
   delay: 0
   ignoreTimeScale: 0
+  maxPlayingInstances: 10
   mixerGroupOverride: {fileID: 0}
   fadeInOut: 0
   fadeInDuration: 0.15999997
@@ -82,4 +83,4 @@ MonoBehaviour:
     diffusion: 100
     density: 100
   neverRepeat: 1
-  lastClipIndex: 2
+  lastClipIndex: 3

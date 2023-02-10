@@ -5,11 +5,11 @@ using UnityEditor;
 
 namespace JSAM.JSAMEditor
 {
-    [CustomEditor(typeof(AudioPlayerMusic))]
+    [CustomEditor(typeof(MusicPlayer))]
     [CanEditMultipleObjects]
-    public class AudioPlayerMusicEditor : BaseMusicEditor
+    public class MusicPlayerEditor : BaseMusicEditor
     {
-        AudioPlayerMusic myScript;
+        MusicPlayer myScript;
 
         SerializedProperty keepPlaybackPosition;
         SerializedProperty restartOnReplay;
@@ -28,7 +28,7 @@ namespace JSAM.JSAMEditor
         {
             base.Setup();
 
-            myScript = (AudioPlayerMusic)target;
+            myScript = (MusicPlayer)target;
 
             keepPlaybackPosition = serializedObject.FindProperty("keepPlaybackPosition");
             restartOnReplay = serializedObject.FindProperty("restartOnReplay");
@@ -114,7 +114,7 @@ namespace JSAM.JSAMEditor
         public static void AddAudioPlayerMusic()
         {
             GameObject newPlayer = new GameObject("Audio Player Music");
-            newPlayer.AddComponent<AudioPlayerMusic>();
+            newPlayer.AddComponent<MusicPlayer>();
             if (Selection.activeTransform != null)
             {
                 newPlayer.transform.parent = Selection.activeTransform;

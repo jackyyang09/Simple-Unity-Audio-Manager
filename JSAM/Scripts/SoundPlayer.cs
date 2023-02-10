@@ -11,8 +11,8 @@ namespace JSAM
         Stop
     }
 
-    [AddComponentMenu("AudioManager/Audio Player")]
-    public class AudioPlayer : BaseAudioFeedback<JSAMSoundFileObject>
+    [AddComponentMenu("AudioManager/Sound Player")]
+    public class SoundPlayer : BaseAudioFeedback<SoundFileObject>
     {
         [Tooltip("Behaviour to trigger when the object this is attached to is created")]
         [SerializeField]
@@ -35,8 +35,8 @@ namespace JSAM
         /// </summary>
         bool activated;
 
-        JSAMSoundChannelHelper helper;
-        public JSAMSoundChannelHelper SoundHelper => helper;
+        SoundChannelHelper helper;
+        public SoundChannelHelper SoundHelper => helper;
 
         // Start is called before the first frame update
         protected void Start()

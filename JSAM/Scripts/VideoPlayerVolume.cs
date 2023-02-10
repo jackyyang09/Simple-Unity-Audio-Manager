@@ -12,13 +12,19 @@ namespace JSAM
         [SerializeField] [Range(0, 1)] float relativeVolume = 1;
         [SerializeField] VideoPlayer videoPlayer;
 
-        JSAMSoundChannelHelper soundHelper;
-        JSAMMusicChannelHelper musicHelper;
+        SoundChannelHelper soundHelper;
+        MusicChannelHelper musicHelper;
 
+#if UNITY_EDITOR
         private void OnValidate()
         {
             if (!videoPlayer) videoPlayer = GetComponent<VideoPlayer>();
+            if (Application.isPlaying)
+            {
+                UpdateVolume(relativeVolume);
+            }
         }
+#endif
 
         private void OnEnable()
         {

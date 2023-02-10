@@ -22,7 +22,6 @@ namespace JSAM.JSAMEditor
         static bool showHowTo;
 
         SerializedProperty listener;
-        SerializedProperty sourcePrefab;
 
         SerializedProperty library;
         SerializedProperty settings;
@@ -55,9 +54,6 @@ namespace JSAM.JSAMEditor
 
             listener = serializedObject.FindProperty("listener");
             excludedProperties.Add("listener");
-
-            sourcePrefab = serializedObject.FindProperty("sourcePrefab");
-            excludedProperties.Add("sourcePrefab");
 
             library = serializedObject.FindProperty("library");
             settings = serializedObject.FindProperty("settings");
@@ -148,66 +144,6 @@ namespace JSAM.JSAMEditor
                 EditorGUILayout.PropertyField(listener);
             }
 
-            #region Source Prefab Helper
-            if (!myScript.SourcePrefabExists())
-            {
-                EditorGUILayout.PropertyField(sourcePrefab);
-
-                EditorGUILayout.HelpBox("Reference to Source Prefab is missing! This prefab is required to make " +
-                        "AudioManager function. Click the button below to have AudioManager reapply the default reference.", MessageType.Warning);
-                GUILayout.BeginHorizontal();
-                GUILayout.FlexibleSpace();
-                if (GUILayout.Button("Reapply Default AudioSource Prefab"))
-                {
-                    string[] GUIDs = AssetDatabase.FindAssets("Audio Channel t:GameObject");
-
-                    GameObject fallback = null;
-
-                    foreach (string s in GUIDs)
-                    {
-                        GameObject theObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(s), typeof(GameObject)) as GameObject;
-                        if (theObject.GetComponent<AudioSource>())
-                        {
-                            fallback = theObject;
-                            break;
-                        }
-                    }
-                    if (fallback != null) // Check has succeeded in finding the default reference
-                    {
-                        sourcePrefab.objectReferenceValue = fallback;
-                    }
-                    else // Check has failed to turn up results
-                    {
-                        GameObject newPrefab = new GameObject("Audio Channel");
-                        AudioSource theSource = newPrefab.AddComponent<AudioSource>();
-                        theSource.rolloffMode = AudioRolloffMode.Logarithmic;
-                        theSource.minDistance = 0.5f;
-                        theSource.maxDistance = 7;
-
-                        // Look for AudioManager so we can put the new prefab next to it
-                        string assetPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("Audio Manager t:GameObject")[0]);
-                        assetPath = assetPath.Substring(0, assetPath.LastIndexOf("/") + 1);
-                        assetPath += "Audio Channel.prefab";
-                        bool success = false;
-                        PrefabUtility.SaveAsPrefabAsset(newPrefab, assetPath, out success);
-                        if (success)
-                        {
-                            sourcePrefab.objectReferenceValue = newPrefab;
-                            EditorUtility.DisplayDialog("Success", "AudioManager's default source prefab was missing. So a new one was recreated in it's place. " +
-                                "If AudioManager doesn't immediately update with the Audio Source prefab in place, click the button again or recompile your code.", "OK");
-                        }
-                        DestroyImmediate(newPrefab);
-                    }
-                }
-                GUILayout.FlexibleSpace();
-                GUILayout.EndHorizontal();
-            }
-            else if (myScript.SourcePrefabExists()/* && showAdvancedSettings*/)
-            {
-                EditorGUILayout.PropertyField(sourcePrefab);
-            }
-            #endregion
-
             EditorGUILayout.Space();
 
             if (serializedObject.hasModifiedProperties)
@@ -236,7 +172,7 @@ namespace JSAM.JSAMEditor
                     "than what's shown on the Unity Asset Store, so give it a look just in case!"
                     );
                 JSAMEditorHelper.RenderHelpbox(
-                    "Here are some helpful links, more of which can be found under/nWindows -> JSAM -> JSAM Startup"
+                    "Here are some helpful links, more of which can be found under\nWindows -> JSAM -> JSAM Startup"
                     );
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();

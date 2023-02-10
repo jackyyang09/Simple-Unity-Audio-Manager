@@ -18,8 +18,8 @@ namespace JSAM
         public List<string> soundCategories = new List<string>();
         public List<string> musicCategories = new List<string>();
 
-        public List<JSAMSoundFileObject> Sounds = new List<JSAMSoundFileObject>();
-        public List<JSAMMusicFileObject> Music = new List<JSAMMusicFileObject>();
+        public List<SoundFileObject> Sounds = new List<SoundFileObject>();
+        public List<MusicFileObject> Music = new List<MusicFileObject>();
 
         [Tooltip("Allows you to customize the enum and namespace names for your generated audio. For advanced users.")]
         public bool useCustomNames = false;

@@ -5,7 +5,7 @@ using UnityEngine;
 namespace JSAM
 {
     [AddComponentMenu("")]
-    public class JSAMMusicChannelHelper : BaseAudioChannelHelper<JSAMMusicFileObject>
+    public class MusicChannelHelper : BaseAudioChannelHelper<MusicFileObject>
     {
         protected override float Volume
         {
@@ -32,9 +32,17 @@ namespace JSAM
             base.OnDisable();
 
             AudioManager.OnMusicVolumeChanged -= OnUpdateVolume;
+
+            if (audioFile)
+            {
+                if (audioFile.maxPlayingInstances > 0)
+                {
+                    AudioManager.InternalInstance.RemovePlayingMusic(audioFile, this);
+                }
+            }
         }
 
-        public override AudioSource Play(JSAMMusicFileObject file)
+        public override AudioSource Play(MusicFileObject file)
         {
             ClearProperties();
 
@@ -93,7 +101,7 @@ namespace JSAM
         }
 
 #if UNITY_EDITOR
-        public void PlayDebug(JSAMMusicFileObject file, bool dontReset)
+        public void PlayDebug(MusicFileObject file, bool dontReset)
         {
             if (!dontReset)
             {

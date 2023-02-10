@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace JSAM
+namespace JSAM.Example.FirstPerson3D
 {
     public enum MovementStates
     {
@@ -14,36 +14,24 @@ namespace JSAM
     public class FPSWalker : MonoBehaviour
     {
         [Header("Explore me for examples of sound looping!")]
-        [SerializeField]
-        float moveSpeed = 5;
 
-        [SerializeField]
-        float runSpeedMultiplier = 3;
-        [SerializeField]
-        float crouchSpeedMultiplier = 0.75f;
+        [SerializeField] float moveSpeed = 5;
 
-        [SerializeField]
-        Vector3 gravity = new Vector3(0, -9.81f, 0);
+        [SerializeField] float runSpeedMultiplier = 3;
+        [SerializeField] float crouchSpeedMultiplier = 0.75f;
 
-        [SerializeField]
-        MovementStates moveState;
+        [SerializeField] Vector3 gravity = new Vector3(0, -9.81f, 0);
 
-        [SerializeField]
-        bool crouching;
+        [SerializeField] MovementStates moveState;
+
+        [SerializeField] bool crouching;
         bool canToggleCrouch = true;
 
-        CharacterController controller;
+        [SerializeField] CharacterController controller;
 
-        [SerializeField]
-        Transform stand = null;
+        [SerializeField] Transform stand;
 
-        FPSAnimator animator = null;
-
-        void Awake()
-        {
-            controller = GetComponent<CharacterController>();
-            animator = GetComponentInChildren<FPSAnimator>();
-        }
+        [SerializeField] FPSAnimator animator;
 
         // Update is called once per frame
         void Update()

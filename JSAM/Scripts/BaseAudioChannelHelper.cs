@@ -65,14 +65,25 @@ namespace JSAM
 
             if (audioFile)
             {
+                AudioManager.OnMasterVolumeChanged += OnUpdateVolume;
+
                 if (audioFile.spatialize)
                 {
-                    AudioManagerInternal.OnSpatializeUpdate += OnSpatializeUpdate;
-                    AudioManagerInternal.OnSpatializeFixedUpdate += OnSpatializeFixedUpdate;
-                    AudioManagerInternal.OnSpatializeLateUpdate += OnSpatializeLateUpdate;
+                    switch (AudioManager.Instance.Settings.SpatializationMode)
+                    {
+                        case AudioManagerSettings.SpatializeUpdateMode.Default:
+                            AudioManagerInternal.OnSpatializeUpdate += OnSpatializeUpdate;
+                            break;
+                        case AudioManagerSettings.SpatializeUpdateMode.FixedUpdate:
+                            AudioManagerInternal.OnSpatializeFixedUpdate += OnSpatializeFixedUpdate;
+                            break;
+                        case AudioManagerSettings.SpatializeUpdateMode.LateUpdate:
+                            AudioManagerInternal.OnSpatializeLateUpdate += OnSpatializeLateUpdate;
+                            break;
+                        case AudioManagerSettings.SpatializeUpdateMode.Parented:
+                            break;
+                    }
                 }
-
-                AudioManager.OnMasterVolumeChanged += OnUpdateVolume;
             }
         }
 
@@ -87,9 +98,20 @@ namespace JSAM
             {
                 if (audioFile.spatialize)
                 {
-                    AudioManagerInternal.OnSpatializeUpdate -= OnSpatializeUpdate;
-                    AudioManagerInternal.OnSpatializeFixedUpdate -= OnSpatializeFixedUpdate;
-                    AudioManagerInternal.OnSpatializeLateUpdate -= OnSpatializeLateUpdate;
+                    switch (AudioManager.Instance.Settings.SpatializationMode)
+                    {
+                        case AudioManagerSettings.SpatializeUpdateMode.Default:
+                            AudioManagerInternal.OnSpatializeUpdate -= OnSpatializeUpdate;
+                            break;
+                        case AudioManagerSettings.SpatializeUpdateMode.FixedUpdate:
+                            AudioManagerInternal.OnSpatializeFixedUpdate -= OnSpatializeFixedUpdate;
+                            break;
+                        case AudioManagerSettings.SpatializeUpdateMode.LateUpdate:
+                            AudioManagerInternal.OnSpatializeLateUpdate -= OnSpatializeLateUpdate;
+                            break;
+                        case AudioManagerSettings.SpatializeUpdateMode.Parented:
+                            break;
+                    }
                 }
 
                 AudioManager.OnMasterVolumeChanged -= OnUpdateVolume;
@@ -269,13 +291,7 @@ namespace JSAM
             switch (AudioManager.Instance.Settings.SpatializationMode)
             {
                 case AudioManagerSettings.SpatializeUpdateMode.Default:
-                    transform.SetParent(originalParent);
-                    SpatializationTarget = target;
-                    break;
                 case AudioManagerSettings.SpatializeUpdateMode.FixedUpdate:
-                    transform.SetParent(originalParent);
-                    SpatializationTarget = target;
-                    break;
                 case AudioManagerSettings.SpatializeUpdateMode.LateUpdate:
                     transform.SetParent(originalParent);
                     SpatializationTarget = target;
@@ -293,6 +309,7 @@ namespace JSAM
             if (!audioFile.spatialize) return;
             if (!AudioManager.Instance.Settings.Spatialize) return;
 
+            SpatializationTarget = null;
             SpatializationPosition = position;
             transform.position = position;
         }

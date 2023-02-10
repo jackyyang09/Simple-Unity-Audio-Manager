@@ -1049,7 +1049,7 @@ namespace JSAM.JSAMEditor
                     for (int i = 0; i < DragAndDrop.objectReferences.Length; i++)
                     {
                         string filePath = AssetDatabase.GetAssetPath(DragAndDrop.objectReferences[i]);
-                        var mimport = JSAMEditorHelper.ImportAssetsOrFoldersAtPath<JSAMMusicFileObject>(filePath);
+                        var mimport = JSAMEditorHelper.ImportAssetsOrFoldersAtPath<MusicFileObject>(filePath);
 
                         for (int j = 0; j < mimport.Count; j++)
                         {
@@ -1068,7 +1068,7 @@ namespace JSAM.JSAMEditor
                     for (int i = 0; i < DragAndDrop.objectReferences.Length; i++)
                     {
                         string filePath = AssetDatabase.GetAssetPath(DragAndDrop.objectReferences[i]);
-                        var simport = JSAMEditorHelper.ImportAssetsOrFoldersAtPath<JSAMSoundFileObject>(filePath);
+                        var simport = JSAMEditorHelper.ImportAssetsOrFoldersAtPath<SoundFileObject>(filePath);
 
                         for (int j = 0; j < simport.Count; j++)
                         {
@@ -1100,14 +1100,14 @@ namespace JSAM.JSAMEditor
             }
         }
 
-        void AddSoundFile(JSAMSoundFileObject newSound, string category)
+        void AddSoundFile(SoundFileObject newSound, string category)
         {
             sounds.AddAndReturnNewArrayElement().objectReferenceValue = newSound;
             categoryToSoundStructs[category].FindPropertyRelative("files").AddAndReturnNewArrayElement().objectReferenceValue = newSound;
             serializedObject.ApplyModifiedProperties();
         }
 
-        void AddMusicFile(JSAMMusicFileObject newMusic, string category)
+        void AddMusicFile(MusicFileObject newMusic, string category)
         {
             music.AddAndReturnNewArrayElement().objectReferenceValue = newMusic;
             categoryToMusicStructs[category].FindPropertyRelative("files").AddAndReturnNewArrayElement().objectReferenceValue = newMusic;
@@ -1154,13 +1154,13 @@ namespace JSAM.JSAMEditor
             {
                 array = music;
                 categoriesToList = musicCategoriesToList;
-                index = asset.Music.IndexOf(file as JSAMMusicFileObject);
+                index = asset.Music.IndexOf(file as MusicFileObject);
             }
             else
             {
                 array = sounds;
                 categoriesToList = soundCategoriesToList;
-                index = asset.Sounds.IndexOf(file as JSAMSoundFileObject);
+                index = asset.Sounds.IndexOf(file as SoundFileObject);
             }
 
             array.GetArrayElementAtIndex(index).objectReferenceValue = null;
@@ -1587,7 +1587,7 @@ namespace JSAM.JSAMEditor
         public bool GenerateEnumFile(string filePath)
         {
             // Evaluate potential enum names before writing to file
-            List<JSAMSoundFileObject> soundLibrary = asset.Sounds;
+            List<SoundFileObject> soundLibrary = asset.Sounds;
 
             List<string> soundNames = new List<string>();
             for (int i = 0; i < soundLibrary.Count; i++)
@@ -1608,7 +1608,7 @@ namespace JSAM.JSAMEditor
                 }
             }
 
-            List<JSAMMusicFileObject> musicLibrary = asset.Music;
+            List<MusicFileObject> musicLibrary = asset.Music;
 
             List<string> musicNames = new List<string>();
             for (int i = 0; i < musicLibrary.Count; i++)

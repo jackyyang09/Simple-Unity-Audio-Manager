@@ -193,7 +193,7 @@ namespace JSAM.JSAMEditor
             EditorGUILayout.LabelField(new GUIContent("Preset Description"), blontent, skin, new GUILayoutOption[] { GUILayout.ExpandWidth(true) });
             EditorGUILayout.EndHorizontal();
 
-            JSAMEditorHelper.RenderSmartFolderProperty(new GUIContent("Output Folder"), outputFolder);
+            outputFolder = JSAMEditorHelper.RenderSmartFolderProperty(new GUIContent("Output Folder"), outputFolder);
 
             blontent = new GUIContent("Generate Audio File Objects", 
                 "Create audio file objects with the provided Audio Clips according to the selected preset. " +
@@ -208,11 +208,11 @@ namespace JSAM.JSAMEditor
                 {
                     if (fileType == AudioFileType.Music)
                     {
-                        GenerateAudioFileObjects<JSAMMusicFileObject>(selectedPreset);
+                        GenerateAudioFileObjects<MusicFileObject>(selectedPreset);
                     }
                     else
                     {
-                        GenerateAudioFileObjects<JSAMSoundFileObject>(selectedPreset);
+                        GenerateAudioFileObjects<SoundFileObject>(selectedPreset);
                     }
                 }
             }
@@ -232,8 +232,8 @@ namespace JSAM.JSAMEditor
 
             for (int i = 0; i < presets.Count; i++)
             {
-                var testMusic = CreateInstance<JSAMMusicFileObject>();
-                var testSound = CreateInstance<JSAMSoundFileObject>();
+                var testMusic = CreateInstance<MusicFileObject>();
+                var testSound = CreateInstance<SoundFileObject>();
 
                 if (presets[i].CanBeAppliedTo(testMusic))
                 {

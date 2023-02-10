@@ -13,7 +13,7 @@ namespace JSAM
 
     [AddComponentMenu("AudioManager/Audio Particles")]
     [RequireComponent(typeof(ParticleSystem))]
-    public class AudioParticles : BaseAudioFeedback<JSAMSoundFileObject>
+    public class AudioParticles : BaseAudioFeedback<SoundFileObject>
     {
         enum ParticleEvent
         {

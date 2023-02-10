@@ -5,11 +5,11 @@ using UnityEditor;
 
 namespace JSAM.JSAMEditor
 {
-    [CustomEditor(typeof(AudioPlayer))]
+    [CustomEditor(typeof(SoundPlayer))]
     [CanEditMultipleObjects]
-    public class AudioPlayerEditor : BaseSoundEditor
+    public class SoundPlayerEditor : BaseSoundEditor
     {
-        AudioPlayer myScript;
+        SoundPlayer myScript;
 
         SerializedProperty onStart;
         SerializedProperty onEnable;
@@ -20,7 +20,7 @@ namespace JSAM.JSAMEditor
         {
             base.Setup();
 
-            myScript = (AudioPlayer)target;
+            myScript = (SoundPlayer)target;
 
             onStart = serializedObject.FindProperty("onStart");
             onEnable = serializedObject.FindProperty("onEnable");
@@ -90,7 +90,7 @@ namespace JSAM.JSAMEditor
         public static void AddAudioPlayer()
         {
             GameObject newPlayer = new GameObject("Audio Player");
-            newPlayer.AddComponent<AudioPlayer>();
+            newPlayer.AddComponent<SoundPlayer>();
             if (Selection.activeTransform != null)
             {
                 newPlayer.transform.parent = Selection.activeTransform;

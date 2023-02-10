@@ -6,7 +6,7 @@ namespace JSAM
 {
     [AddComponentMenu("")]
     [DefaultExecutionOrder(2)]
-    public class JSAMSoundChannelHelper : BaseAudioChannelHelper<JSAMSoundFileObject>
+    public class SoundChannelHelper : BaseAudioChannelHelper<SoundFileObject>
     {
         protected override float Volume 
         {
@@ -34,6 +34,14 @@ namespace JSAM
         {
             base.OnDisable();
             AudioManager.OnSoundVolumeChanged -= OnUpdateVolume;
+
+            if (audioFile)
+            {
+                if (audioFile.maxPlayingInstances > 0)
+                {
+                    AudioManager.InternalInstance.RemovePlayingSound(audioFile, this);
+                }
+            }
         }
 
         protected override void Update()
@@ -44,7 +52,7 @@ namespace JSAM
                 if (prevPlaybackTime > AudioSource.time)
                 {
                     AssignNewAudioClip();
-                    AudioSource.pitch = JSAMSoundFileObject.GetRandomPitch(audioFile);
+                    AudioSource.pitch = SoundFileObject.GetRandomPitch(audioFile);
                     AudioSource.Play();
                 }
                 prevPlaybackTime = AudioSource.time;
@@ -53,7 +61,7 @@ namespace JSAM
             base.Update();
         }
 
-        public override AudioSource Play(JSAMSoundFileObject file)
+        public override AudioSource Play(SoundFileObject file)
         {
             ClearProperties();
 
@@ -65,7 +73,7 @@ namespace JSAM
 
             audioFile = file;
 
-            AudioSource.pitch = JSAMSoundFileObject.GetRandomPitch(file);
+            AudioSource.pitch = SoundFileObject.GetRandomPitch(file);
             OnUpdateVolume(AudioManager.SoundVolume);
 
             switch (file.loopMode)
@@ -90,14 +98,14 @@ namespace JSAM
         }
 
 #if UNITY_EDITOR
-        public void PlayDebug(JSAMSoundFileObject file, bool dontReset)
+        public void PlayDebug(SoundFileObject file, bool dontReset)
         {
             if (!dontReset)
             {
                 AudioSource.Stop();
             }
             AudioSource.timeSamples = (int)Mathf.Clamp((float)AudioSource.timeSamples, 0, (float)AudioSource.clip.samples - 1);
-            AudioSource.pitch = JSAMSoundFileObject.GetRandomPitch(file);
+            AudioSource.pitch = SoundFileObject.GetRandomPitch(file);
 
             audioFile = file;
 

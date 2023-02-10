@@ -5,7 +5,7 @@ using UnityEngine;
 namespace JSAM
 {
     [AddComponentMenu("AudioManager/Audio Collision Feedback")]
-    public class AudioCollisionFeedback : BaseAudioFeedback<JSAMSoundFileObject>
+    public class AudioCollisionFeedback : BaseAudioFeedback<SoundFileObject>
     {
         enum CollisionEvent
         {
@@ -16,7 +16,7 @@ namespace JSAM
 
         [Header("Collision Settings")]
         [SerializeField]
-        [Tooltip("Will only play sound on collision with another object these layers")]
+        [Tooltip("Will only play sound on collision with another object on these layers")]
         LayerMask collidesWith = 0;
 
         [SerializeField]

@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace JSAM
 {
-    [AddComponentMenu("AudioManager/Audio Player Music")]
-    public class AudioPlayerMusic : BaseAudioMusicFeedback
+    [AddComponentMenu("AudioManager/Music Player")]
+    public class MusicPlayer : BaseAudioMusicFeedback
     {
         public enum FadeBehaviour
         {
@@ -38,8 +38,8 @@ namespace JSAM
         [Tooltip("Total time of the fade process")]
         [SerializeField] float fadeTime;
 
-        JSAMMusicChannelHelper helper;
-        public JSAMMusicChannelHelper MusicHelper { get { return helper; } }
+        MusicChannelHelper helper;
+        public MusicChannelHelper MusicHelper { get { return helper; } }
 
         Coroutine playRoutine;
 
@@ -59,7 +59,7 @@ namespace JSAM
 
         public void Play()
         {
-            if (AudioManager.IsMusicPlaying(music) && !restartOnReplay) return;
+            if (AudioManager.IsMusicPlaying(audio) && !restartOnReplay) return;
 
             if (keepPlaybackPosition)
             {
@@ -68,19 +68,19 @@ namespace JSAM
                     if (AudioManager.MainMusicHelper.AudioSource.isPlaying)
                     {
                         float time = AudioManager.MainMusicHelper.AudioSource.time;
-                        helper = AudioManager.PlayMusic(music, transform);
+                        helper = AudioManager.PlayMusic(audio, transform);
                         helper.AudioSource.time = time;
                     }
                     else
                     {
-                        helper = AudioManager.PlayMusic(music, transform);
+                        helper = AudioManager.PlayMusic(audio, transform);
                     }
                 }
             }
             else
             {
-                AudioManager.StopMusicIfPlaying(music, transform);
-                helper = AudioManager.PlayMusic(music, transform);
+                AudioManager.StopMusicIfPlaying(audio, transform);
+                helper = AudioManager.PlayMusic(audio, transform);
             }
         }
 
@@ -92,7 +92,7 @@ namespace JSAM
                     Play();
                     break;
                 case FadeBehaviour.AdditiveFadeIn:
-                    helper = AudioManager.FadeMusicIn(music, fadeTime);
+                    helper = AudioManager.FadeMusicIn(audio, fadeTime);
                     break;
                 case FadeBehaviour.CrossFadeIn:
                     if (!AudioManager.MainMusicHelper.IsFree)
@@ -114,7 +114,7 @@ namespace JSAM
 
         public void Stop()
         {
-            AudioManager.StopMusic(music, transform, true);
+            AudioManager.StopMusic(audio, transform, true);
             helper = null;
         }
 

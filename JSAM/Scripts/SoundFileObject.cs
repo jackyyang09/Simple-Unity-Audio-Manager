@@ -3,14 +3,24 @@ using UnityEngine;
 
 namespace JSAM
 {
-    [CreateAssetMenu(fileName = "New Audio File", menuName = "AudioManager/New Audio File Object", order = 1)]
-    public class JSAMSoundFileObject : BaseAudioFileObject
+    [CreateAssetMenu(fileName = "New Sound File Object", menuName = "AudioManager/Sound File Object", order = 1)]
+    public class SoundFileObject : BaseAudioFileObject
     {
+        public void Play(Transform transform = null, SoundChannelHelper helper = null)
+        {
+            AudioManager.InternalInstance.PlaySoundInternal(this, transform, helper);
+        }
+
+        public void Play(Vector3 position, SoundChannelHelper helper = null)
+        {
+            AudioManager.InternalInstance.PlaySoundInternal(this, position, helper);
+        }
+
         /// <summary>
         /// Given an AudioFileSoundObject, returns a pitch with a modified pitch depending on the Audio File Object's settings
         /// </summary>
         /// <param name="audioFile"></param>
-        public static float GetRandomPitch(JSAMSoundFileObject audioFile)
+        public static float GetRandomPitch(SoundFileObject audioFile)
         {
             float pitch = audioFile.pitchShift;
             float newPitch = audioFile.startingPitch;

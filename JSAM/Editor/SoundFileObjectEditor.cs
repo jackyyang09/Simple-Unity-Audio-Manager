@@ -75,13 +75,13 @@ namespace JSAM.JSAMEditor
             }
         }
 
-        public void StartFading(AudioClip audioClip, JSAMSoundFileObject newAsset)
+        public void StartFading(AudioClip audioClip, SoundFileObject newAsset)
         {
             PlayingClip = audioClip;
             if (newAsset != null) asset = newAsset;
 
             AudioPlaybackToolEditor.helperSource.clip = PlayingClip;
-            AudioPlaybackToolEditor.soundHelper.PlayDebug((JSAMSoundFileObject)asset, false);
+            AudioPlaybackToolEditor.soundHelper.PlayDebug((SoundFileObject)asset, false);
 
             fadeInTime = asset.fadeInDuration * AudioPlaybackToolEditor.helperSource.clip.length;
             fadeOutTime = asset.fadeOutDuration * AudioPlaybackToolEditor.helperSource.clip.length;
@@ -91,7 +91,7 @@ namespace JSAM.JSAMEditor
         }
     }
 
-    [CustomEditor(typeof(JSAMSoundFileObject))]
+    [CustomEditor(typeof(SoundFileObject))]
     [CanEditMultipleObjects]
     public class SoundFileObjectEditor : BaseAudioFileObjectEditor<SoundFileObjectEditor>
     {
@@ -199,7 +199,7 @@ namespace JSAM.JSAMEditor
         {
             presetDescription.stringValue = input[1];
             serializedObject.ApplyModifiedProperties();
-            Preset newPreset = new Preset(asset as JSAMSoundFileObject);
+            Preset newPreset = new Preset(asset as SoundFileObject);
 #if UNITY_2020_OR_NEWER
             newPreset.excludedProperties = new string[] {
                 "files", "UsingLibrary", "category"
@@ -266,7 +266,7 @@ namespace JSAM.JSAMEditor
 
             if (!isPreset) DrawPlaybackTool();
 
-            DrawLoopPointTools(target as JSAMSoundFileObject);
+            DrawLoopPointTools(target as SoundFileObject);
 
             #region Fade Tools
             EditorGUILayout.PropertyField(fadeInOut);
@@ -369,7 +369,7 @@ namespace JSAM.JSAMEditor
                         {
                             if (playingClip != null)
                             {
-                                editorFader.StartFading(playingClip, asset as JSAMSoundFileObject);
+                                editorFader.StartFading(playingClip, asset as SoundFileObject);
                             }
                         }
                         AudioPlaybackToolEditor.helperSource.time = 0;
@@ -382,7 +382,7 @@ namespace JSAM.JSAMEditor
                         {
                             DesignateRandomAudioClip();
                             AudioPlaybackToolEditor.helperSource.Stop();
-                            editorFader.StartFading(playingClip, asset as JSAMSoundFileObject);
+                            editorFader.StartFading(playingClip, asset as SoundFileObject);
                         }
                     }
 
@@ -557,7 +557,7 @@ namespace JSAM.JSAMEditor
             return true;
         }
 
-        public static void DrawPropertyOverlay(JSAMSoundFileObject sound, int width, int height)
+        public static void DrawPropertyOverlay(SoundFileObject sound, int width, int height)
         {
             if (Event.current.type != EventType.Repaint) return;
 

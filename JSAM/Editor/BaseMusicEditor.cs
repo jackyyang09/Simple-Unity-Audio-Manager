@@ -5,10 +5,10 @@ using UnityEditor;
 
 namespace JSAM.JSAMEditor
 {
-    public abstract class BaseMusicEditor : BaseAudioEditor<JSAMMusicFileObject>
+    public abstract class BaseMusicEditor : BaseAudioEditor<MusicFileObject>
     {
         protected override GUIContent audioDesc => new GUIContent("Music", "Sound that will be played");
-        protected override List<JSAMMusicFileObject> audioLibrary => AudioManager.Instance.Library.Music;
+        protected override List<MusicFileObject> audioLibrary => AudioManager.Instance.Library.Music;
         protected override List<AudioLibrary.CategoryToList> ctl => AudioManager.Instance.Library.musicCategoriesToList;
 
         protected override void DrawAudioProperty()

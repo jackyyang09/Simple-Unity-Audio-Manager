@@ -6,7 +6,7 @@ using JSAM;
 namespace JSAM 
 {
     [AddComponentMenu("AudioManager/Audio Trigger Feedback")]
-    public class AudioTriggerFeedback : BaseAudioFeedback<JSAMSoundFileObject>
+    public class AudioTriggerFeedback : BaseAudioFeedback<SoundFileObject>
     {
         enum TriggerEvent
         {

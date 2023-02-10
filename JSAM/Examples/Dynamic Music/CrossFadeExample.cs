@@ -1,23 +1,25 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using JSAM;
 
-public class CrossFadeExample : MonoBehaviour
+namespace JSAM.Example
 {
-    bool pitched = false;
-
-    public void UseCrossFade()
+    public class CrossFadeExample : MonoBehaviour
     {
-        pitched = !pitched;
-        var time = AudioManager.FadeMainMusicOut(5).AudioSource.time;
-        if (pitched)
+        bool pitched = false;
+
+        public void UseCrossFade()
         {
-            AudioManager.FadeMusicIn(DynamicMusicMusic.MenuPitched, 5, true).AudioSource.time = time;
-        }
-        else
-        {
-            AudioManager.FadeMusicIn(DynamicMusicMusic.Menu, 5, true).AudioSource.time = time;
+            pitched = !pitched;
+            var time = AudioManager.FadeMainMusicOut(5).AudioSource.time;
+            if (pitched)
+            {
+                AudioManager.FadeMusicIn(DynamicMusicMusic.MenuPitched, 5, true).AudioSource.time = time;
+            }
+            else
+            {
+                AudioManager.FadeMusicIn(DynamicMusicMusic.Menu, 5, true).AudioSource.time = time;
+            }
         }
     }
 }

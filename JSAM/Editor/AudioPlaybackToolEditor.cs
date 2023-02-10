@@ -33,7 +33,7 @@ namespace JSAM.JSAMEditor
         public static bool forceRepaint;
 
         static Vector2 dragStartPos = Vector2.zero;
-        static bool mouseGrabbed = false;
+        //static bool mouseGrabbed = false;
         static bool mouseDragging = false;
         static bool mouseScrubbed = false;
         static bool loopClip = false;
@@ -52,8 +52,8 @@ namespace JSAM.JSAMEditor
                 return true;
             } 
         }
-        public static JSAMSoundChannelHelper soundHelper;
-        public static JSAMMusicChannelHelper musicHelper;
+        public static SoundChannelHelper soundHelper;
+        public static MusicChannelHelper musicHelper;
 
         static Color buttonPressedColor = new Color(0.475f, 0.475f, 0.475f);
         static Color buttonPressedColorLighter = new Color(0.75f, 0.75f, 0.75f);
@@ -62,7 +62,7 @@ namespace JSAM.JSAMEditor
         static bool resized = false;
 
         static bool showHowTo;
-        static float playbackPreviewClamped = 300;
+        //static float playbackPreviewClamped = 300;
         static bool showLibraryView = false;
 
         static PreviewRenderUtility m_PreviewUtility;
@@ -125,22 +125,24 @@ namespace JSAM.JSAMEditor
         public static bool OnDoubleClickAssets(int instanceID, int line)
         {
             string assetPath = AssetDatabase.GetAssetPath(instanceID);
-            JSAMSoundFileObject audioFile = AssetDatabase.LoadAssetAtPath<JSAMSoundFileObject>(assetPath);
+            SoundFileObject audioFile = AssetDatabase.LoadAssetAtPath<SoundFileObject>(assetPath);
             if (audioFile)
             {
                 Init();
+                cachedTex = null;
                 // Force a repaint
-                Selection.activeObject = null;
-                EditorApplication.delayCall += () => Selection.activeObject = audioFile;
+                // Selection.activeObject = null;
+                //EditorApplication.delayCall += () => Selection.activeObject = audioFile;
                 return true;
             }
-            JSAMMusicFileObject audioFileMusic = AssetDatabase.LoadAssetAtPath<JSAMMusicFileObject>(assetPath);
+            MusicFileObject audioFileMusic = AssetDatabase.LoadAssetAtPath<MusicFileObject>(assetPath);
             if (audioFileMusic)
             {
                 Init();
+                cachedTex = null;
                 // Force a repaint
-                Selection.activeObject = null;
-                EditorApplication.delayCall += () => Selection.activeObject = audioFileMusic;
+                // Selection.activeObject = null;
+                //EditorApplication.delayCall += () => Selection.activeObject = audioFileMusic;
                 return true;
             }
             return false;
@@ -290,8 +292,8 @@ namespace JSAM.JSAMEditor
         }
 
         AudioClip selectedClip;
-        JSAMSoundFileObject selectedSound;
-        JSAMMusicFileObject selectedMusic;
+        SoundFileObject selectedSound;
+        MusicFileObject selectedMusic;
         private void OnSelectionChange()
         {
             if (Selection.activeObject == null) return;
@@ -305,20 +307,20 @@ namespace JSAM.JSAMEditor
                 selectedClip = (AudioClip)Selection.activeObject;
                 CreateAudioHelper(selectedClip);
             }
-            else if (activeType.Equals(typeof(JSAMSoundFileObject)))
+            else if (activeType.Equals(typeof(SoundFileObject)))
             {
                 selectedMusic = null;
 
-                selectedSound = ((JSAMSoundFileObject)Selection.activeObject);
+                selectedSound = ((SoundFileObject)Selection.activeObject);
                 if (selectedSound.Files.Count == 0) return;
                 selectedClip = selectedSound.Files[0];
                 CreateAudioHelper(selectedClip);
             }
-            else if (activeType.Equals(typeof(JSAMMusicFileObject)))
+            else if (activeType.Equals(typeof(MusicFileObject)))
             {
                 selectedSound = null;
 
-                selectedMusic = ((JSAMMusicFileObject)Selection.activeObject);
+                selectedMusic = ((MusicFileObject)Selection.activeObject);
                 if (selectedMusic.Files.Count == 0) return;
                 selectedClip = selectedMusic.Files[0];
                 CreateAudioHelper(selectedClip);
@@ -337,7 +339,7 @@ namespace JSAM.JSAMEditor
         /// Draws a playback 
         /// </summary>
         /// <param name="music"></param>
-        public void DrawPlaybackTool(AudioClip selectedClip, JSAMSoundFileObject selectedSound = null, JSAMMusicFileObject selectedMusic = null)
+        public void DrawPlaybackTool(AudioClip selectedClip, SoundFileObject selectedSound = null, MusicFileObject selectedMusic = null)
         {
             float progress = 0;
             if (HelperSourceActive)
@@ -517,7 +519,7 @@ namespace JSAM.JSAMEditor
                                 mouseDragging = false;
                                 break;
                             case 2:
-                                mouseGrabbed = false;
+                                //mouseGrabbed = false;
                                 break;
                         }
                         break;
@@ -567,8 +569,8 @@ namespace JSAM.JSAMEditor
                     helperSource.playOnAwake = false;
                     helperSource.clip = selectedClip;
 
-                    soundHelper = helperObject.AddComponent<JSAMSoundChannelHelper>();
-                    musicHelper = helperObject.AddComponent<JSAMMusicChannelHelper>();
+                    soundHelper = helperObject.AddComponent<SoundChannelHelper>();
+                    musicHelper = helperObject.AddComponent<MusicChannelHelper>();
                     UnityEngine.Audio.AudioMixerGroup sg = null;
                     UnityEngine.Audio.AudioMixerGroup mg = null;
                     if (AudioManager.Instance)
@@ -584,8 +586,8 @@ namespace JSAM.JSAMEditor
                 }
                 else
                 {
-                    soundHelper = helperObject.GetComponent<JSAMSoundChannelHelper>();
-                    musicHelper = helperObject.GetComponent<JSAMMusicChannelHelper>();
+                    soundHelper = helperObject.GetComponent<SoundChannelHelper>();
+                    musicHelper = helperObject.GetComponent<MusicChannelHelper>();
                 }
                 helperObject.hideFlags = HideFlags.HideAndDontSave;
             }
@@ -617,7 +619,7 @@ namespace JSAM.JSAMEditor
         /// <param name="value"></param>
         /// <param name="label"></param>
         /// <returns></returns>
-        public static Rect ProgressBar(float value, AudioClip selectedClip, JSAMSoundFileObject selectedSound = null, JSAMMusicFileObject selectedMusic = null)
+        public static Rect ProgressBar(float value, AudioClip selectedClip, SoundFileObject selectedSound = null, MusicFileObject selectedMusic = null)
         {
             //float maxHeight = (showHowTo) ? playbackPreviewClamped : 4000;
             //float minHeight = (showHowTo) ? playbackPreviewClamped : 64;
