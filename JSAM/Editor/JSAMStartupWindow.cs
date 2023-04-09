@@ -23,7 +23,7 @@ namespace JSAM.JSAMEditor
             {
                 return System.IO.Path.Combine(new string[] 
                 {
-                    JSAMSettings.Settings.PackagePath,
+                    JSAMPaths.Instance.PackagePath,
                     "Editor",
                     "Startup",
                     STARTUP_GRAPHIC_FILENAME

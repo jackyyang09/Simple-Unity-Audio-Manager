@@ -24,8 +24,6 @@ namespace JSAM.JSAMEditor
         SerializedProperty listener;
 
         SerializedProperty library;
-        SerializedProperty settings;
-        SerializedProperty mixer;
 
         List<string> excludedProperties = new List<string> { "m_Script" };
 
@@ -56,9 +54,6 @@ namespace JSAM.JSAMEditor
             excludedProperties.Add("listener");
 
             library = serializedObject.FindProperty("library");
-            settings = serializedObject.FindProperty("settings");
-
-            mixer = settings.FindPropertyRelative("Mixer");
 
             Application.logMessageReceived += UnityDebugLog;
         }
@@ -101,26 +96,11 @@ namespace JSAM.JSAMEditor
             {
                 if (library.objectReferenceValue != null)
                 {
-                    JSAMSettings.Settings.SelectedLibrary = library.objectReferenceValue as AudioLibrary;
+                    JSAMPaths.Instance.SelectedLibrary = library.objectReferenceValue as AudioLibrary;
+                    JSAMPaths.Save();
                 }
                 AudioLibraryEditor.Init();
             }
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.BeginHorizontal();
-            blontent = new GUIContent("Settings");
-            EditorGUILayout.PropertyField(settings);
-            EditorGUI.BeginDisabledGroup(settings.objectReferenceValue == null);
-            blontent = new GUIContent(" Open ");
-            if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
-            {
-                if (settings.objectReferenceValue != null)
-                {
-                    JSAMSettings.Settings.SelectedSettings = settings.objectReferenceValue as AudioManagerSettings;
-                }
-                AudioManagerSettingsEditor.Init();
-            }
-            EditorGUI.EndDisabledGroup();
             EditorGUILayout.EndHorizontal();
 
             //EditorGUILayout.BeginHorizontal();

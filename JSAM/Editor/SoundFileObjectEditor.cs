@@ -205,7 +205,7 @@ namespace JSAM.JSAMEditor
                 "files", "UsingLibrary", "category"
             };
 #endif
-            string path = System.IO.Path.Combine(JSAMSettings.Settings.PresetsPath, input[0] + ".preset");
+            string path = System.IO.Path.Combine(JSAMPaths.Instance.PresetsPath, input[0] + ".preset");
             JSAMEditorHelper.CreateAssetSafe(newPreset, path);
         }
 

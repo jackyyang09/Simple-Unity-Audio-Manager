@@ -58,7 +58,7 @@ namespace JSAM
 
         protected virtual void OnEnable()
         {
-            if (AudioManager.Instance.Settings.TimeScaledSounds)
+            if (JSAMSettings.Settings.TimeScaledSounds)
             {
                 AudioManagerInternal.OnTimeScaleChanged += OnTimeScaleChanged;
             }
@@ -69,18 +69,18 @@ namespace JSAM
 
                 if (audioFile.spatialize)
                 {
-                    switch (AudioManager.Instance.Settings.SpatializationMode)
+                    switch (JSAMSettings.Settings.SpatializationMode)
                     {
-                        case AudioManagerSettings.SpatializeUpdateMode.Default:
+                        case JSAMSettings.SpatializeUpdateMode.Default:
                             AudioManagerInternal.OnSpatializeUpdate += OnSpatializeUpdate;
                             break;
-                        case AudioManagerSettings.SpatializeUpdateMode.FixedUpdate:
+                        case JSAMSettings.SpatializeUpdateMode.FixedUpdate:
                             AudioManagerInternal.OnSpatializeFixedUpdate += OnSpatializeFixedUpdate;
                             break;
-                        case AudioManagerSettings.SpatializeUpdateMode.LateUpdate:
+                        case JSAMSettings.SpatializeUpdateMode.LateUpdate:
                             AudioManagerInternal.OnSpatializeLateUpdate += OnSpatializeLateUpdate;
                             break;
-                        case AudioManagerSettings.SpatializeUpdateMode.Parented:
+                        case JSAMSettings.SpatializeUpdateMode.Parented:
                             break;
                     }
                 }
@@ -89,7 +89,7 @@ namespace JSAM
 
         protected virtual void OnDisable()
         {
-            if (AudioManager.Instance.Settings.TimeScaledSounds)
+            if (JSAMSettings.Settings.TimeScaledSounds)
             {
                 AudioManagerInternal.OnTimeScaleChanged -= OnTimeScaleChanged;
             }
@@ -98,18 +98,18 @@ namespace JSAM
             {
                 if (audioFile.spatialize)
                 {
-                    switch (AudioManager.Instance.Settings.SpatializationMode)
+                    switch (JSAMSettings.Settings.SpatializationMode)
                     {
-                        case AudioManagerSettings.SpatializeUpdateMode.Default:
+                        case JSAMSettings.SpatializeUpdateMode.Default:
                             AudioManagerInternal.OnSpatializeUpdate -= OnSpatializeUpdate;
                             break;
-                        case AudioManagerSettings.SpatializeUpdateMode.FixedUpdate:
+                        case JSAMSettings.SpatializeUpdateMode.FixedUpdate:
                             AudioManagerInternal.OnSpatializeFixedUpdate -= OnSpatializeFixedUpdate;
                             break;
-                        case AudioManagerSettings.SpatializeUpdateMode.LateUpdate:
+                        case JSAMSettings.SpatializeUpdateMode.LateUpdate:
                             AudioManagerInternal.OnSpatializeLateUpdate -= OnSpatializeLateUpdate;
                             break;
-                        case AudioManagerSettings.SpatializeUpdateMode.Parented:
+                        case JSAMSettings.SpatializeUpdateMode.Parented:
                             break;
                     }
                 }
@@ -162,14 +162,14 @@ namespace JSAM
                 return AudioSource;
             }
 
-            if (AudioManager.Instance.Settings.Spatialize && audioFile.spatialize)
+            if (JSAMSettings.Settings.Spatialize && audioFile.spatialize)
             {
                 AudioSource.spatialBlend = 1;
                 if (file.maxDistance != 0)
                 {
                     AudioSource.maxDistance = file.maxDistance;
                 }
-                else AudioSource.maxDistance = AudioManager.Instance.Settings.DefaultSoundMaxDistance;
+                else AudioSource.maxDistance = JSAMSettings.Settings.DefaultSoundMaxDistance;
             }
             else
             {
@@ -187,12 +187,9 @@ namespace JSAM
             AudioSource.priority = (int)file.priority;
 
             bool timeScaledSounds = false;
-            if (AudioManager.Instance)
+            if (JSAMSettings.Settings)
             {
-                if (AudioManager.Instance.Settings)
-                {
-                    timeScaledSounds = AudioManager.Instance.Settings.TimeScaledSounds;
-                }
+                timeScaledSounds = JSAMSettings.Settings.TimeScaledSounds;
             }
 
             if (timeScaledSounds && !file.ignoreTimeScale)
@@ -286,17 +283,17 @@ namespace JSAM
             if (target == null) return;
             if (!audioFile) return;
             if (!audioFile.spatialize) return;
-            if (!AudioManager.Instance.Settings.Spatialize) return;
+            if (!JSAMSettings.Settings.Spatialize) return;
 
-            switch (AudioManager.Instance.Settings.SpatializationMode)
+            switch (JSAMSettings.Settings.SpatializationMode)
             {
-                case AudioManagerSettings.SpatializeUpdateMode.Default:
-                case AudioManagerSettings.SpatializeUpdateMode.FixedUpdate:
-                case AudioManagerSettings.SpatializeUpdateMode.LateUpdate:
+                case JSAMSettings.SpatializeUpdateMode.Default:
+                case JSAMSettings.SpatializeUpdateMode.FixedUpdate:
+                case JSAMSettings.SpatializeUpdateMode.LateUpdate:
                     transform.SetParent(originalParent);
                     SpatializationTarget = target;
                     break;
-                case AudioManagerSettings.SpatializeUpdateMode.Parented:
+                case JSAMSettings.SpatializeUpdateMode.Parented:
                     transform.SetParent(target);
                     break;
             }
@@ -307,7 +304,7 @@ namespace JSAM
         {
             if (!audioFile) return;
             if (!audioFile.spatialize) return;
-            if (!AudioManager.Instance.Settings.Spatialize) return;
+            if (!JSAMSettings.Settings.Spatialize) return;
 
             SpatializationTarget = null;
             SpatializationPosition = position;

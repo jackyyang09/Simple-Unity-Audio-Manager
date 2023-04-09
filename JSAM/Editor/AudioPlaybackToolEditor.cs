@@ -573,13 +573,10 @@ namespace JSAM.JSAMEditor
                     musicHelper = helperObject.AddComponent<MusicChannelHelper>();
                     UnityEngine.Audio.AudioMixerGroup sg = null;
                     UnityEngine.Audio.AudioMixerGroup mg = null;
-                    if (AudioManager.Instance)
+                    if (JSAMSettings.Settings)
                     {
-                        if (AudioManager.Instance.Settings)
-                        {
-                            sg = AudioManager.Instance.Settings.SoundGroup;
-                            mg = AudioManager.Instance.Settings.MusicGroup;
-                        }
+                        sg = JSAMSettings.Settings.SoundGroup;
+                        mg = JSAMSettings.Settings.MusicGroup;
                     }
                     soundHelper.Init(sg);
                     musicHelper.Init(mg);

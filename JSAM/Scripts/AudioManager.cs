@@ -39,10 +39,6 @@ namespace JSAM
             }
         }
 
-        [Tooltip("The settings used for this AudioManager")]
-        [SerializeField, HideInInspector] AudioManagerSettings settings = null;
-        public AudioManagerSettings Settings { get { return settings; } }
-
         [Tooltip("The Audio Library that this AudioManager should use")]
         [SerializeField, HideInInspector] AudioLibrary library = null;
         public AudioLibrary Library { get { return library; } }
@@ -129,7 +125,7 @@ namespace JSAM
         void Awake()
         {
             // AudioManager is important, keep it between scenes
-            if (settings.DontDestroyOnLoad)
+            if (JSAMSettings.Settings.DontDestroyOnLoad)
             {
                 gameObject.transform.SetParent(null, true); 
                 DontDestroyOnLoad(gameObject);
@@ -207,7 +203,7 @@ namespace JSAM
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             FindNewListener();
-            if (Settings.StopSoundsOnSceneLoad)
+            if (JSAMSettings.Settings.StopSoundsOnSceneLoad)
             {
                 StopAllSounds();
             }
@@ -821,12 +817,9 @@ namespace JSAM
         /// <param name="consoleOutput"></param>
         public static void DebugLog(string consoleOutput)
         {
-            if (instance)
+            if (JSAMSettings.Settings)
             {
-                if (instance.settings)
-                {
-                    if (instance.settings.DisableConsoleLogs) return;
-                }
+                if (JSAMSettings.Settings.DisableConsoleLogs) return;
             }
             Debug.Log("JSAM: " + consoleOutput);
         }

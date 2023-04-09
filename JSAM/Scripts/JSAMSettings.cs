@@ -1,12 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 using UnityEngine.Audio;
 
 namespace JSAM
 {
-    [CreateAssetMenu(fileName = "New AudioManager Settings", menuName = "AudioManager/New AudioManager Settings Asset", order = 1)]
-    public class AudioManagerSettings : ScriptableObject
+    public class JSAMSettings : ScriptableObject
     {
         [Tooltip("If true, enables 3D spatialized audio for all sound effects, does not effect music")]
         [SerializeField] bool spatialSound = true;
@@ -130,5 +130,76 @@ namespace JSAM
         [SerializeField] string soundMutedKey = "JSAM_SOUND_MUTE";
         public string SoundVolumeKey { get { return soundVolumeKey; } }
         public string SoundMutedKey { get { return soundMutedKey; } }
+
+        [Tooltip("The font size used when rendering \"quick reference guides\" in JSAM editor windows")]
+        [SerializeField] int quickReferenceFontSize = 10;
+        public int QuickReferenceFontSize
+        {
+            get
+            {
+                return quickReferenceFontSize;
+            }
+        }
+
+        static JSAMSettings settings;
+        public static JSAMSettings Settings
+        {
+            get
+            {
+                if (settings == null)
+                {
+                    var asset = Resources.Load(nameof(JSAMSettings));
+                    settings = asset as JSAMSettings;
+#if UNITY_EDITOR
+                    if (settings == null) TryCreateNewSettingsAsset();
+#endif
+                }
+                return settings;
+            }
+        }
+
+#if UNITY_EDITOR
+        static readonly string SETTINGS_PATH = "Assets/Settings/Resources/" + nameof(JSAMSettings) + ".asset";
+
+        public static void TryCreateNewSettingsAsset()
+        {
+            if (!EditorUtility.DisplayDialog(
+                "JSAM First Time Setup",
+                "In order to function, JSAM needs a place to store settings. By default, a " +
+                "Settings asset will be created at Assets/Settings/Resources/, but you may move it " +
+                "elsewhere, so long as it's in a Resources folder.\n " +
+                "Moving it out of the Resources folder will prompt this message to appear again erroneously!",
+                "Ok Create It.", "Not Yet!")) return;
+
+            var asset = CreateInstance<JSAMSettings>();
+            if (!AssetDatabase.IsValidFolder("Assets/Settings")) AssetDatabase.CreateFolder("Assets", "Settings");
+            if (!AssetDatabase.IsValidFolder("Assets/Settings/Resources")) AssetDatabase.CreateFolder("Assets/Settings", "Resources");
+            AssetDatabase.CreateAsset(asset, SETTINGS_PATH);
+            asset.Reset();
+
+            settings = asset;
+        }
+
+        static SerializedObject serializedObject;
+        public static SerializedObject SerializedObject
+        {
+            get
+            {
+                if (serializedObject == null)
+                {
+                    serializedObject = new SerializedObject(Settings);
+                    return serializedObject;
+                }
+                return serializedObject;
+            }
+        }
+#endif
+
+        public void Reset()
+        {
+            //packagePath = JSAMEditorHelper.GetAudioManagerPath;
+            //packagePath = packagePath.Remove(packagePath.IndexOf("/Scripts/AudioManager.cs"));
+            //presetsPath = packagePath + "/Presets";
+        }
     }
 }

@@ -19,6 +19,8 @@ namespace JSAM
         List<MusicChannelHelper> musicHelpers = new List<MusicChannelHelper>();
         public MusicChannelHelper mainMusic { get; private set; }
 
+        JSAMSettings Settings => JSAMSettings.Settings;
+
         #region Volume Logic
         public bool MasterMuted = false;
         public float MasterVolume = 1;
@@ -34,7 +36,7 @@ namespace JSAM
 
         public void SaveVolumeSettings()
         {
-            if (!Settings.SaveVolumeToPlayerPrefs) return;
+            if (!JSAMSettings.Settings.SaveVolumeToPlayerPrefs) return;
 
             PlayerPrefs.SetFloat(Settings.MasterVolumeKey, MasterVolume);
             PlayerPrefs.SetFloat(Settings.MusicVolumeKey, MusicVolume);
@@ -89,8 +91,6 @@ namespace JSAM
         Transform sourceHolder;
 
         AudioManager audioManager;
-
-        AudioManagerSettings Settings { get { return audioManager.Settings; } }
 
         [SerializeField] GameObject sourcePrefab;
 
@@ -152,7 +152,7 @@ namespace JSAM
         // Update is called once per frame
         void Update()
         {
-            if (Settings.SpatializationMode == AudioManagerSettings.SpatializeUpdateMode.Default)
+            if (Settings.SpatializationMode == JSAMSettings.SpatializeUpdateMode.Default)
             {
                 OnSpatializeUpdate?.Invoke();
             }
@@ -166,7 +166,7 @@ namespace JSAM
 
         void FixedUpdate()
         {
-            if (Settings.SpatializationMode == AudioManagerSettings.SpatializeUpdateMode.FixedUpdate)
+            if (Settings.SpatializationMode == JSAMSettings.SpatializeUpdateMode.FixedUpdate)
             {
                 OnSpatializeFixedUpdate?.Invoke();
             }
@@ -174,7 +174,7 @@ namespace JSAM
 
         void LateUpdate()
         {
-            if (Settings.SpatializationMode == AudioManagerSettings.SpatializeUpdateMode.LateUpdate)
+            if (Settings.SpatializationMode == JSAMSettings.SpatializeUpdateMode.LateUpdate)
             {
                 OnSpatializeLateUpdate?.Invoke();
             }
@@ -507,7 +507,7 @@ namespace JSAM
                 }
             }
 
-            if (audioManager.Settings.DynamicSourceAllocation)
+            if (JSAMSettings.Settings.DynamicSourceAllocation)
             {
                 musicHelpers.Add(CreateMusicChannel());
                 return musicHelpers.Count - 1;
@@ -536,7 +536,7 @@ namespace JSAM
                 }
             }
 
-            if (audioManager.Settings.DynamicSourceAllocation)
+            if (JSAMSettings.Settings.DynamicSourceAllocation)
             {
                 soundHelpers.Add(CreateSoundChannel());
                 return soundHelpers.Count - 1;

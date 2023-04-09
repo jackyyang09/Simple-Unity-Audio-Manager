@@ -27,13 +27,7 @@ namespace JSAM
             bool ignoreTimeScale = audioFile.ignoreTimeScale;
 
             bool timeScaledSounds = false;
-            if (AudioManager.Instance)
-            {
-                if (AudioManager.Instance.Settings)
-                {
-                    timeScaledSounds = AudioManager.Instance.Settings.TimeScaledSounds;
-                }
-            }
+            timeScaledSounds = JSAMSettings.Settings.TimeScaledSounds;
 
             if (timeScaledSounds && !ignoreTimeScale)
             {
