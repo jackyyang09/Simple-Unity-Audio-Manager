@@ -35,6 +35,4 @@ sysinfo.txt
 *.apk
 *.unitypackage
 
-Jacky's Simple Audio Manager.meta
-LICENSE.md.meta
-README.md.meta
+!Plugins/*.dll
