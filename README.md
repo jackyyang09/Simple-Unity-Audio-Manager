@@ -28,6 +28,13 @@ JSAM is perfect for game jams, prototypes and is scaleable with your project!
 - *Extensive* in-editor, in-code documentation for easy extensibility
 
 # Add JSAM to your Project
+
+### Install via GIT URL
+
+Go to ```Package Manager``` -> ```Add package from GIT url...``` -> Enter ```https://github.com/jackyyang09/Simple-Unity-Audio-Manager.git#upm-packaged``` -> Click ```Add```
+
+You will need to have Git installed and available in your system's PATH.
+
 - Check out the [wiki](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/wiki/1.-Downloading-and-Importing-JSAM) to see how to **simplify** audio integration in your  project!
 - Check out the [documentation](https://jackyyang09.github.io/Simple-Unity-Audio-Manager/) to learn more about and extend JSAM's functionality!
 

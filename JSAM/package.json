@@ -1,0 +1,49 @@
+{
+	"name": "com.jackyyang09.simple-unity-audio-manager",
+	"displayName": "Simple Unity Audio Manager",
+	"version": "3.0.0b",
+	"unity": "2022.2",
+	"description": "A decentralized audio playing system for Unity, designed for simplicity and built to scale!",
+	"category": "",
+	"author": {
+		"name": "jackyyang09",
+		"url": "https://github.com/jackyyang09"
+	},
+	"samples": [
+        {
+            "displayName": "Dynamic Music",
+            "description": "",
+            "path": "./Samples~/Dynamic Music"
+        },
+		{
+			"displayName": "Extra Tips",
+			"description": "",
+			"path": "./Samples~/Extra Tips"
+		},
+		{
+			"displayName": "First-Person 3D",
+			"description": "",
+			"path": "./Samples~/First-Person 3D"
+		},
+		{
+			"displayName": "Loop Points",
+			"description": "",
+			"path": "./Samples~/Loop Points"
+		},
+		{
+			"displayName": "Sample Pause Menu",
+			"description": "",
+			"path": "./Samples~/Sample Pause Menu"
+		},
+		{
+			"displayName": "Shmup 2D",
+			"description": "",
+			"path": "./Samples~/Shmup 2D"
+		},
+		{
+			"displayName": "Video Volume",
+			"description": "",
+			"path": "./Samples~/Video Volume"
+		}
+	]
+}
