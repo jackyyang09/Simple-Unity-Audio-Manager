@@ -1,0 +1,14 @@
+{
+    "name": "com.jackyyang09.simple-unity-audio-manager",
+    "rootNamespace": "Jackyyang09.SimpleUnityAudioManager",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,18 @@
+{
+    "name": "com.jackyyang09.simple-unity-audio-manager.Editor",
+    "rootNamespace": "Jackyyang09.SimpleUnityAudioManager.Editor",
+    "references": [
+        "GUID:15fb0d628bf962446a825401ceb0735a"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
