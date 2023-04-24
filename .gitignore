@@ -35,7 +35,3 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
-
-LICENSE.md.meta
-README.md.meta
-package.json.meta

@@ -10,61 +10,61 @@ namespace JSAM
     {
         [Tooltip("If true, enables 3D spatialized audio for all sound effects, does not effect music")]
         [SerializeField] bool spatialSound = true;
-        public bool Spatialize { get { return spatialSound; } }
+        public bool Spatialize => spatialSound;
 
         /// <summary>
         /// Number of Sound Channels to be created on start
         /// </summary>
         [Tooltip("Number of Sound Channels to be created on start")]
         [SerializeField] int startingSoundChannels = 16;
-        public int StartingSoundChannels { get { return startingSoundChannels; } }
+        public int StartingSoundChannels => startingSoundChannels;
 
         [Tooltip("Number of Music Channels to be created on start")]
         [SerializeField] int startingMusicChannels = 3;
-        public int StartingMusicChannels { get { return startingMusicChannels; } }
+        public int StartingMusicChannels => startingMusicChannels;
 
         [Tooltip("If the maxDistance property of an Audio File Object is left at 0, then this value will be used as a substitute.")]
         [SerializeField] float defaultSoundMaxDistance = 7;
-        public float DefaultSoundMaxDistance { get { return defaultSoundMaxDistance; } }
+        public float DefaultSoundMaxDistance => defaultSoundMaxDistance;
 
         /// <summary>
         /// If true, AudioManager no longer prints info to the console. Does not affect AudioManager errors/warnings
         /// </summary>
         [Tooltip("If true, AudioManager no longer prints info to the console. Does not affect AudioManager errors/warnings")]
         [SerializeField] bool disableConsoleLogs = false;
-        public bool DisableConsoleLogs { get { return disableConsoleLogs; } }
+        public bool DisableConsoleLogs => disableConsoleLogs;
 
         /// <summary>
         /// If true, keeps AudioManager alive through scene loads. You're recommended to disable this if your AudioManager is instanced
         /// </summary>
         [Tooltip("If true, keeps AudioManager alive through scene loads. You're recommended to disable this if your AudioManager is instanced")]
         [SerializeField] bool dontDestroyOnLoad = true;
-        public new bool DontDestroyOnLoad { get { return dontDestroyOnLoad; } }
+        public new bool DontDestroyOnLoad => dontDestroyOnLoad;
 
         /// <summary>
         /// If true, adds more Audio Sources automatically if you exceed the starting count, you are recommended to keep this enabled
         /// </summary>
         [Tooltip("If true, adds more Audio Sources automatically if you exceed the starting count, you are recommended to keep this enabled")]
         [SerializeField] bool dynamicSourceAllocation = true;
-        public bool DynamicSourceAllocation { get { return dynamicSourceAllocation; } }
+        public bool DynamicSourceAllocation => dynamicSourceAllocation;
 
         [Tooltip("The AudioManager will instantiate this prefab during runtime to play sounds from. If null, will use default AudioSource settings.")]
-        [SerializeField] SoundChannelHelper soundChannelPrefabOverride;
-        public GameObject SoundChannelPrefab => soundChannelPrefabOverride == null ? null : soundChannelPrefabOverride.gameObject;
+        [SerializeField] GameObject soundChannelPrefabOverride;
+        public GameObject SoundChannelPrefab => soundChannelPrefabOverride;
         [Tooltip("The AudioManager will instantiate this prefab during runtime to play music from. If null, will use default AudioSource settings.")]
-        [SerializeField] MusicChannelHelper musicChannelPrefabOverride;
-        public GameObject MusicChannelPrefab => musicChannelPrefabOverride == null ? null : musicChannelPrefabOverride.gameObject;
+        [SerializeField] GameObject musicChannelPrefabOverride;
+        public GameObject MusicChannelPrefab => musicChannelPrefabOverride;
 
         /// <summary>
         /// If true, stops all sounds when you load a scene
         /// </summary>
         [Tooltip("If true, stops all sounds when you load a scene")]
         [SerializeField] bool stopSoundsOnSceneLoad = false;
-        public bool StopSoundsOnSceneLoad { get { return stopSoundsOnSceneLoad; } }
+        public bool StopSoundsOnSceneLoad => stopSoundsOnSceneLoad;
 
         [Tooltip("Use if spatialized sounds are spatializing late when playing in-editor, known to happen with the Oculus SDK")]
         [SerializeField] bool spatializeLateUpdate = false;
-        public bool SpatializeOnLateUpdate { get { return spatializeLateUpdate; } }
+        public bool SpatializeOnLateUpdate => spatializeLateUpdate;
 
         /// <summary>
         /// Specifies how your audio channels will follow their targets in 3D space during runtime. 
@@ -99,51 +99,51 @@ namespace JSAM
             "Parented - Audio channels are parented in the hierarchy to their targets. " +
             "Slightly less performance overhead, but will clutter your object hierarchies during runtime.")]
         [SerializeField] SpatializeUpdateMode spatializationMode;
-        public SpatializeUpdateMode SpatializationMode { get { return spatializationMode; } }
+        public SpatializeUpdateMode SpatializationMode => spatializationMode;
 
         [Tooltip("Changes the pitch of sounds according to Time.timeScale. When Time.timeScale is set to 0, pauses all sounds instead")]
         [SerializeField] bool timeScaledSounds = true;
-        public bool TimeScaledSounds { get { return timeScaledSounds; } }
+        public bool TimeScaledSounds => timeScaledSounds;
 
-        [SerializeField] AudioMixer mixer = null;
-        public AudioMixer Mixer { get { return mixer; } }
+        [SerializeField] AudioMixer mixer;
+        public AudioMixer Mixer => mixer;
 
-        [SerializeField] AudioMixerGroup masterGroup = null;
-        public AudioMixerGroup MasterGroup { get { return masterGroup; } }
+        [SerializeField] AudioMixerGroup masterGroup;
+        public AudioMixerGroup MasterGroup => masterGroup;
         [SerializeField] string masterVolumeParam = "MasterVolume";
-        public string MasterVolumePararm { get { return masterVolumeParam; } }
+        public string MasterVolumePararm => masterVolumeParam;
 
-        [SerializeField] AudioMixerGroup musicGroup = null;
-        public AudioMixerGroup MusicGroup { get { return musicGroup; } }
+        [SerializeField] AudioMixerGroup musicGroup;
+        public AudioMixerGroup MusicGroup => musicGroup;
         [SerializeField] string musicVolumeParam = "MusicVolume";
-        public string MusicVolumePararm { get { return musicVolumeParam; } }
+        public string MusicVolumePararm => musicVolumeParam;
 
-        [SerializeField] AudioMixerGroup soundGroup = null;
-        public AudioMixerGroup SoundGroup { get { return soundGroup; } }
+        [SerializeField] AudioMixerGroup soundGroup;
+        public AudioMixerGroup SoundGroup => soundGroup;
         [SerializeField] string soundVolumeParam = "SoundVolume";
-        public string SoundVolumePararm { get { return soundVolumeParam; } }
+        public string SoundVolumePararm => soundVolumeParam;
 
-        [SerializeField] AudioMixerGroup voiceGroup = null;
-        public AudioMixerGroup VoiceGroup { get { return voiceGroup; } }
+        [SerializeField] AudioMixerGroup voiceGroup;
+        public AudioMixerGroup VoiceGroup => voiceGroup;
         [SerializeField] string voiceVolumeParam = "VoiceVolume";
-        public string VoiceVolumePararm { get { return voiceVolumeParam; } }
+        public string VoiceVolumePararm => voiceVolumeParam;
 
         [Tooltip("If true, will save volume settings into PlayerPrefs and automatically loads previous volume settings on play. ")]
         [SerializeField] bool saveVolumeToPlayerPrefs = true;
-        public bool SaveVolumeToPlayerPrefs { get { return saveVolumeToPlayerPrefs; } }
+        public bool SaveVolumeToPlayerPrefs => saveVolumeToPlayerPrefs;
 
         [SerializeField] string masterVolumeKey = "JSAM_MASTER_VOL";
         [SerializeField] string masterMutedKey = "JSAM_MASTER_MUTE";
-        public string MasterVolumeKey { get { return masterVolumeKey; } }
-        public string MasterMutedKey { get { return masterMutedKey; } }
+        public string MasterVolumeKey => masterVolumeKey;
+        public string MasterMutedKey => masterMutedKey;
         [SerializeField] string musicVolumeKey = "JSAM_MUSIC_VOL";
         [SerializeField] string musicMutedKey = "JSAM_MUSIC_MUTE";
-        public string MusicVolumeKey { get { return musicVolumeKey; } }
-        public string MusicMutedKey { get { return musicMutedKey; } }
+        public string MusicVolumeKey => musicVolumeKey;
+        public string MusicMutedKey => musicMutedKey;
         [SerializeField] string soundVolumeKey = "JSAM_SOUND_VOL";
         [SerializeField] string soundMutedKey = "JSAM_SOUND_MUTE";
-        public string SoundVolumeKey { get { return soundVolumeKey; } }
-        public string SoundMutedKey { get { return soundMutedKey; } }
+        public string SoundVolumeKey => soundVolumeKey;
+        public string SoundMutedKey => soundMutedKey;
 
         [Tooltip("The font size used when rendering \"quick reference guides\" in JSAM editor windows")]
         [SerializeField] int quickReferenceFontSize = 10;
