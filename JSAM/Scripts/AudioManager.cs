@@ -29,7 +29,7 @@ namespace JSAM
                     instance = FindObjectOfType<AudioManager>();
                     if (instance == null)
                     {
-                        if (!isQuitting)
+                        if (!isQuitting && Application.isPlaying)
                         {
                             DebugError("No AudioManager found in scene " + SceneManager.GetActiveScene().name);
                         }
@@ -51,12 +51,6 @@ namespace JSAM
         [Tooltip("The Audio Listener in your scene, will try to automatically set itself on Start by looking in the object tagged as \"Main Camera\"")]
         [SerializeField] AudioListener listener = null;
         public static AudioListener AudioListener { get { return Instance.listener; } }
-
-        [Header("Audio Channel Overrides")]
-        [SerializeField] AudioSource soundChannelPrefab = null;
-        public GameObject SoundChannelPrefab => soundChannelPrefab == null ? null : soundChannelPrefab.gameObject;
-        [SerializeField] AudioSource musicChannelPrefab = null;
-        public GameObject MusicChannelPrefab => musicChannelPrefab == null ? null : musicChannelPrefab.gameObject;
 
         bool doneLoading;
 

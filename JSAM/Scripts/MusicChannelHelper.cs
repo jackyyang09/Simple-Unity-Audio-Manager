@@ -5,6 +5,7 @@ using UnityEngine;
 namespace JSAM
 {
     [AddComponentMenu("")]
+    [RequireComponent(typeof(AudioSource))]
     public class MusicChannelHelper : BaseAudioChannelHelper<MusicFileObject>
     {
         protected override float Volume

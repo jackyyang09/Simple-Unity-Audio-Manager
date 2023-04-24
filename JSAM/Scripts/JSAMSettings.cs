@@ -19,9 +19,11 @@ namespace JSAM
         [SerializeField] int startingSoundChannels = 16;
         public int StartingSoundChannels { get { return startingSoundChannels; } }
 
+        [Tooltip("Number of Music Channels to be created on start")]
         [SerializeField] int startingMusicChannels = 3;
         public int StartingMusicChannels { get { return startingMusicChannels; } }
 
+        [Tooltip("If the maxDistance property of an Audio File Object is left at 0, then this value will be used as a substitute.")]
         [SerializeField] float defaultSoundMaxDistance = 7;
         public float DefaultSoundMaxDistance { get { return defaultSoundMaxDistance; } }
 
@@ -45,6 +47,13 @@ namespace JSAM
         [Tooltip("If true, adds more Audio Sources automatically if you exceed the starting count, you are recommended to keep this enabled")]
         [SerializeField] bool dynamicSourceAllocation = true;
         public bool DynamicSourceAllocation { get { return dynamicSourceAllocation; } }
+
+        [Tooltip("The AudioManager will instantiate this prefab during runtime to play sounds from. If null, will use default AudioSource settings.")]
+        [SerializeField] SoundChannelHelper soundChannelPrefabOverride;
+        public GameObject SoundChannelPrefab => soundChannelPrefabOverride == null ? null : soundChannelPrefabOverride.gameObject;
+        [Tooltip("The AudioManager will instantiate this prefab during runtime to play music from. If null, will use default AudioSource settings.")]
+        [SerializeField] MusicChannelHelper musicChannelPrefabOverride;
+        public GameObject MusicChannelPrefab => musicChannelPrefabOverride == null ? null : musicChannelPrefabOverride.gameObject;
 
         /// <summary>
         /// If true, stops all sounds when you load a scene
@@ -79,11 +88,16 @@ namespace JSAM
             LateUpdate,
             /// <summary>
             /// Audio channels are parented in the hierarchy to their targets. 
-            /// Less performance overhead, but will clutter your object hierarchies during playback
+            /// Less performance overhead, but will clutter your object hierarchies during runtime
             /// </summary>
             Parented
         }
 
+        [Tooltip("Default - Audio Channels track their targets in World Space every update.\n\n" +
+            "FixedUpdate - Audio channels track their targets in FixedUpdate. Good for targets that move during FixedUpdate.\n\n" +
+            "LateUpdate - Same as FixedUpdate but in LateUpdate instead.\n\n" +
+            "Parented - Audio channels are parented in the hierarchy to their targets. " +
+            "Slightly less performance overhead, but will clutter your object hierarchies during runtime.")]
         [SerializeField] SpatializeUpdateMode spatializationMode;
         public SpatializeUpdateMode SpatializationMode { get { return spatializationMode; } }
 

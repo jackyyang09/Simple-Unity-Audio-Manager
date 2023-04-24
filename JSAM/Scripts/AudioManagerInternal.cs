@@ -213,6 +213,12 @@ namespace JSAM
         {
             if (!Application.isPlaying) return null;
 
+            if (!music)
+            {
+                AudioManager.DebugWarning("AudioManager was passed a null music file!");
+                return null;
+            }
+
             PlayMusicInternal(music, null, mainMusic);
 
             AudioManager.OnMusicPlayed?.Invoke(music);
@@ -224,8 +230,15 @@ namespace JSAM
         {
             if (!Application.isPlaying) return null;
 
+            if (!music)
+            {
+                AudioManager.DebugWarning("AudioManager was passed a null music file!");
+                return null;
+            }
+
             bool helperOverride = helper != null;
             if (helper == null) helper = GetFreeMusicHelper();
+            if (helper == null) return null;
             if (!helperOverride)
             {
                 helper = HandleLimitedInstances(music, helper);
@@ -241,8 +254,15 @@ namespace JSAM
         {
             if (!Application.isPlaying) return null;
 
+            if (!music)
+            {
+                AudioManager.DebugWarning("AudioManager was passed a null music file!");
+                return null;
+            }
+
             bool helperOverride = helper != null;
             if (helper == null) helper = GetFreeMusicHelper();
+            if (helper == null) return null;
             if (!helperOverride)
             {
                 helper = HandleLimitedInstances(music, helper);
@@ -260,6 +280,12 @@ namespace JSAM
         {
             if (!Application.isPlaying) return null;
 
+            if (!music)
+            {
+                AudioManager.DebugWarning("AudioManager was passed a null music file!");
+                return null;
+            }
+
             MusicChannelHelper helper;
 
             if (isMain)
@@ -269,6 +295,7 @@ namespace JSAM
             else
             {
                 helper = musicHelpers[GetFreeMusicChannel()];
+                if (helper == null) return null;
                 helper = HandleLimitedInstances(music, helper);
             }
 
@@ -285,6 +312,11 @@ namespace JSAM
             if (!Application.isPlaying) return null;
 
             var helper = mainMusic;
+            if (!mainMusic)
+            {
+                AudioManager.DebugWarning("Tried to fade out Main Music when no music was marked as Main!");
+            }
+
             helper.BeginFadeOut(fadeOutTime);
 
             return mainMusic;
@@ -293,6 +325,12 @@ namespace JSAM
         public MusicChannelHelper FadeMusicOutInternal(MusicFileObject music, float fadeOutTime)
         {
             if (!Application.isPlaying) return null;
+
+            if (!music)
+            {
+                AudioManager.DebugWarning("AudioManager was passed a null music file!");
+                return null;
+            }
 
             MusicChannelHelper helper;
             if (TryGetPlayingMusic(music, out helper))
@@ -311,6 +349,12 @@ namespace JSAM
         public MusicChannelHelper FadeMusicOutInternal(MusicChannelHelper helper, float fadeOutTime)
         {
             if (!Application.isPlaying) return null;
+
+            if (!helper)
+            {
+                AudioManager.DebugWarning("AudioManager was passed a null music helper!");
+                return null;
+            }
 
             if (helper)
             {
@@ -404,8 +448,15 @@ namespace JSAM
         {
             if (!Application.isPlaying) return null;
 
+            if (!sound)
+            {
+                AudioManager.DebugWarning("AudioManager was passed a null sound file!");
+                return null;
+            }
+
             bool helperOverride = helper != null;
             if (helper == null) helper = soundHelpers[GetFreeSoundChannel()];
+            if (helper == null) return null;
             if (!helperOverride)
             {
                 helper = HandleLimitedInstances(sound, helper);
@@ -421,8 +472,15 @@ namespace JSAM
         {
             if (!Application.isPlaying) return null;
 
+            if (!sound)
+            {
+                AudioManager.DebugWarning("AudioManager was passed a null sound file!");
+                return null;
+            }
+
             bool helperOverride = helper != null;
             if (helper == null) helper = soundHelpers[GetFreeSoundChannel()];
+            if (helper == null) return null;
             if (!helperOverride)
             {
                 helper = HandleLimitedInstances(sound, helper);
@@ -648,9 +706,9 @@ namespace JSAM
         {
             GameObject newChannel;
             MusicChannelHelper newHelper;
-            if (audioManager.MusicChannelPrefab)
+            if (JSAMSettings.Settings.MusicChannelPrefab)
             {
-                newChannel = Instantiate(audioManager.MusicChannelPrefab, sourceHolder);
+                newChannel = Instantiate(JSAMSettings.Settings.MusicChannelPrefab, sourceHolder);
                 if (!newChannel.TryGetComponent(out newHelper))
                 {
                     newHelper = newChannel.AddComponent<MusicChannelHelper>();
@@ -676,9 +734,9 @@ namespace JSAM
             GameObject newChannel;
             SoundChannelHelper newHelper;
 
-            if (audioManager.SoundChannelPrefab)
+            if (JSAMSettings.Settings.SoundChannelPrefab)
             {
-                newChannel = Instantiate(audioManager.SoundChannelPrefab, sourceHolder);
+                newChannel = Instantiate(JSAMSettings.Settings.SoundChannelPrefab, sourceHolder);
                 if (!newChannel.TryGetComponent(out newHelper))
                 {
                     newHelper = newChannel.AddComponent<SoundChannelHelper>();

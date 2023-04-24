@@ -20,14 +20,15 @@ MonoBehaviour:
   loopEnd: 0
   bpm: 120
   relativeVolume: 1
-  spatialize: 1
+  spatialize: 0
   maxDistance: 0
-  priority: 128
+  priority: 192
   startingPitch: 1
   pitchShift: 0.05
   loopMode: 0
   delay: 0
   ignoreTimeScale: 0
+  maxPlayingInstances: 10
   mixerGroupOverride: {fileID: 0}
   fadeInOut: 0
   fadeInDuration: 0

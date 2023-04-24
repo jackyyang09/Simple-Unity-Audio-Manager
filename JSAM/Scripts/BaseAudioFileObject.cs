@@ -5,7 +5,7 @@ using UnityEngine;
 namespace JSAM
 {
     /// <summary>
-    /// From 0 (least important) to 255 (most important)
+    /// From 0 (most important) to 255 (least important)
     /// </summary>
     public enum Priority
     {
@@ -13,7 +13,7 @@ namespace JSAM
         High = 64,
         Default = 128,
         Low = 192,
-        Spam = 256
+        Spam = 255
     }
 
     /// <summary>

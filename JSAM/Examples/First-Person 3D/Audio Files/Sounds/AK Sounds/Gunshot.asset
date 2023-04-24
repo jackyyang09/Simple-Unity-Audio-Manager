@@ -25,7 +25,7 @@ MonoBehaviour:
   relativeVolume: 0.2
   spatialize: 0
   maxDistance: 0
-  priority: 128
+  priority: 256
   startingPitch: 1
   pitchShift: 0.05
   loopMode: 0
@@ -83,4 +83,4 @@ MonoBehaviour:
     diffusion: 100
     density: 100
   neverRepeat: 1
-  lastClipIndex: 3
+  lastClipIndex: 2

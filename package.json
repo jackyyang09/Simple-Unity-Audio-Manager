@@ -1,0 +1,21 @@
+{
+  "name": "com.Brogrammist.JackysSimpleAudioManager",
+  "version": "3.0.0",
+  "displayName": "Jacky's Simple Audio Manager'",
+  "description": "Tired of having to manage a billion AudioSources lying about? That will no longer be a reality! Never worry about sounds and music ever again!",
+  "unity": "2019.1",
+  "unityRelease": "0b5",
+  "documentationUrl": "https://jackyyang09.github.io/Simple-Unity-Audio-Manager/",
+  "changelogUrl": "https://github.com/jackyyang09/Simple-Unity-Audio-Manager/releases/tag/v2.1.6",
+  "licensesUrl": "https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/master/JSAM/LICENSE.md",
+  "keywords": [
+    "jsam",
+    "audio",
+    "manager"
+  ],
+  "author": {
+    "name": "Jacky Yang",
+    "email": "jackyyang267@gmail.com",
+    "url": "https://github.com/jackyyang09/Simple-Unity-Audio-Manager/"
+  }
+}

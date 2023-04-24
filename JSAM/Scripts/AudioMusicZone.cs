@@ -32,6 +32,14 @@ namespace JSAM
             }
         }
 
+        private void OnDestroy()
+        {
+            if (helper)
+            {
+                helper.Stop(true);
+            }
+        }
+
         // Update is called once per frame
         void Update()
         {

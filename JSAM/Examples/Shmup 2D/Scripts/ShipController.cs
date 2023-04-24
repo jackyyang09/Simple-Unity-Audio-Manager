@@ -25,18 +25,14 @@ namespace JSAM.Example.Shmup2D
         float shotCooldown = 0.15f;
         bool canShoot = true;
 
-        [SerializeField]
-        Transform bulletSpawnZone = null;
+        [SerializeField] Transform bulletSpawnZone;
 
         [Header("Object References")]
-
-        [SerializeField]
-        ObjectPool bulletPool = null;
+        [SerializeField] ObjectPool bulletPool;
+        [SerializeField] SoundFileObject controlSound;
 
         Rigidbody2D rb;
-
         Animator anim;
-
         SpriteRenderer hitBox;
 
         void Awake()

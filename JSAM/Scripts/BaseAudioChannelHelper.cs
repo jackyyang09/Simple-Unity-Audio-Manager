@@ -15,7 +15,7 @@ namespace JSAM
         /// <summary>
         /// Returns true if this Audio Channel is not playing any sounds and is not marked as "Reserved"
         /// </summary>
-        public bool IsFree { get { return !Reserved && !AudioSource.isPlaying; } }
+        public bool IsFree { get { return !Reserved && !enabled; } }
 
         protected T audioFile;
         public T AudioFile { get { return audioFile; } }

@@ -63,7 +63,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: priority
-    value: 128
+    value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: startingPitch
@@ -84,6 +84,10 @@ Preset:
   - target: {fileID: 0}
     propertyPath: ignoreTimeScale
     value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: maxPlayingInstances
+    value: 10
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: mixerGroupOverride

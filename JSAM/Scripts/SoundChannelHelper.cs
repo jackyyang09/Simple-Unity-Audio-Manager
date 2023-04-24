@@ -6,6 +6,7 @@ namespace JSAM
 {
     [AddComponentMenu("")]
     [DefaultExecutionOrder(2)]
+    [RequireComponent(typeof(AudioSource))]
     public class SoundChannelHelper : BaseAudioChannelHelper<SoundFileObject>
     {
         protected override float Volume 
