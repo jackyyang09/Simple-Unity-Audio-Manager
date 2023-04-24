@@ -1,5 +1,5 @@
 {
-  "name": "com.Brogrammist.JackysSimpleAudioManager",
+  "name": "com.brogrammist.jsam",
   "version": "3.0.0",
   "displayName": "Jacky's Simple Audio Manager'",
   "description": "Tired of having to manage a billion AudioSources lying about? That will no longer be a reality! Never worry about sounds and music ever again!",
