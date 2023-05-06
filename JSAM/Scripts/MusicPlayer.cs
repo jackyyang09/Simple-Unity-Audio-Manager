@@ -156,6 +156,7 @@ namespace JSAM
 
         private void OnDestroy()
         {
+            if (!AudioManager.Instance) return;
             switch (onDestroy)
             {
                 case AudioPlaybackBehaviour.Play:

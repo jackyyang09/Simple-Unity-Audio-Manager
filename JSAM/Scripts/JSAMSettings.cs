@@ -177,6 +177,8 @@ namespace JSAM
 
         public static void TryCreateNewSettingsAsset()
         {
+            if (EditorApplication.isCompiling) return;
+
             if (!EditorUtility.DisplayDialog(
                 "JSAM First Time Setup",
                 "In order to function, JSAM needs a place to store settings. By default, a " +
