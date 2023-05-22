@@ -1,6 +1,6 @@
 {
-    "name": "com.jackyyang09.simple-unity-audio-manager",
-    "rootNamespace": "Jackyyang09.SimpleUnityAudioManager",
+    "name": "com.Brogrammist.JSAM",
+    "rootNamespace": "Brogrammist.JSAM",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -1,10 +1,8 @@
 ![](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/Media/Media/Homepage%20Promo/JSAM%20card%20image.png)
 
-**UPDATE: JSAM is currently undergoing massive overhauls for a version 3.0 release!**
-
 **JSAM 3.0 is at a point that I'd call "usable". If you would like to try a bunch of new features (that may potentially be buggy), do pull directly from the repository into your project! Anything that isn't packaged and uploaded to the Release page is entirely work-in-progress and may be subject to change**
 
-**I cannot give a definite timeline for when it will be finished, as I'm currently beset by a full-time job and some higher priority projects. As of now the latest release is the most stable version to use, but it may run into issues in Unity 2020.3!**
+**I cannot give a definite timeline for when it will be finished, as I'm currently beset by a full-time job and some higher priority projects. As of now the latest release is the most stable version to use!**
 
 Tired of having to manage a billion AudioSources lying about? That will no longer be a reality!
 Never worry about sounds and music ever again!
@@ -31,7 +29,7 @@ JSAM is perfect for game jams, prototypes and is scaleable with your project!
 
 ### Install via GIT URL
 
-- Go to ```Package Manager``` -> ```Add package from GIT url...``` -> Enter ```https://github.com/jackyyang09/Simple-Unity-Audio-Manager.git#upm-packaged``` -> Click ```Add``` *(You will need to have Git installed and available in your system's PATH)*
+- Go to ```Package Manager``` -> ```Add package from GIT url...``` -> Enter ```https://github.com/jackyyang09/Simple-Unity-Audio-Manager.git#master``` -> Click ```Add``` *(You will need to have Git installed and available in your system's PATH)*
 
 ### Also
 

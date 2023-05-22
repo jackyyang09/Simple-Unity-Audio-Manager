@@ -54,7 +54,7 @@ namespace JSAM.Example.FirstPerson3D
         {
             bullets = magSize;
             canShoot = true;
-            ammoText.text = bullets.ToString(); 
+            ammoText.text = bullets.ToString();
         }
 
         // Update is called once per frame

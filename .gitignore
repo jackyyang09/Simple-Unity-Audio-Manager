@@ -1,8 +1,11 @@
 [Ll]ibrary/
+[Ss]ettings/
 [Tt]emp/
 [Oo]bj/
 [Bb]uild/
 [Bb]uilds/
+[Ss]ettings/
+[Ss]amples/
 Assets/AssetStoreTools*
 
 # Visual Studio cache directory
@@ -34,5 +37,3 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
-
-!Plugins/*.dll

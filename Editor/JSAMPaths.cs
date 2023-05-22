@@ -14,14 +14,34 @@ namespace JSAM.JSAMEditor
         [SerializeField] EditorCompatability.AgnosticGUID<AudioLibrary> selectedLibrary;
         public AudioLibrary SelectedLibrary
         {
-            get => selectedLibrary.SavedObject;
-            set => selectedLibrary.SavedObject = value;
+            get
+            {
+                return selectedLibrary.SavedObject;
+            }
+            set
+            {
+                selectedLibrary.SavedObject = value;
+            }
         }
-        
-        public string PackagePath => "Packages/com.jackyyang09.simple-unity-audio-manager/";
+
+        [Tooltip("The root folder of JSAM")]
+        [SerializeField] string packagePath;
+        public string PackagePath
+        {
+            get
+            {
+                if (packagePath.IsNullEmptyOrWhiteSpace() || !AssetDatabase.IsValidFolder(packagePath))
+                {
+                    packagePath = JSAMEditorHelper.GetAudioManagerPath;
+                    packagePath = packagePath.Remove(packagePath.IndexOf("/Scripts/AudioManager.cs"));
+                    Save(true);
+                }
+                return packagePath;
+            }
+        }
 
         [Tooltip("The folder that holds all JSAM-related presets. Audio File object presets will be saved here automatically.")]
-        [SerializeField] string presetsPath = "Assets/JSAM-Presets";
+        [SerializeField] string presetsPath;
         public string PresetsPath
         {
             get
@@ -35,7 +55,7 @@ namespace JSAM.JSAMEditor
         {
             if (!AssetDatabase.IsValidFolder(presetsPath))
             {
-                presetsPath = "Assets/JSAM-Presets";
+                presetsPath = PackagePath + "/Presets";
                 Save(true);
             }
         }

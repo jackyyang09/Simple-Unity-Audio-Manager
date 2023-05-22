@@ -1,8 +1,8 @@
 {
-    "name": "com.jackyyang09.simple-unity-audio-manager.Editor",
-    "rootNamespace": "Jackyyang09.SimpleUnityAudioManager.Editor",
+    "name": "com.Brogrammist.JSAM.Editor",
+    "rootNamespace": "Brogrammist.JSAM.Editor",
     "references": [
-        "GUID:15fb0d628bf962446a825401ceb0735a"
+        "GUID:971d9a10892b1ec0a96fbdb1bb70a411"
     ],
     "includePlatforms": [
         "Editor"

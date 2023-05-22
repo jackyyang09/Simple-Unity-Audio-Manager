@@ -3225,7 +3225,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 480e418606ca8cc4ca956759f7b8c3c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefab: {fileID: 6789875963486134159, guid: e8785c53dae4f7a418f967cbb80baab9, type: 3}
+  prefab: {fileID: 6789875963486134159, guid: 1d3d483b940de0445bbff3aea97d74e7, type: 3}
   objectsToSpawn: 200
 --- !u!4 &4502563657082201730
 Transform:

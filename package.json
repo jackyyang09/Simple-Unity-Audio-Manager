@@ -1,13 +1,13 @@
 {
-	"name": "com.jackyyang09.simple-unity-audio-manager",
-	"displayName": "Simple Unity Audio Manager",
+	"name": "com.brogrammist.jsam",
+	"displayName": "Jacky's Simple Audio Manager",
 	"version": "3.0.0-preview.1",
 	"unity": "2022.2",
 	"description": "A decentralized audio playing system for Unity, designed for simplicity and built to scale!",
 	"category": "",
 	"author": {
-		"name": "jackyyang09",
-		"url": "https://github.com/jackyyang09"
+		"name": "Brogrammist",
+		"url": "https://github.com/jackyyang09/Simple-Unity-Audio-Manager"
 	},
 	"samples": [
         {
@@ -22,17 +22,17 @@
 		},
 		{
 			"displayName": "First-Person 3D",
-			"description": "",
+			"description": "FPS-Style Sample SCene",
 			"path": "./Samples~/First-Person 3D"
 		},
 		{
 			"displayName": "Loop Points",
-			"description": "",
+			"description": "Loop music using loop points!",
 			"path": "./Samples~/Loop Points"
 		},
 		{
 			"displayName": "Sample Pause Menu",
-			"description": "",
+			"description": "Sample showing how to implement volume controls",
 			"path": "./Samples~/Sample Pause Menu"
 		},
 		{
