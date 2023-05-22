@@ -1503,61 +1503,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 687805362}
   m_CullTransparentMesh: 0
---- !u!1 &707307175
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 707307177}
-  - component: {fileID: 707307176}
-  m_Layer: 0
-  m_Name: Audio Player Music
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &707307176
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 707307175}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bd13adbb36a3a614fafbec256720d4c4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  audio: {fileID: 11400000, guid: ba811883cbf748a44976f08ef6af3671, type: 2}
-  advancedMode: 1
-  keepPlaybackPosition: 1
-  restartOnReplay: 0
-  stopInstantly: 0
-  onStart: 1
-  onEnable: 0
-  onDisable: 0
-  onDestroy: 2
-  fadeBehaviour: 0
-  fadeTime: 0
---- !u!4 &707307177
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 707307175}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 6
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &725783424
 GameObject:
   m_ObjectHideFlags: 0
@@ -8734,7 +8679,7 @@ MonoBehaviour:
   stopInstantly: 0
   keepPlayingWhenAway: 0
   MusicZones:
-  - Position: {x: -17.96645, y: 0.25669998, z: 0}
+  - Position: {x: -17.85059, y: 0, z: 0.06696153}
     MaxDistance: 5
     MinDistance: 1
 --- !u!65 &1699867988
@@ -9727,11 +9672,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7241a3e106230140bd9d59ff2d17ccd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  settings: {fileID: 11400000, guid: 1f43de746b2308f41aaf82bea29cce69, type: 2}
   library: {fileID: 11400000, guid: 31c08407d1b62654c81b1fa273cfb915, type: 2}
   listener: {fileID: 1934637672}
-  soundChannelPrefab: {fileID: 0}
-  musicChannelPrefab: {fileID: 0}
 --- !u!4 &4502563657454752320
 Transform:
   m_ObjectHideFlags: 0

@@ -21,6 +21,8 @@ namespace JSAM.JSAMEditor
             disableConsoleLogs,
             dontDestroyOnLoad,
             dynamicSourceAllocation,
+            soundChannelPrefabOverride,
+            musicChannelPrefabOverride,
             stopSoundsOnSceneLoad,
             spatializationMode,
             timeScaledSounds,
@@ -60,6 +62,8 @@ namespace JSAM.JSAMEditor
             disableConsoleLogs = SerializedObject.FindProperty(nameof(disableConsoleLogs));
             dontDestroyOnLoad = SerializedObject.FindProperty(nameof(dontDestroyOnLoad));
             dynamicSourceAllocation = SerializedObject.FindProperty(nameof(dynamicSourceAllocation));
+            soundChannelPrefabOverride = SerializedObject.FindProperty(nameof(soundChannelPrefabOverride));
+            musicChannelPrefabOverride = SerializedObject.FindProperty(nameof(musicChannelPrefabOverride));
             stopSoundsOnSceneLoad = SerializedObject.FindProperty(nameof(stopSoundsOnSceneLoad));
             spatializationMode = SerializedObject.FindProperty(nameof(spatializationMode));
             timeScaledSounds = SerializedObject.FindProperty(nameof(timeScaledSounds));
@@ -108,6 +112,80 @@ namespace JSAM.JSAMEditor
             EditorGUILayout.PropertyField(startingSoundChannels);
             EditorGUILayout.PropertyField(stopSoundsOnSceneLoad);
             EditorGUILayout.PropertyField(timeScaledSounds);
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(soundChannelPrefabOverride);
+            if (EditorGUI.EndChangeCheck())
+            {
+                var go = soundChannelPrefabOverride.objectReferenceValue as GameObject;
+                if (go)
+                {
+                    if (!go.GetComponent<AudioSource>())
+                    {
+                        soundChannelPrefabOverride.objectReferenceValue = null;
+                        EditorUtility.DisplayDialog("Prefab Validation Error!",
+                        "Your prefab is missing an AudioSource component!",
+                        "Damn.");
+                    }
+                    else if (!go.GetComponent<SoundChannelHelper>())
+                    {
+                        go.AddComponent<SoundChannelHelper>();
+                    }
+
+                    if (go.TryGetComponent(out MusicChannelHelper musicHelper))
+                    {
+                        GameObject.DestroyImmediate(musicHelper, true);
+                    }
+                }
+            }
+            if (GUILayout.Button(" Clear ", GUILayout.ExpandWidth(false)))
+            {
+                var go = soundChannelPrefabOverride.objectReferenceValue as GameObject;
+                if (go.TryGetComponent(out SoundChannelHelper soundHelper))
+                {
+                    GameObject.DestroyImmediate(soundHelper, true);
+                }
+                soundChannelPrefabOverride.objectReferenceValue = null;
+            }
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(musicChannelPrefabOverride);
+            if (EditorGUI.EndChangeCheck())
+            {
+                var go = musicChannelPrefabOverride.objectReferenceValue as GameObject;
+                if (go)
+                {
+                    if (!go.GetComponent<AudioSource>())
+                    {
+                        musicChannelPrefabOverride.objectReferenceValue = null;
+                        EditorUtility.DisplayDialog("Prefab Validation Error!",
+                        "Your prefab is missing an AudioSource component!",
+                        "Damn.");
+                    }
+                    else if (!go.GetComponent<MusicChannelHelper>())
+                    {
+                        go.AddComponent<MusicChannelHelper>();
+                    }
+
+                    if (go.TryGetComponent(out SoundChannelHelper soundHelper))
+                    {
+                        GameObject.DestroyImmediate(soundHelper, true);
+                    }
+                }
+            }
+            if (GUILayout.Button(" Clear ", GUILayout.ExpandWidth(false)))
+            {
+                var go = musicChannelPrefabOverride.objectReferenceValue as GameObject;
+                if (go.TryGetComponent(out MusicChannelHelper musicHelper))
+                {
+                    GameObject.DestroyImmediate(musicHelper, true);
+                }
+                musicChannelPrefabOverride.objectReferenceValue = null;
+            }
+            EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space();
             mixerFoldout = EditorCompatability.SpecialFoldouts(mixerFoldout, "Mixer Settings");

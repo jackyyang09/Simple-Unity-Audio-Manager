@@ -17,13 +17,11 @@ namespace JSAM.Example.Shmup2D
         [Tooltip("Spawn this many objects on start")]
         int objectsToSpawn = 100;
 
-        List<GameObject> pool;
+        List<GameObject> pool = new List<GameObject>();
 
         // Start is called before the first frame update
         void Start()
         {
-            pool = new List<GameObject>();
-
             for (int i = 0; i < objectsToSpawn; i++)
             {
                 pool.Add(Instantiate(prefab, transform));

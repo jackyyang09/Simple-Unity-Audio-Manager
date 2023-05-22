@@ -19,7 +19,7 @@ MonoBehaviour:
   loopStart: 47.995647
   loopEnd: 48
   bpm: 160
-  relativeVolume: 0.2
+  relativeVolume: 1
   spatialize: 0
   maxDistance: 0
   priority: 128
@@ -28,6 +28,7 @@ MonoBehaviour:
   loopMode: 2
   delay: 0
   ignoreTimeScale: 0
+  maxPlayingInstances: 10
   mixerGroupOverride: {fileID: 0}
   fadeInOut: 0
   fadeInDuration: 0
