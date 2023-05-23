@@ -1,0 +1,26 @@
+var searchData=
+[
+  ['importassetsorfoldersatpath_3c_20t_20_3e',['ImportAssetsOrFoldersAtPath&lt; T &gt;',['../class_j_s_a_m_1_1_j_s_a_m_editor_1_1_j_s_a_m_editor_helper.html#ab6c541c2cbb027342ac8257f11b24abf',1,'JSAM::JSAMEditor::JSAMEditorHelper']]],
+  ['init',['Init',['../class_j_s_a_m_1_1_j_s_a_m_editor_1_1_audio_library_editor.html#ad264ca8a622e1f7c01035b06eddb2fb1',1,'JSAM.JSAMEditor.AudioLibraryEditor.Init()'],['../class_j_s_a_m_1_1_j_s_a_m_editor_1_1_audio_playback_tool_editor.html#a3c39b5de43aadf61fa19b41a209e1a26',1,'JSAM.JSAMEditor.AudioPlaybackToolEditor.Init()'],['../class_j_s_a_m_1_1_j_s_a_m_editor_1_1_j_s_a_m_startup_window.html#a2601fc16d3d80a51da492a5825e846b5',1,'JSAM.JSAMEditor.JSAMStartupWindow.Init()'],['../class_j_s_a_m_1_1_j_s_a_m_editor_1_1_j_s_a_m_utility_window.html#a4d222540443339c28492c34a1a4f3ebd',1,'JSAM.JSAMEditor.JSAMUtilityWindow.Init()'],['../class_j_s_a_m_1_1_base_audio_channel_helper.html#aa605ef4bcfd73e04cb8be6c16e7cc61a',1,'JSAM.BaseAudioChannelHelper.Init()']]],
+  ['initialize',['Initialize',['../class_j_s_a_m_1_1_base_audio_file_object.html#ac75129bb595ddc55a3b44d42323b32a7',1,'JSAM::BaseAudioFileObject']]],
+  ['initializevalues',['InitializeValues',['../class_j_s_a_m_1_1_audio_library.html#a749bf96502f1d9b267bff32e7e5ce242',1,'JSAM::AudioLibrary']]],
+  ['inverselerpunclamped',['InverseLerpUnclamped',['../class_j_s_a_m_1_1_j_s_a_m_extensions.html#ac507fecd3954c2f0651958a76e82f777',1,'JSAM::JSAMExtensions']]],
+  ['invokeoncrouch',['InvokeOnCrouch',['../class_j_s_a_m_1_1_example_1_1_first_person3_d_1_1_f_p_s_animator.html#a139dc8c97788fee43ccc48ab91eaeefa',1,'JSAM::Example::FirstPerson3D::FPSAnimator']]],
+  ['is3d',['Is3D',['../class_unity_editor_1_1_audio_util.html#a824fd3cc1aefe17104ee5782f78fa20c',1,'UnityEditor::AudioUtil']]],
+  ['isclipplaying',['IsClipPlaying',['../class_unity_editor_1_1_audio_util.html#a96ecd8c454747835ab3b045c04369eb7',1,'UnityEditor::AudioUtil']]],
+  ['iscompressed',['IsCompressed',['../class_unity_editor_1_1_audio_util.html#a428001a4b8eb68ef8bc9fbe5ca13781d',1,'UnityEditor::AudioUtil']]],
+  ['isdragging',['IsDragging',['../class_j_s_a_m_1_1_j_s_a_m_editor_1_1_j_s_a_m_editor_helper.html#a510ec0ac15952fc4a304fb58bfdfb9da',1,'JSAM::JSAMEditor::JSAMEditorHelper']]],
+  ['ismod',['IsMOD',['../class_unity_editor_1_1_audio_util.html#a82c37e54c51939f219f8dae65b2015cc',1,'UnityEditor::AudioUtil']]],
+  ['ismovieaudio',['IsMovieAudio',['../class_unity_editor_1_1_audio_util.html#a21aba1869f643effcf38503172ae8066',1,'UnityEditor::AudioUtil']]],
+  ['ismusicplaying',['IsMusicPlaying',['../class_j_s_a_m_1_1_audio_manager.html#abe7e8ac64d737c7db8ccb66aed5b27a2',1,'JSAM::AudioManager']]],
+  ['ismusicplaying_3c_20t_20_3e',['IsMusicPlaying&lt; T &gt;',['../class_j_s_a_m_1_1_audio_manager.html#af804d2d8efcb000bad8cd582662c58e0',1,'JSAM::AudioManager']]],
+  ['ismusicplayinginternal',['IsMusicPlayingInternal',['../class_j_s_a_m_1_1_audio_manager_internal.html#a2895cfb4aa5805c86faf0d65a60c9347',1,'JSAM.AudioManagerInternal.IsMusicPlayingInternal(MusicFileObject a, Transform trans=null)'],['../class_j_s_a_m_1_1_audio_manager_internal.html#a4a312a93a34970194fc35531b6a2bca7',1,'JSAM.AudioManagerInternal.IsMusicPlayingInternal(MusicFileObject s, Vector3 pos)']]],
+  ['isnullemptyorwhitespace',['IsNullEmptyOrWhiteSpace',['../class_j_s_a_m_1_1_j_s_a_m_extensions.html#ad1b870fe4f8703fe9e1c101a96b9d4b3',1,'JSAM::JSAMExtensions']]],
+  ['ispreviewclipplaying',['IsPreviewClipPlaying',['../class_unity_editor_1_1_audio_util.html#ab7984581956b00152eaafa3924f89d4b',1,'UnityEditor::AudioUtil']]],
+  ['issoundplaying',['IsSoundPlaying',['../class_j_s_a_m_1_1_audio_manager.html#aecfb798c27775f654751b45156f1c73f',1,'JSAM.AudioManager.IsSoundPlaying(SoundFileObject sound, Transform transform=null)'],['../class_j_s_a_m_1_1_audio_manager.html#a7685de033ec7911caca2201af27c478b',1,'JSAM.AudioManager.IsSoundPlaying(SoundFileObject sound, Vector3 position)']]],
+  ['issoundplaying_3c_20t_20_3e',['IsSoundPlaying&lt; T &gt;',['../class_j_s_a_m_1_1_audio_manager.html#abd381e9dbd3454e7a789504b3ea6931c',1,'JSAM.AudioManager.IsSoundPlaying&lt; T &gt;(T sound, Transform transform=null)'],['../class_j_s_a_m_1_1_audio_manager.html#ae52997db46c5b21caae81cdbff2a8d0f',1,'JSAM.AudioManager.IsSoundPlaying&lt; T &gt;(T sound, Vector3 position)']]],
+  ['issoundplayinginternal',['IsSoundPlayingInternal',['../class_j_s_a_m_1_1_audio_manager_internal.html#a9f0da73f23765ab719008c44522f97fc',1,'JSAM.AudioManagerInternal.IsSoundPlayingInternal(SoundFileObject s, Transform trans)'],['../class_j_s_a_m_1_1_audio_manager_internal.html#ae0c413b6790a0b01fa58b38a0dda7dff',1,'JSAM.AudioManagerInternal.IsSoundPlayingInternal(SoundFileObject s, Vector3 pos)']]],
+  ['isstramed',['IsStramed',['../class_unity_editor_1_1_audio_util.html#a713595b3abb21ec3875db3a3b200c81c',1,'UnityEditor::AudioUtil']]],
+  ['istrackerfile',['IsTrackerFile',['../class_unity_editor_1_1_audio_util.html#a6464441445e7e576af6cde114b27fa17',1,'UnityEditor::AudioUtil']]],
+  ['iswavfile',['IsWavFile',['../class_j_s_a_m_1_1_j_s_a_m_editor_1_1_j_s_a_m_editor_extensions.html#af716add62b4c057a631918434a24c951',1,'JSAM::JSAMEditor::JSAMEditorExtensions']]]
+];
