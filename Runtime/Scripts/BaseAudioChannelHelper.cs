@@ -541,7 +541,9 @@ namespace JSAM
             AudioSource.timeSamples = (int)Mathf.Clamp((float)AudioSource.timeSamples, 0, (float)AudioSource.clip.samples - 1);
             AudioSource.Play();
             AudioSource.pitch = 1;
-            ApplyEffects();
+
+            // Don't apply if inspecting an AudioClip
+            if (AudioFile) ApplyEffects();
         }
 #endif
     }
