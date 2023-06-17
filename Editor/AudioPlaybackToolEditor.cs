@@ -61,9 +61,12 @@ namespace JSAM.JSAMEditor
         static Vector2 lastWindowSize = Vector2.zero;
         static bool resized = false;
 
+        public static bool lockSelection;
+
         static bool showHowTo;
         //static float playbackPreviewClamped = 300;
         static bool showLibraryView = false;
+        static float libraryScroll;
 
         static PreviewRenderUtility m_PreviewUtility;
 
@@ -104,8 +107,6 @@ namespace JSAM.JSAMEditor
                 return SoundFileObjectEditor.instance;
             } 
         }
-
-        static System.Action OnToggleHowTo;
 
         // Add menu named "My Window" to the Window menu
         [MenuItem("Window/JSAM/JSAM Playback Tool")]
@@ -150,7 +151,6 @@ namespace JSAM.JSAMEditor
 
         private void OnEnable()
         {
-            OnToggleHowTo += AdjustWindowSize;
             SetIcons();
             m_HandleLinesMaterial = EditorGUIUtility.LoadRequired("SceneView/HandleLines.mat") as Material;
         }
@@ -164,8 +164,6 @@ namespace JSAM.JSAMEditor
             }
 
             m_HandleLinesMaterial = null;
-
-            OnToggleHowTo -= AdjustWindowSize;
 
             window = null;
 
@@ -189,30 +187,11 @@ namespace JSAM.JSAMEditor
             DestroyAudioHelper();
         }
 
-        static float preHowToToggleWindowSize = 0;
-        private void AdjustWindowSize()
-        {
-            Rect newRect = new Rect(Window.position);
-
-            if (showHowTo)
-            {
-                preHowToToggleWindowSize = Window.position.height;
-                float heightIncrease = JSAMEditorHelper.lastGuideSize.y;
-                newRect.height += heightIncrease;
-            }
-            else
-            {
-                if (preHowToToggleWindowSize > 0)
-                {
-                    newRect.height = preHowToToggleWindowSize;
-                }
-            }
-
-            Window.position = newRect;
-        }
-
         private void OnGUI()
         {
+            EditorGUILayout.BeginHorizontal();
+
+            EditorGUILayout.BeginVertical();
             DrawPlaybackTool(selectedClip, selectedSound, selectedMusic);
             EditorGUILayout.BeginHorizontal();
             if (HelperSourceActive)
@@ -234,38 +213,48 @@ namespace JSAM.JSAMEditor
                     cachedTex = null;
                 }
             }
-            if (selectedSound)
+            EditorGUILayout.EndVertical();
+
+            EditorGUILayout.BeginVertical(GUILayout.Width(150));
+            if (showLibraryView)
             {
-                if (selectedSound.Files.Count > 1)
+                if (!selectedSound)
                 {
-                    showLibraryView = EditorCompatability.SpecialFoldouts(showLibraryView, "Show Audio File Object Library");
-                    if (showLibraryView)
+                    EditorGUILayout.LabelField("Library view is only available for Sound File Objects!",
+                        EditorStyles.label.ApplyWordWrap().SetFontSize(JSAMSettings.Settings.QuickReferenceFontSize),
+                        GUILayout.Width(140));
+                }
+                else
+                {
+                    libraryScroll = EditorGUILayout.BeginScrollView(new Vector2(0, libraryScroll)).y;
+                    for (int i = 0; i < selectedSound.Files.Count; i++)
                     {
-                        for (int i = 0; i < selectedSound.Files.Count; i++)
+                        AudioClip sound = selectedSound.Files[i];
+                        Color colorbackup = GUI.backgroundColor;
+                        //EditorGUILayout.BeginHorizontal();
+                        if (helperSource.clip == sound) GUI.backgroundColor = buttonPressedColor;
+                        var buttonName = sound.name;
+                        if (buttonName.Length > 15) buttonName = sound.name.Substring(0, 15) + "...";
+                        GUIContent bContent = new GUIContent(buttonName, "Click to change AudioClip being played back to " + sound.name);
+                        if (GUILayout.Button(bContent))
                         {
-                            AudioClip sound = selectedSound.Files[i];
-                            Color colorbackup = GUI.backgroundColor;
-                            //EditorGUILayout.BeginHorizontal();
-                            if (helperSource.clip == sound) GUI.backgroundColor = buttonPressedColor;
-                            GUIContent bContent = new GUIContent(sound.name, "Click to change AudioClip being played back to " + sound.name);
-                            if (GUILayout.Button(bContent))
-                            {
-                                // Play the sound
-                                selectedClip = sound;
-                                helperSource.clip = selectedClip;
-                                SoundFader.StartFading(helperSource.clip, selectedSound);
-                                clipPlaying = true;
-                            }
-                            //EditorGUILayout.EndHorizontal();
-                            GUI.backgroundColor = colorbackup;
+                            // Play the sound
+                            selectedClip = sound;
+                            helperSource.clip = selectedClip;
+                            SoundFader.StartFading(helperSource.clip, selectedSound);
+                            clipPlaying = true;
                         }
+                        //EditorGUILayout.EndHorizontal();
+                        GUI.backgroundColor = colorbackup;
                     }
-                    EditorCompatability.EndSpecialFoldoutGroup();
+                    EditorGUILayout.EndScrollView();
                 }
             }
+            EditorGUILayout.EndVertical();
+
+            EditorGUILayout.EndHorizontal();
 
             #region Quick Reference Guide
-            EditorGUI.BeginChangeCheck();
             JSAMEditorHelper.StartMeasureLastGuideSize();
             showHowTo = JSAMEditorHelper.RenderQuickReferenceGuide(showHowTo, new string[]
             {
@@ -277,10 +266,6 @@ namespace JSAM.JSAMEditor
                 "You can open the JSAM Playback Tool by double-clicking on Audio File assets in the Project window.",
                 "The JSAM Playback Tool can also play standard AudioClips!"
             });
-            if (EditorGUI.EndChangeCheck())
-            {
-                OnToggleHowTo?.Invoke();
-            }
             if (!showHowTo)
             {
                 // Dirty hack
@@ -296,6 +281,7 @@ namespace JSAM.JSAMEditor
         MusicFileObject selectedMusic;
         private void OnSelectionChange()
         {
+            if (lockSelection) return;
             if (Selection.activeObject == null) return;
             System.Type activeType = Selection.activeObject.GetType();
 
@@ -443,11 +429,12 @@ namespace JSAM.JSAMEditor
                 }
                 if (loopClip) JSAMEditorHelper.EndBackgroundColourChange();
 
+                var randomButton = new GUIContent("Play Random", "Play a random track from your Sound File Object's file library. Only usable for Sound Files with more than 2 AudioClips.");
                 if (selectedSound)
                 {
-                    using (new EditorGUI.DisabledScope(selectedSound.Files.Count < 2))
+                    using (new EditorGUI.DisabledScope(selectedSound.Files.Count == 0))
                     {
-                        if (GUILayout.Button(new GUIContent("Play Random", "Preview settings with a random track from your library. Only usable if this Audio File has \"Use Library\" enabled.")))
+                        if (GUILayout.Button(randomButton))
                         {
                             selectedClip = soundFileEditorInstance.DesignateRandomAudioClip();
                             clipPlaying = true;
@@ -456,12 +443,26 @@ namespace JSAM.JSAMEditor
                         }
                     }
                 }
-
-                if (GUILayout.Button(lockIcon, new GUILayoutOption[] { GUILayout.ExpandWidth(false), GUILayout.ExpandHeight(true), GUILayout.MaxHeight(18) }))
+                else
                 {
-
+                    using (new EditorGUI.DisabledScope(true)) GUILayout.Button(randomButton);
                 }
 
+                var libraryButton = new GUIContent("Toggle Library", "Show/Hide the Sound File List");
+                if (GUILayout.Button(libraryButton))
+                {
+                    showLibraryView = !showLibraryView;
+                    var r = window.position;
+                    if (showLibraryView) r.xMax += 150;
+                    else r.xMax -= 150;
+
+                    window.position = r;
+                }
+
+                if (GUILayout.Button(lockIcons[Convert.ToInt32(lockSelection)], new GUILayoutOption[] { GUILayout.ExpandWidth(false), GUILayout.ExpandHeight(true), GUILayout.MinHeight(18) }))
+                {
+                    lockSelection = !lockSelection;
+                }
 
                 int loopPointInputMode = 0;
                 // Reset loop point input mode if not using loop points so the duration shows up as time by default
@@ -559,6 +560,8 @@ namespace JSAM.JSAMEditor
 
         public static void CreateAudioHelper(AudioClip selectedClip)
         {
+            if (lockSelection) return;
+
             if (helperObject == null)
             {
                 helperObject = GameObject.Find("JSAM Audio Helper");
@@ -940,7 +943,7 @@ namespace JSAM.JSAMEditor
         static GUIContent[] s_PlayIcons = { null, null };
         static GUIContent[] s_PauseIcons = { null, null };
         static GUIContent[] s_LoopIcons = { null, null };
-        static GUIContent lockIcon = null;
+        static GUIContent[] lockIcons = { null, null };
 
         /// <summary>
         /// Why does Unity keep all this stuff secret?
@@ -965,7 +968,8 @@ namespace JSAM.JSAMEditor
             s_LoopIcons[0] = EditorGUIUtility.TrIconContent("playLoopOff", "Click to enable looping");
             s_LoopIcons[1] = EditorGUIUtility.TrIconContent("playLoopOn", "Click to disable looping");
 #endif
-            lockIcon = EditorGUIUtility.TrIconContent("InspectorLock", "Toggles the changing of audio when selecting inspector objects");
+            lockIcons[0] = EditorGUIUtility.TrIconContent("IN LockButton", "Toggles the changing of audio when selecting inspector objects");
+            lockIcons[1] = EditorGUIUtility.TrIconContent("IN LockButton on", "Toggles the changing of audio when selecting inspector objects");
         }
 
         public static string TimeToString(float time)
@@ -980,6 +984,7 @@ namespace JSAM.JSAMEditor
         public static void DoForceRepaint(bool fullRepaint = false)
         {
             forceRepaint = fullRepaint;
+            if (forceRepaint) cachedTex = null;
             if (WindowOpen)
             {
                 resized = false;

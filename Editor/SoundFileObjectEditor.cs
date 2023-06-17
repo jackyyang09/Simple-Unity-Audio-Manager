@@ -437,6 +437,8 @@ namespace JSAM.JSAMEditor
 
         void Update()
         {
+            if (AudioPlaybackToolEditor.lockSelection) return;
+
             if (asset == null) return; // This can happen on the same frame it's deleted
             if (asset.Files.Count == 0) return;
             AudioClip clip = asset.Files[0];
