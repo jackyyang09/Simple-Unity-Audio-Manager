@@ -21,8 +21,14 @@ namespace JSAM.JSAMEditor
 #else
                 if (paths == null)
                 {
-                    var asset = Resources.Load(nameof(JSAMSettings));
-                    paths = asset as JSAMPaths;
+                    var files = AssetDatabase.FindAssets("t:" + nameof(JSAMPaths));
+                    foreach (var item in files)
+                    {
+                        var p = AssetDatabase.GUIDToAssetPath(item);
+                        var i = AssetDatabase.LoadAssetAtPath<JSAMPaths>(p);
+                        paths = i as JSAMPaths;
+                        if (paths) break;
+                    }
                     if (paths == null) TryCreateNewPathAsset();
                 }
                 return paths;
@@ -34,7 +40,7 @@ namespace JSAM.JSAMEditor
         static JSAMPaths paths;
 #endif
 
-        public static void Save()
+        public static void TrySave(bool b = false)
         {
 #if UNITY_2021_3_OR_NEWER
             Instance.Save(true);
@@ -64,7 +70,7 @@ namespace JSAM.JSAMEditor
                 {
                     packagePath = JSAMEditorHelper.GetAudioManagerPath;
                     packagePath = packagePath.Remove(packagePath.IndexOf("/Scripts/AudioManager.cs"));
-                    Save(true);
+                    TrySave(true);
                 }
                 return packagePath;
             }
@@ -86,14 +92,14 @@ namespace JSAM.JSAMEditor
             if (!AssetDatabase.IsValidFolder(presetsPath))
             {
                 presetsPath = PackagePath + "/Presets";
-                Save(true);
+                TrySave(true);
             }
         }
 
 #if !UNITY_2021_3_OR_NEWER
-        static readonly string FULL_PATH = ASSET_PATH + ASSET_NAME;
-        static readonly string ASSET_PATH = "Assets/Settings/Resources/" + ASSET_NAME;
-        static readonly string ASSET_NAME = nameof(JSAMPaths) + ".asset";
+        static string FULL_PATH => ASSET_PATH + ASSET_NAME;
+        static string ASSET_PATH = "Assets/";
+        static string ASSET_NAME = nameof(JSAMPaths) + ".asset";
 
         public static void TryCreateNewPathAsset()
         {
@@ -102,14 +108,13 @@ namespace JSAM.JSAMEditor
             if (!EditorUtility.DisplayDialog(
                 "JSAM First Time Setup",
                 "In order to function, JSAM needs a place to store paths. By default, a " +
-                "Settings asset will be created at " + FULL_PATH + ", but you may move it " +
-                "elsewhere, so long as it's in a Resources folder.\n" +
-                "Moving it out of the Resources folder will prompt this message to appear again erroneously!",
+                "Paths asset will be created at " + FULL_PATH + ", but you may move it " +
+                "elsewhere, so long as it's within the Project.\n" +
+                "Moving the asset file out of the Project will prompt this message to appear again!",
                 "Ok Create It.", "Not Yet!")) return;
 
             var asset = CreateInstance<JSAMPaths>();
-            JSAMEditorHelper.GenerateFolderStructureAt(ASSET_NAME, false);
-            AssetDatabase.CreateAsset(asset, ASSET_PATH);
+            AssetDatabase.CreateAsset(asset, FULL_PATH);
             asset.ResetPresetsPathIfInvalid();
 
             paths = asset;
@@ -117,4 +122,16 @@ namespace JSAM.JSAMEditor
         }
 #endif
     }
+
+#if !UNITY_2021_3_OR_NEWER
+    [CustomEditor(typeof(JSAMPaths))]
+    public class JSAMPathsEditor : Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            var style = new GUIStyle(EditorStyles.helpBox).SetFontSize(JSAMSettings.Settings.QuickReferenceFontSize);
+            EditorGUILayout.LabelField("I'm necessary to JSAM's function, please don't delete me!", style);
+        }
+    }
+#endif
 }

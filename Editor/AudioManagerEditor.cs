@@ -97,7 +97,7 @@ namespace JSAM.JSAMEditor
                 if (library.objectReferenceValue != null)
                 {
                     JSAMPaths.Instance.SelectedLibrary = library.objectReferenceValue as AudioLibrary;
-                    JSAMPaths.Save();
+                    JSAMPaths.TrySave();
                 }
                 AudioLibraryEditor.Init();
             }

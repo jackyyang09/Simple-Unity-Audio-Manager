@@ -192,7 +192,7 @@ namespace JSAM.JSAMEditor
             {
                 asset = newAsset;
                 JSAMPaths.Instance.SelectedLibrary = asset;
-                JSAMPaths.Save();
+                JSAMPaths.TrySave();
             }
             else // Fallback
             {
