@@ -182,7 +182,7 @@ namespace JSAM
             if (!EditorUtility.DisplayDialog(
                 "JSAM First Time Setup",
                 "In order to function, JSAM needs a place to store settings. By default, a " +
-                "Settings asset will be created at Assets/Settings/Resources/, but you may move it " +
+                "Settings asset will be created at " + SETTINGS_PATH + ", but you may move it " +
                 "elsewhere, so long as it's in a Resources folder.\n" +
                 "Moving it out of the Resources folder will prompt this message to appear again erroneously!",
                 "Ok Create It.", "Not Yet!")) return;
