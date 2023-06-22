@@ -72,7 +72,7 @@ namespace JSAM
 
         public override void Stop(bool stopInstantly = true)
         {
-            StopAllCoroutines();
+            base.Stop(stopInstantly);
             if (stopInstantly)
             {
                 AudioSource.Stop();
