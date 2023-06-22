@@ -219,7 +219,8 @@ namespace JSAM
                 return null;
             }
 
-            PlayMusicInternal(music, null, mainMusic);
+            if (isMain) PlayMusicInternal(music, null, mainMusic);
+            else PlayMusicInternal(music, null, null);
 
             AudioManager.OnMusicPlayed?.Invoke(music);
 
