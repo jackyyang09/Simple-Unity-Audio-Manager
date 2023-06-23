@@ -1,10 +1,11 @@
 {
 	"name": "com.brogrammist.jsam",
 	"displayName": "Jacky's Simple Audio Manager",
-	"version": "3.0.0-preview.1",
+	"version": "3.0.0-preview.2",
 	"unity": "2022.2",
 	"description": "A decentralized audio playing system for Unity, designed for simplicity and built to scale!",
 	"category": "",
+	"documentationUrl": "https://jackyyang09.github.io/Simple-Unity-Audio-Manager/",
 	"author": {
 		"name": "Brogrammist",
 		"url": "https://github.com/jackyyang09/Simple-Unity-Audio-Manager"
