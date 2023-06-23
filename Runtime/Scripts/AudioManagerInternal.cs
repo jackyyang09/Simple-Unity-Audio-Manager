@@ -96,10 +96,18 @@ namespace JSAM
 
         float prevTimeScale = 1;
 
+        // Passing a helperSource into a Play function bypasses audio limiting dictionaries.
+        // So we check if their keys exist before removing.
         Dictionary<BaseAudioFileObject, List<SoundChannelHelper>> limitedSounds = new Dictionary<BaseAudioFileObject, List<SoundChannelHelper>>();
-        public void RemovePlayingSound(BaseAudioFileObject s, SoundChannelHelper h) => limitedSounds[s].Remove(h);
+        public void RemovePlayingSound(BaseAudioFileObject s, SoundChannelHelper h)
+        {
+            if (limitedSounds.ContainsKey(s)) limitedSounds[s].Remove(h);
+        }
         Dictionary<BaseAudioFileObject, List<MusicChannelHelper>> limitedMusic = new Dictionary<BaseAudioFileObject, List<MusicChannelHelper>>();
-        public void RemovePlayingMusic(BaseAudioFileObject s, MusicChannelHelper h) => limitedMusic[s].Remove(h);
+        public void RemovePlayingMusic(BaseAudioFileObject s, MusicChannelHelper h)
+        {
+            if (limitedMusic.ContainsKey(s)) limitedMusic[s].Remove(h);
+        }
 
         /// <summary>
         /// A bit like float Epsilon, but large enough for the purpose of pushing the playback position of AudioSources just far enough to not throw an error
