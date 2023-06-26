@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -421,17 +422,15 @@ namespace JSAM.JSAMEditor
         public AudioClip DesignateRandomAudioClip()
         {
             AudioClip theClip = playingClip;
-            if (files.arraySize != 0)
+            if (files.arraySize > 1)
             {
-                List<AudioClip> files = asset.Files;
-                while (theClip == null || theClip == playingClip)
-                {
-                    theClip = files[Random.Range(0, files.Count)];
-                }
+                List<AudioClip> f = new List<AudioClip>(asset.Files);
+                f.Remove(theClip);
+                theClip = f[Random.Range(0, f.Count)];
+                playingClip = theClip;
+                AudioPlaybackToolEditor.DoForceRepaint(true);
             }
-            playingClip = theClip;
             playingRandom = true;
-            AudioPlaybackToolEditor.DoForceRepaint(true);
             return playingClip;
         }
 
