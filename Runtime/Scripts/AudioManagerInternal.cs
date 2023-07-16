@@ -24,15 +24,19 @@ namespace JSAM
         #region Volume Logic
         public bool MasterMuted = false;
         public float MasterVolume = 1;
-        public float ModifiedMasterVolume { get { return MasterVolume * Convert.ToInt32(!MasterMuted); } }
+        public float ModifiedMasterVolume => MasterVolume * Convert.ToInt32(!MasterMuted);
 
         public bool MusicMuted = false;
         public float MusicVolume = 1;
-        public float ModifiedMusicVolume { get { return ModifiedMasterVolume * MusicVolume * Convert.ToInt32(!MusicMuted); } }
+        public float ModifiedMusicVolume => ModifiedMasterVolume * MusicVolume * Convert.ToInt32(!MusicMuted);
 
         public bool SoundMuted = false;
         public float SoundVolume = 1;
-        public float ModifiedSoundVolume { get { return ModifiedMasterVolume * SoundVolume * Convert.ToInt32(!SoundMuted); } }
+        public float ModifiedSoundVolume => ModifiedMasterVolume * SoundVolume * Convert.ToInt32(!SoundMuted);
+
+        public bool VoiceMuted = false;
+        public float VoiceVolume = 1;
+        public float ModifiedVoiceVolume => ModifiedMasterVolume * VoiceVolume * Convert.ToInt32(!VoiceMuted);
 
         public void SaveVolumeSettings()
         {
@@ -41,10 +45,12 @@ namespace JSAM
             PlayerPrefs.SetFloat(Settings.MasterVolumeKey, MasterVolume);
             PlayerPrefs.SetFloat(Settings.MusicVolumeKey, MusicVolume);
             PlayerPrefs.SetFloat(Settings.SoundVolumeKey, SoundVolume);
+            PlayerPrefs.SetFloat(Settings.VoiceVolumeKey, VoiceVolume);
 
             PlayerPrefs.SetInt(Settings.MasterMutedKey, Convert.ToInt16(MasterMuted));
             PlayerPrefs.SetInt(Settings.MusicMutedKey, Convert.ToInt16(MusicMuted));
             PlayerPrefs.SetInt(Settings.SoundMutedKey, Convert.ToInt16(SoundMuted));
+            PlayerPrefs.SetInt(Settings.VoiceMutedKey, Convert.ToInt16(VoiceMuted));
 
             PlayerPrefs.Save();
         }
@@ -53,35 +59,15 @@ namespace JSAM
         {
             if (!Settings.SaveVolumeToPlayerPrefs) return;
 
-            if (PlayerPrefs.HasKey(Settings.MasterVolumeKey))
-            {
-                MasterVolume = PlayerPrefs.GetFloat(Settings.MasterVolumeKey, 1);
-            }
+            MasterVolume = PlayerPrefs.GetFloat(Settings.MasterVolumeKey, 1);
+            MusicVolume = PlayerPrefs.GetFloat(Settings.MusicVolumeKey, 1);
+            SoundVolume = PlayerPrefs.GetFloat(Settings.SoundVolumeKey, 1);
+            VoiceVolume = PlayerPrefs.GetFloat(Settings.VoiceVolumeKey, 1);
 
-            if (PlayerPrefs.HasKey(Settings.MusicVolumeKey))
-            {
-                MusicVolume = PlayerPrefs.GetFloat(Settings.MusicVolumeKey, 1);
-            }
-
-            if (PlayerPrefs.HasKey(Settings.SoundVolumeKey))
-            {
-                SoundVolume = PlayerPrefs.GetFloat(Settings.SoundVolumeKey, 1);
-            }
-
-            if (PlayerPrefs.HasKey(Settings.MasterMutedKey))
-            {
-                MasterMuted = Convert.ToBoolean(PlayerPrefs.GetInt(Settings.MasterMutedKey, 0));
-            }
-
-            if (PlayerPrefs.HasKey(Settings.MusicMutedKey))
-            {
-                MusicMuted = Convert.ToBoolean(PlayerPrefs.GetInt(Settings.MusicMutedKey, 0));
-            }
-
-            if (PlayerPrefs.HasKey(Settings.SoundMutedKey))
-            {
-                SoundMuted = Convert.ToBoolean(PlayerPrefs.GetInt(Settings.SoundMutedKey, 0));
-            }
+            MasterMuted = Convert.ToBoolean(PlayerPrefs.GetInt(Settings.MasterMutedKey, 0));
+            MusicMuted = Convert.ToBoolean(PlayerPrefs.GetInt(Settings.MusicMutedKey, 0));
+            SoundMuted = Convert.ToBoolean(PlayerPrefs.GetInt(Settings.SoundMutedKey, 0));
+            VoiceMuted = Convert.ToBoolean(PlayerPrefs.GetInt(Settings.VoiceMutedKey, 0));
         }
         #endregion
 
@@ -89,8 +75,6 @@ namespace JSAM
         /// This object holds all AudioChannels
         /// </summary>
         Transform sourceHolder;
-
-        AudioManager audioManager;
 
         [SerializeField] GameObject sourcePrefab;
 
@@ -139,8 +123,6 @@ namespace JSAM
 
         void Awake()
         {
-            audioManager = GetComponent<AudioManager>();
-
             LoadVolumeSettings();
 
             sourceHolder = new GameObject("Sources").transform;

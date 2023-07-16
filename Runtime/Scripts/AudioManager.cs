@@ -60,7 +60,7 @@ namespace JSAM
         /// </summary>
         public bool Initialized { get { return initialized; } }
 
-        public static MusicChannelHelper MainMusicHelper { get { return InternalInstance.mainMusic; } }
+        public static MusicChannelHelper MainMusicHelper { get => InternalInstance.mainMusic; }
         public static MusicFileObject MainMusic { get { return MainMusicHelper.AudioFile; } }
         /// <summary>
         /// Returns the currently playing music as an integer for you to convert back into an enum. 
@@ -100,6 +100,7 @@ namespace JSAM
         /// </summary>
         public static Action OnAudioManagerInitialized;
         public static Action<SoundFileObject> OnSoundPlayed;
+        public static Action<SoundFileObject> OnVoicePlayed;
         public static Action<MusicFileObject> OnMusicPlayed;
         /// <summary>
         /// Invoked when the volume of the Music channel is changed. Passes the new volume as a normalized float value between 0 and 1
@@ -113,6 +114,10 @@ namespace JSAM
         /// Invoked when the volume of the Sound channel is changed. Passes the new volume as a normalized float value between 0 and 1
         /// </summary>
         public static Action<float> OnSoundVolumeChanged;
+        /// <summary>
+        /// Invoked when the volume of the Voice channel is changed. Passes the new volume as a normalized float value between 0 and 1
+        /// </summary>
+        public static Action<float> OnVoiceVolumeChanged;
         #endregion
 
         // Use this for initialization
@@ -712,23 +717,52 @@ namespace JSAM
 
         #region Volume
         /// <summary>
-        /// Get the current overall volume as a normalized float from 0 to 1
+        /// The current overall volume from 0 to 1
         /// </summary>
-        public static float MasterVolume { get { return InternalInstance.MasterVolume; } }
-        public static bool MasterMuted { get { return InternalInstance.MasterMuted; } 
-            set 
-            { 
-                InternalInstance.MasterMuted = value;
-                OnMasterVolumeChanged?.Invoke(InternalInstance.MasterVolume); 
+        public static float MasterVolume 
+        { 
+            get => InternalInstance.MasterVolume;
+            set
+            {
+                var vol = Mathf.Clamp01(value);
+                if (vol == InternalInstance.MasterVolume) return;
+                InternalInstance.MasterVolume = vol;
+                OnMasterVolumeChanged?.Invoke(vol);
                 OnMusicVolumeChanged?.Invoke(InternalInstance.MusicVolume);
-                OnSoundVolumeChanged?.Invoke(InternalInstance.SoundVolume); 
+                OnSoundVolumeChanged?.Invoke(InternalInstance.SoundVolume);
+                OnVoiceVolumeChanged?.Invoke(InternalInstance.VoiceVolume);
+            }
+        }
+        public static bool MasterMuted 
+        { 
+            get => InternalInstance.MasterMuted; 
+            set 
+            {
+                if (InternalInstance.MasterMuted == value) return;
+                InternalInstance.MasterMuted = value;
+                OnMasterVolumeChanged?.Invoke(InternalInstance.MasterVolume);
+                OnMusicVolumeChanged?.Invoke(InternalInstance.MusicVolume);
+                OnSoundVolumeChanged?.Invoke(InternalInstance.SoundVolume);
+                OnVoiceVolumeChanged?.Invoke(InternalInstance.VoiceVolume);
             }
         }
         /// <summary>
         /// Get the current volume of Music as a normalized float from 0 to 1
         /// </summary>
-        public static float MusicVolume { get { return InternalInstance.MusicVolume; } }
-        public static bool MusicMuted { get { return InternalInstance.MusicMuted; }
+        public static float MusicVolume 
+        {
+            get => InternalInstance.MusicVolume; 
+            set
+            {
+                var vol = Mathf.Clamp01(value);
+                if (InternalInstance.MusicVolume == vol) return; 
+                InternalInstance.MusicVolume = vol;
+                OnMusicVolumeChanged?.Invoke(InternalInstance.MusicVolume);
+            }
+        }
+        public static bool MusicMuted 
+        {
+            get => InternalInstance.MusicMuted;
             set 
             { 
                 InternalInstance.MusicMuted = value;
@@ -738,33 +772,48 @@ namespace JSAM
         /// <summary>
         /// Get the current volume of Sounds as a normalized float from 0 to 1
         /// </summary>
-        public static float SoundVolume { get { return InternalInstance.SoundVolume; } }
-        public static bool SoundMuted { get { return InternalInstance.SoundMuted; } 
+        public static float SoundVolume
+        { 
+            get => InternalInstance.SoundVolume;
+            set
+            {
+                var vol = Mathf.Clamp01(value);
+                if (InternalInstance.SoundVolume == vol) return;
+                InternalInstance.SoundVolume = vol;
+                OnSoundVolumeChanged?.Invoke(InternalInstance.SoundVolume);
+            }
+        }
+        public static bool SoundMuted 
+        {
+            get => InternalInstance.SoundMuted; 
             set 
             { 
                 InternalInstance.SoundMuted = value; 
                 OnSoundVolumeChanged?.Invoke(InternalInstance.SoundVolume);
             }
         }
-
-        public static void SetMasterVolume(float newVolume)
-        {
-            InternalInstance.MasterVolume = newVolume;
-            OnMasterVolumeChanged?.Invoke(newVolume);
-            OnMusicVolumeChanged?.Invoke(InternalInstance.MusicVolume);
-            OnSoundVolumeChanged?.Invoke(InternalInstance.SoundVolume);
+        /// <summary>
+        /// Get the current volume of Voices as a normalized float from 0 to 1
+        /// </summary>
+        public static float VoiceVolume 
+        { 
+            get => InternalInstance.VoiceVolume;
+            set
+            {
+                var vol = Mathf.Clamp01(value);
+                if (InternalInstance.VoiceVolume == vol) return;
+                InternalInstance.VoiceVolume = vol;
+                OnVoiceVolumeChanged?.Invoke(InternalInstance.VoiceVolume);
+            }
         }
-
-        public static void SetMusicVolume(float newVolume)
+        public static bool VoiceMuted
         {
-            InternalInstance.MusicVolume = newVolume;
-            OnMusicVolumeChanged?.Invoke(newVolume);
-        }
-
-        public static void SetSoundVolume(float newVolume)
-        {
-            InternalInstance.SoundVolume = newVolume;
-            OnSoundVolumeChanged?.Invoke(newVolume);
+            get => InternalInstance.VoiceMuted;
+            set
+            {
+                InternalInstance.VoiceMuted = value;
+                OnVoiceVolumeChanged?.Invoke(InternalInstance.VoiceVolume);
+            }
         }
         #endregion
 

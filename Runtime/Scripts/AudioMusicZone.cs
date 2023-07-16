@@ -59,13 +59,13 @@ namespace JSAM
                     if (dist <= z.MinDistance)
                     {
                         // Set to the max volume
-                        helper.AudioSource.volume = AudioManager.MusicVolume * audio.relativeVolume;
+                        helper.AudioSource.volume = AudioManager.InternalInstance.ModifiedMusicVolume * audio.relativeVolume;
                         return; // Can't be beat
                     }
                     else
                     {
                         float distanceFactor = Mathf.InverseLerp(z.MaxDistance, z.MinDistance, dist);
-                        float newVol = AudioManager.MusicVolume * audio.relativeVolume * distanceFactor;
+                        float newVol = AudioManager.InternalInstance.ModifiedMusicVolume * audio.relativeVolume * distanceFactor;
                         if (newVol > loudest) loudest = newVol;
                     }
                 }

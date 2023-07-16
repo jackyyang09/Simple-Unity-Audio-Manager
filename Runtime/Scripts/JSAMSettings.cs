@@ -110,23 +110,15 @@ namespace JSAM
 
         [SerializeField] AudioMixerGroup masterGroup;
         public AudioMixerGroup MasterGroup => masterGroup;
-        [SerializeField] string masterVolumeParam = "MasterVolume";
-        public string MasterVolumePararm => masterVolumeParam;
 
         [SerializeField] AudioMixerGroup musicGroup;
         public AudioMixerGroup MusicGroup => musicGroup;
-        [SerializeField] string musicVolumeParam = "MusicVolume";
-        public string MusicVolumePararm => musicVolumeParam;
 
         [SerializeField] AudioMixerGroup soundGroup;
         public AudioMixerGroup SoundGroup => soundGroup;
-        [SerializeField] string soundVolumeParam = "SoundVolume";
-        public string SoundVolumePararm => soundVolumeParam;
 
         [SerializeField] AudioMixerGroup voiceGroup;
         public AudioMixerGroup VoiceGroup => voiceGroup;
-        [SerializeField] string voiceVolumeParam = "VoiceVolume";
-        public string VoiceVolumePararm => voiceVolumeParam;
 
         [Tooltip("If true, will save volume settings into PlayerPrefs and automatically loads previous volume settings on play. ")]
         [SerializeField] bool saveVolumeToPlayerPrefs = true;
@@ -144,6 +136,10 @@ namespace JSAM
         [SerializeField] string soundMutedKey = "JSAM_SOUND_MUTE";
         public string SoundVolumeKey => soundVolumeKey;
         public string SoundMutedKey => soundMutedKey;
+        [SerializeField] string voiceVolumeKey = "JSAM_VOICE_VOL";
+        [SerializeField] string voiceMutedKey = "JSAM_VOICE_MUTE";
+        public string VoiceVolumeKey => voiceVolumeKey;
+        public string VoiceMutedKey => voiceMutedKey;
 
         [Tooltip("The font size used when rendering \"quick reference guides\" in JSAM editor windows")]
         [SerializeField] int quickReferenceFontSize = 10;

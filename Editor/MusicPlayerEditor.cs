@@ -110,10 +110,10 @@ namespace JSAM.JSAMEditor
         }
         #endregion
 
-        [MenuItem("GameObject/Audio/JSAM/Audio Player Music", false, 1)]
+        [MenuItem("GameObject/Audio/JSAM/Music Player", false, 1)]
         public static void AddAudioPlayerMusic()
         {
-            GameObject newPlayer = new GameObject("Audio Player Music");
+            GameObject newPlayer = new GameObject("Music Player");
             newPlayer.AddComponent<MusicPlayer>();
             if (Selection.activeTransform != null)
             {
@@ -122,7 +122,7 @@ namespace JSAM.JSAMEditor
             }
             EditorGUIUtility.PingObject(newPlayer);
             Selection.activeGameObject = newPlayer;
-            Undo.RegisterCreatedObjectUndo(newPlayer, "Added new AudioPlayerMusic");
+            Undo.RegisterCreatedObjectUndo(newPlayer, "Added new MusicPlayer");
         }
     }
 }

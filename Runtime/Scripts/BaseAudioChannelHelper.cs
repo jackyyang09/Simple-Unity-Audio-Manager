@@ -20,7 +20,18 @@ namespace JSAM
         protected T audioFile;
         public T AudioFile { get { return audioFile; } }
 
-        protected abstract float Volume { get; }
+        protected delegate float VolumeDelegate();
+        protected VolumeDelegate GetChannelVolume;
+        public float Volume
+        {
+            get
+            {
+                var vol = GetChannelVolume();
+                if (audioFile) vol *= audioFile.relativeVolume;
+                return vol;
+            }
+        }
+        protected abstract VolumeChannel DefaultChannel { get; }
 
         /// <summary>
         /// This property will only be assigned to if both the AudioFileObject and the AudioManager have spatialization enabled
@@ -142,6 +153,63 @@ namespace JSAM
             }
         }
 
+        protected void SubscribeToVolumeEvents()
+        {
+            VolumeChannel channel;
+            if (audioFile.channelOverride == VolumeChannel.None)
+            {
+                channel = DefaultChannel;
+            }
+            else
+            {
+                channel = audioFile.channelOverride;
+            }
+
+            switch (channel)
+            {
+                case VolumeChannel.Music:
+                    GetChannelVolume = () => AudioManager.InternalInstance.ModifiedMusicVolume;
+                    AudioManager.OnMusicVolumeChanged += OnUpdateVolume;
+                    break;
+                case VolumeChannel.Sound:
+                    GetChannelVolume = () => AudioManager.InternalInstance.ModifiedSoundVolume;
+                    AudioManager.OnSoundVolumeChanged += OnUpdateVolume;
+                    break;
+                case VolumeChannel.Voice:
+                    GetChannelVolume = () => AudioManager.InternalInstance.ModifiedVoiceVolume;
+                    AudioManager.OnVoiceVolumeChanged += OnUpdateVolume;
+                    break;
+            }
+        }
+
+        protected void UnsubscribeToAudioEvents()
+        {
+            if (!audioFile) return;
+            GetChannelVolume = null;
+            VolumeChannel channel;
+            if (audioFile.channelOverride == VolumeChannel.None)
+            {
+                channel = DefaultChannel;
+            }
+            else
+            {
+                channel = audioFile.channelOverride;
+            }
+
+            switch (channel)
+            {
+                case VolumeChannel.Music:
+                    AudioManager.OnMusicVolumeChanged -= OnUpdateVolume;
+                    break;
+                case VolumeChannel.Sound:
+                    AudioManager.OnSoundVolumeChanged -= OnUpdateVolume;
+                    break;
+                case VolumeChannel.Voice:
+                    AudioManager.OnVoiceVolumeChanged -= OnUpdateVolume;
+                    break;
+            }
+        }
+
         /// <summary>
         /// Called by Play()
         /// </summary>
@@ -151,10 +219,13 @@ namespace JSAM
             StopAllCoroutines();
             AudioSource.Stop();
             AudioSource.timeSamples = 0;
+            UnsubscribeToAudioEvents();
         }
 
         public virtual AudioSource Play(T file)
         {
+            ClearProperties();
+
             audioFile = file;
 
             if (!AssignNewAudioClip())
@@ -185,6 +256,9 @@ namespace JSAM
             AudioSource.outputAudioMixerGroup = file.mixerGroupOverride ? file.mixerGroupOverride : defaultMixerGroup;
 
             AudioSource.priority = (int)file.priority;
+
+            SubscribeToVolumeEvents();
+            AudioSource.volume = Volume;
 
             bool timeScaledSounds = false;
             if (JSAMSettings.Settings)

@@ -8,15 +8,7 @@ namespace JSAM
     [RequireComponent(typeof(AudioSource))]
     public class MusicChannelHelper : BaseAudioChannelHelper<MusicFileObject>
     {
-        protected override float Volume
-        {
-            get
-            {
-                var vol = AudioManager.InternalInstance.ModifiedMusicVolume;
-                if (audioFile) vol *= audioFile.relativeVolume;
-                return vol;
-            }
-        }
+        protected override VolumeChannel DefaultChannel => VolumeChannel.Music;
 
         protected override void OnEnable()
         {
@@ -45,18 +37,13 @@ namespace JSAM
 
         public override AudioSource Play(MusicFileObject file)
         {
-            ClearProperties();
-
             if (file == null)
             {
                 AudioManager.DebugWarning("Attempted to play a non-existent JSAM Music File Object!");
                 return AudioSource;
             }
 
-            audioFile = file;
-
             AudioSource.pitch = 1;
-            OnUpdateVolume(AudioManager.MusicVolume);
 
             if (file.loopMode == LoopMode.NoLooping)
             {

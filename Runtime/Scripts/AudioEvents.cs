@@ -59,17 +59,22 @@ namespace JSAM
 
         public void SetMasterVolume(float newVal)
         {
-            AudioManager.SetMasterVolume(newVal);
+            AudioManager.MasterVolume = newVal;
         }
 
         public void SetMusicVolume(float newVal)
         {
-            AudioManager.SetMusicVolume(newVal);
+            AudioManager.MusicVolume = newVal;
         }
 
         public void SetSoundVolume(float newVal)
         {
-            AudioManager.SetSoundVolume(newVal);
+            AudioManager.SoundVolume = newVal;
+        }
+
+        public void SetVoiceVolume(float newVal)
+        {
+            AudioManager.VoiceVolume = newVal;
         }
     }
 }

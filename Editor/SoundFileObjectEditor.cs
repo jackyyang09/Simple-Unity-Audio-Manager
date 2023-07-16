@@ -48,6 +48,7 @@ namespace JSAM.JSAMEditor
                 return;
             }
 
+            // Throws an error here when replacing a AudioClip and playing it in an independent window
             var helperSource = AudioPlaybackToolEditor.helperSource;
             if (helperSource.isPlaying)
             {

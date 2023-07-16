@@ -224,8 +224,8 @@ namespace JSAM.JSAMEditor
         {
             showVolume = EditorCompatability.SpecialFoldouts(showVolume, new GUIContent("Volume Controls"));
 
-            float master = 1, music = 1, sound = 1;
-            bool masterMuted = false, musicMuted = false, soundMuted = false;
+            float master = 1, music = 1, sound = 1, voice = 1;
+            bool masterMuted = false, musicMuted = false, soundMuted = false, voiceMuted = false;
 
             EditorGUILayout.BeginVertical(GUI.skin.box);
             using (new EditorGUI.DisabledGroupScope(!Application.isPlaying))
@@ -238,6 +238,7 @@ namespace JSAM.JSAMEditor
                     masterMuted = AudioManager.MasterMuted;
                     musicMuted = AudioManager.MusicMuted;
                     soundMuted = AudioManager.SoundMuted;
+                    voiceMuted = AudioManager.VoiceMuted;
                 }
                 else
                 {
@@ -246,70 +247,59 @@ namespace JSAM.JSAMEditor
 
                 if (showVolume)
                 {
-                    {   // MASTER
-                        EditorGUILayout.BeginHorizontal();
-                        EditorGUILayout.LabelField(new GUIContent("Master Volume"), new GUILayoutOption[] { GUILayout.MaxWidth(85) });
-                        if (masterMuted) JSAMEditorHelper.BeginColourChange(buttonPressedColor);
-                        if (JSAMEditorHelper.CondensedButton(" MUTE "))
-                        {
-                            AudioManager.MasterMuted = !AudioManager.MasterMuted;
-                        }
-                        if (masterMuted) JSAMEditorHelper.EndColourChange();
-                        using (new EditorGUI.DisabledGroupScope(masterMuted))
-                        {
-                            EditorGUI.BeginChangeCheck();
-                            float vol = EditorGUILayout.Slider(master, 0, 1);
-                            if (EditorGUI.EndChangeCheck())
-                            {
-                                AudioManager.SetMasterVolume(vol);
-                            }
-                        }
-                        EditorGUILayout.EndHorizontal();
+                    EditorGUI.BeginChangeCheck();
+                    var tuple = RenderVolumeSlider("Master", master, masterMuted);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        AudioManager.MasterVolume = tuple.Item1;
+                        AudioManager.MasterMuted = tuple.Item2;
                     }
-                    {   // MUSIC
-                        EditorGUILayout.BeginHorizontal();
-                        EditorGUILayout.LabelField(new GUIContent("Music Volume"), new GUILayoutOption[] { GUILayout.MaxWidth(85) });
-                        if (musicMuted) JSAMEditorHelper.BeginColourChange(buttonPressedColor);
-                        if (JSAMEditorHelper.CondensedButton(" MUTE "))
-                        {
-                            AudioManager.MusicMuted = !AudioManager.MusicMuted;
-                        }
-                        if (musicMuted) JSAMEditorHelper.EndColourChange();
-                        using (new EditorGUI.DisabledGroupScope(musicMuted))
-                        {
-                            EditorGUI.BeginChangeCheck();
-                            float vol = EditorGUILayout.Slider(music, 0, 1);
-                            if (EditorGUI.EndChangeCheck())
-                            {
-                                AudioManager.SetMusicVolume(vol);
-                            }
-                        }
-                        EditorGUILayout.EndHorizontal();
+
+                    EditorGUI.BeginChangeCheck();
+                    tuple = RenderVolumeSlider("Music", music, musicMuted);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        AudioManager.MusicVolume = tuple.Item1;
+                        AudioManager.MusicMuted = tuple.Item2;
                     }
-                    {   // SOUND
-                        EditorGUILayout.BeginHorizontal();
-                        EditorGUILayout.LabelField(new GUIContent("Sound Volume"), new GUILayoutOption[] { GUILayout.MaxWidth(85) });
-                        if (soundMuted) JSAMEditorHelper.BeginColourChange(buttonPressedColor);
-                        if (JSAMEditorHelper.CondensedButton(" MUTE "))
-                        {
-                            AudioManager.SoundMuted = !AudioManager.SoundMuted;
-                        }
-                        if (soundMuted) JSAMEditorHelper.EndColourChange();
-                        using (new EditorGUI.DisabledGroupScope(soundMuted))
-                        {
-                            EditorGUI.BeginChangeCheck();
-                            float vol = EditorGUILayout.Slider(sound, 0, 1);
-                            if (EditorGUI.EndChangeCheck())
-                            {
-                                AudioManager.SetSoundVolume(vol);
-                            }
-                        }
-                        EditorGUILayout.EndHorizontal();
+
+                    EditorGUI.BeginChangeCheck();
+                    tuple = RenderVolumeSlider("Sound", sound, soundMuted);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        AudioManager.SoundVolume = tuple.Item1;
+                        AudioManager.SoundMuted = tuple.Item2;
+                    }
+
+                    EditorGUI.BeginChangeCheck();
+                    tuple = RenderVolumeSlider("Voice", voice, voiceMuted);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        AudioManager.VoiceVolume = tuple.Item1;
+                        AudioManager.VoiceMuted = tuple.Item2;
                     }
                 }
             }
             EditorGUILayout.EndVertical();
             EditorCompatability.EndSpecialFoldoutGroup();
+        }
+
+        (float, bool) RenderVolumeSlider(string channelName, float volume, bool muted)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(new GUIContent(channelName + " Volume"), new GUILayoutOption[] { GUILayout.MaxWidth(85) });
+            if (muted) JSAMEditorHelper.BeginColourChange(buttonPressedColor);
+            if (JSAMEditorHelper.CondensedButton(" MUTE "))
+            {
+                muted = !muted;
+            }
+            if (muted) JSAMEditorHelper.EndColourChange();
+            using (new EditorGUI.DisabledGroupScope(muted))
+            {
+                volume = EditorGUILayout.Slider(volume, 0, 1);
+            }
+            EditorGUILayout.EndHorizontal();
+            return (volume, muted);
         }
     }
 }
