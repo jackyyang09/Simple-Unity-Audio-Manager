@@ -10,30 +10,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0d15ae218647a2d4f85e14306846c10c, type: 3}
-  m_Name: Crouch
+  m_Name: Breathing
   m_EditorClassIdentifier: 
-  safeName: Crouch
+  safeName: Running
   presetDescription: 
   files:
-  - {fileID: 8300000, guid: 555f844c66999cd40bf82bd5fa53d063, type: 3}
+  - {fileID: 8300000, guid: 068fd76cd9f08f843a9e8f9a4de87f3d, type: 3}
   loopStart: 0
-  loopEnd: 0
+  loopEnd: 3.7384126
   bpm: 120
-  relativeVolume: 1
+  relativeVolume: 0.5
   spatialize: 0
   maxDistance: 0
   priority: 128
   startingPitch: 1
-  pitchShift: 0.05
-  loopMode: 0
+  pitchShift: 0
+  loopMode: 1
   delay: 0
   ignoreTimeScale: 0
   maxPlayingInstances: 10
+  channelOverride: 3
   mixerGroupOverride: {fileID: 0}
-  channelOverride: 0
-  fadeInOut: 0
+  fadeInOut: 1
   fadeInDuration: 0
-  fadeOutDuration: 0.097
+  fadeOutDuration: 0
   bypassEffects: 0
   bypassListenerEffects: 0
   bypassReverbZones: 0
@@ -65,20 +65,20 @@ MonoBehaviour:
     highpassResonanceQ: 0
   reverbFilter:
     enabled: 0
-    reverbPreset: 1
+    reverbPreset: 0
     dryLevel: 0
     room: 0
     roomHF: 0
     roomLF: 0
-    decayTime: 1
-    decayHFRatio: 0.5
-    reflectionsLevel: -10000
+    decayTime: 0
+    decayHFRatio: 0
+    reflectionsLevel: 0
     reflectionsDelay: 0
     reverbLevel: 0
-    reverbDelay: 0.04
-    hFReference: 5000
-    lFReference: 250
-    diffusion: 100
-    density: 100
+    reverbDelay: 0
+    hFReference: 0
+    lFReference: 0
+    diffusion: 0
+    density: 0
   neverRepeat: 0
   lastClipIndex: -1

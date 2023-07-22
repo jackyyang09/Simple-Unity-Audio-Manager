@@ -235,6 +235,7 @@ namespace JSAM.JSAMEditor
                     master = AudioManager.MasterVolume;
                     music = AudioManager.MusicVolume;
                     sound = AudioManager.SoundVolume;
+                    voice = AudioManager.VoiceVolume;
                     masterMuted = AudioManager.MasterMuted;
                     musicMuted = AudioManager.MusicMuted;
                     soundMuted = AudioManager.SoundMuted;

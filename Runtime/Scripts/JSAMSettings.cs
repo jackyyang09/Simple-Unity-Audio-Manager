@@ -208,11 +208,15 @@ namespace JSAM
         }
 #endif
 
+        public void ResetEditor()
+        {
+            SerializedObject.FindProperty(nameof(disableConsoleLogs)).boolValue = false;
+            SerializedObject.FindProperty(nameof(quickReferenceFontSize)).intValue = 10;
+            SerializedObject.ApplyModifiedProperties();
+        }
+
         public void Reset()
         {
-            //packagePath = JSAMEditorHelper.GetAudioManagerPath;
-            //packagePath = packagePath.Remove(packagePath.IndexOf("/Scripts/AudioManager.cs"));
-            //presetsPath = packagePath + "/Presets";
         }
     }
 }

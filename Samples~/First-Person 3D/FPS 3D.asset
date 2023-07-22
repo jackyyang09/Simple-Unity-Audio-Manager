@@ -30,6 +30,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 38dc31c11b7578b45b7127f83db23b96, type: 2}
   - {fileID: 11400000, guid: 530f7a308da40784e9e25b5f252961da, type: 2}
   - {fileID: 11400000, guid: b5061c426d2ebb54b83d9a3f5bae9492, type: 2}
+  - {fileID: 11400000, guid: 7b41c30f8654c144a802a68533768a50, type: 2}
   Music:
   - {fileID: 11400000, guid: 53d013968086c2a4b9dde34f761fbb70, type: 2}
   useCustomNames: 0
@@ -60,6 +61,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 38dc31c11b7578b45b7127f83db23b96, type: 2}
     - {fileID: 11400000, guid: 530f7a308da40784e9e25b5f252961da, type: 2}
     - {fileID: 11400000, guid: b5061c426d2ebb54b83d9a3f5bae9492, type: 2}
+    - {fileID: 11400000, guid: 7b41c30f8654c144a802a68533768a50, type: 2}
     foldout: 1
   musicCategoriesToList:
   - name: 

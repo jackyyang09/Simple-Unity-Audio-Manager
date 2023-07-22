@@ -375,11 +375,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a7ee673cde0ccd4f88a08e9432adae7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sprintTimeToBreathe: 3
   moveSpeed: 5
   runSpeedMultiplier: 2
   crouchSpeedMultiplier: 0.75
   gravity: {x: 0, y: -9.81, z: 0}
-  moveState: 0
   crouching: 0
   controller: {fileID: 113651440}
   stand: {fileID: 654063016}
@@ -1692,7 +1692,7 @@ MonoBehaviour:
         m_CallState: 2
 --- !u!95 &773699222
 Animator:
-  serializedVersion: 4
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1709,7 +1709,8 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorControllerStateOnDisable: 0
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &773699223
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8020,6 +8021,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f231c4fb786f3946a6b90b886c48677, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_SendPointerHoverToParent: 1
   m_HorizontalAxis: Horizontal
   m_VerticalAxis: Vertical
   m_SubmitButton: Submit

@@ -1,0 +1,11 @@
+All assets used in the "Video Volume" example project can be used royalty-free
+
+====Video====
+
+The following video was released to the Public Domain
+https://archive.org/details/YourName1960
+
+====Code====
+
+All code included in this example project is released under the MIT License and is free to use for all purposes
+https://opensource.org/licenses/MIT

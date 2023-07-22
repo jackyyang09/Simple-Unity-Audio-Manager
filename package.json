@@ -1,7 +1,7 @@
 {
 	"name": "com.brogrammist.jsam",
 	"displayName": "Jacky's Simple Audio Manager",
-	"version": "3.0.0-preview.2",
+	"version": "3.0.0-preview.3",
 	"unity": "2022.2",
 	"description": "A decentralized audio playing system for Unity, designed for simplicity and built to scale!",
 	"category": "",
@@ -10,6 +10,7 @@
 		"name": "Brogrammist",
 		"url": "https://github.com/jackyyang09/Simple-Unity-Audio-Manager"
 	},
+	"changelogUrl" : "https://github.com/jackyyang09/Simple-Unity-Audio-Manager/releases",
 	"samples": [
         {
             "displayName": "Dynamic Music",

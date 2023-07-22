@@ -10,7 +10,8 @@
         AbstractPop,
         Crouch,
         Running,
-        Walk
+        Walk,
+        Breathing
     }
     public enum FPS3DMusic {
         BGM

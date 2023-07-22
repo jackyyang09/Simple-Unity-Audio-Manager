@@ -28,13 +28,9 @@ namespace JSAM.JSAMEditor
             timeScaledSounds,
             mixer,
             masterGroup,
-            masterVolumeParam,
             musicGroup,
-            musicVolumeParam,
             soundGroup,
-            soundVolumeParam,
             voiceGroup,
-            voiceVolumeParam,
             saveVolumeToPlayerPrefs,
             masterVolumeKey,
             masterMutedKey,
@@ -42,51 +38,49 @@ namespace JSAM.JSAMEditor
             musicMutedKey,
             soundVolumeKey,
             soundMutedKey,
+            voiceVolumeKey,
+            voiceMutedKey,
             packagePath,
             presetsPath,
             fontSize;
 
-        protected JSAMSettings Settings => JSAMSettings.Settings;
-        protected SerializedObject SerializedObject => JSAMSettings.SerializedObject;
-        SerializedObject pathSO;
+        JSAMSettings Settings => JSAMSettings.Settings;
+        SerializedObject SettingsSO => JSAMSettings.SerializedObject;
+        SerializedObject PathSO => JSAMPaths.SerializedObject;
 
-        protected SerializedProperty FindProp(string prop) => SerializedObject.FindProperty(prop);
+        protected SerializedProperty FindProp(string prop) => SettingsSO.FindProperty(prop);
         void FindSerializedProperties()
         {
-            pathSO = new SerializedObject(JSAMPaths.Instance);
+            spatialSound = SettingsSO.FindProperty(nameof(spatialSound));
+            startingSoundChannels = SettingsSO.FindProperty(nameof(startingSoundChannels));
+            startingMusicChannels = SettingsSO.FindProperty(nameof(startingMusicChannels));
+            defaultSoundMaxDistance = SettingsSO.FindProperty(nameof(defaultSoundMaxDistance));
+            disableConsoleLogs = SettingsSO.FindProperty(nameof(disableConsoleLogs));
+            dontDestroyOnLoad = SettingsSO.FindProperty(nameof(dontDestroyOnLoad));
+            dynamicSourceAllocation = SettingsSO.FindProperty(nameof(dynamicSourceAllocation));
+            soundChannelPrefabOverride = SettingsSO.FindProperty(nameof(soundChannelPrefabOverride));
+            musicChannelPrefabOverride = SettingsSO.FindProperty(nameof(musicChannelPrefabOverride));
+            stopSoundsOnSceneLoad = SettingsSO.FindProperty(nameof(stopSoundsOnSceneLoad));
+            spatializationMode = SettingsSO.FindProperty(nameof(spatializationMode));
+            timeScaledSounds = SettingsSO.FindProperty(nameof(timeScaledSounds));
+            mixer = SettingsSO.FindProperty(nameof(mixer));
+            masterGroup = SettingsSO.FindProperty(nameof(masterGroup));
+            musicGroup = SettingsSO.FindProperty(nameof(musicGroup));
+            soundGroup = SettingsSO.FindProperty(nameof(soundGroup));
+            voiceGroup = SettingsSO.FindProperty(nameof(voiceGroup));
+            saveVolumeToPlayerPrefs = SettingsSO.FindProperty(nameof(saveVolumeToPlayerPrefs));
+            masterVolumeKey = SettingsSO.FindProperty(nameof(masterVolumeKey));
+            masterMutedKey = SettingsSO.FindProperty(nameof(masterMutedKey));
+            musicVolumeKey = SettingsSO.FindProperty(nameof(musicVolumeKey));
+            musicMutedKey = SettingsSO.FindProperty(nameof(musicMutedKey));
+            soundVolumeKey = SettingsSO.FindProperty(nameof(soundVolumeKey));
+            soundMutedKey = SettingsSO.FindProperty(nameof(soundMutedKey));
+            voiceVolumeKey = SettingsSO.FindProperty(nameof(voiceVolumeKey));
+            voiceMutedKey = SettingsSO.FindProperty(nameof(voiceMutedKey));
 
-            spatialSound = SerializedObject.FindProperty(nameof(spatialSound));
-            startingSoundChannels = SerializedObject.FindProperty(nameof(startingSoundChannels));
-            startingMusicChannels = SerializedObject.FindProperty(nameof(startingMusicChannels));
-            defaultSoundMaxDistance = SerializedObject.FindProperty(nameof(defaultSoundMaxDistance));
-            disableConsoleLogs = SerializedObject.FindProperty(nameof(disableConsoleLogs));
-            dontDestroyOnLoad = SerializedObject.FindProperty(nameof(dontDestroyOnLoad));
-            dynamicSourceAllocation = SerializedObject.FindProperty(nameof(dynamicSourceAllocation));
-            soundChannelPrefabOverride = SerializedObject.FindProperty(nameof(soundChannelPrefabOverride));
-            musicChannelPrefabOverride = SerializedObject.FindProperty(nameof(musicChannelPrefabOverride));
-            stopSoundsOnSceneLoad = SerializedObject.FindProperty(nameof(stopSoundsOnSceneLoad));
-            spatializationMode = SerializedObject.FindProperty(nameof(spatializationMode));
-            timeScaledSounds = SerializedObject.FindProperty(nameof(timeScaledSounds));
-            mixer = SerializedObject.FindProperty(nameof(mixer));
-            masterGroup = SerializedObject.FindProperty(nameof(masterGroup));
-            masterVolumeParam = SerializedObject.FindProperty(nameof(masterVolumeParam));
-            musicGroup = SerializedObject.FindProperty(nameof(musicGroup));
-            musicVolumeParam = SerializedObject.FindProperty(nameof(musicVolumeParam));
-            soundGroup = SerializedObject.FindProperty(nameof(soundGroup));
-            soundVolumeParam = SerializedObject.FindProperty(nameof(soundVolumeParam));
-            voiceGroup = SerializedObject.FindProperty(nameof(voiceGroup));
-            voiceVolumeParam = SerializedObject.FindProperty(nameof(voiceVolumeParam));
-            saveVolumeToPlayerPrefs = SerializedObject.FindProperty(nameof(saveVolumeToPlayerPrefs));
-            masterVolumeKey = SerializedObject.FindProperty(nameof(masterVolumeKey));
-            masterMutedKey = SerializedObject.FindProperty(nameof(masterMutedKey));
-            musicVolumeKey = SerializedObject.FindProperty(nameof(musicVolumeKey));
-            musicMutedKey = SerializedObject.FindProperty(nameof(musicMutedKey));
-            soundVolumeKey = SerializedObject.FindProperty(nameof(soundVolumeKey));
-            soundMutedKey = SerializedObject.FindProperty(nameof(soundMutedKey));
-
-            packagePath = pathSO.FindProperty(nameof(packagePath));
-            presetsPath = pathSO.FindProperty(nameof(presetsPath));
-            fontSize = SerializedObject.FindProperty("quickReferenceFontSize");
+            packagePath = PathSO.FindProperty(nameof(packagePath));
+            presetsPath = PathSO.FindProperty(nameof(presetsPath));
+            fontSize = SettingsSO.FindProperty("quickReferenceFontSize");
         }
         #endregion
 
@@ -98,8 +92,6 @@ namespace JSAM.JSAMEditor
 
         public override void OnGUI(string searchContext)
         {
-            JSAMPaths.Instance.ResetPresetsPathIfInvalid();
-
             // This makes prefix labels larger
             EditorGUIUtility.labelWidth += 50;
 
@@ -193,13 +185,9 @@ namespace JSAM.JSAMEditor
             {
                 EditorGUILayout.PropertyField(mixer);
                 EditorGUILayout.PropertyField(masterGroup);
-                EditorGUILayout.PropertyField(masterVolumeParam);
                 EditorGUILayout.PropertyField(musicGroup);
-                EditorGUILayout.PropertyField(musicVolumeParam);
                 EditorGUILayout.PropertyField(soundGroup);
-                EditorGUILayout.PropertyField(soundVolumeParam);
                 EditorGUILayout.PropertyField(voiceGroup);
-                EditorGUILayout.PropertyField(voiceVolumeParam);
             }
             EditorCompatability.EndSpecialFoldoutGroup();
 
@@ -215,6 +203,8 @@ namespace JSAM.JSAMEditor
                 EditorGUILayout.PropertyField(musicMutedKey);
                 EditorGUILayout.PropertyField(soundVolumeKey);
                 EditorGUILayout.PropertyField(soundMutedKey);
+                EditorGUILayout.PropertyField(voiceVolumeKey);
+                EditorGUILayout.PropertyField(voiceMutedKey);
                 EditorGUI.EndDisabledGroup();
             }
             EditorCompatability.EndSpecialFoldoutGroup();
@@ -236,18 +226,31 @@ namespace JSAM.JSAMEditor
             }
             EditorGUILayout.EndHorizontal();
 
+            EditorGUI.BeginChangeCheck();
             packagePath.stringValue = JSAMEditorHelper.RenderSmartFolderProperty(packagePath.GUIContent(), packagePath.stringValue);
             presetsPath.stringValue = JSAMEditorHelper.RenderSmartFolderProperty(presetsPath.GUIContent(), presetsPath.stringValue);
-
-            if (GUILayout.Button("Reset to Default", new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+            if (EditorGUI.EndChangeCheck())
             {
-                JSAMSettings.Settings.Reset();
+                JSAMPaths.TrySave(true);
             }
 
-            SerializedObject.ApplyModifiedProperties();
-            pathSO.ApplyModifiedProperties();
+            GUIContent content = new GUIContent("Reset Editor Settings to Default");
+            if (GUILayout.Button(content, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+            {
+                ResetEditorSettings();
+            }
+
+            SettingsSO.ApplyModifiedProperties();
+            PathSO.ApplyModifiedProperties();
 
             EditorGUIUtility.labelWidth -= 50;
+        }
+
+        //
+        public void ResetEditorSettings()
+        {
+            JSAMSettings.Settings.ResetEditor();
+            JSAMPaths.Instance.Reset();
         }
 
         [SettingsProvider]

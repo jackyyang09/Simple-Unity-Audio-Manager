@@ -36,6 +36,20 @@ namespace JSAM.JSAMEditor
             }
         }
 
+        static SerializedObject serializedObject;
+        public static SerializedObject SerializedObject
+        {
+            get
+            {
+                if (serializedObject == null)
+                {
+                    serializedObject = new SerializedObject(Instance);
+                    return serializedObject;
+                }
+                return serializedObject;
+            }
+        }
+
 #if !UNITY_2021_3_OR_NEWER
         static JSAMPaths paths;
 #endif
@@ -68,12 +82,19 @@ namespace JSAM.JSAMEditor
             {
                 if (packagePath.IsNullEmptyOrWhiteSpace() || !AssetDatabase.IsValidFolder(packagePath))
                 {
-                    packagePath = JSAMEditorHelper.GetAudioManagerPath;
-                    packagePath = packagePath.Remove(packagePath.IndexOf("/Scripts/AudioManager.cs"));
-                    TrySave(true);
+                    ResetPackagePath();
                 }
                 return packagePath;
             }
+        }
+
+        public void ResetPackagePath(bool save = false)
+        {
+            var path = JSAMEditorHelper.GetAudioManagerPath;
+            path = path.Remove(path.IndexOf("/Runtime/Scripts/AudioManager.cs"));
+            SerializedObject.FindProperty(nameof(packagePath)).stringValue = path;
+            SerializedObject.ApplyModifiedProperties();
+            if (save) TrySave(true);
         }
 
         [Tooltip("The folder that holds all JSAM-related presets. Audio File object presets will be saved here automatically.")]
@@ -82,18 +103,28 @@ namespace JSAM.JSAMEditor
         {
             get
             {
-                ResetPresetsPathIfInvalid();
+                if (!AssetDatabase.IsValidFolder(presetsPath))
+                {
+                    ResetPresetsPath(true);
+                }
                 return presetsPath;
             }
         }
 
-        public void ResetPresetsPathIfInvalid()
+        public string PackageManifestPath => System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), 
+                PackagePath, "package.json");
+
+        public void ResetPresetsPath(bool save = false)
         {
-            if (!AssetDatabase.IsValidFolder(presetsPath))
-            {
-                presetsPath = PackagePath + "/Presets";
-                TrySave(true);
-            }
+            SerializedObject.FindProperty(nameof(presetsPath)).stringValue = PackagePath + "/Runtime/Presets";
+            SerializedObject.ApplyModifiedProperties();
+            if (save) TrySave(true);
+        }
+
+        public void Reset()
+        {
+            ResetPackagePath();
+            ResetPresetsPath(true);
         }
 
 #if !UNITY_2021_3_OR_NEWER

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEditor;
 
@@ -21,7 +22,7 @@ namespace JSAM.JSAMEditor
         {
             get
             {
-                return System.IO.Path.Combine(new string[] 
+                return Path.Combine(new string[] 
                 {
                     JSAMPaths.Instance.PackagePath,
                     "Editor",
@@ -67,6 +68,12 @@ namespace JSAM.JSAMEditor
         private void OnEnable()
         {
             startupGraphic = AssetDatabase.LoadAssetAtPath<Texture2D>(startupGraphicPath);
+            if (!startupGraphic)
+            {
+                AudioManager.DebugWarning("Failed to find Startup Graphic! Resetting package path...");
+                JSAMPaths.Instance.ResetPackagePath();
+                startupGraphic = AssetDatabase.LoadAssetAtPath<Texture2D>(startupGraphicPath);
+            }
         }
 
         private void OnDisable()
@@ -88,7 +95,7 @@ namespace JSAM.JSAMEditor
         {
             GUILayout.Label(startupGraphic, new GUILayoutOption[] { GUILayout.ExpandHeight(false) });
 
-            EditorGUILayout.LabelField("You are currently using <b>Version 3.0</b>", GUI.skin.label.ApplyRichText());
+            EditorGUILayout.LabelField("You are currently using <b>Version " + GetPackageVersion() + "</b>", GUI.skin.label.ApplyRichText());
 
             EditorGUILayout.LabelField("To get started with JSAM, visit the links below!");
 
@@ -124,6 +131,26 @@ namespace JSAM.JSAMEditor
             GUIContent blontent = new GUIContent("Don't show this message again", "If true, prevents this window from showing up on Unity startup. " +
                 "You can find this window under \"" + STARTUP_MSG_MENU_PATH + "\"");
             HideStartupMessage = EditorGUILayout.ToggleLeft(blontent, HideStartupMessage);
+        }
+
+        private static string GetPackageVersion()
+        {
+            string packageManifestPath = JSAMPaths.Instance.PackageManifestPath;
+
+            if (File.Exists(packageManifestPath))
+            {
+                string jsonText = File.ReadAllText(packageManifestPath);
+                PackageManifest packageManifest = JsonUtility.FromJson<PackageManifest>(jsonText);
+            
+                return packageManifest.version;
+            }
+            return "-1";
+        }
+
+        [System.Serializable]
+        private class PackageManifest
+        {
+            public string version;
         }
     }
 }

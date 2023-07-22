@@ -155,7 +155,8 @@ namespace JSAM
 
         protected void SubscribeToVolumeEvents()
         {
-            VolumeChannel channel;
+            var channel = VolumeChannel.None;
+
             if (audioFile.channelOverride == VolumeChannel.None)
             {
                 channel = DefaultChannel;
@@ -182,11 +183,10 @@ namespace JSAM
             }
         }
 
-        protected void UnsubscribeToAudioEvents()
+        protected void UnsubscribeFromAudioEvents()
         {
-            if (!audioFile) return;
-            GetChannelVolume = null;
-            VolumeChannel channel;
+            var channel = VolumeChannel.None;
+
             if (audioFile.channelOverride == VolumeChannel.None)
             {
                 channel = DefaultChannel;
@@ -195,6 +195,8 @@ namespace JSAM
             {
                 channel = audioFile.channelOverride;
             }
+
+            GetChannelVolume = null;
 
             switch (channel)
             {
@@ -219,7 +221,7 @@ namespace JSAM
             StopAllCoroutines();
             AudioSource.Stop();
             AudioSource.timeSamples = 0;
-            UnsubscribeToAudioEvents();
+            if (audioFile) UnsubscribeFromAudioEvents();
         }
 
         public virtual AudioSource Play(T file)
@@ -385,7 +387,7 @@ namespace JSAM
             transform.position = position;
         }
 
-        protected void OnUpdateVolume(float volume)
+        protected void OnUpdateVolume(float volume = 0)
         {
             AudioSource.volume = Volume;
         }

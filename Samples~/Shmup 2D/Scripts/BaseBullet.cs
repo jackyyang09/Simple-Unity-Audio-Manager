@@ -2,57 +2,60 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class BaseBullet : MonoBehaviour
+namespace JSAM.Example.Shmup2D
 {
-    [SerializeField] protected float bulletSpeed = 50;
-
-    [SerializeField] protected float lifeTime = 1;
-    protected float lifeTimer;
-
-    protected bool isAlive;
-
-    private void OnEnable()
+    public abstract class BaseBullet : MonoBehaviour
     {
-        isAlive = true;
-        StartCoroutine(Move());
-        StartCoroutine(TickLifeTimer());
-    }
+        [SerializeField] protected float bulletSpeed = 50;
 
-    private void Update()
-    {
-        if (!isAlive)
+        [SerializeField] protected float lifeTime = 1;
+        protected float lifeTimer;
+
+        protected bool isAlive;
+
+        private void OnEnable()
         {
-            gameObject.SetActive(false);
+            isAlive = true;
+            StartCoroutine(Move());
+            StartCoroutine(TickLifeTimer());
         }
-    }
 
-    protected IEnumerator Move()
-    {
-        while (isAlive)
+        private void Update()
         {
-            transform.position += (transform.up * bulletSpeed * Time.deltaTime);
-            yield return null;
-        }
-    }
-
-    protected IEnumerator TickLifeTimer()
-    {
-        lifeTimer = lifeTime;
-        while (isAlive)
-        {
-            lifeTimer -= Time.deltaTime;
-            if (lifeTimer <= 0)
+            if (!isAlive)
             {
-                isAlive = false;
+                gameObject.SetActive(false);
             }
-            yield return null;
         }
-    }
 
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        TriggerEnter(other);
-    }
+        protected IEnumerator Move()
+        {
+            while (isAlive)
+            {
+                transform.position += (transform.up * bulletSpeed * Time.deltaTime);
+                yield return null;
+            }
+        }
 
-    protected abstract void TriggerEnter(Collider2D other);
+        protected IEnumerator TickLifeTimer()
+        {
+            lifeTimer = lifeTime;
+            while (isAlive)
+            {
+                lifeTimer -= Time.deltaTime;
+                if (lifeTimer <= 0)
+                {
+                    isAlive = false;
+                }
+                yield return null;
+            }
+        }
+
+        private void OnTriggerEnter2D(Collider2D other)
+        {
+            TriggerEnter(other);
+        }
+
+        protected abstract void TriggerEnter(Collider2D other);
+    }
 }
