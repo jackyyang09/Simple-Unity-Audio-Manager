@@ -206,7 +206,6 @@ namespace JSAM
                 return serializedObject;
             }
         }
-#endif
 
         public void ResetEditor()
         {
@@ -218,5 +217,6 @@ namespace JSAM
         public void Reset()
         {
         }
+#endif
     }
 }

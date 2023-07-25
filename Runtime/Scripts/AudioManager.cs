@@ -120,6 +120,19 @@ namespace JSAM
         public static Action<float> OnVoiceVolumeChanged;
         #endregion
 
+        [RuntimeInitializeOnLoadMethod]
+        static void RunOnStart()
+        {
+            OnAudioManagerInitialized = null;
+            OnSoundPlayed = null;
+            OnVoicePlayed = null;
+            OnMusicPlayed = null;
+            OnMasterVolumeChanged = null;
+            OnMusicVolumeChanged = null;
+            OnSoundVolumeChanged = null;
+            OnVoiceVolumeChanged = null;
+        }
+
         // Use this for initialization
         void Awake()
         {

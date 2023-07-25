@@ -246,7 +246,6 @@ namespace JSAM.JSAMEditor
             EditorGUIUtility.labelWidth -= 50;
         }
 
-        //
         public void ResetEditorSettings()
         {
             JSAMSettings.Settings.ResetEditor();
