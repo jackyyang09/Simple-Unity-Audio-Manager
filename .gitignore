@@ -6,6 +6,9 @@
 [Bb]uilds/
 [Ss]ettings/
 [Ss]amples/
+
+Samples~.meta
+
 Assets/AssetStoreTools*
 
 # Visual Studio cache directory

@@ -71,7 +71,7 @@ namespace JSAM.JSAMEditor
             if (!startupGraphic)
             {
                 AudioManager.DebugWarning("Failed to find Startup Graphic! Resetting package path...");
-                JSAMPaths.Instance.ResetPackagePath();
+                JSAMPaths.Instance.ResetPackagePath(true);
                 startupGraphic = AssetDatabase.LoadAssetAtPath<Texture2D>(startupGraphicPath);
             }
         }
