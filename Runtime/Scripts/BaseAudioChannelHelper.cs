@@ -127,6 +127,8 @@ namespace JSAM
 
                 AudioManager.OnMasterVolumeChanged -= OnUpdateVolume;
             }
+
+            UnsubscribeFromAudioEvents();
         }
 
         protected virtual void Update()
@@ -155,13 +157,9 @@ namespace JSAM
 
         protected void SubscribeToVolumeEvents()
         {
-            var channel = VolumeChannel.None;
+            var channel = DefaultChannel;
 
-            if (audioFile.channelOverride == VolumeChannel.None)
-            {
-                channel = DefaultChannel;
-            }
-            else
+            if (audioFile.channelOverride != VolumeChannel.None)
             {
                 channel = audioFile.channelOverride;
             }
@@ -185,15 +183,14 @@ namespace JSAM
 
         protected void UnsubscribeFromAudioEvents()
         {
-            var channel = VolumeChannel.None;
+            var channel = DefaultChannel;
 
-            if (audioFile.channelOverride == VolumeChannel.None)
+            if (audioFile)
             {
-                channel = DefaultChannel;
-            }
-            else
-            {
-                channel = audioFile.channelOverride;
+                if (audioFile.channelOverride != VolumeChannel.None)
+                {
+                    channel = audioFile.channelOverride;
+                }
             }
 
             GetChannelVolume = null;
@@ -273,7 +270,7 @@ namespace JSAM
                 float offset = AudioSource.pitch - 1;
                 AudioSource.pitch = Time.timeScale + offset;
             }
-            
+
             ApplyEffects();
 
             AudioSource.PlayDelayed(file.delay);

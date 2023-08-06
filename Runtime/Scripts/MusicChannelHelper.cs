@@ -13,18 +13,11 @@ namespace JSAM
         protected override void OnEnable()
         {
             base.OnEnable();
-
-            if (audioFile)
-            {
-                AudioManager.OnMusicVolumeChanged += OnUpdateVolume;
-            }
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
-
-            AudioManager.OnMusicVolumeChanged -= OnUpdateVolume;
 
             if (audioFile)
             {
@@ -80,7 +73,7 @@ namespace JSAM
                 {
                     if (audioFile.ignoreTimeScale) timer += Time.unscaledDeltaTime;
                     else timer += Time.deltaTime;
-                    
+
                     AudioSource.volume = Mathf.Lerp(startingVolume, 0, timer / fadeTime);
                     yield return null;
                 }

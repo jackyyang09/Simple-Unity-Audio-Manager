@@ -16,17 +16,11 @@ namespace JSAM
         protected override void OnEnable()
         {
             base.OnEnable();
-
-            if (audioFile)
-            {
-                AudioManager.OnSoundVolumeChanged += OnUpdateVolume;
-            }
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
-            AudioManager.OnSoundVolumeChanged -= OnUpdateVolume;
 
             if (audioFile)
             {

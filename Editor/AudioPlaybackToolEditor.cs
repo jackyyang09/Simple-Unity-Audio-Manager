@@ -68,6 +68,8 @@ namespace JSAM.JSAMEditor
         static bool showLibraryView = false;
         static float libraryScroll;
 
+        static Font timeFont;
+
         static PreviewRenderUtility m_PreviewUtility;
 
         static AudioPlaybackToolEditor window;
@@ -151,8 +153,9 @@ namespace JSAM.JSAMEditor
 
         private void OnEnable()
         {
+            timeFont = AssetDatabase.LoadAssetAtPath<Font>(JSAMPaths.Instance.PackagePath + "/Editor/Fonts/AzeretMono-Regular.ttf");
             SetIcons();
-            m_HandleLinesMaterial = EditorGUIUtility.LoadRequired("SceneView/HandleLines.mat") as Material;
+            //m_HandleLinesMaterial = EditorGUIUtility.LoadRequired("SceneView/HandleLines.mat") as Material;
         }
 
         private void OnDisable()
@@ -163,7 +166,7 @@ namespace JSAM.JSAMEditor
                 soundFader = null;
             }
 
-            m_HandleLinesMaterial = null;
+            //m_HandleLinesMaterial = null;
 
             window = null;
 
@@ -459,7 +462,7 @@ namespace JSAM.JSAMEditor
                     window.position = r;
                 }
 
-                if (GUILayout.Button(lockIcons[Convert.ToInt32(lockSelection)], new GUILayoutOption[] { GUILayout.ExpandWidth(false), GUILayout.ExpandHeight(true), GUILayout.MinHeight(18) }))
+                if (GUILayout.Button(lockIcons[Convert.ToInt32(lockSelection)], new GUILayoutOption[] { GUILayout.ExpandWidth(false), GUILayout.ExpandHeight(true), GUILayout.MaxHeight(19) }))
                 {
                     lockSelection = !lockSelection;
                 }
@@ -492,11 +495,13 @@ namespace JSAM.JSAMEditor
                 }
                 else
                 {
-                    blontent = new GUIContent("00:00:00 / 00:00:00");
+                    blontent = new GUIContent("00:00:000 / 00:00:000");
                 }
 
                 GUIStyle rightJustified = new GUIStyle(EditorStyles.label);
+                rightJustified.font = timeFont;
                 rightJustified.alignment = TextAnchor.UpperRight;
+                rightJustified.fontSize = 15;
                 EditorGUILayout.LabelField(blontent, rightJustified);
             }
 
@@ -650,9 +655,10 @@ namespace JSAM.JSAMEditor
             }
             else
             {
-                GUIStyle style = GUI.skin.box.ApplyTextAnchor(TextAnchor.MiddleCenter)
+                GUIStyle style = new GUIStyle(GUI.skin.box.ApplyTextAnchor(TextAnchor.MiddleCenter)
                                 .SetFontSize(30)
-                                .ApplyBoldText();
+                                .SetTextColor(Color.white)
+                                .ApplyBoldText());
                 GUI.Box(rect, "Select an Audio File to preview it here", style);
             }
             
@@ -786,7 +792,7 @@ namespace JSAM.JSAMEditor
         }
 
         #region Unity's Asset Preview render code
-        static Material m_HandleLinesMaterial;
+        ///static Material m_HandleLinesMaterial;
         /// <summary>
         /// Borrowed from Unity
         /// <para>https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Inspector/AudioClipInspector.cs</para>
