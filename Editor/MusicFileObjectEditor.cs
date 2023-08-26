@@ -241,6 +241,7 @@ namespace JSAM.JSAMEditor
                                     else mouseDragging = false;
                                 }
                                 if (!mouseDragging) break;
+                                if (!music) break;
                                 float newProgress = Mathf.InverseLerp(progressRect.xMin, progressRect.xMax, evt.mousePosition.x);
                                 AudioPlaybackToolEditor.helperSource.time = Mathf.Clamp((newProgress * music.length), 0, music.length - AudioManagerInternal.EPSILON);
                                 if (myScript.loopMode == LoopMode.ClampedLoopPoints)
@@ -329,21 +330,26 @@ namespace JSAM.JSAMEditor
                     // Reset loop point input mode if not using loop points so the duration shows up as time by default
                     if (myScript.loopMode != LoopMode.LoopWithLoopPoints && myScript.loopMode != LoopMode.ClampedLoopPoints) loopPointInputMode = 0;
 
-                    switch ((LoopPointTool)loopPointInputMode)
+                    blontent = new GUIContent("-", "The playback time");
+                    if (music)
                     {
-                        case LoopPointTool.Slider:
-                        case LoopPointTool.TimeInput:
-                            blontent = new GUIContent(AudioPlaybackToolEditor.TimeToString((float)AudioPlaybackToolEditor.helperSource.timeSamples / music.frequency) + " / " + (AudioPlaybackToolEditor.TimeToString(music.length)),
-                                "The playback time in seconds");
-                            break;
-                        case LoopPointTool.TimeSamplesInput:
-                            blontent = new GUIContent(AudioPlaybackToolEditor.helperSource.timeSamples + " / " + music.samples, "The playback time in samples");
-                            break;
-                        case LoopPointTool.BPMInput:
-                            blontent = new GUIContent(string.Format("{0:0}", AudioPlaybackToolEditor.helperSource.time / (60f / myScript.bpm)) + " / " + music.length / (60f / myScript.bpm),
-                                "The playback time in beats");
-                            break;
+                        switch ((LoopPointTool)loopPointInputMode)
+                        {
+                            case LoopPointTool.Slider:
+                            case LoopPointTool.TimeInput:
+                                blontent = new GUIContent(AudioPlaybackToolEditor.TimeToString((float)AudioPlaybackToolEditor.helperSource.timeSamples / music.frequency) + " / " + (AudioPlaybackToolEditor.TimeToString(music.length)),
+                                    "The playback time in seconds");
+                                break;
+                            case LoopPointTool.TimeSamplesInput:
+                                blontent = new GUIContent(AudioPlaybackToolEditor.helperSource.timeSamples + " / " + music.samples, "The playback time in samples");
+                                break;
+                            case LoopPointTool.BPMInput:
+                                blontent = new GUIContent(string.Format("{0:0}", AudioPlaybackToolEditor.helperSource.time / (60f / myScript.bpm)) + " / " + music.length / (60f / myScript.bpm),
+                                    "The playback time in beats");
+                                break;
+                        }
                     }
+                    
                     GUIStyle rightJustified = new GUIStyle(EditorStyles.label);
                     rightJustified.alignment = TextAnchor.UpperRight;
                     EditorGUILayout.LabelField(blontent, rightJustified);
@@ -409,7 +415,8 @@ namespace JSAM.JSAMEditor
 
             AudioClip music = files.GetArrayElementAtIndex(0).objectReferenceValue as AudioClip;
             var helperSource = AudioPlaybackToolEditor.helperSource;
-            var value = (float)helperSource.timeSamples / (float)music.samples;
+            float value = 0;
+            if (music) value = (float)helperSource.timeSamples / (float)music.samples;
 
             if (cachedTex == null || AudioPlaybackToolEditor.forceRepaint)
             {

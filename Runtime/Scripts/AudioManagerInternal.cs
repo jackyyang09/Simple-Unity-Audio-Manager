@@ -234,8 +234,8 @@ namespace JSAM
             {
                 helper = HandleLimitedInstances(music, helper);
             }
-            helper.Play(music);
             helper.SetSpatializationTarget(newTransform);
+            helper.Play(music);
             AudioManager.OnMusicPlayed?.Invoke(music);
 
             return helper;
@@ -258,8 +258,8 @@ namespace JSAM
             {
                 helper = HandleLimitedInstances(music, helper);
             }
-            helper.Play(music);
             helper.SetSpatializationTarget(position);
+            helper.Play(music);
             AudioManager.OnMusicPlayed?.Invoke(music);
 
             return helper;
@@ -452,8 +452,8 @@ namespace JSAM
             {
                 helper = HandleLimitedInstances(sound, helper);
             }
-            helper.Play(sound);
             helper.SetSpatializationTarget(newTransform);
+            helper.Play(sound);
             AudioManager.OnSoundPlayed?.Invoke(sound);
 
             return helper;
@@ -476,8 +476,8 @@ namespace JSAM
             {
                 helper = HandleLimitedInstances(sound, helper);
             }
-            helper.Play(sound);
             helper.SetSpatializationTarget(position);
+            helper.Play(sound);
             AudioManager.OnSoundPlayed?.Invoke(sound);
 
             return helper;

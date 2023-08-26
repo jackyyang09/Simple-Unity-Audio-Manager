@@ -531,7 +531,8 @@ namespace JSAM.JSAMEditor
 
             AudioClip sound = playingClip;
             var helperSource = AudioPlaybackToolEditor.helperSource;
-            var value = helperSource.time / playingClip.length;
+            float value = 0;
+            if (playingClip) value = helperSource.time / playingClip.length;
 
             if ((cachedTex == null || AudioPlaybackToolEditor.forceRepaint) && Event.current.type == EventType.Repaint)
             {

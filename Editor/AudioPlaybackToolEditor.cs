@@ -864,21 +864,27 @@ namespace JSAM.JSAMEditor
         public static Texture2D RenderStaticPreview(AudioClip clip, Rect rect, float relativeVolume)
         {
             if (Event.current.type != EventType.Repaint) return null;
-            //GUI.Box(rect, "");
-            float[] samples = new float[clip.samples];
-            float[] waveform = new float[(int)rect.width];
-            clip.GetData(samples, 0);
-            int packSize = clip.samples / (int)rect.width + 1;
-            int s = 0;
-
-            for (int i = 0; i < clip.samples; i += packSize)
+            float[] samples = new float[0];
+            float[] waveform = new float[0];
+            int halfHeight = 0;
+            if (clip)
             {
-                waveform[s] = samples[i];
-                s++;
+                //GUI.Box(rect, "");
+                samples = new float[clip.samples];
+                waveform = new float[(int)rect.width];
+                clip.GetData(samples, 0);
+                int packSize = clip.samples / (int)rect.width + 1;
+                int s = 0;
+
+                for (int i = 0; i < clip.samples; i += packSize)
+                {
+                    waveform[s] = samples[i];
+                    s++;
+                }
+
+                halfHeight = (int)rect.height / 2;
             }
-
-            int halfHeight = (int)rect.height / 2;
-
+            
             Texture2D tex = new Texture2D((int)rect.width, (int)rect.height, TextureFormat.RGBA32, false);
             for (int x = 0; x < rect.width; x++)
             {
@@ -888,25 +894,28 @@ namespace JSAM.JSAMEditor
                 }
             }
 
-            Color color = new Color(1.0f, 140.0f / 255.0f, 0.0f, 1.0f);
-
-            for (int x = 0; x < waveform.Length; x++)
+            if (clip)
             {
-                // Scale the wave vertically relative to half the rect height and the relative volume
-                float heightLimit = waveform[x] * halfHeight;
+                Color color = new Color(1.0f, 140.0f / 255.0f, 0.0f, 1.0f);
 
-                for (int y = (int)heightLimit; y >= 0; y--)
+                for (int x = 0; x < waveform.Length; x++)
                 {
-                    //Color currentPixelColour = tex.GetPixel(x, halfHeight + y);
-                    //if (currentPixelColour == Color.black) continue;
+                    // Scale the wave vertically relative to half the rect height and the relative volume
+                    float heightLimit = waveform[x] * halfHeight;
 
-                    tex.SetPixel(x, halfHeight + y, color);
+                    for (int y = (int)heightLimit; y >= 0; y--)
+                    {
+                        //Color currentPixelColour = tex.GetPixel(x, halfHeight + y);
+                        //if (currentPixelColour == Color.black) continue;
 
-                    // Get data from upper half offset by 1 unit due to int truncation
-                    tex.SetPixel(x, halfHeight - (y + 1), color);
+                        tex.SetPixel(x, halfHeight + y, color);
+
+                        // Get data from upper half offset by 1 unit due to int truncation
+                        tex.SetPixel(x, halfHeight - (y + 1), color);
+                    }
                 }
             }
-
+           
             tex.Apply();
             return tex;
         }

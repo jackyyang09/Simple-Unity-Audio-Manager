@@ -146,7 +146,7 @@ namespace JSAM.JSAMEditor
 
             var asset = CreateInstance<JSAMPaths>();
             AssetDatabase.CreateAsset(asset, FULL_PATH);
-            asset.ResetPresetsPathIfInvalid();
+            asset.ResetPresetsPath();
 
             paths = asset;
             EditorUtility.DisplayDialog("JSAM First Time Setup", "Path asset created successfully!", "Cool.");
