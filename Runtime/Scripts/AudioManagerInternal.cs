@@ -234,8 +234,9 @@ namespace JSAM
             {
                 helper = HandleLimitedInstances(music, helper);
             }
+            helper.AssignNewFile(music);
             helper.SetSpatializationTarget(newTransform);
-            helper.Play(music);
+            helper.Play();
             AudioManager.OnMusicPlayed?.Invoke(music);
 
             return helper;
@@ -258,8 +259,9 @@ namespace JSAM
             {
                 helper = HandleLimitedInstances(music, helper);
             }
+            helper.AssignNewFile(music);
             helper.SetSpatializationTarget(position);
-            helper.Play(music);
+            helper.Play();
             AudioManager.OnMusicPlayed?.Invoke(music);
 
             return helper;
@@ -290,7 +292,8 @@ namespace JSAM
                 helper = HandleLimitedInstances(music, helper);
             }
 
-            helper.Play(music);
+            helper.AssignNewFile(music);
+            helper.Play();
             helper.BeginFadeIn(fadeInTime);
 
             AudioManager.OnMusicPlayed?.Invoke(music);
@@ -361,6 +364,17 @@ namespace JSAM
         #endregion
 
         #region StopMusic
+        public void StopAllMusicInternal(bool stopInstantly)
+        {
+            for (int i = 0; i < musicHelpers.Count; i++)
+            {
+                if (musicHelpers[i].AudioSource.isPlaying)
+                {
+                    musicHelpers[i].Stop(stopInstantly);
+                }
+            }
+        }
+
         public MusicChannelHelper StopMusicInternal(MusicFileObject music, Transform t, bool stopInstantly)
         {
             if (!Application.isPlaying) return null;
@@ -452,8 +466,9 @@ namespace JSAM
             {
                 helper = HandleLimitedInstances(sound, helper);
             }
+            helper.AssignNewFile(sound);
             helper.SetSpatializationTarget(newTransform);
-            helper.Play(sound);
+            helper.Play();
             AudioManager.OnSoundPlayed?.Invoke(sound);
 
             return helper;
@@ -476,8 +491,9 @@ namespace JSAM
             {
                 helper = HandleLimitedInstances(sound, helper);
             }
+            helper.AssignNewFile(sound);
             helper.SetSpatializationTarget(position);
-            helper.Play(sound);
+            helper.Play();
             AudioManager.OnSoundPlayed?.Invoke(sound);
 
             return helper;

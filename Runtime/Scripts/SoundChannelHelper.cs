@@ -48,17 +48,17 @@ namespace JSAM
             base.Update();
         }
 
-        public override AudioSource Play(SoundFileObject file)
+        public override AudioSource Play()
         {
-            if (file == null)
+            if (audioFile == null)
             {
-                AudioManager.DebugWarning("Attempted to play a non-existent JSAM Sound File Object!");
+                AudioManager.DebugWarning("Tried to play a Sound when no Sound File was assigned!");
                 return AudioSource;
             }
 
-            AudioSource.pitch = SoundFileObject.GetRandomPitch(file);
+            AudioSource.pitch = SoundFileObject.GetRandomPitch(audioFile);
 
-            switch (file.loopMode)
+            switch (audioFile.loopMode)
             {
                 case LoopMode.NoLooping:
                     AudioSource.loop = false;
@@ -70,7 +70,7 @@ namespace JSAM
                     break;
             }
 
-            return base.Play(file);
+            return base.Play();
         }
 
         public override void Stop(bool stopInstantly = true)

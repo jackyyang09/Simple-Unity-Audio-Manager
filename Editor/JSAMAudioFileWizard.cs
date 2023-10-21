@@ -228,7 +228,11 @@ namespace JSAM.JSAMEditor
             musicPresets = new List<Preset>();
             musicPresetNames = new List<string>();
 
-            var presets = JSAMEditorHelper.ImportAssetsOrFoldersAtPath<Preset>(JSAMPaths.Instance.PresetsPath);
+            var presets = JSAMEditorHelper.ImportAssetsOrFoldersAtPath<Preset>(JSAMPaths.Instance.JSAMPresetsPath);
+            if (!string.IsNullOrEmpty(JSAMPaths.Instance.PresetsPath))
+            {
+                presets.AddRange(JSAMEditorHelper.ImportAssetsOrFoldersAtPath<Preset>(JSAMPaths.Instance.PresetsPath));
+            }
 
             for (int i = 0; i < presets.Count; i++)
             {

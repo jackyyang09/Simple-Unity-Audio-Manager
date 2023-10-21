@@ -97,8 +97,11 @@ namespace JSAM.JSAMEditor
             if (save) TrySave(true);
         }
 
+        public string JSAMPresetsPath => PackagePath + "/Runtime/Presets";
+        const string DefaultPresetsPath = "Assets/JSAMPresets/";
+
         [Tooltip("The folder that holds all JSAM-related presets. Audio File object presets will be saved here automatically.")]
-        [SerializeField] string presetsPath;
+        [SerializeField] string presetsPath = DefaultPresetsPath;
         public string PresetsPath
         {
             get
@@ -116,12 +119,12 @@ namespace JSAM.JSAMEditor
 
         public void ResetPresetsPath(bool save = false)
         {
-            SerializedObject.FindProperty(nameof(presetsPath)).stringValue = PackagePath + "/Runtime/Presets";
+            SerializedObject.FindProperty(nameof(presetsPath)).stringValue = DefaultPresetsPath;
             SerializedObject.ApplyModifiedProperties();
             if (save) TrySave(true);
         }
 
-        public void Reset()
+        public void ResetPaths()
         {
             ResetPackagePath();
             ResetPresetsPath(true);
@@ -146,7 +149,6 @@ namespace JSAM.JSAMEditor
 
             var asset = CreateInstance<JSAMPaths>();
             AssetDatabase.CreateAsset(asset, FULL_PATH);
-            asset.ResetPresetsPath();
 
             paths = asset;
             EditorUtility.DisplayDialog("JSAM First Time Setup", "Path asset created successfully!", "Cool.");

@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Audio;
 
 namespace JSAM
 {
@@ -156,13 +155,13 @@ namespace JSAM
 
         private void OnEnable()
         {
-            SceneManager.sceneLoaded += OnSceneLoaded;
+            SceneManager.activeSceneChanged += OnSceneChanged;
             Application.quitting += Quitting;
         }
 
         private void OnDisable()
         {
-            SceneManager.sceneLoaded -= OnSceneLoaded;
+            SceneManager.activeSceneChanged -= OnSceneChanged;
             Application.quitting -= Quitting;
         }
 
@@ -196,6 +195,7 @@ namespace JSAM
                 {
                     listener = Camera.main.GetComponent<AudioListener>();
                 }
+
                 if (listener != null)
                 {
                     DebugLog("AudioManager located an AudioListener successfully!");
@@ -212,12 +212,16 @@ namespace JSAM
             }
         }
 
-        void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        void OnSceneChanged(Scene scene1, Scene scene2)
         {
             FindNewListener();
-            if (JSAMSettings.Settings.StopSoundsOnSceneLoad)
+            if (JSAMSettings.Settings.StopSoundsOnSceneChanged)
             {
                 StopAllSounds();
+            }
+            if (JSAMSettings.Settings.StopMusicOnSceneChanged)
+            {
+                StopAllMusic();
             }
         }
 
@@ -624,6 +628,12 @@ namespace JSAM
 
         #region StopMusic
         /// <summary>
+        /// Stops all playing music maintained by AudioManager
+        /// </summary>
+        public static void StopAllMusic(bool stopInstantly = true) =>
+            InternalInstance.StopAllMusicInternal(stopInstantly);
+
+        /// <summary>
         /// Instantly stops the playback of the specified playing music music
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -893,12 +903,15 @@ namespace JSAM
         }
 
 #if UNITY_EDITOR
-
-        /// <summary>
-        /// A MonoBehaviour function called when the script is loaded or a value is changed in the inspector (Called in the editor only).
-        /// </summary>
         private void OnValidate()
         {
+            // Don't go any further if you're in a prefab
+            UnityEditor.SceneManagement.PrefabStage currentStage = UnityEditor.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage();
+            if (currentStage != null)
+            {
+                return;
+            }
+
             EstablishSingletonDominance();
             if (listener == null) FindNewListener();
             //ValidateSourcePrefab();
