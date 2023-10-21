@@ -76,7 +76,7 @@ namespace JSAM.JSAMEditor
                 EditorGUILayout.HelpBox("Could not find Audio Manager in the scene! This component needs AudioManager " +
                     "in order to function!", MessageType.Error);
             }
-            else if (AudioManager.Instance.Library == null)
+            else if (AudioManager.Instance.Library == null && !advancedMode.boolValue)
             {
                 EditorGUILayout.HelpBox("Your Audio Manager is missing an Audio Library! Unless advanced mode is true, " + 
                     "this components relies on an Audio Library to function!", MessageType.Warning);
@@ -97,7 +97,7 @@ namespace JSAM.JSAMEditor
             {
                 if (advancedMode.boolValue) return;
                 if (!AudioManager.Instance) return;
-                if (AudioManager.Instance.Library) return;
+                if (!AudioManager.Instance.Library) return;
                 if (!audioLibrary.Contains(audio.objectReferenceValue as T)) return;
 
                 if (audio.objectReferenceValue == null)
