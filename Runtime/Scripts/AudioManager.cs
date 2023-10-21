@@ -191,21 +191,36 @@ namespace JSAM
         {
             if (listener == null)
             {
-                if (Camera.main != null)
+                bool success = false;
+
+                if (Application.isPlaying)
                 {
-                    listener = Camera.main.GetComponent<AudioListener>();
+                    if (Camera.main != null)
+                    {
+                        var l = Camera.main.GetComponent<AudioListener>();
+                        if (l)
+                        {
+                            listener = l;
+                            success = true;
+                        }
+                    }
+
+                    if (!success)
+                    {
+                        var l = FindObjectOfType<AudioListener>();
+                        if (l)
+                        {
+                            listener = l;
+                            success = true;
+                        }
+                    }
                 }
 
-                if (listener != null)
+                if (success)
                 {
                     DebugLog("AudioManager located an AudioListener successfully!");
                 }
-                else if (listener == null) // Try to find one ourselves
-                {
-                    listener = FindObjectOfType<AudioListener>();
-                    DebugLog("AudioManager located an AudioListener successfully!");
-                }
-                if (listener == null) // In the case that there still isn't an AudioListener
+                else
                 {
                     DebugWarning("Scene is missing an AudioListener!");
                 }
@@ -913,7 +928,6 @@ namespace JSAM
             }
 
             EstablishSingletonDominance();
-            if (listener == null) FindNewListener();
             //ValidateSourcePrefab();
 
             if (!doneLoading) return;
