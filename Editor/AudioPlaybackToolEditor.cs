@@ -801,7 +801,7 @@ namespace JSAM.JSAMEditor
         /// <param name="width"></param>
         /// <param name="height"></param>
         /// <returns></returns>
-        //public static Texture2D RenderStaticPreview(AudioClip clip, Rect rect, float relativeVolume)
+        //public static Texture2D RenderUnityStaticPreview(AudioClip clip, Rect rect, float relativeVolume)
         //{
         //    AssetImporter importer = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(clip));
         //    AudioImporter audioImporter = importer as AudioImporter;
@@ -812,14 +812,19 @@ namespace JSAM.JSAMEditor
         //    if (m_PreviewUtility == null)
         //        m_PreviewUtility = new PreviewRenderUtility();
         //
-        //    m_PreviewUtility.BeginStaticPreview(rect);
-        //    m_HandleLinesMaterial.SetPass(0);
+        //    m_PreviewUtility.BeginStaticPreview(new Rect(0, 0, rect.width * 0.5f, rect.height * 0.5f));
+        //    //m_HandleLinesMaterial.SetPass(0);
         //
         //    // We're drawing into an offscreen here which will have a resolution defined by EditorGUIUtility.pixelsPerPoint. This is different from the DoRenderPreview call below where we draw directly to the screen, so we need to take
         //    // the higher resolution into account when drawing into the offscreen, otherwise only the upper-left quarter of the preview texture will be drawn.
-        //    DoRenderPreview(clip, audioImporter, new Rect(0, 0, rect.width, rect.height), relativeVolume);
-        //    //DoRenderPreview(true, clip, audioImporter, new Rect(0.05f * rect.width * EditorGUIUtility.pixelsPerPoint, 0.05f * rect.width * EditorGUIUtility.pixelsPerPoint, 1.9f * rect.width * EditorGUIUtility.pixelsPerPoint, 1.9f * rect.height * EditorGUIUtility.pixelsPerPoint), 1.0f);
-        //
+        //    //DoRenderPreview(clip, audioImporter, new Rect(0, 0, rect.width, rect.height), relativeVolume);
+        //    //var newRect = new Rect(0, 0, rect.width * 3, rect.height * 3);
+        //    //var newRect = new Rect(
+        //    //    0.05f * rect.width * EditorGUIUtility.pixelsPerPoint,
+        //    //    0.05f * rect.width * EditorGUIUtility.pixelsPerPoint,
+        //    //    1.9f * rect.width * EditorGUIUtility.pixelsPerPoint,
+        //    //    1.9f * rect.height * EditorGUIUtility.pixelsPerPoint);
+        //    DoRenderPreview(clip, audioImporter, rect, 0.5f);
         //    return m_PreviewUtility.EndStaticPreview();
         //}
         //
@@ -833,7 +838,7 @@ namespace JSAM.JSAMEditor
         //    float h = (float)wantedRect.height / (float)numChannels;
         //    for (int channel = 0; channel < numChannels; channel++)
         //    {
-        //        Rect channelRect = new Rect(wantedRect.x, wantedRect.y + h * channel, Mathf.Max(wantedRect.width, 1024), h);
+        //        Rect channelRect = new Rect(wantedRect.x, wantedRect.y + h * channel, wantedRect.width, h);
         //        Color curveColor = new Color(1.0f, 140.0f / 255.0f, 0.0f, 1.0f);
         //
         //        AudioCurveRendering.AudioMinMaxCurveAndColorEvaluator dlg = delegate (float x, out Color col, out float minValue, out float maxValue)
@@ -863,6 +868,11 @@ namespace JSAM.JSAMEditor
 
         public static Texture2D RenderStaticPreview(AudioClip clip, Rect rect, float relativeVolume)
         {
+            return RenderStaticPreview(clip, rect, relativeVolume, new Color(1.0f, 140.0f / 255.0f, 0.0f, 1.0f), Color.clear);
+        }
+
+        public static Texture2D RenderStaticPreview(AudioClip clip, Rect rect, float relativeVolume, Color mainColor, Color clearColor)
+        {
             if (Event.current.type != EventType.Repaint) return null;
             float[] samples = new float[0];
             float[] waveform = new float[0];
@@ -890,14 +900,12 @@ namespace JSAM.JSAMEditor
             {
                 for (int y = 0; y < rect.height; y++)
                 {
-                    tex.SetPixel(x, y, Color.clear);
+                    tex.SetPixel(x, y, clearColor);
                 }
             }
 
             if (clip)
             {
-                Color color = new Color(1.0f, 140.0f / 255.0f, 0.0f, 1.0f);
-
                 for (int x = 0; x < waveform.Length; x++)
                 {
                     // Scale the wave vertically relative to half the rect height and the relative volume
@@ -908,10 +916,10 @@ namespace JSAM.JSAMEditor
                         //Color currentPixelColour = tex.GetPixel(x, halfHeight + y);
                         //if (currentPixelColour == Color.black) continue;
 
-                        tex.SetPixel(x, halfHeight + y, color);
+                        tex.SetPixel(x, halfHeight + y, mainColor);
 
                         // Get data from upper half offset by 1 unit due to int truncation
-                        tex.SetPixel(x, halfHeight - (y + 1), color);
+                        tex.SetPixel(x, halfHeight - (y + 1), mainColor);
                     }
                 }
             }

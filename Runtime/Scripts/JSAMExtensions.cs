@@ -35,6 +35,16 @@ namespace JSAM
             return string.IsNullOrEmpty(input) || string.IsNullOrWhiteSpace(input);
         }
 
+        public static bool TryForComponent<T>(this GameObject obj, out T comp) where T : Object
+        {
+#if UNITY_2019_4_OR_NEWER
+            return obj.TryGetComponent(out comp);
+#else
+            comp = obj.GetComponent<T>();
+            return comp != null;
+#endif
+        }
+
         public static bool TryForComponent<T>(this Component obj, out T comp) where T : Component
         {
 #if UNITY_2019_4_OR_NEWER
