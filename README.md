@@ -31,6 +31,12 @@ JSAM is perfect for game jams, prototypes and is scaleable with your project!
 - Input the following `https://github.com/jackyyang09/Simple-Unity-Audio-Manager.git#master` and click **Add**
 ![](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/blob/Media/Media/Installation/package%20install.gif)
 
+### Install via Unity Package
+- Note: If you're upgrading JSAM from a previous release, delete your existing JSAM installation before proceeding
+- Download the latest [Release](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/releases)
+- In the Unity toolbar, navigate to **Assets -> Import Package -> Custom Package...**
+- Select the package and import everything (check off the Sample sub-folders as you need)
+
 ### Also
 
 - Check out the [wiki](https://github.com/jackyyang09/Simple-Unity-Audio-Manager/wiki/1.-Downloading-and-Importing-JSAM) to see how to **simplify** audio integration in your  project!
