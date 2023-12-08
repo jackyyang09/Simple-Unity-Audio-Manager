@@ -208,11 +208,12 @@ namespace JSAM
                         helperSource.clip = Audio.Files[0];
                         UpdateTime(playable);
                     }
-
+#if UNITY_EDITOR
                     if (!helperSource.isPlaying)
                     {
                         Helper.PlayDebug(Audio);
                     }
+#endif
                 }
             }
             Helper.AudioSource.volume = Volume;
