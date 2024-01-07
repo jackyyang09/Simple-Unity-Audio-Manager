@@ -255,6 +255,9 @@ namespace JSAM
                 AudioSource.spatialBlend = 0;
             }
 
+            SubscribeToVolumeEvents();
+            AudioSource.volume = Volume;
+
             if (audioFile.fadeInOut)
             {
                 BeginFadeIn(audioFile.fadeInDuration * AudioSource.clip.length);
@@ -264,9 +267,6 @@ namespace JSAM
             AudioSource.outputAudioMixerGroup = audioFile.mixerGroupOverride ? audioFile.mixerGroupOverride : defaultMixerGroup;
 
             AudioSource.priority = (int)audioFile.priority;
-
-            SubscribeToVolumeEvents();
-            AudioSource.volume = Volume;
 
             bool timeScaledSounds = false;
             if (JSAMSettings.Settings)
