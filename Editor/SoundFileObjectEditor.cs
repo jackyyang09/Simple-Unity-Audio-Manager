@@ -275,23 +275,25 @@ namespace JSAM.JSAMEditor
             #region Fade Tools
             EditorGUILayout.PropertyField(fadeInOut);
 
+            showFadeTool = EditorCompatability.SpecialFoldouts(showFadeTool, new GUIContent("Fade Tools", "Show/Hide the Audio Fade previewer"));
             using (new EditorGUI.DisabledScope(!fadeInOut.boolValue))
             {
                 if (!noFiles)
                 {
-                    showFadeTool = EditorCompatability.SpecialFoldouts(showFadeTool, new GUIContent("Fade Tools", "Show/Hide the Audio Fade previewer"));
                     if (showFadeTool)
                     {
+                        float duration = playingClip ? playingClip.length : 0;
+
                         GUIContent fContent = new GUIContent();
                         GUIStyle rightJustified = new GUIStyle(EditorStyles.label);
                         rightJustified.alignment = TextAnchor.UpperRight;
                         rightJustified.padding = new RectOffset(0, 15, 0, 0);
 
                         EditorGUILayout.BeginHorizontal();
-                        EditorGUILayout.LabelField(new GUIContent("Fade In Time:    " + (fadeInDuration.floatValue * playingClip.length).TimeToString(), "Fade in time for this AudioClip in seconds"));
-                        EditorGUILayout.LabelField(new GUIContent("Sound Length: " + (playingClip.length).TimeToString(), "Length of the preview clip in seconds"), rightJustified);
+                        EditorGUILayout.LabelField(new GUIContent("Fade In Time:    " + (fadeInDuration.floatValue * duration).TimeToString(), "Fade in time for this AudioClip in seconds"));
+                        EditorGUILayout.LabelField(new GUIContent("Sound Length: " + (duration).TimeToString(), "Length of the preview clip in seconds"), rightJustified);
                         EditorGUILayout.EndHorizontal();
-                        EditorGUILayout.LabelField(new GUIContent("Fade Out Time: " + (fadeOutDuration.floatValue * playingClip.length).TimeToString(), "Fade out time for this AudioClip in seconds"));
+                        EditorGUILayout.LabelField(new GUIContent("Fade Out Time: " + (fadeOutDuration.floatValue * duration).TimeToString(), "Fade out time for this AudioClip in seconds"));
                         float fid = fadeInDuration.floatValue;
                         float fod = fadeOutDuration.floatValue;
                         fContent = new GUIContent("Fade In Percentage", "The percentage of time the sound takes to fade-in relative to it's total length.");
@@ -409,6 +411,10 @@ namespace JSAM.JSAMEditor
             EditorCompatability.EndSpecialFoldoutGroup();
         }
 
+        /// <summary>
+        /// Assigns an AudioClip to the playingClip variable. 
+        /// Will fail if AudioClip as marked as missing
+        /// </summary>
         public void RedesignateActiveAudioClip()
         {
             AudioClip theClip = null;
