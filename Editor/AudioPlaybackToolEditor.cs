@@ -4,8 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using System;
-using UnityEngine.SceneManagement;
-using UnityEditor.SceneManagement;
+using UnityEditor.UI;
 
 namespace JSAM.JSAMEditor
 {
@@ -16,16 +15,16 @@ namespace JSAM.JSAMEditor
     /// </summary>
     public class AudioPlaybackToolEditor : EditorWindow
     {
-        SoundEditorFader soundFader;
-        SoundEditorFader SoundFader
+        JSAMEditorFader editorFader;
+        public JSAMEditorFader EditorFader
         {
             get
             {
-                if (soundFader == null)
+                if (editorFader == null)
                 {
-                    soundFader = new SoundEditorFader(selectedSound);
+                    editorFader = new JSAMEditorFader(selectedSound);
                 }
-                return soundFader;
+                return editorFader;
             }
         }
 
@@ -33,12 +32,12 @@ namespace JSAM.JSAMEditor
         public static bool forceRepaint;
 
         static Vector2 dragStartPos = Vector2.zero;
-        //static bool mouseGrabbed = false;
-        static bool mouseDragging = false;
-        static bool mouseScrubbed = false;
-        static bool loopClip = false;
-        static bool clipPlaying = false;
-        static bool clipPaused = false;
+        //static bool mouseGrabbed;
+        static bool mouseDragging;
+        static bool mouseScrubbed;
+        static bool loopClip;
+        static bool clipPlaying;
+        static bool clipPaused;
 
         public static GameObject helperObject;
         public static AudioSource helperSource;
@@ -68,8 +67,6 @@ namespace JSAM.JSAMEditor
         static bool showLibraryView = false;
         static float libraryScroll;
 
-        static Font timeFont;
-
         static PreviewRenderUtility m_PreviewUtility;
 
         static AudioPlaybackToolEditor window;
@@ -94,22 +91,6 @@ namespace JSAM.JSAMEditor
             }
         }
 
-        SoundFileObjectEditor soundFileEditorInstance 
-        { 
-            get
-            {
-                if (SoundFileObjectEditor.instance == null)
-                {
-                    if (selectedSound)
-                    {
-                        var lastSelection = Selection.activeObject;
-                        Selection.activeObject = selectedSound;
-                    }
-                }
-                return SoundFileObjectEditor.instance;
-            } 
-        }
-
         // Add menu named "My Window" to the Window menu
         [MenuItem("Window/JSAM/JSAM Playback Tool")]
         public static void Init()
@@ -128,42 +109,40 @@ namespace JSAM.JSAMEditor
         public static bool OnDoubleClickAssets(int instanceID, int line)
         {
             string assetPath = AssetDatabase.GetAssetPath(instanceID);
-            SoundFileObject audioFile = AssetDatabase.LoadAssetAtPath<SoundFileObject>(assetPath);
-            if (audioFile)
+            var file = AssetDatabase.LoadAssetAtPath<BaseAudioFileObject>(assetPath);
+            if (file)
             {
-                Init();
-                cachedTex = null;
-                // Force a repaint
-                // Selection.activeObject = null;
-                //EditorApplication.delayCall += () => Selection.activeObject = audioFile;
-                return true;
+                SoundFileObject soundFile = file as SoundFileObject;
+                if (soundFile)
+                {
+                    Init();
+                    cachedTex = null;
+                    return true;
+                }
+
+                MusicFileObject musicFile = file as MusicFileObject;
+                if (musicFile)
+                {
+                    Init();
+                    cachedTex = null;
+                    return true;
+                }
             }
-            MusicFileObject audioFileMusic = AssetDatabase.LoadAssetAtPath<MusicFileObject>(assetPath);
-            if (audioFileMusic)
-            {
-                Init();
-                cachedTex = null;
-                // Force a repaint
-                // Selection.activeObject = null;
-                //EditorApplication.delayCall += () => Selection.activeObject = audioFileMusic;
-                return true;
-            }
+            
             return false;
         }
 
         private void OnEnable()
         {
-            timeFont = AssetDatabase.LoadAssetAtPath<Font>(JSAMPaths.Instance.PackagePath + "/Editor/Fonts/AzeretMono-Regular.ttf");
-            SetIcons();
             //m_HandleLinesMaterial = EditorGUIUtility.LoadRequired("SceneView/HandleLines.mat") as Material;
         }
 
         private void OnDisable()
         {
-            if (SoundFader != null)
+            if (EditorFader != null)
             {
-                SoundFader.Dispose();
-                soundFader = null;
+                EditorFader.Dispose();
+                editorFader = null;
             }
 
             //m_HandleLinesMaterial = null;
@@ -244,7 +223,7 @@ namespace JSAM.JSAMEditor
                             // Play the sound
                             selectedClip = sound;
                             helperSource.clip = selectedClip;
-                            SoundFader.StartFading(helperSource.clip, selectedSound);
+                            EditorFader.StartFading(helperSource.clip, selectedSound);
                             clipPlaying = true;
                         }
                         //EditorGUILayout.EndHorizontal();
@@ -285,43 +264,59 @@ namespace JSAM.JSAMEditor
         private void OnSelectionChange()
         {
             if (lockSelection) return;
+
+            UpdateActiveAsset();
+            
+            if (helperSource) helperSource.clip = selectedClip;
+            DoForceRepaint(true);
+        }
+
+        void UpdateActiveAsset()
+        {
             if (Selection.activeObject == null) return;
-            System.Type activeType = Selection.activeObject.GetType();
-
-            if (activeType.Equals(typeof(AudioClip)))
+            var file = Selection.activeObject as BaseAudioFileObject;
+            if (file)
             {
-                selectedSound = null;
-                selectedMusic = null;
+                var sound = file as SoundFileObject;
+                if (sound)
+                {
+                    selectedMusic = null;
 
-                selectedClip = (AudioClip)Selection.activeObject;
-                CreateAudioHelper(selectedClip);
-            }
-            else if (activeType.Equals(typeof(SoundFileObject)))
-            {
-                selectedMusic = null;
+                    selectedSound = sound;
+                    if (selectedSound.Files.Count == 0) return;
+                    selectedClip = selectedSound.Files[0];
+                    CreateAudioHelper(selectedClip);
+                }
+                else
+                {
+                    var music = file as MusicFileObject;
+                    if (music)
+                    {
+                        selectedSound = null;
 
-                selectedSound = ((SoundFileObject)Selection.activeObject);
-                if (selectedSound.Files.Count == 0) return;
-                selectedClip = selectedSound.Files[0];
-                CreateAudioHelper(selectedClip);
-            }
-            else if (activeType.Equals(typeof(MusicFileObject)))
-            {
-                selectedSound = null;
-
-                selectedMusic = ((MusicFileObject)Selection.activeObject);
-                if (selectedMusic.Files.Count == 0) return;
-                selectedClip = selectedMusic.Files[0];
-                CreateAudioHelper(selectedClip);
+                        selectedMusic = music;
+                        if (selectedMusic.Files.Count == 0) return;
+                        selectedClip = selectedMusic.Files[0];
+                        CreateAudioHelper(selectedClip);
+                    }
+                }
             }
             else
             {
-                DoForceRepaint(true);
-                return;
-            }
-            helperSource.clip = selectedClip;
+                var clip = Selection.activeObject as AudioClip;
+                if (clip)
+                {
+                    selectedSound = null;
+                    selectedMusic = null;
 
-            DoForceRepaint(true);
+                    selectedClip = (AudioClip)Selection.activeObject;
+                    CreateAudioHelper(selectedClip);
+                }
+                else
+                {
+                    selectedClip = null;
+                }
+            }
         }
 
         /// <summary>
@@ -348,19 +343,9 @@ namespace JSAM.JSAMEditor
 
             using (new EditorGUI.DisabledScope(!HelperSourceActive))
             {
-                if (GUILayout.Button(s_BackIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
+                if (GUILayout.Button(BackIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                 {
-                    if (selectedMusic)
-                    {
-                        if (selectedMusic.loopMode == LoopMode.ClampedLoopPoints)
-                        {
-                            helperSource.timeSamples = Mathf.CeilToInt((selectedMusic.loopStart * selectedClip.frequency));
-                        }
-                    }
-                    else
-                    {
-                        helperSource.timeSamples = 0;
-                    }
+                    helperSource.timeSamples = 0;
                     helperSource.Stop();
                     mouseScrubbed = false;
                     clipPaused = false;
@@ -368,29 +353,28 @@ namespace JSAM.JSAMEditor
                 }
 
                 // Draw Play Button
-                GUIContent buttonIcon = (clipPlaying) ? s_PlayIcons[1] : s_PlayIcons[0];
+                GUIContent buttonIcon = (clipPlaying) ? PlayIcons[1] : PlayIcons[0];
                 if (clipPlaying) JSAMEditorHelper.BeginBackgroundColourChange(buttonPressedColor);
                 if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                 {
                     clipPlaying = !clipPlaying;
                     if (clipPlaying)
                     {
-                        // Note: For some reason, reading from helperSource.time returns 0 even if timeSamples is not 0
-                        // However, writing a value to helperSource.time changes timeSamples to the appropriate value just fine
                         if (selectedSound)
                         {
-                            SoundFader.StartFading(helperSource.clip, selectedSound);
+                            EditorFader.StartFading(helperSource.clip, selectedSound);
                         }
                         else if (selectedMusic)
                         {
                             musicHelper.PlayDebug(selectedMusic, mouseScrubbed);
                             MusicFileObjectEditor.firstPlayback = true;
-                            MusicFileObjectEditor.freePlay = false;
+                            BaseAudioFileObjectEditor.FreePlay = false;
                         }
                         else if (selectedClip)
                         {
                             soundHelper.PlayDebug(mouseScrubbed);
                         }
+
                         if (clipPaused) helperSource.Pause();
                     }
                     else
@@ -398,15 +382,18 @@ namespace JSAM.JSAMEditor
                         helperSource.Stop();
                         if (!mouseScrubbed)
                         {
+                            // Note: For some reason, reading from helperSource.time returns 0 even if timeSamples is not 0
+                            // However, writing a value to helperSource.time changes timeSamples to the appropriate value just fine
                             helperSource.time = 0;
                         }
                         clipPaused = false;
                     }
+                    clipPlaying = !clipPlaying;
                 }
                 if (clipPlaying) JSAMEditorHelper.EndBackgroundColourChange();
 
                 // Pause button
-                GUIContent theText = (clipPaused) ? s_PauseIcons[1] : s_PauseIcons[0];
+                GUIContent theText = (clipPaused) ? PauseIcons[1] : PauseIcons[0];
                 if (clipPaused) JSAMEditorHelper.BeginBackgroundColourChange(buttonPressedColor);
                 if (GUILayout.Button(theText, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                 {
@@ -423,7 +410,7 @@ namespace JSAM.JSAMEditor
                 if (clipPaused) JSAMEditorHelper.EndBackgroundColourChange();
 
                 // Loop button
-                buttonIcon = (loopClip) ? s_LoopIcons[1] : s_LoopIcons[0];
+                buttonIcon = (loopClip) ? LoopIcons[1] : LoopIcons[0];
                 if (loopClip) JSAMEditorHelper.BeginBackgroundColourChange(buttonPressedColor);
                 if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                 {
@@ -432,17 +419,22 @@ namespace JSAM.JSAMEditor
                 }
                 if (loopClip) JSAMEditorHelper.EndBackgroundColourChange();
 
-                var randomButton = new GUIContent("Play Random", "Play a random track from your Sound File Object's file library. Only usable for Sound Files with more than 2 AudioClips.");
+                var randomButton = new GUIContent("R", "Play a random track from your Sound File Object's file library. Only usable for Sound Files with more than 2 AudioClips.");
                 if (selectedSound)
                 {
                     using (new EditorGUI.DisabledScope(selectedSound.Files.Count == 0))
                     {
                         if (GUILayout.Button(randomButton))
                         {
-                            selectedClip = soundFileEditorInstance.DesignateRandomAudioClip();
-                            clipPlaying = true;
-                            helperSource.Stop();
-                            SoundFader.StartFading(selectedClip, selectedSound);
+                            var instance = BaseAudioFileObjectEditor.Instance as SoundFileObjectEditor;
+                            if (instance != null)
+                            {
+                                selectedClip = instance.DesignateRandomAudioClip();
+                                DoForceRepaint(true);
+                                clipPlaying = true;
+                                helperSource.Stop();
+                                EditorFader.StartFading(selectedClip, selectedSound);
+                            }
                         }
                     }
                 }
@@ -481,7 +473,10 @@ namespace JSAM.JSAMEditor
                     {
                         case MusicFileObjectEditor.LoopPointTool.Slider:
                         case MusicFileObjectEditor.LoopPointTool.TimeInput:
-                            blontent = new GUIContent(TimeToString((float)helperSource.timeSamples / helperSource.clip.frequency) + " / " + (TimeToString(helperSource.clip.length)),
+                            blontent = new GUIContent(
+                                ((float)helperSource.timeSamples / helperSource.clip.frequency).TimeToString() + 
+                                " / " + 
+                                helperSource.clip.length.TimeToString(),
                                 "The playback time in seconds");
                             break;
                         case MusicFileObjectEditor.LoopPointTool.TimeSamplesInput:
@@ -498,11 +493,7 @@ namespace JSAM.JSAMEditor
                     blontent = new GUIContent("00:00:000 / 00:00:000");
                 }
 
-                GUIStyle rightJustified = new GUIStyle(EditorStyles.label);
-                rightJustified.font = timeFont;
-                rightJustified.alignment = TextAnchor.UpperRight;
-                rightJustified.fontSize = 15;
-                EditorGUILayout.LabelField(blontent, rightJustified);
+                EditorGUILayout.LabelField(blontent, JSAMStyles.TimeStyle);
             }
 
             EditorGUILayout.EndHorizontal();
@@ -610,7 +601,7 @@ namespace JSAM.JSAMEditor
             {
                 helperSource.Stop();
             }
-            if (!WindowOpen && !SoundFileObjectEditor.instance && !MusicFileObjectEditor.instance)
+            if (!WindowOpen && !BaseAudioFileObjectEditor.Instance)
             {
                 DestroyImmediate(helperObject);
             }
@@ -962,46 +953,97 @@ namespace JSAM.JSAMEditor
         //    return null;
         //}
 
-        static GUIContent s_BackIcon = null;
-        static GUIContent[] s_PlayIcons = { null, null };
-        static GUIContent[] s_PauseIcons = { null, null };
-        static GUIContent[] s_LoopIcons = { null, null };
-        static GUIContent[] lockIcons = { null, null };
-
-        /// <summary>
-        /// Why does Unity keep all this stuff secret?
-        /// https://unitylist.com/p/5c3/Unity-editor-icons
-        /// </summary>
-        static void SetIcons()
+        // Why does Unity keep all this stuff secret?
+        // https://unitylist.com/p/5c3/Unity-editor-icons
+        static GUIContent backIcon;
+        static GUIContent BackIcon
         {
-            s_BackIcon = EditorGUIUtility.TrIconContent("beginButton", "Click to Reset Playback Position");
-#if UNITY_2019_4_OR_NEWER
-            s_PlayIcons[0] = EditorGUIUtility.TrIconContent("d_PlayButton", "Click to Play");
-            s_PlayIcons[1] = EditorGUIUtility.TrIconContent("d_PlayButton On", "Click to Stop");
-#else
-            s_PlayIcons[0] = EditorGUIUtility.TrIconContent("preAudioPlayOff", "Click to Play");
-            s_PlayIcons[1] = EditorGUIUtility.TrIconContent("preAudioPlayOn", "Click to Stop");
-#endif
-            s_PauseIcons[0] = EditorGUIUtility.TrIconContent("PauseButton", "Click to Pause");
-            s_PauseIcons[1] = EditorGUIUtility.TrIconContent("PauseButton On", "Click to Unpause");
-#if UNITY_2019_4_OR_NEWER
-            s_LoopIcons[0] = EditorGUIUtility.TrIconContent("d_preAudioLoopOff", "Click to enable looping");
-            s_LoopIcons[1] = EditorGUIUtility.TrIconContent("preAudioLoopOff", "Click to disable looping");
-#else
-            s_LoopIcons[0] = EditorGUIUtility.TrIconContent("playLoopOff", "Click to enable looping");
-            s_LoopIcons[1] = EditorGUIUtility.TrIconContent("playLoopOn", "Click to disable looping");
-#endif
-            lockIcons[0] = EditorGUIUtility.TrIconContent("IN LockButton", "Toggles the changing of audio when selecting inspector objects");
-            lockIcons[1] = EditorGUIUtility.TrIconContent("IN LockButton on", "Toggles the changing of audio when selecting inspector objects");
+            get
+            {
+                if (backIcon == null)
+                {
+                    backIcon = EditorGUIUtility.TrIconContent("beginButton", "Click to Reset Playback Position");
+                }
+                return backIcon;
+            }
         }
-
-        public static string TimeToString(float time)
+        static GUIContent[] playIcons;
+        static GUIContent[] PlayIcons
         {
-            time *= 1000;
-            int minutes = (int)time / 60000;
-            int seconds = (int)time / 1000 - 60 * minutes;
-            int milliseconds = (int)time - minutes * 60000 - 1000 * seconds;
-            return string.Format("{0:00}:{1:00}:{2:000}", minutes, seconds, milliseconds);
+            get
+            {
+                if (playIcons == null)
+                {
+                    playIcons = new GUIContent[2];
+#if UNITY_2019_4_OR_NEWER
+                    playIcons[0] = EditorGUIUtility.TrIconContent("d_PlayButton", "Click to Play");
+                    playIcons[1] = EditorGUIUtility.TrIconContent("d_PlayButton On", "Click to Stop");
+#else
+                    playIcons[0] = EditorGUIUtility.TrIconContent("preAudioPlayOff", "Click to Play");
+                    playIcons[1] = EditorGUIUtility.TrIconContent("preAudioPlayOn", "Click to Stop");
+#endif
+                }
+                return playIcons;
+            }
+        }
+        static GUIContent[] pauseIcons;
+        static GUIContent[] PauseIcons
+        {
+            get
+            {
+                if (pauseIcons == null)
+                {
+                    pauseIcons = new GUIContent[2];
+                    pauseIcons[0] = EditorGUIUtility.TrIconContent("PauseButton", "Click to Pause");
+                    pauseIcons[1] = EditorGUIUtility.TrIconContent("PauseButton On", "Click to Unpause");
+                }
+                return pauseIcons;
+            }
+        }
+        static GUIContent[] loopIcons;
+        static GUIContent[] LoopIcons
+        {
+            get
+            {
+                if (loopIcons == null)
+                {
+                    loopIcons = new GUIContent[2];
+#if UNITY_2019_4_OR_NEWER
+                    LoopIcons[0] = EditorGUIUtility.TrIconContent("d_preAudioLoopOff", "Click to enable looping");
+                    LoopIcons[1] = EditorGUIUtility.TrIconContent("preAudioLoopOff", "Click to disable looping");
+#else
+                    loopIcons[0] = EditorGUIUtility.TrIconContent("playLoopOff", "Click to enable looping");
+                    loopIcons[1] = EditorGUIUtility.TrIconContent("playLoopOn", "Click to disable looping");
+#endif
+                }
+                return loopIcons;
+            }
+        }
+        static GUIContent[] lockIcons;
+        static GUIContent[] LockIcons
+        {
+            get
+            {
+                if (lockIcons == null)
+                {
+                    lockIcons = new GUIContent[2];
+                    lockIcons[0] = EditorGUIUtility.TrIconContent("IN LockButton", "Toggles the changing of audio when selecting inspector objects");
+                    lockIcons[1] = EditorGUIUtility.TrIconContent("IN LockButton on", "Toggles the changing of audio when selecting inspector objects");
+                }
+                return lockIcons;
+            }
+        }
+        static GUIContent openIcon;
+        static GUIContent OpenIcon
+        {
+            get
+            {
+                if (openIcon == null)
+                {
+                    openIcon = EditorGUIUtility.TrIconContent("d_ScaleTool", "Click to open Playback Preview in a standalone window");
+                }
+                return openIcon;
+            }
         }
 
         public static void DoForceRepaint(bool fullRepaint = false)

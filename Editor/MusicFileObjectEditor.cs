@@ -9,35 +9,11 @@ namespace JSAM.JSAMEditor
 {
     [CustomEditor(typeof(MusicFileObject))]
     [CanEditMultipleObjects]
-    public class MusicFileObjectEditor : BaseAudioFileObjectEditor<MusicFileObjectEditor>
+    public class MusicFileObjectEditor : BaseAudioFileObjectEditor
     {
-        public class MusicEditorFader : System.IDisposable
-        {
-            public MusicEditorFader()
-            {
-                EditorApplication.update += Update;
-            }
-
-            public void Dispose()
-            {
-                EditorApplication.update -= Update;
-            }
-
-            void Update()
-            {
-
-            }
-        }
-
         MusicFileObject myScript;
 
         Color COLOR_BUTTONPRESSED = new Color(0.475f, 0.475f, 0.475f);
-
-        bool clipPlaying = false;
-        bool clipPaused = false;
-
-        bool mouseDragging = false;
-        bool loopClip = false;
 
         /// <summary>
         /// True so long as the inspector music player hasn't looped
@@ -45,10 +21,6 @@ namespace JSAM.JSAMEditor
         public static bool firstPlayback = true;
         public static bool freePlay = false;
 
-        Texture2D cachedTex;
-        AudioClip cachedClip;
-
-        bool mouseScrubbed = false;
 
         new protected void OnEnable()
         {
@@ -65,9 +37,9 @@ namespace JSAM.JSAMEditor
             AudioPlaybackToolEditor.CreateAudioHelper(files.arraySize > 0 ? asset.Files[0] : null);
         }
 
-        void OnDisable()
+        protected override void OnDisable()
         {
-            EditorApplication.update -= Update;
+            base.OnDisable();
             Undo.undoRedoPerformed -= OnUndoRedo;
             if (!AudioPlaybackToolEditor.WindowOpen)
             {
@@ -256,7 +228,7 @@ namespace JSAM.JSAMEditor
                         }
                     }
 
-                    if (GUILayout.Button(s_BackIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
+                    if (GUILayout.Button(backIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                     {
                         if (myScript.loopMode == LoopMode.ClampedLoopPoints)
                         {
@@ -273,7 +245,7 @@ namespace JSAM.JSAMEditor
                     }
 
                     Color colorbackup = GUI.backgroundColor;
-                    GUIContent buttonIcon = (clipPlaying) ? s_PlayIcons[1] : s_PlayIcons[0];
+                    GUIContent buttonIcon = (clipPlaying) ? playIcons[1] : playIcons[0];
                     if (clipPlaying) GUI.backgroundColor = COLOR_BUTTONPRESSED;
                     if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                     {
@@ -299,7 +271,7 @@ namespace JSAM.JSAMEditor
                     }
 
                     GUI.backgroundColor = colorbackup;
-                    GUIContent theText = (clipPaused) ? s_PauseIcons[1] : s_PauseIcons[0];
+                    GUIContent theText = (clipPaused) ? pauseIcons[1] : pauseIcons[0];
                     if (clipPaused) GUI.backgroundColor = COLOR_BUTTONPRESSED;
                     if (GUILayout.Button(theText, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                     {
@@ -315,7 +287,7 @@ namespace JSAM.JSAMEditor
                     }
 
                     GUI.backgroundColor = colorbackup;
-                    buttonIcon = (loopClip) ? s_LoopIcons[1] : s_LoopIcons[0];
+                    buttonIcon = (loopClip) ? loopIcons[1] : loopIcons[0];
                     if (loopClip) GUI.backgroundColor = COLOR_BUTTONPRESSED;
                     if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                     {
@@ -339,7 +311,8 @@ namespace JSAM.JSAMEditor
                         {
                             case LoopPointTool.Slider:
                             case LoopPointTool.TimeInput:
-                                blontent = new GUIContent(AudioPlaybackToolEditor.TimeToString((float)AudioPlaybackToolEditor.helperSource.timeSamples / music.frequency) + " / " + (AudioPlaybackToolEditor.TimeToString(music.length)),
+                                var time = (float)AudioPlaybackToolEditor.helperSource.timeSamples / music.frequency;
+                                blontent = new GUIContent(time.TimeToString() + " / " + (music.length.TimeToString()),
                                     "The playback time in seconds");
                                 break;
                             case LoopPointTool.TimeSamplesInput:
@@ -442,7 +415,7 @@ namespace JSAM.JSAMEditor
             return true;
         }
 
-        void Update()
+        protected override void Update()
         {
             if (AudioPlaybackToolEditor.lockSelection) return;
 
@@ -605,38 +578,6 @@ namespace JSAM.JSAMEditor
                 JSAMEditorHelper.EndColourChange();
             }
 #endregion
-        }
-
-        static GUIContent s_BackIcon = null;
-        static GUIContent[] s_PlayIcons = { null, null };
-        static GUIContent[] s_PauseIcons = { null, null };
-        static GUIContent[] s_LoopIcons = { null, null };
-        static GUIContent openIcon;
-
-        /// <summary>
-        /// Why does Unity keep all this stuff secret?
-        /// https://unitylist.com/p/5c3/Unity-editor-icons
-        /// </summary>
-        static void SetupIcons()
-        {
-            s_BackIcon = EditorGUIUtility.TrIconContent("beginButton", "Click to Reset Playback Position");
-#if UNITY_2019_4_OR_NEWER
-            s_PlayIcons[0] = EditorGUIUtility.TrIconContent("d_PlayButton", "Click to Play");
-            s_PlayIcons[1] = EditorGUIUtility.TrIconContent("d_PlayButton On", "Click to Stop");
-#else
-            s_PlayIcons[0] = EditorGUIUtility.TrIconContent("preAudioPlayOff", "Click to Play");
-            s_PlayIcons[1] = EditorGUIUtility.TrIconContent("preAudioPlayOn", "Click to Stop");
-#endif
-            s_PauseIcons[0] = EditorGUIUtility.TrIconContent("PauseButton", "Click to Pause");
-            s_PauseIcons[1] = EditorGUIUtility.TrIconContent("PauseButton On", "Click to Unpause");
-#if UNITY_2019_4_OR_NEWER
-            s_LoopIcons[0] = EditorGUIUtility.TrIconContent("d_preAudioLoopOff", "Click to enable looping");
-            s_LoopIcons[1] = EditorGUIUtility.TrIconContent("preAudioLoopOff", "Click to disable looping");
-#else
-            s_LoopIcons[0] = EditorGUIUtility.TrIconContent("playLoopOff", "Click to enable looping");
-            s_LoopIcons[1] = EditorGUIUtility.TrIconContent("playLoopOn", "Click to disable looping");
-#endif
-            openIcon = EditorGUIUtility.TrIconContent("d_ScaleTool", "Click to open Playback Preview in a standalone window");
         }
     }
 }
