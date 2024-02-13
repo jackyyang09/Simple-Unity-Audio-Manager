@@ -8,6 +8,7 @@ namespace JSAM.JSAMEditor
     public class JSAMEditorFader : System.IDisposable
     {
         BaseAudioFileObject asset;
+        EditorAudioHelper helper;
 
         AudioClip PlayingClip
         {
@@ -23,10 +24,11 @@ namespace JSAM.JSAMEditor
         AudioClip playingClip;
         float fadeInTime, fadeOutTime;
 
-        public JSAMEditorFader(BaseAudioFileObject _asset)
+        public JSAMEditorFader(BaseAudioFileObject _asset, EditorAudioHelper _helper)
         {
             EditorApplication.update += Update;
             asset = _asset;
+            helper = _helper;
         }
 
         public void Dispose()
@@ -42,12 +44,12 @@ namespace JSAM.JSAMEditor
         {
             if (!asset.fadeInOut)
             {
-                AudioPlaybackToolEditor.helperSource.volume = asset.relativeVolume;
+                helper.Source.volume = asset.relativeVolume;
                 return;
             }
 
             // Throws an error here when replacing a AudioClip and playing it in an independent window
-            var helperSource = AudioPlaybackToolEditor.helperSource;
+            var helperSource = helper.Source;
             if (helperSource.isPlaying)
             {
                 if (helperSource.time < PlayingClip.length - fadeOutTime)
@@ -80,11 +82,11 @@ namespace JSAM.JSAMEditor
             PlayingClip = audioClip;
             if (newAsset != null) asset = newAsset;
 
-            AudioPlaybackToolEditor.helperSource.clip = PlayingClip;
-            AudioPlaybackToolEditor.soundHelper.PlayDebug((SoundFileObject)asset, false);
+            helper.Source.clip = PlayingClip;
+            helper.SoundHelper.PlayDebug((SoundFileObject)asset, false);
 
-            fadeInTime = asset.fadeInDuration * AudioPlaybackToolEditor.helperSource.clip.length;
-            fadeOutTime = asset.fadeOutDuration * AudioPlaybackToolEditor.helperSource.clip.length;
+            fadeInTime = asset.fadeInDuration * helper.Source.clip.length;
+            fadeOutTime = asset.fadeOutDuration * helper.Source.clip.length;
             // To prevent divisions by 0
             if (fadeInTime == 0) fadeInTime = float.Epsilon;
             if (fadeOutTime == 0) fadeOutTime = float.Epsilon;

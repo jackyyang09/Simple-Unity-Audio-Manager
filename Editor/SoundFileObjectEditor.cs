@@ -15,13 +15,6 @@ namespace JSAM.JSAMEditor
 
         AudioClip playingClip;
 
-        bool clipPlaying
-        {
-            get
-            {
-                return playingClip != null && AudioPlaybackToolEditor.helperSource.isPlaying;
-            }
-        }
         bool playingRandom;
 
         protected override string SHOW_LIBRARY => "JSAM_SFO_SHOWLIBRARY";
@@ -35,7 +28,6 @@ namespace JSAM.JSAMEditor
         {
             base.OnEnable();
 
-            EditorApplication.update += Update;
             Undo.undoRedoPerformed += OnUndoRedo;
             Undo.postprocessModifications += ApplyHelperEffects;
 
@@ -47,11 +39,9 @@ namespace JSAM.JSAMEditor
 
             openIcon = EditorGUIUtility.TrIconContent("d_ScaleTool", "Click to open Playback Preview in a standalone window");
 
-            AudioPlaybackToolEditor.CreateAudioHelper(files.arraySize > 0 ? asset.Files[0] : null);
-
             if (!AudioPlaybackToolEditor.WindowOpen)
             {
-                editorFader = new JSAMEditorFader(asset);
+                editorFader = new JSAMEditorFader(asset, helper);
             }
 #if !UNITY_2020_3_OR_NEWER
             list = new AudioClipList(serializedObject, files);
@@ -62,10 +52,6 @@ namespace JSAM.JSAMEditor
         {
             base.OnDisable();
             Undo.undoRedoPerformed -= OnUndoRedo;
-            if (!AudioPlaybackToolEditor.WindowOpen)
-            {
-                AudioPlaybackToolEditor.DestroyAudioHelper();
-            }
             Undo.postprocessModifications -= ApplyHelperEffects;
 
             if (editorFader != null)
@@ -243,7 +229,7 @@ namespace JSAM.JSAMEditor
                 {
                     EditorGUILayout.BeginHorizontal();
                     Color colorbackup = GUI.backgroundColor;
-                    if (clipPlaying)
+                    if (IsClipPlaying)
                     {
                         GUI.backgroundColor = buttonPressedColor;
                         blontent = new GUIContent("Stop", "Stop playback");
@@ -254,9 +240,9 @@ namespace JSAM.JSAMEditor
                     }
                     if (GUILayout.Button(blontent))
                     {
-                        if (clipPlaying)
+                        if (IsClipPlaying)
                         {
-                            AudioPlaybackToolEditor.helperSource.Stop();
+                            helper.Source.Stop();
                             if (playingRandom)
                             {
                                 playingRandom = false;
@@ -269,7 +255,7 @@ namespace JSAM.JSAMEditor
                                 editorFader.StartFading(playingClip, asset as SoundFileObject);
                             }
                         }
-                        AudioPlaybackToolEditor.helperSource.time = 0;
+                        helper.Source.time = 0;
                         AudioPlaybackToolEditor.DoForceRepaint(true);
                     }
                     GUI.backgroundColor = colorbackup;
@@ -278,7 +264,7 @@ namespace JSAM.JSAMEditor
                         if (GUILayout.Button(new GUIContent("Play Random", "Preview settings with a random track from your library. Only usable if this Audio File has \"Use Library\" enabled.")))
                         {
                             DesignateRandomAudioClip();
-                            AudioPlaybackToolEditor.helperSource.Stop();
+                            helper.Source.Stop();
                             editorFader.StartFading(playingClip, asset as SoundFileObject);
                         }
                     }
@@ -351,14 +337,14 @@ namespace JSAM.JSAMEditor
                         playingClip = cachedClip;
                     }
 
-                    if (!clipPlaying && playingRandom)
+                    if (!IsClipPlaying && playingRandom)
                     {
                         RedesignateActiveAudioClip();
                         playingRandom = false;
                     }
                 }
 
-                if (clipPlaying)
+                if (IsClipPlaying)
                 {
                     // This doesn't seem to do anything
                     //EditorApplication.QueuePlayerLoopUpdate();
@@ -374,9 +360,9 @@ namespace JSAM.JSAMEditor
 
         public UndoPropertyModification[] ApplyHelperEffects(UndoPropertyModification[] modifications)
         {
-            if (AudioPlaybackToolEditor.helperSource.isPlaying)
+            if (helper.Source.isPlaying)
             {
-                AudioPlaybackToolEditor.soundHelper.ApplyEffects();
+                helper.SoundHelper.ApplyEffects();
             }
             return modifications;
         }
@@ -429,7 +415,7 @@ namespace JSAM.JSAMEditor
             }
 
             AudioClip sound = playingClip;
-            var helperSource = AudioPlaybackToolEditor.helperSource;
+            var helperSource = helper.Source;
             float value = 0;
             if (playingClip) value = helperSource.time / playingClip.length;
 

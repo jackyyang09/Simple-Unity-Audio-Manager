@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using System;
-using UnityEditor.UI;
 
 namespace JSAM.JSAMEditor
 {
@@ -22,7 +21,7 @@ namespace JSAM.JSAMEditor
             {
                 if (editorFader == null)
                 {
-                    editorFader = new JSAMEditorFader(selectedSound);
+                    editorFader = new JSAMEditorFader(selectedSound, Helper);
                 }
                 return editorFader;
             }
@@ -36,23 +35,32 @@ namespace JSAM.JSAMEditor
         static bool mouseDragging;
         static bool mouseScrubbed;
         static bool loopClip;
-        static bool clipPlaying;
         static bool clipPaused;
+        static bool ClipPlaying => Helper.Source.isPlaying;
 
-        public static GameObject helperObject;
-        public static AudioSource helperSource;
+        static EditorAudioHelper helper;
+        static EditorAudioHelper Helper
+        {
+            get
+            {
+                if (helper == null)
+                {
+                    helper = new EditorAudioHelper(null);
+                }
+                return helper;
+            }
+        }
+
         public static bool HelperSourceActive 
         { 
             get
             {
-                if (!helperSource) return false;
+                if (!Helper.Source) return false;
                 //if (!AudioManager.Instance) return false;
-                if (!helperSource.clip) return false;
+                if (!Helper.Clip) return false;
                 return true;
             } 
         }
-        public static SoundChannelHelper soundHelper;
-        public static MusicChannelHelper musicHelper;
 
         static Color buttonPressedColor = new Color(0.475f, 0.475f, 0.475f);
         static Color buttonPressedColorLighter = new Color(0.75f, 0.75f, 0.75f);
@@ -166,7 +174,8 @@ namespace JSAM.JSAMEditor
                 m_PreviewUtility = null;
             }
 
-            DestroyAudioHelper();
+            Helper.Dispose();
+            helper = null;
         }
 
         private void OnGUI()
@@ -178,7 +187,7 @@ namespace JSAM.JSAMEditor
             EditorGUILayout.BeginHorizontal();
             if (HelperSourceActive)
             {
-                EditorGUILayout.LabelField("Now Playing - " + helperSource.clip.name);
+                EditorGUILayout.LabelField("Now Playing - " + Helper.Clip.name);
             }
             else
             {
@@ -214,7 +223,7 @@ namespace JSAM.JSAMEditor
                         AudioClip sound = selectedSound.Files[i];
                         Color colorbackup = GUI.backgroundColor;
                         //EditorGUILayout.BeginHorizontal();
-                        if (helperSource.clip == sound) GUI.backgroundColor = buttonPressedColor;
+                        if (Helper.Clip == sound) GUI.backgroundColor = buttonPressedColor;
                         var buttonName = sound.name;
                         if (buttonName.Length > 15) buttonName = sound.name.Substring(0, 15) + "...";
                         GUIContent bContent = new GUIContent(buttonName, "Click to change AudioClip being played back to " + sound.name);
@@ -222,9 +231,8 @@ namespace JSAM.JSAMEditor
                         {
                             // Play the sound
                             selectedClip = sound;
-                            helperSource.clip = selectedClip;
-                            EditorFader.StartFading(helperSource.clip, selectedSound);
-                            clipPlaying = true;
+                            Helper.Clip = selectedClip;
+                            EditorFader.StartFading(Helper.Clip, selectedSound);
                         }
                         //EditorGUILayout.EndHorizontal();
                         GUI.backgroundColor = colorbackup;
@@ -267,7 +275,7 @@ namespace JSAM.JSAMEditor
 
             UpdateActiveAsset();
             
-            if (helperSource) helperSource.clip = selectedClip;
+            if (Helper != null) Helper.Clip = selectedClip;
             DoForceRepaint(true);
         }
 
@@ -285,7 +293,7 @@ namespace JSAM.JSAMEditor
                     selectedSound = sound;
                     if (selectedSound.Files.Count == 0) return;
                     selectedClip = selectedSound.Files[0];
-                    CreateAudioHelper(selectedClip);
+                    Helper.Clip = selectedClip;
                 }
                 else
                 {
@@ -297,7 +305,7 @@ namespace JSAM.JSAMEditor
                         selectedMusic = music;
                         if (selectedMusic.Files.Count == 0) return;
                         selectedClip = selectedMusic.Files[0];
-                        CreateAudioHelper(selectedClip);
+                        Helper.Clip = selectedClip;
                     }
                 }
             }
@@ -310,7 +318,7 @@ namespace JSAM.JSAMEditor
                     selectedMusic = null;
 
                     selectedClip = (AudioClip)Selection.activeObject;
-                    CreateAudioHelper(selectedClip);
+                    Helper.Clip = selectedClip;
                 }
                 else
                 {
@@ -328,7 +336,7 @@ namespace JSAM.JSAMEditor
             float progress = 0;
             if (HelperSourceActive)
             {
-                progress = (float)helperSource.timeSamples / (float)helperSource.clip.samples;
+                progress = (float)Helper.Source.timeSamples / (float)Helper.Clip.samples;
             }
             Rect progressRect = ProgressBar(progress, selectedClip, selectedSound, selectedMusic);
             EditorGUI.BeginChangeCheck();
@@ -345,66 +353,63 @@ namespace JSAM.JSAMEditor
             {
                 if (GUILayout.Button(BackIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                 {
-                    helperSource.timeSamples = 0;
-                    helperSource.Stop();
+                    Helper.Source.timeSamples = 0;
+                    Helper.Source.Stop();
                     mouseScrubbed = false;
                     clipPaused = false;
-                    clipPlaying = false;
                 }
 
                 // Draw Play Button
-                GUIContent buttonIcon = (clipPlaying) ? PlayIcons[1] : PlayIcons[0];
-                if (clipPlaying) JSAMEditorHelper.BeginBackgroundColourChange(buttonPressedColor);
+                GUIContent buttonIcon = ClipPlaying ? PlayIcons[1] : PlayIcons[0];
+                if (ClipPlaying) JSAMEditorHelper.BeginBackgroundColourChange(buttonPressedColor);
                 if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                 {
-                    clipPlaying = !clipPlaying;
-                    if (clipPlaying)
+                    if (!ClipPlaying)
                     {
                         if (selectedSound)
                         {
-                            EditorFader.StartFading(helperSource.clip, selectedSound);
+                            EditorFader.StartFading(Helper.Clip, selectedSound);
                         }
                         else if (selectedMusic)
                         {
-                            musicHelper.PlayDebug(selectedMusic, mouseScrubbed);
+                            Helper.MusicHelper.PlayDebug(selectedMusic, mouseScrubbed);
                             MusicFileObjectEditor.firstPlayback = true;
                             BaseAudioFileObjectEditor.FreePlay = false;
                         }
                         else if (selectedClip)
                         {
-                            soundHelper.PlayDebug(mouseScrubbed);
+                            Helper.SoundHelper.PlayDebug(mouseScrubbed);
                         }
 
-                        if (clipPaused) helperSource.Pause();
+                        if (clipPaused) Helper.Source.Pause();
                     }
                     else
                     {
-                        helperSource.Stop();
+                        Helper.Source.Stop();
                         if (!mouseScrubbed)
                         {
-                            // Note: For some reason, reading from helperSource.time returns 0 even if timeSamples is not 0
-                            // However, writing a value to helperSource.time changes timeSamples to the appropriate value just fine
-                            helperSource.time = 0;
+                            // Note: For some reason, reading from helper.Source.time returns 0 even if timeSamples is not 0
+                            // However, writing a value to helper.Source.time changes timeSamples to the appropriate value just fine
+                            Helper.Source.time = 0;
                         }
                         clipPaused = false;
                     }
-                    clipPlaying = !clipPlaying;
                 }
-                if (clipPlaying) JSAMEditorHelper.EndBackgroundColourChange();
+                if (ClipPlaying) JSAMEditorHelper.EndBackgroundColourChange();
 
                 // Pause button
-                GUIContent theText = (clipPaused) ? PauseIcons[1] : PauseIcons[0];
+                GUIContent theText = clipPaused ? PauseIcons[1] : PauseIcons[0];
                 if (clipPaused) JSAMEditorHelper.BeginBackgroundColourChange(buttonPressedColor);
                 if (GUILayout.Button(theText, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                 {
                     clipPaused = !clipPaused;
                     if (clipPaused)
                     {
-                        helperSource.Pause();
+                        Helper.Source.Pause();
                     }
                     else
                     {
-                        helperSource.UnPause();
+                        Helper.Source.UnPause();
                     }
                 }
                 if (clipPaused) JSAMEditorHelper.EndBackgroundColourChange();
@@ -415,7 +420,7 @@ namespace JSAM.JSAMEditor
                 if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                 {
                     loopClip = !loopClip;
-                    // helperSource.loop = true;
+                    // helper.Source.loop = true;
                 }
                 if (loopClip) JSAMEditorHelper.EndBackgroundColourChange();
 
@@ -431,8 +436,7 @@ namespace JSAM.JSAMEditor
                             {
                                 selectedClip = instance.DesignateRandomAudioClip();
                                 DoForceRepaint(true);
-                                clipPlaying = true;
-                                helperSource.Stop();
+                                Helper.Source.Stop();
                                 EditorFader.StartFading(selectedClip, selectedSound);
                             }
                         }
@@ -454,7 +458,7 @@ namespace JSAM.JSAMEditor
                     window.position = r;
                 }
 
-                if (GUILayout.Button(lockIcons[Convert.ToInt32(lockSelection)], new GUILayoutOption[] { GUILayout.ExpandWidth(false), GUILayout.ExpandHeight(true), GUILayout.MaxHeight(19) }))
+                if (GUILayout.Button(LockIcons[Convert.ToInt32(lockSelection)], new GUILayoutOption[] { GUILayout.ExpandWidth(false), GUILayout.ExpandHeight(true), GUILayout.MaxHeight(19) }))
                 {
                     lockSelection = !lockSelection;
                 }
@@ -474,16 +478,16 @@ namespace JSAM.JSAMEditor
                         case MusicFileObjectEditor.LoopPointTool.Slider:
                         case MusicFileObjectEditor.LoopPointTool.TimeInput:
                             blontent = new GUIContent(
-                                ((float)helperSource.timeSamples / helperSource.clip.frequency).TimeToString() + 
+                                ((float)Helper.Source.timeSamples / Helper.Clip.frequency).TimeToString() + 
                                 " / " + 
-                                helperSource.clip.length.TimeToString(),
+                                Helper.Clip.length.TimeToString(),
                                 "The playback time in seconds");
                             break;
                         case MusicFileObjectEditor.LoopPointTool.TimeSamplesInput:
-                            blontent = new GUIContent(helperSource.timeSamples + " / " + helperSource.clip.samples, "The playback time in samples");
+                            blontent = new GUIContent(Helper.Source.timeSamples + " / " + Helper.Clip.samples, "The playback time in samples");
                             break;
                         case MusicFileObjectEditor.LoopPointTool.BPMInput:
-                            blontent = new GUIContent(string.Format("{0:0}", helperSource.time / (60f / selectedMusic.bpm)) + " / " + helperSource.clip.length / (60f / selectedMusic.bpm),
+                            blontent = new GUIContent(string.Format("{0:0}", Helper.Source.time / (60f / selectedMusic.bpm)) + " / " + Helper.Clip.length / (60f / selectedMusic.bpm),
                                 "The playback time in beats");
                             break;
                     }
@@ -537,7 +541,7 @@ namespace JSAM.JSAMEditor
                             }
                             if (!mouseDragging) break;
                             float newProgress = Mathf.InverseLerp(progressRect.xMin, progressRect.xMax, evt.mousePosition.x);
-                            helperSource.time = Mathf.Clamp((newProgress * helperSource.clip.length), 0, helperSource.clip.length - AudioManagerInternal.EPSILON);
+                            Helper.Source.time = Mathf.Clamp((newProgress * Helper.Clip.length), 0, Helper.Clip.length - AudioManagerInternal.EPSILON);
 
                             if (selectedMusic)
                             {
@@ -545,65 +549,12 @@ namespace JSAM.JSAMEditor
                                 {
                                     float start = selectedMusic.loopStart * selectedMusic.Files[0].frequency;
                                     float end = selectedMusic.loopEnd * selectedMusic.Files[0].frequency;
-                                    helperSource.timeSamples = (int)Mathf.Clamp(helperSource.timeSamples, start, end - AudioManagerInternal.EPSILON);
+                                    Helper.Source.timeSamples = (int)Mathf.Clamp(Helper.Source.timeSamples, start, end - AudioManagerInternal.EPSILON);
                                 }
                             }
                         }
                         break;
                 }
-            }
-        }
-
-        public static void CreateAudioHelper(AudioClip selectedClip)
-        {
-            if (lockSelection) return;
-
-            if (helperObject == null)
-            {
-                helperObject = GameObject.Find("JSAM Audio Helper");
-                if (helperObject == null)
-                {
-                    helperObject = new GameObject("JSAM Audio Helper");
-                    helperSource = helperObject.AddComponent<AudioSource>();
-                    helperSource.playOnAwake = false;
-                    helperSource.clip = selectedClip;
-
-                    soundHelper = helperObject.AddComponent<SoundChannelHelper>();
-                    musicHelper = helperObject.AddComponent<MusicChannelHelper>();
-                    UnityEngine.Audio.AudioMixerGroup sg = null;
-                    UnityEngine.Audio.AudioMixerGroup mg = null;
-                    if (JSAMSettings.Settings)
-                    {
-                        sg = JSAMSettings.Settings.SoundGroup;
-                        mg = JSAMSettings.Settings.MusicGroup;
-                    }
-                    soundHelper.Init(sg);
-                    musicHelper.Init(mg);
-                }
-                else
-                {
-                    soundHelper = helperObject.GetComponent<SoundChannelHelper>();
-                    musicHelper = helperObject.GetComponent<MusicChannelHelper>();
-                }
-                helperObject.hideFlags = HideFlags.HideAndDontSave;
-            }
-
-            if (helperSource == null)
-            {
-                helperSource = helperObject.GetComponent<AudioSource>();
-                helperSource.clip = selectedClip;
-            }
-        }
-
-        public static void DestroyAudioHelper()
-        {
-            if (helperSource)
-            {
-                helperSource.Stop();
-            }
-            if (!WindowOpen && !BaseAudioFileObjectEditor.Instance)
-            {
-                DestroyImmediate(helperObject);
             }
         }
 
@@ -671,9 +622,8 @@ namespace JSAM.JSAMEditor
         private void Update()
         {
             if (selectedClip == null) return;
-            if (helperSource == null) CreateAudioHelper(selectedClip);
 
-            if (!helperSource.isPlaying && mouseDragging || resized)
+            if (!Helper.Source.isPlaying && mouseDragging || resized)
             {
                 DoForceRepaint(resized);
             }
@@ -681,22 +631,18 @@ namespace JSAM.JSAMEditor
             #region Sound Update
             if (selectedSound || (selectedClip && !selectedMusic))
             {
-                if ((clipPlaying && !clipPaused) || (mouseDragging && clipPlaying))
+                if ((ClipPlaying && !clipPaused) || (mouseDragging && ClipPlaying))
                 {
-                    float clipPos = helperSource.timeSamples / (float)selectedClip.frequency;
+                    float clipPos = Helper.Source.timeSamples / (float)selectedClip.frequency;
                     
                     Repaint();
 
-                    if (!helperSource.isPlaying && !clipPaused && clipPlaying)
+                    if (!ClipPlaying && !clipPaused)
                     {
-                        helperSource.time = 0;
+                        Helper.Source.time = 0;
                         if (loopClip)
                         {
-                            helperSource.Play();
-                        }
-                        else
-                        {
-                            clipPlaying = false;
+                            Helper.Source.Play();
                         }
                     }
                 }
@@ -705,11 +651,11 @@ namespace JSAM.JSAMEditor
             #region Music Update
             if (selectedMusic)
             {
-                if ((clipPlaying && !clipPaused) || (mouseDragging && clipPlaying))
+                if ((ClipPlaying && !clipPaused) || (mouseDragging && ClipPlaying))
                 {
-                    float clipPos = helperSource.timeSamples / (float)selectedClip.frequency;
-                    helperSource.volume = selectedMusic.relativeVolume;
-                    helperSource.pitch = selectedMusic.startingPitch;
+                    float clipPos = Helper.Source.timeSamples / (float)selectedClip.frequency;
+                    Helper.Source.volume = selectedMusic.relativeVolume;
+                    Helper.Source.pitch = selectedMusic.startingPitch;
 
                     Repaint();
 
@@ -717,16 +663,16 @@ namespace JSAM.JSAMEditor
                     {
                         if (selectedMusic.loopMode == LoopMode.LoopWithLoopPoints || selectedMusic.loopMode == LoopMode.ClampedLoopPoints)
                         {
-                            if (!helperSource.isPlaying && clipPlaying && !clipPaused)
+                            if (!Helper.Source.isPlaying && !clipPaused)
                             {
                                 if (MusicFileObjectEditor.freePlay)
                                 {
-                                    helperSource.Play();
+                                    Helper.Source.Play();
                                 }
                                 else
                                 {
-                                    helperSource.Play();
-                                    helperSource.timeSamples = Mathf.CeilToInt(selectedMusic.loopStart * selectedClip.frequency);
+                                    Helper.Source.Play();
+                                    Helper.Source.timeSamples = Mathf.CeilToInt(selectedMusic.loopStart * selectedClip.frequency);
                                 }
                                 MusicFileObjectEditor.freePlay = false;
                             }
@@ -735,13 +681,13 @@ namespace JSAM.JSAMEditor
                                 if (clipPos < selectedMusic.loopStart || clipPos > selectedMusic.loopEnd)
                                 {
                                     // CeilToInt to guarantee clip position stays within loop bounds
-                                    helperSource.timeSamples = Mathf.CeilToInt(selectedMusic.loopStart * selectedClip.frequency);
+                                    Helper.Source.timeSamples = Mathf.CeilToInt(selectedMusic.loopStart * selectedClip.frequency);
                                     MusicFileObjectEditor.firstPlayback = false;
                                 }
                             }
                             else if (clipPos >= selectedMusic.loopEnd)
                             {
-                                helperSource.timeSamples = Mathf.CeilToInt(selectedMusic.loopStart * selectedClip.frequency);
+                                Helper.Source.timeSamples = Mathf.CeilToInt(selectedMusic.loopStart * selectedClip.frequency);
                                 MusicFileObjectEditor.firstPlayback = false;
                             }
                         }
@@ -750,31 +696,26 @@ namespace JSAM.JSAMEditor
                     {
                         if (selectedMusic.loopMode == LoopMode.LoopWithLoopPoints)
                         {
-                            if ((!helperSource.isPlaying && !clipPaused) || clipPos > selectedMusic.loopEnd)
+                            if ((!Helper.Source.isPlaying && !clipPaused) || clipPos > selectedMusic.loopEnd)
                             {
-                                clipPlaying = false;
-                                helperSource.Stop();
+                                Helper.Source.Stop();
                             }
                         }
                         else if (selectedMusic.loopMode == LoopMode.ClampedLoopPoints && clipPos < selectedMusic.loopStart)
                         {
-                            helperSource.timeSamples = Mathf.CeilToInt(selectedMusic.loopStart * selectedClip.frequency);
+                            Helper.Source.timeSamples = Mathf.CeilToInt(selectedMusic.loopStart * selectedClip.frequency);
                         }
                     }
                 }
 
                 if (selectedMusic.loopMode != LoopMode.LoopWithLoopPoints)
                 {
-                    if (!helperSource.isPlaying && !clipPaused && clipPlaying)
+                    if (!Helper.Source.isPlaying && !clipPaused && ClipPlaying)
                     {
-                        helperSource.time = 0;
+                        Helper.Source.time = 0;
                         if (loopClip)
                         {
-                            helperSource.Play();
-                        }
-                        else
-                        {
-                            clipPlaying = false;
+                            Helper.Source.Play();
                         }
                     }
                 }
