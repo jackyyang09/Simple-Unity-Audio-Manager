@@ -8,6 +8,10 @@ namespace JSAM
 {
     public class JSAMSettings : ScriptableObject
     {
+        [Tooltip("Ensures that the AudioManager you think you're referring to actually exists in this scene")]
+        [SerializeField] bool establishSingletonDominance = true;
+        public bool EstablishSingletonDominance => establishSingletonDominance;
+        
         [Tooltip("If true, enables 3D spatialized audio for all sound effects, does not effect music")]
         [SerializeField] bool spatialSound = true;
         public bool Spatialize => spatialSound;
