@@ -214,7 +214,10 @@ namespace JSAM
             // Make sure no remnants from a previous sound remain
             StopAllCoroutines();
             AudioSource.Stop();
-            AudioSource.timeSamples = 0;
+            if (AudioSource.clip is AudioClip)
+            {
+                AudioSource.timeSamples = 0;
+            }
             if (audioFile) UnsubscribeFromAudioEvents();
         }
 
