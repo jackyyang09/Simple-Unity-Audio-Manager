@@ -862,6 +862,11 @@ namespace JSAM
         [RuntimeInitializeOnLoadMethod]
         public void EstablishSingletonDominance()
         {
+            if (!JSAMSettings.Settings.EstablishSingletonDominance)
+            {
+                return;
+            }
+            
             if (Instance != this && Instance != null)
             {
                 // A unique case where the Singleton exists but not in this scene
