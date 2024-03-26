@@ -268,17 +268,7 @@ namespace JSAM
 
             AudioSource.priority = (int)audioFile.priority;
 
-            bool timeScaledSounds = false;
-            if (JSAMSettings.Settings)
-            {
-                timeScaledSounds = JSAMSettings.Settings.TimeScaledSounds;
-            }
-
-            if (timeScaledSounds && !audioFile.ignoreTimeScale)
-            {
-                float offset = AudioSource.pitch - 1;
-                AudioSource.pitch = Time.timeScale + offset;
-            }
+            AudioSource.pitch = audioFile.GetRandomPitch();
 
             ApplyEffects();
 
