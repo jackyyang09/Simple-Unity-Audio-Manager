@@ -27,6 +27,11 @@ namespace JSAM
         [SerializeField] float defaultSoundMaxDistance = 7;
         public float DefaultSoundMaxDistance => defaultSoundMaxDistance;
 
+        [Tooltip("Affects how AudioClip lists are displayed in FileObject inspectors. " +
+            "Enable this option if you're experiencing issues manipulating Audio Clips in the editor")]
+        [SerializeField] bool useBuiltInAudioListRenderer = false;
+        public bool UseBuiltInAudioListRenderer => useBuiltInAudioListRenderer;
+
         /// <summary>
         /// If true, AudioManager no longer prints info to the console. Does not affect AudioManager errors/warnings
         /// </summary>

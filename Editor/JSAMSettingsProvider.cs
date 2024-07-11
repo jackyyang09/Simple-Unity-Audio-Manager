@@ -18,7 +18,6 @@ namespace JSAM.JSAMEditor
             startingSoundChannels,
             startingMusicChannels,
             defaultSoundMaxDistance,
-            disableConsoleLogs,
             dontDestroyOnLoad,
             dynamicSourceAllocation,
             soundChannelPrefabOverride,
@@ -44,9 +43,11 @@ namespace JSAM.JSAMEditor
             voiceVolumeKey,
             voiceMutedKey,
 
+            disableConsoleLogs,
+            quickReferenceFontSize,
+            useBuiltInAudioListRenderer,
             packagePath,
-            presetsPath,
-            fontSize;
+            presetsPath;
 
         JSAMSettings Settings => JSAMSettings.Settings;
         SerializedObject SettingsSO => JSAMSettings.SerializedObject;
@@ -59,7 +60,6 @@ namespace JSAM.JSAMEditor
             startingSoundChannels = SettingsSO.FindProperty(nameof(startingSoundChannels));
             startingMusicChannels = SettingsSO.FindProperty(nameof(startingMusicChannels));
             defaultSoundMaxDistance = SettingsSO.FindProperty(nameof(defaultSoundMaxDistance));
-            disableConsoleLogs = SettingsSO.FindProperty(nameof(disableConsoleLogs));
             dontDestroyOnLoad = SettingsSO.FindProperty(nameof(dontDestroyOnLoad));
             dynamicSourceAllocation = SettingsSO.FindProperty(nameof(dynamicSourceAllocation));
             soundChannelPrefabOverride = SettingsSO.FindProperty(nameof(soundChannelPrefabOverride));
@@ -85,9 +85,11 @@ namespace JSAM.JSAMEditor
             voiceVolumeKey = SettingsSO.FindProperty(nameof(voiceVolumeKey));
             voiceMutedKey = SettingsSO.FindProperty(nameof(voiceMutedKey));
 
+            disableConsoleLogs = SettingsSO.FindProperty(nameof(disableConsoleLogs));
+            quickReferenceFontSize = SettingsSO.FindProperty(nameof(quickReferenceFontSize));
+            useBuiltInAudioListRenderer = SettingsSO.FindProperty(nameof(useBuiltInAudioListRenderer));
             packagePath = PathSO.FindProperty(nameof(packagePath));
             presetsPath = PathSO.FindProperty(nameof(presetsPath));
-            fontSize = SettingsSO.FindProperty("quickReferenceFontSize");
         }
         #endregion
 
@@ -223,16 +225,20 @@ namespace JSAM.JSAMEditor
             EditorGUILayout.PropertyField(disableConsoleLogs);
 
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.PropertyField(fontSize, new GUILayoutOption[] { GUILayout.ExpandWidth(false) });
+            EditorGUILayout.PropertyField(quickReferenceFontSize, new GUILayoutOption[] { GUILayout.ExpandWidth(false) });
             if (GUILayout.Button("<", new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
             {
-                fontSize.intValue--;
+                quickReferenceFontSize.intValue--;
             }
             else if (GUILayout.Button(">", new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
             {
-                fontSize.intValue++;
+                quickReferenceFontSize.intValue++;
             }
             EditorGUILayout.EndHorizontal();
+
+#if UNITY_2020_3_OR_NEWER
+            EditorGUILayout.PropertyField(useBuiltInAudioListRenderer);
+#endif
 
             EditorGUI.BeginChangeCheck();
             packagePath.stringValue = JSAMEditorHelper.RenderSmartFolderProperty(packagePath.GUIContent(), packagePath.stringValue);

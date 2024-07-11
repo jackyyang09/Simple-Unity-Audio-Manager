@@ -112,6 +112,8 @@ namespace JSAM.JSAMEditor
 
         protected Vector2 scroll;
 
+        AudioClipList list;
+
         static BaseAudioFileObjectEditor instance;
         /// <summary>
         /// Multiple inspector windows are a thing. 
@@ -137,6 +139,7 @@ namespace JSAM.JSAMEditor
             SetupIcons();
 
             EditorApplication.update += Update;
+            Undo.postprocessModifications += PostProcessModifications;
         }
 
         protected virtual void OnDisable()
@@ -144,6 +147,7 @@ namespace JSAM.JSAMEditor
             helper.Dispose();
 
             EditorApplication.update -= Update;
+            Undo.postprocessModifications -= PostProcessModifications;
         }
 
         protected SerializedProperty safeName;
@@ -200,6 +204,10 @@ namespace JSAM.JSAMEditor
             excludedProperties.Add(nameof(asset.bypassListenerEffects));
             bypassReverbZones = serializedObject.FindProperty(nameof(asset.bypassReverbZones));
             excludedProperties.Add(nameof(asset.bypassReverbZones));
+
+            list = new AudioClipList(serializedObject, files);
+
+            CheckFiles();
         }
 
         /// <summary>
@@ -262,20 +270,43 @@ namespace JSAM.JSAMEditor
             }
         }
 
+        protected int missingFiles;
+        void CheckFiles()
+        {
+            missingFiles = 0;
+            for (int i = 0; i < files.arraySize; i++)
+            {
+                var f = files.GetArrayElementAtIndex(i);
+                if (f.objectReferenceValue == null) missingFiles++;
+            }
+        }
+
+        protected UndoPropertyModification[] PostProcessModifications(UndoPropertyModification[] modifications)
+        {
+            CheckFiles();
+            return modifications;
+        }
+
         protected void RenderFileList()
         {
+            if (isPreset) return;
 #if UNITY_2020_3_OR_NEWER
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(files);
-            if (EditorGUI.EndChangeCheck())
-            {
-                files = files.RemoveNullElementsFromArray();
-                if (serializedObject.hasModifiedProperties) serializedObject.ApplyModifiedProperties();
-            }
+            if (JSAMSettings.Settings.UseBuiltInAudioListRenderer)
 #else
-            #region Library Region
-            if (!isPreset)
+            if (false)
+#endif
             {
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.PropertyField(files);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    //files = files.RemoveNullElementsFromArray();
+                    if (serializedObject.hasModifiedProperties) serializedObject.ApplyModifiedProperties();
+                }
+            }
+            else
+            {
+                #region Library Region
                 Rect overlay = new Rect();
                 EditorGUILayout.BeginHorizontal();
                 showLibrary = EditorCompatability.SpecialFoldouts(showLibrary, "Library");
@@ -299,7 +330,12 @@ namespace JSAM.JSAMEditor
 
                     if (files.arraySize > 0)
                     {
+                        EditorGUI.BeginChangeCheck();
                         list.Draw();
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            CheckFiles();
+                        }
                     }
                     EditorGUILayout.EndScrollView();
                     EditorGUILayout.EndVertical();
@@ -324,10 +360,12 @@ namespace JSAM.JSAMEditor
                         }
                     }
                 }
-                EditorGUILayout.LabelField("File Count: " + files.arraySize);
+                #endregion
             }
-            #endregion
-#endif
+
+            string fileLabel = "File Count: " + files.arraySize;
+            if (missingFiles > 0) fileLabel += " | Missing Files: " + missingFiles;
+            EditorGUILayout.LabelField(fileLabel);
         }
 
         protected abstract void OnCreatePreset(string[] input);

@@ -29,7 +29,6 @@ namespace JSAM.JSAMEditor
             base.OnEnable();
 
             Undo.undoRedoPerformed += OnUndoRedo;
-            Undo.postprocessModifications += ApplyHelperEffects;
 
             if (target.name.Length > 0) // Creating from right-click dialog throws error here because name is invalid when first selected
             {
@@ -52,7 +51,6 @@ namespace JSAM.JSAMEditor
         {
             base.OnDisable();
             Undo.undoRedoPerformed -= OnUndoRedo;
-            Undo.postprocessModifications -= ApplyHelperEffects;
 
             if (editorFader != null)
             {
@@ -109,14 +107,27 @@ namespace JSAM.JSAMEditor
 
             RenderFileList();
 
+            bool noFiles = files.arraySize == 0;
+
+            if (!isPreset)
+            {
+                if (noFiles)
+                {
+                    EditorGUILayout.HelpBox("Add an audio file before running!", MessageType.Error);
+                }
+                else if (missingFiles > 0)
+                {
+                    EditorGUILayout.HelpBox(missingFiles + " AudioClip(s) are missing! " +
+                        "This can lead to issues during runtime, such as with randomized playback", MessageType.Warning);
+                }
+            }
+            
             EditorGUILayout.Space();
 
             blontent = new GUIContent("Never Repeat", "Sometimes, AudioManager will allow the same sound from the Audio " +
             "library to play twice in a row, enabling this option will ensure that this audio file never plays the same " +
             "sound until after it plays a different sound.");
             EditorGUILayout.PropertyField(neverRepeat, blontent);
-
-            bool noFiles = files.arraySize == 0;
 
             EditorGUILayout.PropertyField(relativeVolume);
             EditorGUILayout.PropertyField(spatialize);
@@ -134,11 +145,6 @@ namespace JSAM.JSAMEditor
             }
 
             DrawPropertiesExcluding(serializedObject, excludedProperties.ToArray());
-
-            if (noFiles && !isPreset)
-            {
-                EditorGUILayout.HelpBox("Error! Add an audio file before running!", MessageType.Error);
-            }
 
             if (playingClip == null)
             {
@@ -358,8 +364,9 @@ namespace JSAM.JSAMEditor
             AudioPlaybackToolEditor.DoForceRepaint(true);
         }
 
-        public UndoPropertyModification[] ApplyHelperEffects(UndoPropertyModification[] modifications)
+        new public UndoPropertyModification[] PostProcessModifications(UndoPropertyModification[] modifications)
         {
+            base.PostProcessModifications(modifications);
             if (helper.Source.isPlaying)
             {
                 helper.SoundHelper.ApplyEffects();
