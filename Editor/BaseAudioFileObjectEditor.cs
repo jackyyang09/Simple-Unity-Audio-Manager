@@ -692,11 +692,11 @@ namespace JSAM.JSAMEditor
             }
             EditorGUI.EndDisabledGroup();
 
+            blontent = new GUIContent("Loop Point Tools", "Customize where music will loop between. " +
+                    "Loops may not appear to be seamless in the inspector but rest assured, they will be seamless in-game!");
+            showLoopPointTool = EditorCompatability.SpecialFoldouts(showLoopPointTool, blontent);
             using (new EditorGUI.DisabledScope(asset.loopMode < LoopMode.LoopWithLoopPoints))
             {
-                blontent = new GUIContent("Loop Point Tools", "Customize where music will loop between. " +
-                    "Loops may not appear to be seamless in the inspector but rest assured, they will be seamless in-game!");
-                showLoopPointTool = EditorCompatability.SpecialFoldouts(showLoopPointTool, blontent);
                 if (showLoopPointTool)
                 {
                     GUIContent[] contents = new GUIContent[] { new GUIContent("Slider"), new GUIContent("Time"), new GUIContent("Samples"), new GUIContent("BPM") };
@@ -864,9 +864,8 @@ namespace JSAM.JSAMEditor
                         }
                     }
                 }
-                EditorCompatability.EndSpecialFoldoutGroup();
             }
-
+            EditorCompatability.EndSpecialFoldoutGroup();
         }
 
         #region Audio Effect Rendering
