@@ -114,15 +114,17 @@ namespace JSAM.JSAMEditor
             }
         }
 
-        public string PackageManifestPath => System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), 
-                PackagePath, "package.json");
-
         public void ResetPresetsPath(bool save = false)
         {
             SerializedObject.FindProperty(nameof(presetsPath)).stringValue = DefaultPresetsPath;
             SerializedObject.ApplyModifiedProperties();
             if (save) TrySave(true);
         }
+
+        public string PackageManifestPath => System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(),
+            PackagePath, "package.json");
+        public string FontsPath => PackagePath + "/Editor/Fonts/";
+        public string StartupAssetPath => PackagePath + "/Editor/Startup/";
 
         public void ResetPaths()
         {

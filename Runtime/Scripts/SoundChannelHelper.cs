@@ -39,7 +39,7 @@ namespace JSAM
                 if (prevPlaybackTime > AudioSource.time)
                 {
                     AssignNewAudioClip();
-                    AudioSource.pitch = SoundFileObject.GetRandomPitch(audioFile);
+                    AudioSource.pitch = audioFile.GetRandomPitch();
                     AudioSource.Play();
                 }
                 prevPlaybackTime = AudioSource.time;
@@ -55,8 +55,6 @@ namespace JSAM
                 AudioManager.DebugWarning("Tried to play a Sound when no Sound File was assigned!");
                 return AudioSource;
             }
-
-            AudioSource.pitch = SoundFileObject.GetRandomPitch(audioFile);
 
             switch (audioFile.loopMode)
             {
@@ -87,7 +85,7 @@ namespace JSAM
                 AudioSource.Stop();
             }
             AudioSource.timeSamples = (int)Mathf.Clamp((float)AudioSource.timeSamples, 0, (float)AudioSource.clip.samples - 1);
-            AudioSource.pitch = SoundFileObject.GetRandomPitch(file);
+            AudioSource.pitch = file.GetRandomPitch();
 
             audioFile = file;
 

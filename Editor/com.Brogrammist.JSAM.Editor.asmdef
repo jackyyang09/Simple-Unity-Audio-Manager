@@ -2,7 +2,9 @@
     "name": "com.Brogrammist.JSAM.Editor",
     "rootNamespace": "Brogrammist.JSAM.Editor",
     "references": [
-        "GUID:971d9a10892b1ec0a96fbdb1bb70a411"
+        "GUID:971d9a10892b1ec0a96fbdb1bb70a411",
+        "GUID:f06555f75b070af458a003d92f9efb00",
+        "GUID:02f771204943f4a40949438e873e3eff"
     ],
     "includePlatforms": [
         "Editor"

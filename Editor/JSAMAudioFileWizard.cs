@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Presets;
@@ -37,7 +38,7 @@ namespace JSAM.JSAMEditor
         }
 
         public static List<AudioClip> files = new List<AudioClip>();
-        public static string outputFolder;
+        public static string outputFolder = "";
 
         public static AudioFileType fileType;
 
@@ -193,7 +194,19 @@ namespace JSAM.JSAMEditor
             EditorGUILayout.LabelField(new GUIContent("Preset Description"), blontent, skin, new GUILayoutOption[] { GUILayout.ExpandWidth(true) });
             EditorGUILayout.EndHorizontal();
 
+            EditorGUI.BeginChangeCheck();
             outputFolder = JSAMEditorHelper.RenderSmartFolderProperty(new GUIContent("Output Folder"), outputFolder);
+            if (EditorGUI.EndChangeCheck() && outputFolder.Length > 0)
+            {
+                // Check if user created a new folder in the file-dialog
+                if (Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), outputFolder)))
+                {
+                    if (!AssetDatabase.IsValidFolder(outputFolder))
+                    {
+                        AssetDatabase.ImportAsset(outputFolder);
+                    }
+                }
+            }
 
             blontent = new GUIContent("Generate Audio File Objects", 
                 "Create audio file objects with the provided Audio Clips according to the selected preset. " +
@@ -201,7 +214,8 @@ namespace JSAM.JSAMEditor
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.Space();
 
-            bool cantGenerate = files.Count == 0 || selectedPreset == null;
+            bool cantGenerate = files.Count == 0 || selectedPreset == null || !AssetDatabase.IsValidFolder(outputFolder);
+
             using (new EditorGUI.DisabledScope(cantGenerate))
             {
                 if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))

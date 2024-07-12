@@ -7,148 +7,28 @@ using UnityEditor.Presets;
 
 namespace JSAM.JSAMEditor
 {
-    public class SoundEditorFader : System.IDisposable
-    {
-        BaseAudioFileObject asset;
-
-        AudioClip PlayingClip
-        {
-            get
-            {
-                return playingClip;
-            }
-            set
-            {
-                playingClip = value;
-            }
-        }
-        AudioClip playingClip;
-        float fadeInTime, fadeOutTime;
-
-        public SoundEditorFader(BaseAudioFileObject _asset)
-        {
-            EditorApplication.update += Update;
-            asset = _asset;
-        }
-
-        public void Dispose()
-        {
-            EditorApplication.update -= Update;
-        }
-
-        /// <summary>
-        /// Can't use co-routines, so this is the alternative
-        /// </summary>
-        /// <param name="asset"></param>
-        void Update()
-        {
-            if (!asset.fadeInOut)
-            {
-                AudioPlaybackToolEditor.helperSource.volume = asset.relativeVolume;
-                return;
-            }
-
-            // Throws an error here when replacing a AudioClip and playing it in an independent window
-            var helperSource = AudioPlaybackToolEditor.helperSource;
-            if (helperSource.isPlaying)
-            {
-                if (helperSource.time < PlayingClip.length - fadeOutTime)
-                {
-                    if (fadeInTime == float.Epsilon)
-                    {
-                        helperSource.volume = asset.relativeVolume;
-                    }
-                    else
-                    {
-                        helperSource.volume = Mathf.Lerp(0, asset.relativeVolume, helperSource.time / fadeInTime);
-                    }
-                }
-                else
-                {
-                    if (fadeOutTime == float.Epsilon)
-                    {
-                        helperSource.volume = asset.relativeVolume;
-                    }
-                    else
-                    {
-                        helperSource.volume = Mathf.Lerp(0, asset.relativeVolume, (playingClip.length - helperSource.time) / fadeOutTime);
-                    }
-                }
-            }
-        }
-
-        public void StartFading(AudioClip audioClip, SoundFileObject newAsset)
-        {
-            PlayingClip = audioClip;
-            if (newAsset != null) asset = newAsset;
-
-            AudioPlaybackToolEditor.helperSource.clip = PlayingClip;
-            AudioPlaybackToolEditor.soundHelper.PlayDebug((SoundFileObject)asset, false);
-
-            fadeInTime = asset.fadeInDuration * AudioPlaybackToolEditor.helperSource.clip.length;
-            fadeOutTime = asset.fadeOutDuration * AudioPlaybackToolEditor.helperSource.clip.length;
-            // To prevent divisions by 0
-            if (fadeInTime == 0) fadeInTime = float.Epsilon;
-            if (fadeOutTime == 0) fadeOutTime = float.Epsilon;
-        }
-    }
-
     [CustomEditor(typeof(SoundFileObject))]
     [CanEditMultipleObjects]
-    public class SoundFileObjectEditor : BaseAudioFileObjectEditor<SoundFileObjectEditor>
+    public class SoundFileObjectEditor : BaseAudioFileObjectEditor
     {
         Color buttonPressedColor = new Color(0.475f, 0.475f, 0.475f);
 
         AudioClip playingClip;
 
-        bool clipPlaying
-        {
-            get
-            {
-                return playingClip != null && AudioPlaybackToolEditor.helperSource.isPlaying;
-            }
-        }
         bool playingRandom;
-
-        Texture2D cachedTex;
-        AudioClip cachedClip;
-
-        GUIContent openIcon;
-
-        SoundEditorFader editorFader;
 
         protected override string SHOW_LIBRARY => "JSAM_SFO_SHOWLIBRARY";
         protected override string EXPAND_LIBRARY => "JSAM_SFO_EXPANDLIBRARY";
 
-        string SHOW_FADETOOL = "JSAM_SFO_SHOWFADETOOL";
-        bool showFadeTool
-        {
-            get
-            {
-                if (!EditorPrefs.HasKey(SHOW_FADETOOL))
-                {
-                    EditorPrefs.SetBool(SHOW_FADETOOL, false);
-                }
-                return EditorPrefs.GetBool(SHOW_FADETOOL);
-            }
-            set
-            {
-                EditorPrefs.SetBool(SHOW_FADETOOL, value);
-            }
-        }
+        protected override string SHOW_FADETOOL => "JSAM_SFO_SHOWFADETOOL";
 
         SerializedProperty neverRepeat;
-        SerializedProperty fadeInOut;
-        SerializedProperty fadeInDuration;
-        SerializedProperty fadeOutDuration;
 
         new protected void OnEnable()
         {
             base.OnEnable();
 
-            EditorApplication.update += Update;
             Undo.undoRedoPerformed += OnUndoRedo;
-            Undo.postprocessModifications += ApplyHelperEffects;
 
             if (target.name.Length > 0) // Creating from right-click dialog throws error here because name is invalid when first selected
             {
@@ -158,24 +38,19 @@ namespace JSAM.JSAMEditor
 
             openIcon = EditorGUIUtility.TrIconContent("d_ScaleTool", "Click to open Playback Preview in a standalone window");
 
-            AudioPlaybackToolEditor.CreateAudioHelper(files.arraySize > 0 ? asset.Files[0] : null);
-
             if (!AudioPlaybackToolEditor.WindowOpen)
             {
-                editorFader = new SoundEditorFader(asset);
+                editorFader = new JSAMEditorFader(asset, helper);
             }
+#if !UNITY_2020_3_OR_NEWER
             list = new AudioClipList(serializedObject, files);
+#endif
         }
 
-        void OnDisable()
+        protected override void OnDisable()
         {
-            EditorApplication.update -= Update;
+            base.OnDisable();
             Undo.undoRedoPerformed -= OnUndoRedo;
-            if (!AudioPlaybackToolEditor.WindowOpen)
-            {
-                AudioPlaybackToolEditor.DestroyAudioHelper();
-            }
-            Undo.postprocessModifications -= ApplyHelperEffects;
 
             if (editorFader != null)
             {
@@ -232,14 +107,27 @@ namespace JSAM.JSAMEditor
 
             RenderFileList();
 
+            bool noFiles = files.arraySize == 0;
+
+            if (!isPreset)
+            {
+                if (noFiles)
+                {
+                    EditorGUILayout.HelpBox("Add an audio file before running!", MessageType.Error);
+                }
+                else if (missingFiles > 0)
+                {
+                    EditorGUILayout.HelpBox(missingFiles + " AudioClip(s) are missing! " +
+                        "This can lead to issues during runtime, such as with randomized playback", MessageType.Warning);
+                }
+            }
+            
             EditorGUILayout.Space();
 
             blontent = new GUIContent("Never Repeat", "Sometimes, AudioManager will allow the same sound from the Audio " +
             "library to play twice in a row, enabling this option will ensure that this audio file never plays the same " +
             "sound until after it plays a different sound.");
             EditorGUILayout.PropertyField(neverRepeat, blontent);
-
-            bool noFiles = files.arraySize == 0;
 
             EditorGUILayout.PropertyField(relativeVolume);
             EditorGUILayout.PropertyField(spatialize);
@@ -258,11 +146,6 @@ namespace JSAM.JSAMEditor
 
             DrawPropertiesExcluding(serializedObject, excludedProperties.ToArray());
 
-            if (noFiles && !isPreset)
-            {
-                EditorGUILayout.HelpBox("Error! Add an audio file before running!", MessageType.Error);
-            }
-
             if (playingClip == null)
             {
                 RedesignateActiveAudioClip();
@@ -275,23 +158,25 @@ namespace JSAM.JSAMEditor
             #region Fade Tools
             EditorGUILayout.PropertyField(fadeInOut);
 
+            showFadeTool = EditorCompatability.SpecialFoldouts(showFadeTool, new GUIContent("Fade Tools", "Show/Hide the Audio Fade previewer"));
             using (new EditorGUI.DisabledScope(!fadeInOut.boolValue))
             {
                 if (!noFiles)
                 {
-                    showFadeTool = EditorCompatability.SpecialFoldouts(showFadeTool, new GUIContent("Fade Tools", "Show/Hide the Audio Fade previewer"));
                     if (showFadeTool)
                     {
+                        float duration = playingClip ? playingClip.length : 0;
+
                         GUIContent fContent = new GUIContent();
                         GUIStyle rightJustified = new GUIStyle(EditorStyles.label);
                         rightJustified.alignment = TextAnchor.UpperRight;
                         rightJustified.padding = new RectOffset(0, 15, 0, 0);
 
                         EditorGUILayout.BeginHorizontal();
-                        EditorGUILayout.LabelField(new GUIContent("Fade In Time:    " + (fadeInDuration.floatValue * playingClip.length).TimeToString(), "Fade in time for this AudioClip in seconds"));
-                        EditorGUILayout.LabelField(new GUIContent("Sound Length: " + (playingClip.length).TimeToString(), "Length of the preview clip in seconds"), rightJustified);
+                        EditorGUILayout.LabelField(new GUIContent("Fade In Time:    " + (fadeInDuration.floatValue * duration).TimeToString(), "Fade in time for this AudioClip in seconds"));
+                        EditorGUILayout.LabelField(new GUIContent("Sound Length: " + (duration).TimeToString(), "Length of the preview clip in seconds"), rightJustified);
                         EditorGUILayout.EndHorizontal();
-                        EditorGUILayout.LabelField(new GUIContent("Fade Out Time: " + (fadeOutDuration.floatValue * playingClip.length).TimeToString(), "Fade out time for this AudioClip in seconds"));
+                        EditorGUILayout.LabelField(new GUIContent("Fade Out Time: " + (fadeOutDuration.floatValue * duration).TimeToString(), "Fade out time for this AudioClip in seconds"));
                         float fid = fadeInDuration.floatValue;
                         float fod = fadeOutDuration.floatValue;
                         fContent = new GUIContent("Fade In Percentage", "The percentage of time the sound takes to fade-in relative to it's total length.");
@@ -303,8 +188,8 @@ namespace JSAM.JSAMEditor
                         EditorGUILayout.HelpBox("Note: The sum of your Fade-In and Fade-Out durations cannot exceed 1 (the length of the sound).", MessageType.None);
 
                     }
-                    EditorCompatability.EndSpecialFoldoutGroup();
                 }
+                EditorCompatability.EndSpecialFoldoutGroup();
             }
             #endregion
 
@@ -350,7 +235,7 @@ namespace JSAM.JSAMEditor
                 {
                     EditorGUILayout.BeginHorizontal();
                     Color colorbackup = GUI.backgroundColor;
-                    if (clipPlaying)
+                    if (IsClipPlaying)
                     {
                         GUI.backgroundColor = buttonPressedColor;
                         blontent = new GUIContent("Stop", "Stop playback");
@@ -361,9 +246,9 @@ namespace JSAM.JSAMEditor
                     }
                     if (GUILayout.Button(blontent))
                     {
-                        if (clipPlaying)
+                        if (IsClipPlaying)
                         {
-                            AudioPlaybackToolEditor.helperSource.Stop();
+                            helper.Source.Stop();
                             if (playingRandom)
                             {
                                 playingRandom = false;
@@ -376,7 +261,7 @@ namespace JSAM.JSAMEditor
                                 editorFader.StartFading(playingClip, asset as SoundFileObject);
                             }
                         }
-                        AudioPlaybackToolEditor.helperSource.time = 0;
+                        helper.Source.time = 0;
                         AudioPlaybackToolEditor.DoForceRepaint(true);
                     }
                     GUI.backgroundColor = colorbackup;
@@ -385,7 +270,7 @@ namespace JSAM.JSAMEditor
                         if (GUILayout.Button(new GUIContent("Play Random", "Preview settings with a random track from your library. Only usable if this Audio File has \"Use Library\" enabled.")))
                         {
                             DesignateRandomAudioClip();
-                            AudioPlaybackToolEditor.helperSource.Stop();
+                            helper.Source.Stop();
                             editorFader.StartFading(playingClip, asset as SoundFileObject);
                         }
                     }
@@ -409,6 +294,10 @@ namespace JSAM.JSAMEditor
             EditorCompatability.EndSpecialFoldoutGroup();
         }
 
+        /// <summary>
+        /// Assigns an AudioClip to the playingClip variable. 
+        /// Will fail if AudioClip as marked as missing
+        /// </summary>
         public void RedesignateActiveAudioClip()
         {
             AudioClip theClip = null;
@@ -427,17 +316,16 @@ namespace JSAM.JSAMEditor
             AudioClip theClip = playingClip;
             if (files.arraySize > 1)
             {
-                List<AudioClip> f = new List<AudioClip>(asset.Files);
-                f.Remove(theClip);
-                theClip = f[Random.Range(0, f.Count)];
+                var nonNull = asset.Files.FindAll(e => e);
+                theClip = nonNull[Random.Range(0, nonNull.Count)];
+                AudioPlaybackToolEditor.DoForceRepaint(theClip != playingClip);
                 playingClip = theClip;
-                AudioPlaybackToolEditor.DoForceRepaint(true);
             }
             playingRandom = true;
             return playingClip;
         }
 
-        void Update()
+        protected override void Update()
         {
             if (AudioPlaybackToolEditor.lockSelection) return;
 
@@ -455,13 +343,14 @@ namespace JSAM.JSAMEditor
                         playingClip = cachedClip;
                     }
 
-                    if (!clipPlaying && playingRandom)
+                    if (!IsClipPlaying && playingRandom)
                     {
                         RedesignateActiveAudioClip();
+                        playingRandom = false;
                     }
                 }
 
-                if (clipPlaying)
+                if (IsClipPlaying)
                 {
                     // This doesn't seem to do anything
                     //EditorApplication.QueuePlayerLoopUpdate();
@@ -475,11 +364,12 @@ namespace JSAM.JSAMEditor
             AudioPlaybackToolEditor.DoForceRepaint(true);
         }
 
-        public UndoPropertyModification[] ApplyHelperEffects(UndoPropertyModification[] modifications)
+        new public UndoPropertyModification[] PostProcessModifications(UndoPropertyModification[] modifications)
         {
-            if (AudioPlaybackToolEditor.helperSource.isPlaying)
+            base.PostProcessModifications(modifications);
+            if (helper.Source.isPlaying)
             {
-                AudioPlaybackToolEditor.soundHelper.ApplyEffects();
+                helper.SoundHelper.ApplyEffects();
             }
             return modifications;
         }
@@ -532,7 +422,7 @@ namespace JSAM.JSAMEditor
             }
 
             AudioClip sound = playingClip;
-            var helperSource = AudioPlaybackToolEditor.helperSource;
+            var helperSource = helper.Source;
             float value = 0;
             if (playingClip) value = helperSource.time / playingClip.length;
 

@@ -190,7 +190,7 @@ namespace JSAM
         [Tooltip("If there are several sounds playing at once, sounds with higher priority will be culled by Unity's sound system later than sounds with lower priority. \"Music\" has the absolute highest priority and \"Spam\" has the lowest.")]
         public Priority priority = Priority.Default;
 
-        [Tooltip("The frequency that the sound plays at by default. \"Pitch shift\" is added to this value additively to get the final pitch. Negative \"pitches\" result in the audio being played backwards.")]
+        [Tooltip("The frequency that the sound plays at by default. \"Pitch shift\" is added to this value additively to get the final pitch.")]
         [Range(0, 3)]
         public float startingPitch = 1;
 
@@ -251,6 +251,30 @@ namespace JSAM
         public void Initialize()
         {
             lastClipIndex = -1;
+        }
+
+        /// <summary>
+        /// Given an AudioFileSoundObject, returns a pitch modified depending on the Audio File Object's settings.
+        /// Accounts for current TimeScale
+        /// </summary>
+        /// <param name="audioFile"></param>
+        public float GetRandomPitch()
+        {
+            float newPitch = startingPitch;
+
+            // This is the base unchanged pitch
+            if (pitchShift > 0)
+            {
+                newPitch += Random.Range(-pitchShift, pitchShift);
+            }
+
+            bool timeScaledSounds = JSAMSettings.Settings.TimeScaledSounds;
+            if (timeScaledSounds && !ignoreTimeScale)
+            {
+                newPitch *= Time.timeScale;
+            }
+
+            return Mathf.Clamp(newPitch, 0, 3);
         }
     }
 }
