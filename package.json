@@ -1,8 +1,8 @@
 {
 	"name": "com.brogrammist.jsam",
 	"displayName": "Jacky's Simple Audio Manager",
-	"version": "3.0.0-preview.7",
-	"unity": "2022.2",
+	"version": "3.0.1",
+	"unity": "2021.3",
 	"description": "A decentralized audio playing system for Unity, designed for simplicity and built to scale!",
 	"category": "",
 	"documentationUrl": "https://jackyyang09.github.io/Simple-Unity-Audio-Manager/",
@@ -39,12 +39,12 @@
 		},
 		{
 			"displayName": "Shmup 2D",
-			"description": "",
+			"description": "2D Shoot 'em Up style sample",
 			"path": "./Samples~/Shmup 2D"
 		},
 		{
 			"displayName": "Video Volume",
-			"description": "",
+			"description": "A Sample showing how to let JSAM control your Video Player's volume",
 			"path": "./Samples~/Video Volume"
 		}
 	]
