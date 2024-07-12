@@ -22,13 +22,25 @@ namespace JSAM
         [SerializeField] VideoPlayer videoPlayer;
         [SerializeField] RawImage videoImage;
 
-        delegate float VolumeDelegate();
-        VolumeDelegate GetChannelVolume;
         public float Volume
         {
             get
             {
-                var vol = GetChannelVolume();
+                float vol = 0f;
+
+                switch (volumeChannel)
+                {
+                    case VolumeChannel.Music:
+                        vol = AudioManager.InternalInstance.ModifiedMusicVolume;
+                        break;
+                    case VolumeChannel.Sound:
+                        vol = AudioManager.InternalInstance.ModifiedSoundVolume;
+                        break;
+                    case VolumeChannel.Voice:
+                        vol = AudioManager.InternalInstance.ModifiedVoiceVolume;
+                        break;
+                }
+
                 vol *= relativeVolume;
                 return vol;
             }
@@ -122,15 +134,12 @@ namespace JSAM
             switch (volumeChannel)
             {
                 case VolumeChannel.Music:
-                    GetChannelVolume = () => AudioManager.InternalInstance.ModifiedMusicVolume;
                     AudioManager.OnMusicVolumeChanged += OnUpdateVolume;
                     break;
                 case VolumeChannel.Sound:
-                    GetChannelVolume = () => AudioManager.InternalInstance.ModifiedSoundVolume;
                     AudioManager.OnSoundVolumeChanged += OnUpdateVolume;
                     break;
                 case VolumeChannel.Voice:
-                    GetChannelVolume = () => AudioManager.InternalInstance.ModifiedVoiceVolume;
                     AudioManager.OnVoiceVolumeChanged += OnUpdateVolume;
                     break;
             }
@@ -138,8 +147,6 @@ namespace JSAM
 
         protected void UnsubscribeFromAudioEvents()
         {
-            GetChannelVolume = null;
-
             switch (volumeChannel)
             {
                 case VolumeChannel.Music:
