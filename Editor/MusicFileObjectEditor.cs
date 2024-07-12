@@ -407,9 +407,6 @@ namespace JSAM.JSAMEditor
 
         protected override void Update()
         {
-            if (AudioPlaybackToolEditor.lockSelection) return;
-
-            MusicFileObject myScript = (MusicFileObject)target;
             if (myScript == null) return;
             if (asset.Files.Count == 0) return;
             AudioClip music = myScript.Files[0];

@@ -38,10 +38,8 @@ namespace JSAM.JSAMEditor
 
             openIcon = EditorGUIUtility.TrIconContent("d_ScaleTool", "Click to open Playback Preview in a standalone window");
 
-            if (!AudioPlaybackToolEditor.WindowOpen)
-            {
-                editorFader = new JSAMEditorFader(asset, helper);
-            }
+            editorFader = new JSAMEditorFader(asset, helper);
+
 #if !UNITY_2020_3_OR_NEWER
             list = new AudioClipList(serializedObject, files);
 #endif
@@ -327,8 +325,6 @@ namespace JSAM.JSAMEditor
 
         protected override void Update()
         {
-            if (AudioPlaybackToolEditor.lockSelection) return;
-
             if (asset == null) return; // This can happen on the same frame it's deleted
             if (asset.Files.Count == 0) return;
             AudioClip clip = asset.Files[0];
@@ -338,7 +334,6 @@ namespace JSAM.JSAMEditor
                 {
                     if (clip != cachedClip)
                     {
-                        AudioPlaybackToolEditor.DoForceRepaint(true);
                         cachedClip = asset.Files[0];
                         playingClip = cachedClip;
                     }
@@ -396,22 +391,6 @@ namespace JSAM.JSAMEditor
             if (files.arraySize == 0)
             {
                 content.text = "Add some AudioClips above to preview them";
-                hide = true;
-            }
-
-            if (AudioPlaybackToolEditor.WindowOpen)
-            {
-                content.text = "JSAM Playback Tool is Open";
-                EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button("Re-focus Playback Tool"))
-                {
-                    EditorWindow.FocusWindowIfItsOpen<AudioPlaybackToolEditor>();
-                }
-                if (GUILayout.Button("Close Playback Tool"))
-                {
-                    AudioPlaybackToolEditor.Window.Close();
-                }
-                EditorGUILayout.EndHorizontal();
                 hide = true;
             }
 
