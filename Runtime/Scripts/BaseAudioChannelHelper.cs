@@ -20,18 +20,43 @@ namespace JSAM
         protected T audioFile;
         public T AudioFile { get { return audioFile; } }
 
-        protected delegate float VolumeDelegate();
-        protected VolumeDelegate GetChannelVolume;
+        protected abstract VolumeChannel DefaultChannel { get; }
+
+        public VolumeChannel Channel
+        {
+            get
+            {
+                var channel = DefaultChannel;
+                if (!audioFile) return channel;
+                if (audioFile.channelOverride != VolumeChannel.None)
+                {
+                    channel = audioFile.channelOverride;
+                }
+                return channel;
+            }
+        }
+
         public float Volume
         {
             get
             {
-                var vol = GetChannelVolume();
+                var vol = 0f;
+                switch (Channel)
+                {
+                    case VolumeChannel.Music:
+                        vol = AudioManager.InternalInstance.ModifiedMusicVolume;
+                        break;
+                    case VolumeChannel.Sound:
+                        vol = AudioManager.InternalInstance.ModifiedSoundVolume;
+                        break;
+                    case VolumeChannel.Voice:
+                        vol = AudioManager.InternalInstance.ModifiedVoiceVolume;
+                        break;
+                }
                 if (audioFile) vol *= audioFile.relativeVolume;
                 return vol;
             }
         }
-        protected abstract VolumeChannel DefaultChannel { get; }
 
         /// <summary>
         /// This property will only be assigned to if both the AudioFileObject and the AudioManager have spatialization enabled
@@ -58,6 +83,7 @@ namespace JSAM
         protected Transform originalParent;
 
         Coroutine fadeInRoutine, fadeOutRoutine;
+        bool subscribedToEvents;
 
         public void Init(AudioMixerGroup defaultGroup)
         {
@@ -128,7 +154,7 @@ namespace JSAM
                 AudioManager.OnMasterVolumeChanged -= OnUpdateVolume;
             }
 
-            UnsubscribeFromAudioEvents();
+            if (subscribedToEvents) UnsubscribeFromAudioEvents();
         }
 
         protected virtual void Update()
@@ -157,45 +183,24 @@ namespace JSAM
 
         protected void SubscribeToVolumeEvents()
         {
-            var channel = DefaultChannel;
-
-            if (audioFile.channelOverride != VolumeChannel.None)
-            {
-                channel = audioFile.channelOverride;
-            }
-
-            switch (channel)
+            switch (Channel)
             {
                 case VolumeChannel.Music:
-                    GetChannelVolume = () => AudioManager.InternalInstance.ModifiedMusicVolume;
                     AudioManager.OnMusicVolumeChanged += OnUpdateVolume;
                     break;
                 case VolumeChannel.Sound:
-                    GetChannelVolume = () => AudioManager.InternalInstance.ModifiedSoundVolume;
                     AudioManager.OnSoundVolumeChanged += OnUpdateVolume;
                     break;
                 case VolumeChannel.Voice:
-                    GetChannelVolume = () => AudioManager.InternalInstance.ModifiedVoiceVolume;
                     AudioManager.OnVoiceVolumeChanged += OnUpdateVolume;
                     break;
             }
+            subscribedToEvents = true;
         }
 
         protected void UnsubscribeFromAudioEvents()
         {
-            var channel = DefaultChannel;
-
-            if (audioFile)
-            {
-                if (audioFile.channelOverride != VolumeChannel.None)
-                {
-                    channel = audioFile.channelOverride;
-                }
-            }
-
-            GetChannelVolume = null;
-
-            switch (channel)
+            switch (Channel)
             {
                 case VolumeChannel.Music:
                     AudioManager.OnMusicVolumeChanged -= OnUpdateVolume;
@@ -207,6 +212,7 @@ namespace JSAM
                     AudioManager.OnVoiceVolumeChanged -= OnUpdateVolume;
                     break;
             }
+            subscribedToEvents = false;
         }
 
         protected void ClearProperties()

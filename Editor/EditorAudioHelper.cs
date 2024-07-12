@@ -44,7 +44,7 @@ namespace JSAM.JSAMEditor
             }
             soundHelper.Init(sg);
             musicHelper.Init(mg);
-            //gameObject.hideFlags = HideFlags.HideAndDontSave;
+            gameObject.hideFlags = HideFlags.HideAndDontSave;
             gameObject.hideFlags = HideFlags.DontSave;
         }
 
