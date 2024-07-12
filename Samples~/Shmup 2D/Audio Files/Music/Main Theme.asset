@@ -25,9 +25,11 @@ MonoBehaviour:
   priority: 128
   startingPitch: 1
   pitchShift: 0.05
-  loopMode: 1
+  loopMode: 2
   delay: 0
   ignoreTimeScale: 0
+  maxPlayingInstances: 10
+  channelOverride: 0
   mixerGroupOverride: {fileID: 0}
   fadeInOut: 0
   fadeInDuration: 0

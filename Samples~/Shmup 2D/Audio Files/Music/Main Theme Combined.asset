@@ -16,8 +16,8 @@ MonoBehaviour:
   presetDescription: 
   files:
   - {fileID: 8300000, guid: ec35383b3397c8a4c998aefa69059d4f, type: 3}
-  loopStart: 47.995647
-  loopEnd: 48
+  loopStart: 0
+  loopEnd: 47.995647
   bpm: 160
   relativeVolume: 1
   spatialize: 0
@@ -25,10 +25,11 @@ MonoBehaviour:
   priority: 128
   startingPitch: 1
   pitchShift: 1
-  loopMode: 2
+  loopMode: 1
   delay: 0
   ignoreTimeScale: 0
   maxPlayingInstances: 10
+  channelOverride: 0
   mixerGroupOverride: {fileID: 0}
   fadeInOut: 0
   fadeInDuration: 0
