@@ -132,7 +132,7 @@ namespace JSAM.JSAMEditor
 
             asset = target as BaseAudioFileObject;
 
-            helper = new EditorAudioHelper(asset.Files[0]);
+            helper = new EditorAudioHelper(asset.Files.Count > 0 ? asset.Files[0] : null);
 
             isPreset = string.IsNullOrEmpty(AssetDatabase.GetAssetPath(asset as UnityEngine.Object));
 
