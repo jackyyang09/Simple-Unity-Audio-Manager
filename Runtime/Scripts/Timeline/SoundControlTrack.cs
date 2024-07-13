@@ -1,3 +1,4 @@
+#if JSAM_TIMELINE
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,3 +11,4 @@ namespace JSAM
     {
     }
 }
+#endif

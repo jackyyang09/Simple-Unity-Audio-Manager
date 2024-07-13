@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿#if JSAM_TIMELINE
+using UnityEditor;
 using UnityEditor.Timeline;
 using UnityEditor.VersionControl;
 using UnityEngine;
@@ -90,3 +91,4 @@ namespace JSAM.JSAMEditor
         }
     }
 }
+#endif

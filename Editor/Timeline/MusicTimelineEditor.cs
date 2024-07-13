@@ -1,18 +1,21 @@
-﻿using UnityEditor;
-using UnityEditor.Timeline;
+#if JSAM_TIMELINE
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
+using UnityEditor.Timeline;
 using UnityEngine.Timeline;
 
 namespace JSAM.JSAMEditor
 {
-    [CustomEditor(typeof(SoundPlayableAsset))]
+    [CustomEditor(typeof(MusicPlayableAsset))]
     [CanEditMultipleObjects]
-    public class SoundTimelinePlayableEditor : Editor
+    public class MusicTimelinePlayableEditor : Editor
     {
     }
 
-    [CustomTimelineEditor(typeof(SoundPlayableAsset))]
-    public class SoundTimelineEditor : BaseTimelineEditor<SoundPlayableAsset>
+    [CustomTimelineEditor(typeof(MusicPlayableAsset))]
+    public class MusicTimelineEditor : BaseTimelineEditor<MusicPlayableAsset>
     {
         public override void OnCreate(TimelineClip clip, TrackAsset track, TimelineClip clonedFrom)
         {
@@ -39,8 +42,8 @@ namespace JSAM.JSAMEditor
                 //}
                 //else
                 //{
-                asset.startTime -= delta;
-                if (asset.startTime < 0) asset.startTime = 0;
+                    asset.startTime -= delta;
+                    if (asset.startTime < 0) asset.startTime = 0;
                 //}
             }
             // This works, but was removed since features should be consistent
@@ -66,3 +69,4 @@ namespace JSAM.JSAMEditor
         }
     }
 }
+#endif
