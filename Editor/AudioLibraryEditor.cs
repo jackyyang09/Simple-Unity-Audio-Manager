@@ -119,13 +119,7 @@ namespace JSAM.JSAMEditor
             window.SetWindowTitle();
             window.Focus();
 
-            if (AudioManager.Instance)
-            {
-                if (AudioManager.Instance.Library)
-                {
-                    Window.AssignAsset(AudioManager.Instance.Library);
-                }
-            }
+            Window.AssignAsset(JSAMPaths.Instance.SelectedLibrary);
         }
 
         protected override void SetWindowTitle()

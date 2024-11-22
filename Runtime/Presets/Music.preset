@@ -90,6 +90,10 @@ Preset:
     value: 10
     objectReference: {fileID: 0}
   - target: {fileID: 0}
+    propertyPath: channelOverride
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
     propertyPath: mixerGroupOverride
     value: 
     objectReference: {fileID: 0}
@@ -274,7 +278,11 @@ Preset:
     value: -1
     objectReference: {fileID: 0}
   m_ExcludedProperties:
-  - file
   - files
   - useLibrary
   - category
+  m_CoupledType:
+    m_NativeTypeID: 0
+    m_ManagedTypePPtr: {fileID: 0}
+    m_ManagedTypeFallback: 
+  m_CoupledProperties: []

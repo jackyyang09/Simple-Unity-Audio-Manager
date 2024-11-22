@@ -8,8 +8,9 @@ namespace JSAM.JSAMEditor
     public abstract class BaseMusicEditor : BaseAudioEditor<MusicFileObject>
     {
         protected override GUIContent audioDesc => new GUIContent("Music", "Sound that will be played");
-        protected override List<MusicFileObject> audioLibrary => AudioManager.Instance.Library.Music;
-        protected override List<AudioLibrary.CategoryToList> ctl => AudioManager.Instance.Library.musicCategoriesToList;
+        protected override List<MusicFileObject> GetListFromLibrary(AudioLibrary l) => l.Music;
+        protected override List<AudioLibrary.CategoryToList> GetCTLFromLibrary(AudioLibrary l) => l.musicCategoriesToList;
+
 
         protected override void DrawAudioProperty()
         {

@@ -14,21 +14,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   safeName: Walk
   presetDescription: 
-  category: 
-  file: {fileID: 8300000, guid: 6992658e5fb03354ea113982a3bf39e4, type: 3}
   files:
   - {fileID: 8300000, guid: 6992658e5fb03354ea113982a3bf39e4, type: 3}
-  useLibrary: 1
+  loopStart: 0
+  loopEnd: 0
+  bpm: 120
   relativeVolume: 1
   spatialize: 0
   maxDistance: 0
   priority: 128
   startingPitch: 1
   pitchShift: 0.05
-  playReversed: 0
+  loopMode: 0
   delay: 0
   ignoreTimeScale: 0
-  fadeMode: 0
+  maxPlayingInstances: 10
+  channelOverride: 0
+  mixerGroupOverride: {fileID: 0}
+  fadeInOut: 0
   fadeInDuration: 0.01
   fadeOutDuration: 0.694
   bypassEffects: 0

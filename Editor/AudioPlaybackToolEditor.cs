@@ -28,7 +28,7 @@ namespace JSAM.JSAMEditor
             {
                 if (editorFader == null)
                 {
-                    editorFader = new JSAMEditorFader(ActiveSound, Helper);
+                    editorFader = new JSAMEditorFader(ActiveSound);
                 }
                 return editorFader;
             }
@@ -41,7 +41,10 @@ namespace JSAM.JSAMEditor
         static bool mouseDragging;
         static bool mouseScrubbed;
         static bool clipPaused;
-        static bool ClipPlaying => Helper.Source.isPlaying;
+        static bool clipPlaying;
+        static bool SourcePlaying => Helper.Source.isPlaying;
+        static bool freePlay;
+        static bool firstPlayback;
 
         readonly string LOOP_KEY = nameof(AudioPlaybackToolEditor) + "Loop";
         bool LoopClip
@@ -63,14 +66,14 @@ namespace JSAM.JSAMEditor
             }
         }
 
-        public static bool HelperSourceActive 
-        { 
+        public static bool HelperSourceActive
+        {
             get
             {
                 if (!Helper.Source) return false;
                 if (!Helper.Clip) return false;
                 return true;
-            } 
+            }
         }
 
         readonly Color buttonPressedColor = new Color(0.475f, 0.475f, 0.475f);
@@ -81,6 +84,7 @@ namespace JSAM.JSAMEditor
 
         UnityEngine.Object activeAsset;
         AudioClip ActiveClip => activeAsset as AudioClip;
+        BaseAudioFileObject ActiveAudio => activeAsset as BaseAudioFileObject;
         SoundFileObject ActiveSound => activeAsset as SoundFileObject;
         MusicFileObject ActiveMusic => activeAsset as MusicFileObject;
         SelectedAssetType activeAssetType;
@@ -174,13 +178,20 @@ namespace JSAM.JSAMEditor
                     return true;
                 }
             }
-            
+
             return false;
         }
 
         private void OnEnable()
         {
-            UpdateActiveAsset(LockedAsset);
+            if (LockedAsset)
+            {
+                UpdateActiveAsset(LockedAsset);
+            }
+            else if (Selection.activeObject)
+            {
+                UpdateActiveAsset(Selection.activeObject);
+            }
             //m_HandleLinesMaterial = EditorGUIUtility.LoadRequired("SceneView/HandleLines.mat") as Material;
         }
 
@@ -304,7 +315,7 @@ namespace JSAM.JSAMEditor
             if (LockedAsset) return;
 
             UpdateActiveAsset(Selection.activeObject);
-            
+
             DoForceRepaint(true);
         }
 
@@ -332,6 +343,7 @@ namespace JSAM.JSAMEditor
                         activeAssetType = SelectedAssetType.Music;
 
                         if (music.Files.Count > 0) Helper.Clip = music.Files[0];
+                        freePlay = true;
                     }
                 }
             }
@@ -380,11 +392,12 @@ namespace JSAM.JSAMEditor
                 }
 
                 // Draw Play Button
-                GUIContent buttonIcon = ClipPlaying ? PlayIcons[1] : PlayIcons[0];
-                if (ClipPlaying) JSAMEditorHelper.BeginBackgroundColourChange(buttonPressedColor);
+                GUIContent buttonIcon = clipPlaying ? PlayIcons[1] : PlayIcons[0];
+                if (clipPlaying) JSAMEditorHelper.BeginBackgroundColourChange(buttonPressedColor);
                 if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                 {
-                    if (!ClipPlaying)
+                    clipPlaying = !clipPlaying;
+                    if (clipPlaying)
                     {
                         switch (activeAssetType)
                         {
@@ -392,12 +405,11 @@ namespace JSAM.JSAMEditor
                                 Helper.SoundHelper.PlayDebug(mouseScrubbed);
                                 break;
                             case SelectedAssetType.Sound:
-                                EditorFader.StartFading(Helper.Clip, ActiveSound);
-                                break;
                             case SelectedAssetType.Music:
                                 Helper.MusicHelper.PlayDebug(ActiveMusic, mouseScrubbed);
-                                MusicFileObjectEditor.firstPlayback = true;
-                                BaseAudioFileObjectEditor.FreePlay = false;
+                                EditorFader.StartFading(Helper.Clip, ActiveSound);
+                                firstPlayback = true;
+                                freePlay = false;
                                 break;
                         }
 
@@ -415,7 +427,7 @@ namespace JSAM.JSAMEditor
                         clipPaused = false;
                     }
                 }
-                if (ClipPlaying) JSAMEditorHelper.EndBackgroundColourChange();
+                if (clipPlaying) JSAMEditorHelper.EndBackgroundColourChange();
 
                 // Pause button
                 GUIContent theText = clipPaused ? PauseIcons[1] : PauseIcons[0];
@@ -500,8 +512,8 @@ namespace JSAM.JSAMEditor
                         case BaseAudioFileObjectEditor.LoopPointTool.Slider:
                         case BaseAudioFileObjectEditor.LoopPointTool.TimeInput:
                             blontent = new GUIContent(
-                                ((float)Helper.Source.timeSamples / Helper.Clip.frequency).TimeToString() + 
-                                " / " + 
+                                ((float)Helper.Source.timeSamples / Helper.Clip.frequency).TimeToString() +
+                                " / " +
                                 Helper.Clip.length.TimeToString(),
                                 "The playback time in seconds");
                             break;
@@ -627,17 +639,17 @@ namespace JSAM.JSAMEditor
                                 .ApplyBoldText());
                 GUI.Box(rect, "Select an Audio File to preview it here", style);
             }
-            
+
             forceRepaint = false;
 
-            switch (activeAssetType)
+            if (activeAssetType == SelectedAssetType.Sound)
             {
-                case SelectedAssetType.Sound:
-                    SoundFileObjectEditor.DrawPropertyOverlay(ActiveSound, (int)rect.width, (int)rect.height);
-                    break;
-                case SelectedAssetType.Music:
-                    MusicFileObjectEditor.DrawPropertyOverlay(ActiveMusic, (int)rect.width, (int)rect.height);
-                    break;
+                SoundFileObjectEditor.DrawPropertyOverlay(ActiveSound, (int)rect.width, (int)rect.height);
+            }
+
+            if (ActiveAudio.loopMode >= LoopMode.LoopWithLoopPoints)
+            {
+                MusicFileObjectEditor.DrawLoopPointOverlay(ActiveAudio, (int)rect.width, (int)rect.height);
             }
 
             Rect progressRect = new Rect(rect);
@@ -663,14 +675,13 @@ namespace JSAM.JSAMEditor
             switch (activeAssetType)
             {
                 case SelectedAssetType.AudioClip:
-                case SelectedAssetType.Sound:
-                    if ((ClipPlaying && !clipPaused) || (mouseDragging && ClipPlaying))
+                    if ((clipPlaying && !clipPaused) || (mouseDragging && clipPlaying))
                     {
                         float clipPos = Helper.Source.timeSamples / (float)Helper.Clip.frequency;
 
                         Repaint();
 
-                        if (!ClipPlaying && !clipPaused)
+                        if (!SourcePlaying && !clipPaused)
                         {
                             Helper.Source.time = 0;
                             if (LoopClip)
@@ -680,71 +691,80 @@ namespace JSAM.JSAMEditor
                         }
                     }
                     break;
-            #endregion
+                #endregion
             #region Music Update
+                case SelectedAssetType.Sound:
                 case SelectedAssetType.Music:
-                    var selectedMusic = ActiveMusic;
-                    if ((ClipPlaying && !clipPaused) || (mouseDragging && ClipPlaying))
+                    var selectedAudio = ActiveAudio;
+                    if ((clipPlaying && !clipPaused) || (mouseDragging && clipPlaying))
                     {
                         float clipPos = Helper.Source.timeSamples / (float)Helper.Clip.frequency;
 
-                        Helper.Source.volume = selectedMusic.relativeVolume;
-                        Helper.Source.pitch = selectedMusic.startingPitch;
+                        Helper.Source.volume = selectedAudio.relativeVolume;
+                        Helper.Source.pitch = selectedAudio.startingPitch;
 
                         Repaint();
 
                         if (LoopClip)
                         {
-                            if (selectedMusic.loopMode == LoopMode.LoopWithLoopPoints || selectedMusic.loopMode == LoopMode.ClampedLoopPoints)
+                            if (selectedAudio.loopMode >= LoopMode.LoopWithLoopPoints)
                             {
-                                if (!Helper.Source.isPlaying && !clipPaused)
+                                bool shouldBePlaying = !SourcePlaying && !clipPaused;
+                                if (shouldBePlaying)
                                 {
-                                    if (MusicFileObjectEditor.freePlay)
+                                    if (!SourcePlaying) Helper.Source.Play();
+
+                                    if (!freePlay)
                                     {
-                                        Helper.Source.Play();
+                                        goto RestartLoop;
                                     }
-                                    else
-                                    {
-                                        Helper.Source.Play();
-                                        Helper.Source.timeSamples = Mathf.CeilToInt(selectedMusic.loopStart * Helper.Clip.frequency);
-                                    }
-                                    MusicFileObjectEditor.freePlay = false;
+                                    freePlay = false;
                                 }
-                                else if (selectedMusic.loopMode == LoopMode.ClampedLoopPoints || !MusicFileObjectEditor.firstPlayback)
+                                else 
+                                if (selectedAudio.loopMode == LoopMode.ClampedLoopPoints)
                                 {
-                                    if (clipPos < selectedMusic.loopStart || clipPos > selectedMusic.loopEnd)
+                                    if (clipPos < selectedAudio.loopStart || clipPos > selectedAudio.loopEnd)
                                     {
-                                        // CeilToInt to guarantee clip position stays within loop bounds
-                                        Helper.Source.timeSamples = Mathf.CeilToInt(selectedMusic.loopStart * Helper.Clip.frequency);
-                                        MusicFileObjectEditor.firstPlayback = false;
+                                        goto RestartLoop;
                                     }
                                 }
-                                else if (clipPos >= selectedMusic.loopEnd)
+                                else if (clipPos >= selectedAudio.loopEnd - AudioManagerInternal.EPSILON)
                                 {
-                                    Helper.Source.timeSamples = Mathf.CeilToInt(selectedMusic.loopStart * Helper.Clip.frequency);
-                                    MusicFileObjectEditor.firstPlayback = false;
+                                    goto RestartLoop;
                                 }
+                                break;
+
+                                RestartLoop:
+                                // CeilToInt to guarantee clip position stays within loop bounds
+                                if (!freePlay)
+                                {
+                                    Helper.Source.timeSamples = Mathf.CeilToInt(selectedAudio.loopStart * Helper.Clip.frequency);
+                                }
+                                freePlay = false;
+                                firstPlayback = false;
+                                break;
                             }
                         }
                         else if (!LoopClip)
                         {
-                            if (selectedMusic.loopMode == LoopMode.LoopWithLoopPoints)
+                            if (selectedAudio.loopMode == LoopMode.LoopWithLoopPoints)
                             {
-                                if ((!Helper.Source.isPlaying && !clipPaused) || clipPos > selectedMusic.loopEnd)
+                                if ((!Helper.Source.isPlaying && !clipPaused) || clipPos > selectedAudio.loopEnd)
                                 {
                                     Helper.Source.Stop();
+                                    clipPlaying = false;
                                 }
                             }
-                            else if (selectedMusic.loopMode == LoopMode.ClampedLoopPoints && clipPos < selectedMusic.loopStart)
+                            else if (selectedAudio.loopMode == LoopMode.ClampedLoopPoints && clipPos < selectedAudio.loopStart)
                             {
-                                Helper.Source.timeSamples = Mathf.CeilToInt(selectedMusic.loopStart * Helper.Clip.frequency);
+                                Helper.Source.timeSamples = Mathf.CeilToInt(selectedAudio.loopStart * Helper.Clip.frequency);
                             }
                         }
                     }
 
-                    if (selectedMusic.loopMode != LoopMode.LoopWithLoopPoints)
+                    if (selectedAudio.loopMode != LoopMode.LoopWithLoopPoints)
                     {
-                        if (!Helper.Source.isPlaying && !clipPaused && ClipPlaying)
+                        if (!Helper.Source.isPlaying && !clipPaused && clipPlaying)
                         {
                             Helper.Source.time = 0;
                             if (LoopClip)
@@ -861,7 +881,7 @@ namespace JSAM.JSAMEditor
 
                 halfHeight = (int)rect.height / 2;
             }
-            
+
             Texture2D tex = new Texture2D((int)rect.width, (int)rect.height, TextureFormat.RGBA32, false);
             for (int x = 0; x < rect.width; x++)
             {
@@ -890,7 +910,7 @@ namespace JSAM.JSAMEditor
                     }
                 }
             }
-           
+
             tex.Apply();
             return tex;
         }

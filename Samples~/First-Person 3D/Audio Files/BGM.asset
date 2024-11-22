@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BGM
   m_EditorClassIdentifier: 
   safeName: BGM
-  presetDescription: <Default Preset>
+  presetDescription: 
   files:
   - {fileID: 8300000, guid: fe06d48e659b1434ba98e89445a43760, type: 3}
   loopStart: 0

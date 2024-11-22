@@ -17,19 +17,21 @@ MonoBehaviour:
   files:
   - {fileID: 8300000, guid: 4cd473ea326bb224499d94db7251c75c, type: 3}
   loopStart: 48
-  loopEnd: 95.986
+  loopEnd: 95.991
   bpm: 160
-  relativeVolume: 0.75
+  relativeVolume: 0.15
   spatialize: 0
   maxDistance: 0
   priority: 128
   startingPitch: 1
-  pitchShift: 1
+  pitchShift: 0
   loopMode: 2
   delay: 0
   ignoreTimeScale: 0
+  maxPlayingInstances: 10
+  channelOverride: 0
   mixerGroupOverride: {fileID: 0}
-  fadeInOut: 0
+  fadeInOut: 1
   fadeInDuration: 0
   fadeOutDuration: 0
   bypassEffects: 0

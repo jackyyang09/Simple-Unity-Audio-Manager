@@ -21,27 +21,30 @@ namespace JSAM.JSAMEditor
 
         static bool showHowTo;
 
-        SerializedProperty listener;
-
-        SerializedProperty library;
+        SerializedProperty preloadedLibraries;
 
         List<string> excludedProperties = new List<string> { "m_Script" };
 
-        const string SHOW_VOLUME = "JSAM_AUDIOMANAGER_SHOWLIBRARY";
+        const string SHOW_VOLUME = "JSAM_AUDIOMANAGER_SHOWVOLUME";
         static bool showVolume
         {
             get
             {
-                if (!EditorPrefs.HasKey(SHOW_VOLUME))
-                {
-                    EditorPrefs.SetBool(SHOW_VOLUME, false);
-                }
+                if (!EditorPrefs.HasKey(SHOW_VOLUME)) EditorPrefs.SetBool(SHOW_VOLUME, false);
                 return EditorPrefs.GetBool(SHOW_VOLUME);
             }
-            set
+            set => EditorPrefs.SetBool(SHOW_VOLUME, value);
+        }
+
+        const string SHOW_LIBRARIES = "JSAM_AUDIOMANAGER_SHOWLIBRARY";
+        static bool showLibraries
+        {
+            get
             {
-                EditorPrefs.SetBool(SHOW_VOLUME, value);
+                if (!EditorPrefs.HasKey(SHOW_LIBRARIES)) EditorPrefs.SetBool(SHOW_LIBRARIES, false);
+                return EditorPrefs.GetBool(SHOW_LIBRARIES);
             }
+            set => EditorPrefs.SetBool(SHOW_LIBRARIES, value);
         }
 
         private void OnEnable()
@@ -50,10 +53,7 @@ namespace JSAM.JSAMEditor
 
             myScript.EstablishSingletonDominance();
 
-            listener = serializedObject.FindProperty("listener");
-            excludedProperties.Add("listener");
-
-            library = serializedObject.FindProperty("library");
+            preloadedLibraries = serializedObject.FindProperty(nameof(preloadedLibraries));
 
             Application.logMessageReceived += UnityDebugLog;
         }
@@ -67,8 +67,6 @@ namespace JSAM.JSAMEditor
         {
             serializedObject.Update();
                     
-            GUIContent blontent;
-
             EditorGUILayout.BeginVertical(GUI.skin.box);
             if (AudioManager.Instance == myScript)
             {
@@ -86,45 +84,35 @@ namespace JSAM.JSAMEditor
 
             RenderVolumeControls();
 
-            //EditorGUILayout.Space();
+            EditorGUILayout.PropertyField(preloadedLibraries);
 
-            EditorGUILayout.BeginHorizontal();
-            blontent = new GUIContent("Library");
-            EditorGUILayout.PropertyField(library);
-            blontent = new GUIContent(" Open ");
-            if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
+            if (Application.isPlaying)
             {
-                if (library.objectReferenceValue != null)
+                var libraries = AudioManager.InternalInstance.LoadedLibraries;
+
+                EditorGUILayout.LabelField($"Loaded Libraries: {libraries.Count}", EditorStyles.boldLabel);
+
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+                if (libraries.Count == 0)
                 {
-                    JSAMPaths.Instance.SelectedLibrary = library.objectReferenceValue as AudioLibrary;
-                    JSAMPaths.TrySave();
+                    EditorGUILayout.LabelField("No Libraries Loaded");
                 }
-                AudioLibraryEditor.Init();
+                else
+                {
+                    foreach (var item in libraries)
+                    {
+                        // Usage of the Users variable is still undecided
+                        //EditorGUILayout.LabelField($"{item.Value.Library.name} (Users: {item.Value.Users})");
+                        if (GUILayout.Button($"{item.Value.Library.name}"))
+                        {
+                            AudioLibraryEditor.OnOpenAsset(item.Value.Library.GetInstanceID(), 0);
+                        }
+                    }
+                }
+                
+                EditorGUILayout.EndVertical();
             }
-            EditorGUILayout.EndHorizontal();
-
-            //EditorGUILayout.BeginHorizontal();
-            //EditorGUILayout.PropertyField(mixer);
-            //EditorGUI.BeginDisabledGroup(mixer.objectReferenceValue == null);
-            //blontent = new GUIContent(" Open ");
-            //if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
-            //{
-            //    Selection.activeObject = mixer.objectReferenceValue;
-            //    EditorGUIUtility.PingObject(mixer.objectReferenceValue);
-            //    EditorApplication.ExecuteMenuItem("Window/Audio/Audio Mixer");
-            //    Selection.activeObject = target;
-            //}
-            //EditorGUI.EndDisabledGroup();
-            //EditorGUILayout.EndHorizontal();
-
-            DrawPropertiesExcluding(serializedObject, excludedProperties.ToArray());
-
-            //if (myScript.GetListenerInternal() == null || showAdvancedSettings)
-            {
-                EditorGUILayout.PropertyField(listener);
-            }
-
-            EditorGUILayout.Space();
 
             if (serializedObject.hasModifiedProperties)
             {
@@ -198,7 +186,7 @@ namespace JSAM.JSAMEditor
         [MenuItem("GameObject/Audio/JSAM/Audio Manager", false, 1)]
         public static void AddAudioManager()
         {
-            AudioManager existingAudioManager = FindObjectOfType<AudioManager>();
+            AudioManager existingAudioManager = JSAMCompatibility.FindObjectOfType<AudioManager>();
             if (!existingAudioManager)
             {
                 string assetPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("Audio Manager t:GameObject")[0]);
@@ -230,24 +218,24 @@ namespace JSAM.JSAMEditor
             EditorGUILayout.BeginVertical(GUI.skin.box);
             using (new EditorGUI.DisabledGroupScope(!Application.isPlaying))
             {
-                if (Application.isPlaying)
-                {
-                    master = AudioManager.MasterVolume;
-                    music = AudioManager.MusicVolume;
-                    sound = AudioManager.SoundVolume;
-                    voice = AudioManager.VoiceVolume;
-                    masterMuted = AudioManager.MasterMuted;
-                    musicMuted = AudioManager.MusicMuted;
-                    soundMuted = AudioManager.SoundMuted;
-                    voiceMuted = AudioManager.VoiceMuted;
-                }
-                else
-                {
-                    EditorGUILayout.LabelField("Volume can only be changed during runtime!", GUI.skin.label.ApplyWordWrap().ApplyBoldText());
-                }
-
                 if (showVolume)
                 {
+                    if (Application.isPlaying)
+                    {
+                        master = AudioManager.MasterVolume;
+                        music = AudioManager.MusicVolume;
+                        sound = AudioManager.SoundVolume;
+                        voice = AudioManager.VoiceVolume;
+                        masterMuted = AudioManager.MasterMuted;
+                        musicMuted = AudioManager.MusicMuted;
+                        soundMuted = AudioManager.SoundMuted;
+                        voiceMuted = AudioManager.VoiceMuted;
+                    }
+                    else
+                    {
+                        EditorGUILayout.LabelField("Volume can only be changed during runtime!", GUI.skin.label.ApplyWordWrap().ApplyBoldText());
+                    }
+
                     EditorGUI.BeginChangeCheck();
                     var tuple = RenderVolumeSlider("Master", master, masterMuted);
                     if (EditorGUI.EndChangeCheck())
@@ -288,7 +276,7 @@ namespace JSAM.JSAMEditor
         (float, bool) RenderVolumeSlider(string channelName, float volume, bool muted)
         {
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(new GUIContent(channelName + " Volume"), new GUILayoutOption[] { GUILayout.MaxWidth(85) });
+            EditorGUILayout.LabelField(new GUIContent(channelName + " Volume"), new GUILayoutOption[] { GUILayout.MaxWidth(90) });
             if (muted) JSAMEditorHelper.BeginColourChange(buttonPressedColor);
             if (JSAMEditorHelper.CondensedButton(" MUTE "))
             {

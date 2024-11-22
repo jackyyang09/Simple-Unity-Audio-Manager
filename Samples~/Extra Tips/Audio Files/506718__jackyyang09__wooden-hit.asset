@@ -29,16 +29,17 @@ MonoBehaviour:
   loopStart: 0
   loopEnd: 0
   bpm: 120
-  relativeVolume: 1
+  relativeVolume: 0.5
   spatialize: 0
   maxDistance: 0
   priority: 128
   startingPitch: 1
-  pitchShift: 0
+  pitchShift: 0.1
   loopMode: 0
   delay: 0
   ignoreTimeScale: 1
-  maxPlayingInstances: 10
+  maxPlayingInstances: 1
+  channelOverride: 0
   mixerGroupOverride: {fileID: 0}
   fadeInOut: 0
   fadeInDuration: 0

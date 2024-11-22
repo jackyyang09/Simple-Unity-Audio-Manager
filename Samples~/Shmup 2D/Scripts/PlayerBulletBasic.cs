@@ -9,10 +9,15 @@ namespace JSAM.Example.Shmup2D
         {
             // Highly recommended that you replace this if-statement with a physics check with objects on the same layer as itself
             // Set it's layer to a new "Bullet" layer
-            if (!other.GetComponent<PlayerBulletBasic>())
+            if (other.attachedRigidbody)
             {
-                gameObject.SetActive(false);
+#if UNITY_2019_2_OR_NEWER
+                if (other.attachedRigidbody.TryGetComponent(out BaseBullet b)) return;
+#else
+                if (other.attachedRigidbody.GetComponent<BaseBullet>()) return;
+#endif
             }
+            //gameObject.SetActive(false);
         }
     }
 }

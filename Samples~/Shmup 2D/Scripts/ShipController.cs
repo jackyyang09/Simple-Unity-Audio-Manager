@@ -92,16 +92,16 @@ namespace JSAM.Example.Shmup2D
                     bullet.SetActive(true);
 
                     // Have AudioManager loop the "Shooting" sound if it's not looping already
-                    if (!AudioManager.IsSoundPlaying(SoundsExample2D.Shooting))
+                    if (!AudioManager.IsSoundPlaying(Shmup2DSounds.Shooting))
                     {
-                        AudioManager.PlaySound(SoundsExample2D.Shooting, transform);
+                        AudioManager.PlaySound(Shmup2DSounds.Shooting, transform);
                     }
 
                     StartCoroutine(ShotCooldown());
                 }
                 else if (!Input.GetKey(KeyCode.Z))
                 {
-                    AudioManager.StopSoundIfPlaying(SoundsExample2D.Shooting, transform);
+                    AudioManager.StopSoundIfPlaying(Shmup2DSounds.Shooting, transform);
                 }
             }
         }

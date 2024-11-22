@@ -1,7 +1,7 @@
 {
 	"name": "com.brogrammist.jsam",
 	"displayName": "Jacky's Simple Audio Manager",
-	"version": "3.0.2",
+	"version": "3.1.0",
 	"unity": "2021.3",
 	"description": "A decentralized audio playing system for Unity, designed for simplicity and built to scale!",
 	"category": "",
@@ -24,7 +24,7 @@
 		},
 		{
 			"displayName": "First-Person 3D",
-			"description": "FPS-Style Sample SCene",
+			"description": "FPS-Style Sample Scene",
 			"path": "./Samples~/First-Person 3D"
 		},
 		{

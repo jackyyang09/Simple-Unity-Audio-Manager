@@ -29,8 +29,8 @@ MonoBehaviour:
   delay: 0
   ignoreTimeScale: 0
   maxPlayingInstances: 10
-  mixerGroupOverride: {fileID: 0}
   channelOverride: 0
+  mixerGroupOverride: {fileID: 0}
   fadeInOut: 0
   fadeInDuration: 0
   fadeOutDuration: 0.097

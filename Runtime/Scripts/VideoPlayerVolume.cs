@@ -7,68 +7,10 @@ using UnityEngine.Video;
 
 namespace JSAM
 {
-    public class VideoPlayerVolume : MonoBehaviour
+    public class VideoPlayerVolume : VolumeListener
     {
-        enum VolumeChannel
-        {
-            Music,
-            Sound,
-            Voice
-        }
-
-        [SerializeField] VolumeChannel volumeChannel = VolumeChannel.Sound;
-        VolumeChannel subscribedChannel;
-        [SerializeField] [Range(0, 1)] float relativeVolume = 1;
         [SerializeField] VideoPlayer videoPlayer;
         [SerializeField] RawImage videoImage;
-
-        public float Volume
-        {
-            get
-            {
-                float vol = 0f;
-
-                switch (volumeChannel)
-                {
-                    case VolumeChannel.Music:
-                        vol = AudioManager.InternalInstance.ModifiedMusicVolume;
-                        break;
-                    case VolumeChannel.Sound:
-                        vol = AudioManager.InternalInstance.ModifiedSoundVolume;
-                        break;
-                    case VolumeChannel.Voice:
-                        vol = AudioManager.InternalInstance.ModifiedVoiceVolume;
-                        break;
-                }
-
-                vol *= relativeVolume;
-                return vol;
-            }
-        }
-
-        SoundChannelHelper soundHelper;
-
-#if UNITY_EDITOR
-        private void OnValidate()
-        {
-            if (!soundHelper) return;
-            if (!videoPlayer)
-            {
-                videoPlayer = GetComponent<VideoPlayer>();
-                videoPlayer.audioOutputMode = VideoAudioOutputMode.AudioSource;
-            }
-            if (Application.isPlaying && soundHelper)
-            {
-                if (subscribedChannel != volumeChannel)
-                {
-                    UnsubscribeFromAudioEvents();
-                    SubscribeToVolumeEvents();
-                    subscribedChannel = volumeChannel;
-                }
-                OnUpdateVolume();
-            }
-        }
-#endif
 
         private void OnEnable()
         {
@@ -76,7 +18,7 @@ namespace JSAM
             {
                 videoPlayer.prepareCompleted += AttachAudioSource;
         
-                if (videoPlayer.isPlaying && !soundHelper)
+                if (videoPlayer.isPlaying)
                 {
                     Init();
                 }
@@ -87,12 +29,7 @@ namespace JSAM
         {
             if (videoPlayer) videoPlayer.prepareCompleted -= AttachAudioSource;
         
-            if (soundHelper)
-            {
-                UnsubscribeFromAudioEvents();
-                soundHelper.Reserved = false;
-                soundHelper = null;
-            }
+            UnsubscribeFromAudioEvents();
         }
 
         private void AttachAudioSource(VideoPlayer source)
@@ -110,11 +47,6 @@ namespace JSAM
         {
             videoPlayer.enabled = false;
 
-            soundHelper = AudioManager.InternalInstance.GetFreeSoundHelper();
-            soundHelper.Reserved = true;
-            
-            videoPlayer.audioOutputMode = VideoAudioOutputMode.AudioSource;
-            videoPlayer.SetTargetAudioSource(0, soundHelper.AudioSource);
             SubscribeToVolumeEvents();
 
             subscribedChannel = volumeChannel;
@@ -129,41 +61,26 @@ namespace JSAM
             videoPlayer.prepareCompleted += AttachAudioSource;
         }
 
-        protected void SubscribeToVolumeEvents()
+#if UNITY_EDITOR
+        protected override void OnValidate()
         {
-            switch (volumeChannel)
+            base.OnValidate();
+
+            if (Application.isPlaying) return;
+
+            if (!videoPlayer)
             {
-                case VolumeChannel.Music:
-                    AudioManager.OnMusicVolumeChanged += OnUpdateVolume;
-                    break;
-                case VolumeChannel.Sound:
-                    AudioManager.OnSoundVolumeChanged += OnUpdateVolume;
-                    break;
-                case VolumeChannel.Voice:
-                    AudioManager.OnVoiceVolumeChanged += OnUpdateVolume;
-                    break;
+                UnityEditor.Undo.RecordObject(this, $"{nameof(VideoPlayerVolume)}: Setting up");
+                videoPlayer = GetComponent<VideoPlayer>();
+                videoPlayer.audioOutputMode = VideoAudioOutputMode.AudioSource;
+            }
+
+            if (audioSource)
+            {
+                UnityEditor.Undo.RecordObject(videoPlayer, $"{nameof(VideoPlayerVolume)}: Assigning AudioSource to VideoPlayer");
+                videoPlayer.SetTargetAudioSource(0, audioSource);
             }
         }
-
-        protected void UnsubscribeFromAudioEvents()
-        {
-            switch (volumeChannel)
-            {
-                case VolumeChannel.Music:
-                    AudioManager.OnMusicVolumeChanged -= OnUpdateVolume;
-                    break;
-                case VolumeChannel.Sound:
-                    AudioManager.OnSoundVolumeChanged -= OnUpdateVolume;
-                    break;
-                case VolumeChannel.Voice:
-                    AudioManager.OnVoiceVolumeChanged -= OnUpdateVolume;
-                    break;
-            }
-        }
-
-        protected void OnUpdateVolume(float volume = 0)
-        {
-            soundHelper.AudioSource.volume = Volume;
-        }
+#endif
     }
 }

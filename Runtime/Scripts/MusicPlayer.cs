@@ -35,6 +35,9 @@ namespace JSAM
             "FadeOutAndFadeIn - Fades out current Main Music, and only after it's done fading, fade in this music")]
         [SerializeField] protected FadeBehaviour fadeBehaviour = FadeBehaviour.None;
 
+        // TODO: Implement this
+        //[SerializeField] bool isMainMusic;
+
         [Tooltip("Total time of the fade process")]
         [SerializeField] float fadeTime;
 
@@ -57,59 +60,87 @@ namespace JSAM
             }
         }
 
-        public void Play()
-        {
-            if (AudioManager.IsMusicPlaying(audio) && !restartOnReplay) return;
+        MusicChannelHelper oldHelper;
 
-            if (keepPlaybackPosition)
+        void PlayInvokation()
+        {
+            if (fadeBehaviour > FadeBehaviour.None)
             {
-                if (AudioManager.MainMusicHelper != null)
-                {
-                    if (AudioManager.MainMusicHelper.AudioSource.isPlaying)
-                    {
-                        float time = AudioManager.MainMusicHelper.AudioSource.time;
-                        helper = AudioManager.PlayMusic(audio, transform);
-                        helper.AudioSource.time = time;
-                    }
-                    else
-                    {
-                        helper = AudioManager.PlayMusic(audio, transform);
-                    }
-                }
+                helper = AudioManager.FadeMusicIn(audio, fadeTime, !AudioManager.MainMusicHelper.AudioSource.isPlaying);
             }
             else
             {
-                AudioManager.StopMusicIfPlaying(audio, transform);
                 helper = AudioManager.PlayMusic(audio, transform);
             }
         }
 
         void PlayBehaviour()
         {
+            float time = 0;
             switch (fadeBehaviour)
             {
                 case FadeBehaviour.None:
-                    Play();
-                    break;
                 case FadeBehaviour.AdditiveFadeIn:
-                    helper = AudioManager.FadeMusicIn(audio, fadeTime);
+                    if (AudioManager.MainMusicHelper.AudioSource.isPlaying)
+                    {
+                        time = AudioManager.MainMusicHelper.AudioSource.time;
+                    }
+                    PlayInvokation();
+                    if (keepPlaybackPosition)
+                    {
+                        helper.AudioSource.time = time;
+                    }
                     break;
                 case FadeBehaviour.CrossFadeIn:
-                    if (!AudioManager.MainMusicHelper.IsFree)
+                    if (keepPlaybackPosition && AudioManager.MainMusicHelper.AudioSource.isPlaying)
                     {
-                        AudioManager.FadeMainMusicOut(fadeTime);
+                        time = AudioManager.FadeMainMusicOut(fadeTime).AudioSource.time;
                     }
-                    Invoke(nameof(Play), fadeTime);
+                    PlayInvokation();
+                    if (keepPlaybackPosition)
+                    {
+                        helper.AudioSource.time = time;
+                    }
                     break;
                 case FadeBehaviour.FadeOutAndFadeIn:
-                    var halfTime = fadeTime / 2;
-                    if (!AudioManager.MainMusicHelper.IsFree)
-                    {
-                        AudioManager.FadeMainMusicOut(halfTime);
-                    }
-                    Invoke(nameof(Play), halfTime);
+                    if (fadeRoutine != null) StopCoroutine(fadeRoutine);
+                    fadeRoutine = StartCoroutine(FadeInOut());
                     break;
             }
+        }
+
+        Coroutine fadeRoutine;
+        IEnumerator FadeInOut()
+        {
+            var halfTime = fadeTime / 2;
+
+            if (keepPlaybackPosition && AudioManager.MainMusicHelper.AudioSource.isPlaying)
+            {
+                oldHelper = AudioManager.FadeMainMusicOut(halfTime);
+            }
+
+            float time = 0;
+            while (oldHelper.AudioSource.isPlaying)
+            {
+                time = oldHelper.AudioSource.time;
+                yield return null;
+            }
+
+            PlayInvokation();
+
+            if (keepPlaybackPosition)
+            {
+                helper.AudioSource.time = time;
+            }
+
+            fadeRoutine = null;
+        }
+
+        public void Play()
+        {
+            if (AudioManager.IsMusicPlaying(audio) && !restartOnReplay) return;
+
+            PlayBehaviour();
         }
 
         public void Stop()
@@ -138,7 +169,7 @@ namespace JSAM
             yield return new WaitUntil(() => AudioManager.Instance.Initialized);
 
             playRoutine = null;
-            PlayBehaviour();
+            Play();
         }
 
         private void OnDisable()

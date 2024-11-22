@@ -5,21 +5,21 @@ using UnityEngine;
 namespace JSAM
 {
     [CreateAssetMenu(fileName = "New Music File Object", menuName = "AudioManager/Music File Object", order = 1)]
-    public class MusicFileObject : BaseAudioFileObject
+    public partial class MusicFileObject : BaseAudioFileObject
     {
-        public void Play(bool isMain)
+        public MusicChannelHelper Play(bool isMain)
         {
-            AudioManager.InternalInstance.PlayMusicInternal(this, isMain);
+            return AudioManager.InternalInstance.PlayMusicInternal(this, isMain);
         }
 
-        public void Play(Transform transform = null, MusicChannelHelper helper = null)
+        public MusicChannelHelper Play(Transform transform = null, MusicChannelHelper helper = null)
         {
-            AudioManager.InternalInstance.PlayMusicInternal(this, transform, helper);
+            return AudioManager.InternalInstance.PlayMusicInternal(this, transform, helper);
         }
 
-        public void Play(Vector3 position, MusicChannelHelper helper = null)
+        public MusicChannelHelper Play(Vector3 position, MusicChannelHelper helper = null)
         {
-            AudioManager.InternalInstance.PlayMusicInternal(this, position, helper);
+            return AudioManager.InternalInstance.PlayMusicInternal(this, position, helper);
         }
     }
 }

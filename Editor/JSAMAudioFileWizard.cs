@@ -75,33 +75,35 @@ namespace JSAM.JSAMEditor
             Rect overlay = EditorGUILayout.BeginVertical(GUI.skin.box, new GUILayoutOption[] { GUILayout.MinHeight(70), GUILayout.MaxHeight(200) });
             scroll = EditorGUILayout.BeginScrollView(scroll);
 
-            if (files.Count >= 0)
+            for (int i = files.Count - 1; i > -1; i--)
             {
-                for (int i = 0; i < files.Count; i++)
+                if (files[i] == null)
                 {
-                    Rect rect = EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
-                    var element = files[i];
-                    blontent = new GUIContent(element.name);
-
-                    EditorGUILayout.LabelField(i.ToString(), new GUILayoutOption[] { GUILayout.MaxWidth(25) });
-
-                    EditorGUILayout.LabelField(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(Window.position.width / 3) });
-
-                    using (new EditorGUI.DisabledScope(true))
-                    {
-                        files[i] = EditorGUILayout.ObjectField(GUIContent.none, files[i], typeof(AudioClip),false) as AudioClip;
-                    }
-
-                    JSAMEditorHelper.BeginColourChange(Color.red);
-                    blontent = new GUIContent("X", "Remove this AudioClip from the list");
-                    if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(25) }))
-                    {
-                        files.Remove(files[i]);
-                        GUIUtility.ExitGUI();
-                    }
-                    JSAMEditorHelper.EndColourChange();
-                    EditorGUILayout.EndHorizontal();
+                    files.RemoveAt(i);
+                    continue;
                 }
+                Rect rect = EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+                var element = files[i];
+                blontent = new GUIContent(element.name);
+
+                EditorGUILayout.LabelField(i.ToString(), new GUILayoutOption[] { GUILayout.MaxWidth(25) });
+
+                EditorGUILayout.LabelField(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(Window.position.width / 3) });
+
+                using (new EditorGUI.DisabledScope(true))
+                {
+                    files[i] = EditorGUILayout.ObjectField(GUIContent.none, files[i], typeof(AudioClip), false) as AudioClip;
+                }
+
+                JSAMEditorHelper.BeginColourChange(Color.red);
+                blontent = new GUIContent("X", "Remove this AudioClip from the list");
+                if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.MaxWidth(25) }))
+                {
+                    files.Remove(files[i]);
+                    GUIUtility.ExitGUI();
+                }
+                JSAMEditorHelper.EndColourChange();
+                EditorGUILayout.EndHorizontal();
             }
 
             EditorGUILayout.EndScrollView();
@@ -208,7 +210,7 @@ namespace JSAM.JSAMEditor
                 }
             }
 
-            blontent = new GUIContent("Generate Audio File Objects", 
+            blontent = new GUIContent("Generate Audio File Objects",
                 "Create audio file objects with the provided Audio Clips according to the selected preset. " +
                 "Audio File objects will be saved to the output folder.");
             EditorGUILayout.BeginHorizontal();
@@ -270,7 +272,7 @@ namespace JSAM.JSAMEditor
             if (fileType == AudioFileType.Music)
             {
                 if (musicPresets.Count > 0) selectedPreset = musicPresets[selectedMusicPresetIndex];
-            }   
+            }
             else
             {
                 if (soundPresets.Count > 0) selectedPreset = soundPresets[selectedSoundPresetIndex];
@@ -283,7 +285,7 @@ namespace JSAM.JSAMEditor
             int i = 0;
             for (; i < files.Count; i++)
             {
-                if (EditorUtility.DisplayCancelableProgressBar("Generating Audio File Objects (" + i + "/" + files.Count + ")", 
+                if (EditorUtility.DisplayCancelableProgressBar("Generating Audio File Objects (" + i + "/" + files.Count + ")",
                     files[i].name, (float)i / (float)files.Count)) break;
 
                 var newObject = CreateInstance<T>();

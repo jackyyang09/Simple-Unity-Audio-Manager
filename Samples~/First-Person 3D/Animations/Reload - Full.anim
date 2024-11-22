@@ -2322,35 +2322,35 @@ AnimationClip:
   m_Events:
   - time: 0.25
     functionName: PlaySoundByEnum
-    data: AKMagGrab
+    data: FPS3DSounds.AKMagGrab
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
   - time: 0.51666665
     functionName: PlaySoundByEnum
-    data: AKMagRemove
+    data: FPS3DSounds.AKMagRemove
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
   - time: 1.8333334
     functionName: PlaySoundByEnum
-    data: AKMagInsert
+    data: FPS3DSounds.AKMagInsert
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
   - time: 2.5
     functionName: PlaySoundByEnum
-    data: AKChamber
+    data: FPS3DSounds.AKChamber
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
   - time: 3.4166667
     functionName: PlaySoundByEnum
-    data: AKEquip
+    data: FPS3DSounds.AKEquip
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0

@@ -84,6 +84,15 @@ namespace JSAM
 
         Coroutine fadeInRoutine, fadeOutRoutine;
         bool subscribedToEvents;
+        bool applicationPaused, applicationFocused = true;
+        protected void OnApplicationPause(bool pause)
+        {
+            applicationPaused = pause;
+        }
+        protected void OnApplicationFocus(bool focus)
+        {
+            applicationFocused = focus;
+        }
 
         public void Init(AudioMixerGroup defaultGroup)
         {
@@ -102,8 +111,6 @@ namespace JSAM
 
             if (audioFile)
             {
-                AudioManager.OnMasterVolumeChanged += OnUpdateVolume;
-
                 if (audioFile.spatialize)
                 {
                     switch (JSAMSettings.Settings.SpatializationMode)
@@ -150,8 +157,6 @@ namespace JSAM
                             break;
                     }
                 }
-
-                AudioManager.OnMasterVolumeChanged -= OnUpdateVolume;
             }
 
             if (subscribedToEvents) UnsubscribeFromAudioEvents();
@@ -159,22 +164,44 @@ namespace JSAM
 
         protected virtual void Update()
         {
-            if (audioFile.loopMode == LoopMode.LoopWithLoopPoints)
+            if (audioFile.fadeInOut)
             {
-                if (AudioSource.timeSamples > LoopEnd)
+                var fadeInTime = audioFile.fadeInDuration * AudioSource.clip.length;
+                var fadeOutTime = audioFile.fadeOutDuration * AudioSource.clip.length;
+
+                if (AudioSource.time < AudioSource.clip.length - fadeOutTime)
                 {
-                    AudioSource.timeSamples = LoopStart;
+                    if (fadeInTime > 0)
+                    {
+                        AudioSource.volume = Mathf.Lerp(0, audioFile.relativeVolume, AudioSource.time / fadeInTime);
+                    }
                 }
-            }
-            else if (audioFile.loopMode == LoopMode.LoopWithLoopPoints)
-            {
-                if (AudioSource.timeSamples < LoopStart)
+                else
                 {
-                    AudioSource.timeSamples = LoopStart;
+                    if (fadeOutTime > 0)
+                    {
+                        AudioSource.volume = Mathf.Lerp(0, audioFile.relativeVolume, (AudioSource.clip.length - AudioSource.time) / fadeOutTime);
+                    }
                 }
             }
 
-            if (audioFile.loopMode == LoopMode.NoLooping)
+            if (audioFile.loopMode >= LoopMode.LoopWithLoopPoints)
+            {
+                if (AudioSource.timeSamples >= LoopEnd || !AudioSource.isPlaying)
+                {
+                    AudioSource.Play();
+                    AudioSource.timeSamples = LoopStart;
+                }
+
+                if (audioFile.loopMode == LoopMode.ClampedLoopPoints)
+                {
+                    if (AudioSource.timeSamples < LoopStart)
+                    {
+                        AudioSource.timeSamples = LoopStart;
+                    }
+                }
+            }
+            else if (audioFile.loopMode <= LoopMode.LoopWithLoopPoints && !applicationPaused && applicationFocused)
             {
                 // Disable self if not playing anymore
                 enabled = AudioSource.isPlaying;
@@ -264,20 +291,16 @@ namespace JSAM
                 AudioSource.spatialBlend = 0;
             }
 
-            SubscribeToVolumeEvents();
+            if (!subscribedToEvents) SubscribeToVolumeEvents();
             AudioSource.volume = Volume;
-
-            if (audioFile.fadeInOut)
-            {
-                BeginFadeIn(audioFile.fadeInDuration * AudioSource.clip.length);
-                BeginFadeOut(audioFile.fadeOutDuration * AudioSource.clip.length);
-            }
 
             AudioSource.outputAudioMixerGroup = audioFile.mixerGroupOverride ? audioFile.mixerGroupOverride : defaultMixerGroup;
 
             AudioSource.priority = (int)audioFile.priority;
 
             AudioSource.pitch = audioFile.GetRandomPitch();
+
+            AudioSource.loop = audioFile.loopMode == LoopMode.Looping;
 
             ApplyEffects();
 
@@ -392,9 +415,9 @@ namespace JSAM
             transform.position = position;
         }
 
-        protected void OnUpdateVolume(float volume = 0)
+        protected void OnUpdateVolume(float channelVolume, float realVolume)
         {
-            AudioSource.volume = Volume;
+            AudioSource.volume = realVolume * audioFile.relativeVolume;
         }
 
         #region Fade Logic
@@ -405,6 +428,7 @@ namespace JSAM
 
         public void BeginFadeOut(float fadeTime)
         {
+            if (fadeOutRoutine != null) StopCoroutine(fadeOutRoutine);
             fadeOutRoutine = StartCoroutine(FadeOut(fadeTime));
         }
 
@@ -427,6 +451,8 @@ namespace JSAM
                     yield return null;
                 }
             }
+
+            fadeInRoutine = null;
         }
 
         /// <summary>
@@ -437,12 +463,6 @@ namespace JSAM
         {
             if (fadeTime > 0)
             {
-                // Wait until playback position reaches fade-out point
-                while (AudioSource.time < AudioSource.clip.length - fadeTime)
-                {
-                    yield return null;
-                }
-
                 float startingVolume = AudioSource.volume;
                 float timer = 0;
                 while (timer < fadeTime)
@@ -458,6 +478,8 @@ namespace JSAM
                 }
                 AudioSource.Stop();
             }
+
+            fadeOutRoutine = null;
         }
         #endregion
 
@@ -625,6 +647,29 @@ namespace JSAM
 
             // Don't apply if inspecting an AudioClip
             if (AudioFile) ApplyEffects();
+        }
+
+        public void PlayDebug(BaseAudioFileObject file, bool dontReset)
+        {
+            if (!dontReset)
+            {
+                AudioSource.Stop();
+            }
+            AudioSource.timeSamples = (int)Mathf.Clamp((float)AudioSource.timeSamples, 0, (float)AudioSource.clip.samples - 1);
+            AudioSource.pitch = file.GetRandomPitch();
+
+            audioFile = file as T;
+
+            AudioSource.volume = file.relativeVolume;
+            AudioSource.priority = (int)file.priority;
+            float offset = AudioSource.pitch - 1;
+            AudioSource.pitch = Time.timeScale + offset;
+
+            ClearEffects();
+            ApplyEffects();
+
+            AudioSource.PlayDelayed(file.delay);
+            enabled = true; // Enable updates on the script
         }
 #endif
     }

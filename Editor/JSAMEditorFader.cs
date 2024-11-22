@@ -8,7 +8,7 @@ namespace JSAM.JSAMEditor
     public class JSAMEditorFader : System.IDisposable
     {
         BaseAudioFileObject asset;
-        EditorAudioHelper helper;
+        public AudioSource AudioSource;
 
         AudioClip PlayingClip
         {
@@ -22,13 +22,11 @@ namespace JSAM.JSAMEditor
             }
         }
         AudioClip playingClip;
-        float fadeInTime, fadeOutTime;
 
-        public JSAMEditorFader(BaseAudioFileObject _asset, EditorAudioHelper _helper)
+        public JSAMEditorFader(BaseAudioFileObject _asset)
         {
             EditorApplication.update += Update;
             asset = _asset;
-            helper = _helper;
         }
 
         public void Dispose()
@@ -42,54 +40,40 @@ namespace JSAM.JSAMEditor
         /// <param name="asset"></param>
         void Update()
         {
+            if (!AudioSource) return;
+
             if (!asset.fadeInOut)
             {
-                helper.Source.volume = asset.relativeVolume;
+                AudioSource.volume = asset.relativeVolume;
                 return;
             }
 
-            // Throws an error here when replacing a AudioClip and playing it in an independent window
-            var helperSource = helper.Source;
-            if (helperSource.isPlaying)
+            if (AudioSource.isPlaying)
             {
-                if (helperSource.time < PlayingClip.length - fadeOutTime)
+                var fadeInTime = asset.fadeInDuration * PlayingClip.length;
+                var fadeOutTime = asset.fadeOutDuration * PlayingClip.length;
+
+                if (AudioSource.time < PlayingClip.length - fadeOutTime)
                 {
-                    if (fadeInTime == float.Epsilon)
+                    if (fadeInTime > 0)
                     {
-                        helperSource.volume = asset.relativeVolume;
-                    }
-                    else
-                    {
-                        helperSource.volume = Mathf.Lerp(0, asset.relativeVolume, helperSource.time / fadeInTime);
+                        AudioSource.volume = Mathf.Lerp(0, asset.relativeVolume, AudioSource.time / fadeInTime);
                     }
                 }
                 else
                 {
-                    if (fadeOutTime == float.Epsilon)
+                    if (fadeOutTime > 0)
                     {
-                        helperSource.volume = asset.relativeVolume;
-                    }
-                    else
-                    {
-                        helperSource.volume = Mathf.Lerp(0, asset.relativeVolume, (playingClip.length - helperSource.time) / fadeOutTime);
+                        AudioSource.volume = Mathf.Lerp(0, asset.relativeVolume, (playingClip.length - AudioSource.time) / fadeOutTime);
                     }
                 }
             }
         }
 
-        public void StartFading(AudioClip audioClip, SoundFileObject newAsset)
+        public void StartFading(AudioClip audioClip, BaseAudioFileObject newAsset)
         {
             PlayingClip = audioClip;
             if (newAsset != null) asset = newAsset;
-
-            helper.Source.clip = PlayingClip;
-            helper.SoundHelper.PlayDebug((SoundFileObject)asset, false);
-
-            fadeInTime = asset.fadeInDuration * helper.Source.clip.length;
-            fadeOutTime = asset.fadeOutDuration * helper.Source.clip.length;
-            // To prevent divisions by 0
-            if (fadeInTime == 0) fadeInTime = float.Epsilon;
-            if (fadeOutTime == 0) fadeOutTime = float.Epsilon;
         }
     }
 }

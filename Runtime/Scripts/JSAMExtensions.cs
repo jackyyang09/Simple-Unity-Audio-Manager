@@ -50,7 +50,7 @@ namespace JSAM
 #if UNITY_2019_4_OR_NEWER
             return obj.TryGetComponent(out comp);
 #else
-            comp = GetComponent<AudioChorusFilter>();
+            comp = obj.GetComponent<T>();
             return comp != null;
 #endif
         }

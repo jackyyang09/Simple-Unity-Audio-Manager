@@ -7,16 +7,17 @@ namespace JSAM.JSAMEditor
 {
     public abstract class BaseAudioEditor<T> : Editor where T : BaseAudioFileObject
     {
-        protected List<string> options = new List<string>();
-        protected List<List<string>> moreOptions = new List<List<string>>();
         protected static bool showHowTo;
 
         protected SerializedProperty audio;
         protected SerializedProperty advancedMode;
 
         protected abstract GUIContent audioDesc { get; }
-        protected abstract List<T> audioLibrary { get; }
-        protected abstract List<AudioLibrary.CategoryToList> ctl { get; }
+
+        protected AudioLibrary[] Libraries => AudioManager.Instance.PreloadedLibraries;
+
+        protected abstract List<T> GetListFromLibrary(AudioLibrary l);
+        protected abstract List<AudioLibrary.CategoryToList> GetCTLFromLibrary(AudioLibrary l);
 
         protected void OnEnable()
         {
@@ -40,16 +41,11 @@ namespace JSAM.JSAMEditor
         protected void PopulateAudioList()
         {
             if (!AudioManager.Instance) return;
-            if (AudioManager.Instance.Library == null) return;
-
-            for (int i = 0; i < audioLibrary.Count; i++)
-            {
-                options.Add(audioLibrary[i].SafeName);
-            }
+            if (Libraries.Length == 0) return;
 
             if (audio.objectReferenceValue == null)
             {
-                audio.objectReferenceValue = audioLibrary[0];
+                audio.objectReferenceValue = GetFirstAvailableLibrarySound();
                 serializedObject.ApplyModifiedProperties();
             }
         }
@@ -71,17 +67,6 @@ namespace JSAM.JSAMEditor
 
         protected virtual void DrawAudioProperty()
         {
-            if (!AudioManager.Instance)
-            {
-                EditorGUILayout.HelpBox("Could not find Audio Manager in the scene! This component needs AudioManager " +
-                    "in order to function!", MessageType.Error);
-            }
-            else if (AudioManager.Instance.Library == null && !advancedMode.boolValue)
-            {
-                EditorGUILayout.HelpBox("Your Audio Manager is missing an Audio Library! Unless advanced mode is true, " + 
-                    "this components relies on an Audio Library to function!", MessageType.Warning);
-            }
-
             if (advancedMode.boolValue)
             {
                 EditorGUILayout.PropertyField(audio, audioDesc);
@@ -97,38 +82,51 @@ namespace JSAM.JSAMEditor
             {
                 if (advancedMode.boolValue) return;
                 if (!AudioManager.Instance) return;
-                if (!AudioManager.Instance.Library) return;
-                if (!audioLibrary.Contains(audio.objectReferenceValue as T)) return;
+                if (Libraries.Length == 0) return;
 
                 if (audio.objectReferenceValue == null)
                 {
-                    audio.objectReferenceValue = audioLibrary[0];
+                    audio.objectReferenceValue = GetFirstAvailableLibrarySound();
                 }
+            }
+
+            if (!AudioManager.Instance)
+            {
+                EditorGUILayout.HelpBox("Could not find Audio Manager in the scene! This component needs AudioManager " +
+                    "in order to function!", MessageType.Error);
+            }
+            else if (Libraries.Length == 0 && !advancedMode.boolValue)
+            {
+                EditorGUILayout.HelpBox("Your Audio Manager is missing an Audio Library! Unless advanced mode is true, " +
+                    "this components relies on an Audio Library to function!", MessageType.Warning);
             }
         }
 
         private void DrawAudioDropdown()
         {
             T audioObject = (T)audio.objectReferenceValue;
-            int selected = 0;
-            if (audioObject != null) selected = options.IndexOf(audioObject.SafeName);
-            if (selected == -1) selected = 0;
 
-            if (options.Count > 0)
+            if (!AudioManager.Instance) return;
+
+            if (Libraries.Length > 0)
             {
-                var n = audioLibrary[selected].SafeName;
+                var n = audioObject.SafeName;
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.PrefixLabel(audioDesc);
                 if (EditorGUILayout.DropdownButton(new GUIContent(n), FocusType.Keyboard))
                 {
                     var menu = new GenericMenu();
-                    for (int i = 0; i < ctl.Count; i++)
+                    foreach (var l in Libraries)
                     {
-                        for (int j = 0; j < ctl[i].files.Count; j++)
+                        var ctl = GetCTLFromLibrary(l);
+                        for (int i = 0; i < ctl.Count; i++)
                         {
-                            var categoryName = ctl[i].name == "" ? "Uncategorized" : ctl[i].name;
-                            var c = new GUIContent(categoryName + "/" + ctl[i].files[j].SafeName);
-                            menu.AddItem(c, ctl[i].files[j].SafeName == n, SetSelected, ctl[i].files[j].SafeName);
+                            for (int j = 0; j < ctl[i].files.Count; j++)
+                            {
+                                var categoryName = ctl[i].name == "" ? "Uncategorized" : ctl[i].name;
+                                var c = new GUIContent(l.name + "/" + categoryName + "/" + ctl[i].files[j].SafeName);
+                                menu.AddItem(c, ctl[i].files[j].SafeName == n, SetSelected, ctl[i].files[j]);
+                            }
                         }
                     }
                     menu.ShowAsContext();
@@ -139,7 +137,7 @@ namespace JSAM.JSAMEditor
             {
                 using (new EditorGUI.DisabledScope(true))
                 {
-                    EditorGUILayout.Popup(audioDesc, selected, new string[] {"<None>"});
+                    EditorGUILayout.Popup(audioDesc, 0, new string[] {"<None>"});
                 }
             }
         }
@@ -153,9 +151,21 @@ namespace JSAM.JSAMEditor
 
         protected void SetSelected(object data)
         {
-            int i = options.IndexOf((string)data);
-            audio.objectReferenceValue = audioLibrary[i];
+            audio.objectReferenceValue = data as T;
             if (serializedObject.hasModifiedProperties) serializedObject.ApplyModifiedProperties();
+        }
+
+        protected T GetFirstAvailableLibrarySound()
+        {
+            foreach (var l in Libraries)
+            {
+                var list = GetListFromLibrary(l);
+                foreach (var a in list)
+                {
+                    if (a) return a;
+                }
+            }
+            return null;
         }
     }
 }

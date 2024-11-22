@@ -33,16 +33,19 @@ namespace JSAM
 
         protected override void Update()
         {
-            if (AudioSource.loop)
+            if (audioFile.loopMode <= LoopMode.Looping)
             {
-                // Check if the AudioSource is beginning to loop
-                if (prevPlaybackTime > AudioSource.time)
+                if (AudioSource.loop)
                 {
-                    AssignNewAudioClip();
-                    AudioSource.pitch = audioFile.GetRandomPitch();
-                    AudioSource.Play();
+                    // Check if the AudioSource is beginning to loop
+                    if (prevPlaybackTime > AudioSource.time)
+                    {
+                        AssignNewAudioClip();
+                        AudioSource.pitch = audioFile.GetRandomPitch();
+                        AudioSource.Play();
+                    }
+                    prevPlaybackTime = AudioSource.time;
                 }
-                prevPlaybackTime = AudioSource.time;
             }
 
             base.Update();
@@ -76,30 +79,5 @@ namespace JSAM
             base.Stop(stopInstantly);
             prevPlaybackTime = -1;
         }
-
-#if UNITY_EDITOR
-        public void PlayDebug(SoundFileObject file, bool dontReset)
-        {
-            if (!dontReset)
-            {
-                AudioSource.Stop();
-            }
-            AudioSource.timeSamples = (int)Mathf.Clamp((float)AudioSource.timeSamples, 0, (float)AudioSource.clip.samples - 1);
-            AudioSource.pitch = file.GetRandomPitch();
-
-            audioFile = file;
-
-            AudioSource.volume = file.relativeVolume;
-            AudioSource.priority = (int)file.priority;
-            float offset = AudioSource.pitch - 1;
-            AudioSource.pitch = Time.timeScale + offset;
-
-            ClearEffects();
-            ApplyEffects();
-
-            AudioSource.PlayDelayed(file.delay);
-            enabled = true; // Enable updates on the script
-        }
-#endif
     }
 }

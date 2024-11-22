@@ -28,28 +28,6 @@ namespace JSAM
             }
         }
 
-        public override AudioSource Play()
-        {
-            if (audioFile == null)
-            {
-                AudioManager.DebugWarning("Tried to play Music when no Music File was assigned!");
-                return AudioSource;
-            }
-
-            AudioSource.pitch = 1;
-
-            if (audioFile.loopMode == LoopMode.NoLooping)
-            {
-                AudioSource.loop = false;
-            }
-            else
-            {
-                AudioSource.loop = true;
-            }
-
-            return base.Play();
-        }
-
         public override void Stop(bool stopInstantly = true)
         {
             base.Stop(stopInstantly);
@@ -80,22 +58,5 @@ namespace JSAM
                 AudioSource.Stop();
             }
         }
-
-#if UNITY_EDITOR
-        public void PlayDebug(MusicFileObject file, bool dontReset)
-        {
-            if (!dontReset)
-            {
-                AudioSource.Stop();
-            }
-            audioFile = file;
-            AudioSource.clip = file.Files[0];
-            AudioSource.timeSamples = (int)Mathf.Clamp((float)AudioSource.timeSamples, 0, (float)AudioSource.clip.samples - 1);
-            AudioSource.pitch = 1;
-            AudioSource.volume = file.relativeVolume;
-
-            base.PlayDebug(dontReset);
-        }
-#endif
     }
 }

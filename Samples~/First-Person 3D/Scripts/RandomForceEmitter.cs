@@ -27,7 +27,7 @@ namespace JSAM.Example.FirstPerson3D
 
         void AddForceForNoReason()
         {
-            rb.AddForce(transform.up * upWardsForce);
+            rb.AddForce(Vector3.up * upWardsForce);
         }
     }
 }

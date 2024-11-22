@@ -8,16 +8,28 @@ namespace JSAM
     [AddComponentMenu("")]
     public class AudioManagerInternal : MonoBehaviour
     {
+        public class LoadedLibrary
+        {
+            public AudioLibrary Library;
+            public string[] SoundNames;
+            public string[] MusicNames;
+            public int Users;
+        }
+
+        readonly Dictionary<AudioLibrary, LoadedLibrary> loadedLibraries = new Dictionary<AudioLibrary, LoadedLibrary>();
+        readonly Dictionary<string, BaseAudioFileObject> audioFileLookup = new Dictionary<string, BaseAudioFileObject>();
+        public Dictionary<AudioLibrary, LoadedLibrary> LoadedLibraries => loadedLibraries;
+
         /// <summary>
         /// Sources dedicated to playing sound
         /// </summary>
-        List<SoundChannelHelper> soundHelpers = new List<SoundChannelHelper>();
+        readonly List<SoundChannelHelper> soundHelpers = new List<SoundChannelHelper>();
 
         /// <summary>
         /// Sources dedicated to playing music
         /// </summary>
-        List<MusicChannelHelper> musicHelpers = new List<MusicChannelHelper>();
-        public MusicChannelHelper mainMusic { get; private set; }
+        readonly List<MusicChannelHelper> musicHelpers = new List<MusicChannelHelper>();
+        public MusicChannelHelper MainMusic { get; private set; }
 
         JSAMSettings Settings => JSAMSettings.Settings;
 
@@ -82,12 +94,12 @@ namespace JSAM
 
         // Passing a helperSource into a Play function bypasses audio limiting dictionaries.
         // So we check if their keys exist before removing.
-        Dictionary<BaseAudioFileObject, List<SoundChannelHelper>> limitedSounds = new Dictionary<BaseAudioFileObject, List<SoundChannelHelper>>();
+        readonly Dictionary<BaseAudioFileObject, List<SoundChannelHelper>> limitedSounds = new Dictionary<BaseAudioFileObject, List<SoundChannelHelper>>();
         public void RemovePlayingSound(BaseAudioFileObject s, SoundChannelHelper h)
         {
             if (limitedSounds.ContainsKey(s)) limitedSounds[s].Remove(h);
         }
-        Dictionary<BaseAudioFileObject, List<MusicChannelHelper>> limitedMusic = new Dictionary<BaseAudioFileObject, List<MusicChannelHelper>>();
+        readonly Dictionary<BaseAudioFileObject, List<MusicChannelHelper>> limitedMusic = new Dictionary<BaseAudioFileObject, List<MusicChannelHelper>>();
         public void RemovePlayingMusic(BaseAudioFileObject s, MusicChannelHelper h)
         {
             if (limitedMusic.ContainsKey(s)) limitedMusic[s].Remove(h);
@@ -96,7 +108,7 @@ namespace JSAM
         /// <summary>
         /// A bit like float Epsilon, but large enough for the purpose of pushing the playback position of AudioSources just far enough to not throw an error
         /// </summary>
-        public static float EPSILON = 0.000001f;
+        public const float EPSILON = 0.000001f;
 
         /// <summary>
         /// Notifies Audio Channels to follow their target. 
@@ -121,12 +133,13 @@ namespace JSAM
         /// </summary>
         public static Action<float> OnTimeScaleChanged;
 
+        public static AudioManagerInternal Instance => AudioManager.InternalInstance;
+
         void Awake()
         {
             LoadVolumeSettings();
 
             sourceHolder = new GameObject("Sources").transform;
-            sourceHolder.SetParent(transform);
             for (int i = 0; i < Settings.StartingSoundChannels; i++)
             {
                 soundHelpers.Add(CreateSoundChannel());
@@ -136,7 +149,12 @@ namespace JSAM
             {
                 musicHelpers.Add(CreateMusicChannel());
             }
-            if (musicHelpers.Count > 0) mainMusic = musicHelpers[0];
+            if (musicHelpers.Count > 0) MainMusic = musicHelpers[0];
+        }
+
+        private void Start()
+        {
+            sourceHolder.SetParent(transform);
         }
 
         // Update is called once per frame
@@ -198,34 +216,34 @@ namespace JSAM
             return helper;
         }
 
+        bool PlaybackChecks(BaseAudioFileObject file)
+        {
+            if (!Application.isPlaying) return false;
+
+            if (file) return true;
+            else
+            {
+                AudioManager.DebugWarning("AudioManager was passed a null Audio File Object!");
+                return false;
+            }
+        }
+
         #region PlayMusic
         public MusicChannelHelper PlayMusicInternal(MusicFileObject music, bool isMain)
         {
-            if (!Application.isPlaying) return null;
+            if (!PlaybackChecks(music)) return null;
 
-            if (!music)
-            {
-                AudioManager.DebugWarning("AudioManager was passed a null music file!");
-                return null;
-            }
-
-            if (isMain) PlayMusicInternal(music, null, mainMusic);
+            if (isMain) PlayMusicInternal(music, null, MainMusic);
             else PlayMusicInternal(music, null, null);
 
-            AudioManager.OnMusicPlayed?.Invoke(music);
+            AudioManager.OnMusicPlayed?.Invoke(MainMusic, music);
 
-            return mainMusic;
+            return MainMusic;
         }
 
         public MusicChannelHelper PlayMusicInternal(MusicFileObject music, Transform newTransform = null, MusicChannelHelper helper = null)
         {
-            if (!Application.isPlaying) return null;
-
-            if (!music)
-            {
-                AudioManager.DebugWarning("AudioManager was passed a null music file!");
-                return null;
-            }
+            if (!PlaybackChecks(music)) return null;
 
             bool helperOverride = helper != null;
             if (helper == null) helper = GetFreeMusicHelper();
@@ -237,20 +255,14 @@ namespace JSAM
             helper.AssignNewFile(music);
             helper.SetSpatializationTarget(newTransform);
             helper.Play();
-            AudioManager.OnMusicPlayed?.Invoke(music);
+            AudioManager.OnMusicPlayed?.Invoke(helper, music);
 
             return helper;
         }
 
         public MusicChannelHelper PlayMusicInternal(MusicFileObject music, Vector3 position, MusicChannelHelper helper = null)
         {
-            if (!Application.isPlaying) return null;
-
-            if (!music)
-            {
-                AudioManager.DebugWarning("AudioManager was passed a null music file!");
-                return null;
-            }
+            if (!PlaybackChecks(music)) return null;
 
             bool helperOverride = helper != null;
             if (helper == null) helper = GetFreeMusicHelper();
@@ -262,7 +274,7 @@ namespace JSAM
             helper.AssignNewFile(music);
             helper.SetSpatializationTarget(position);
             helper.Play();
-            AudioManager.OnMusicPlayed?.Invoke(music);
+            AudioManager.OnMusicPlayed?.Invoke(helper, music);
 
             return helper;
         }
@@ -271,19 +283,13 @@ namespace JSAM
         #region FadeMusic
         public MusicChannelHelper FadeMusicInInternal(MusicFileObject music, float fadeInTime, bool isMain)
         {
-            if (!Application.isPlaying) return null;
-
-            if (!music)
-            {
-                AudioManager.DebugWarning("AudioManager was passed a null music file!");
-                return null;
-            }
+            if (!PlaybackChecks(music)) return null;
 
             MusicChannelHelper helper;
 
             if (isMain)
             {
-                helper = mainMusic;
+                helper = MainMusic;
             }
             else
             {
@@ -296,35 +302,36 @@ namespace JSAM
             helper.Play();
             helper.BeginFadeIn(fadeInTime);
 
-            AudioManager.OnMusicPlayed?.Invoke(music);
+            AudioManager.OnMusicPlayed?.Invoke(helper, music);
 
-            return mainMusic;
+            return helper;
         }
 
         public MusicChannelHelper FadeMainMusicOutInternal(float fadeOutTime)
         {
             if (!Application.isPlaying) return null;
 
-            var helper = mainMusic;
-            if (!mainMusic)
+            var helper = MainMusic;
+            if (!MainMusic)
             {
-                AudioManager.DebugWarning("Tried to fade out Main Music when no music was marked as Main!");
+                // As long as Awake as called before then, this line shouldn't be reached
+                AudioManager.DebugWarning("Tried to fade out Main Music when no music was marked as Main! Marking now.");
+                MainMusic = musicHelpers[0];
             }
 
-            helper.BeginFadeOut(fadeOutTime);
+            var newHelper = musicHelpers[GetFreeMusicChannel()];
+            newHelper.AssignNewFile(MainMusic.AudioFile);
+            newHelper.Play();
+            newHelper.AudioSource.time = MainMusic.AudioSource.time;
+            newHelper.BeginFadeOut(fadeOutTime);
+            MainMusic.Stop();
 
-            return mainMusic;
+            return newHelper;
         }
 
         public MusicChannelHelper FadeMusicOutInternal(MusicFileObject music, float fadeOutTime)
         {
-            if (!Application.isPlaying) return null;
-
-            if (!music)
-            {
-                AudioManager.DebugWarning("AudioManager was passed a null music file!");
-                return null;
-            }
+            if (!PlaybackChecks(music)) return null;
 
             MusicChannelHelper helper;
             if (TryGetPlayingMusic(music, out helper))
@@ -377,7 +384,8 @@ namespace JSAM
 
         public MusicChannelHelper StopMusicInternal(MusicFileObject music, Transform t, bool stopInstantly)
         {
-            if (!Application.isPlaying) return null;
+            if (!PlaybackChecks(music)) return null;
+
             for (int i = 0; i < musicHelpers.Count; i++)
             {
                 if (musicHelpers[i].AudioSource == null) return null; // Prevent issues when called during OnApplicationQuit
@@ -394,15 +402,16 @@ namespace JSAM
             return null;
         }
 
-        public MusicChannelHelper StopMusicInternal(MusicFileObject s, Vector3 pos, bool stopInstantly)
+        public MusicChannelHelper StopMusicInternal(MusicFileObject music, Vector3 pos, bool stopInstantly)
         {
-            if (!Application.isPlaying) return null;
+            if (!PlaybackChecks(music)) return null;
+
             for (int i = 0; i < musicHelpers.Count; i++)
             {
                 if (musicHelpers[i].AudioSource == null) return null; // Prevent issues when called from OnDestroy
-                if (s.Files.Contains(musicHelpers[i].AudioSource.clip))
+                if (music.Files.Contains(musicHelpers[i].AudioSource.clip))
                 {
-                    if (musicHelpers[i].SpatializationPosition != pos && s.spatialize) continue;
+                    if (musicHelpers[i].SpatializationPosition != pos && music.spatialize) continue;
                     musicHelpers[i].Stop(stopInstantly);
                     return musicHelpers[i];
                 }
@@ -431,7 +440,7 @@ namespace JSAM
             {
                 if (limitedSounds.ContainsKey(sound))
                 {
-                    if (limitedSounds[sound].Count > sound.maxPlayingInstances)
+                    if (limitedSounds[sound].Count >= sound.maxPlayingInstances)
                     {
                         var h = limitedSounds[sound][0];
                         limitedSounds[sound].RemoveAt(0);
@@ -451,13 +460,7 @@ namespace JSAM
         #region PlaySound
         public SoundChannelHelper PlaySoundInternal(SoundFileObject sound, Transform newTransform = null, SoundChannelHelper helper = null)
         {
-            if (!Application.isPlaying) return null;
-
-            if (!sound)
-            {
-                AudioManager.DebugWarning("AudioManager was passed a null sound file!");
-                return null;
-            }
+            if (!PlaybackChecks(sound)) return null;
 
             bool helperOverride = helper != null;
             if (helper == null) helper = soundHelpers[GetFreeSoundChannel()];
@@ -469,20 +472,14 @@ namespace JSAM
             helper.AssignNewFile(sound);
             helper.SetSpatializationTarget(newTransform);
             helper.Play();
-            AudioManager.OnSoundPlayed?.Invoke(sound);
+            AudioManager.OnSoundPlayed?.Invoke(helper, sound);
 
             return helper;
         }
 
         public SoundChannelHelper PlaySoundInternal(SoundFileObject sound, Vector3 position, SoundChannelHelper helper = null)
         {
-            if (!Application.isPlaying) return null;
-
-            if (!sound)
-            {
-                AudioManager.DebugWarning("AudioManager was passed a null sound file!");
-                return null;
-            }
+            if (!PlaybackChecks(sound)) return null;
 
             bool helperOverride = helper != null;
             if (helper == null) helper = soundHelpers[GetFreeSoundChannel()];
@@ -494,7 +491,7 @@ namespace JSAM
             helper.AssignNewFile(sound);
             helper.SetSpatializationTarget(position);
             helper.Play();
-            AudioManager.OnSoundPlayed?.Invoke(sound);
+            AudioManager.OnSoundPlayed?.Invoke(helper, sound);
 
             return helper;
         }
@@ -512,35 +509,41 @@ namespace JSAM
             }
         }
 
-        public void StopSoundInternal(SoundFileObject s, Transform t = null, bool stopInstantly = true)
+        public SoundChannelHelper StopSoundInternal(SoundFileObject sound, Transform t = null, bool stopInstantly = true)
         {
+            if (!PlaybackChecks(sound)) return null;
+
             for (int i = 0; i < soundHelpers.Count; i++)
             {
-                if (soundHelpers[i].AudioSource == null) return; // Prevent issues when called from OnDestroy
-                if (s.Files.Contains(soundHelpers[i].AudioSource.clip))
+                if (soundHelpers[i].AudioSource == null) return null; // Prevent issues when called from OnDestroy
+                if (sound.Files.Contains(soundHelpers[i].AudioSource.clip))
                 {
-                    if (t != null && s.spatialize)
+                    if (t != null && sound.spatialize)
                     {
                         if (soundHelpers[i].SpatializationTarget != t) continue;
                     }
                     soundHelpers[i].Stop(stopInstantly);
-                    return;
+                    return soundHelpers[i];
                 }
             }
+            return null;
         }
 
-        public void StopSoundInternal(SoundFileObject s, Vector3 pos, bool stopInstantly = true)
+        public SoundChannelHelper StopSoundInternal(SoundFileObject sound, Vector3 pos, bool stopInstantly = true)
         {
+            if (!PlaybackChecks(sound)) return null;
+
             for (int i = 0; i < soundHelpers.Count; i++)
             {
-                if (soundHelpers[i].AudioSource == null) return; // Prevent issues when called from OnDestroy
-                if (s.Files.Contains(soundHelpers[i].AudioSource.clip))
+                if (soundHelpers[i].AudioSource == null) return null; // Prevent issues when called from OnDestroy
+                if (sound.Files.Contains(soundHelpers[i].AudioSource.clip))
                 {
-                    if (soundHelpers[i].SpatializationPosition != pos && s.spatialize) continue;
+                    if (soundHelpers[i].SpatializationPosition != pos && sound.spatialize) continue;
                     soundHelpers[i].Stop(stopInstantly);
-                    return;
+                    return soundHelpers[i];
                 }
             }
+            return null;
         }
 
         public bool StopSoundIfPlayingInternal(SoundFileObject sound, Transform trans = null, bool stopInstantly = true)
@@ -761,5 +764,85 @@ namespace JSAM
             return newHelper;
         }
         #endregion
+
+        public BaseAudioFileObject AudioFileFromEnum<T>(T e) where T : Enum
+        {
+            var t = e.GetType();
+            var enumName = e.GetType() + "." + e.ToString();
+            return AudioFileFromString(enumName);
+        }
+
+        public BaseAudioFileObject AudioFileFromString(string s)
+        {
+            if (audioFileLookup.ContainsKey(s))
+            {
+                return audioFileLookup[s];
+            }
+            AudioManager.DebugError("Could not find the Audio File for enum " + s + "! " +
+                "Make sure its parent Library was loaded first.");
+            return null;
+        }
+
+        public void LoadAudioLibrary(AudioLibrary l)
+        {
+            var newLib = new LoadedLibrary { Library = l, Users = 1 };
+
+            List<string> enums = new List<string>();
+            var soundType = l.soundEnumGenerated;
+
+            if (!l.soundNamespaceGenerated.IsNullEmptyOrWhiteSpace())
+            {
+                soundType = l.soundNamespaceGenerated + "." + soundType;
+            }            
+            var assembly = soundType + ", Assembly-CSharp";
+
+            Type enumType = Type.GetType(assembly);
+            enums.AddRange(Enum.GetNames(enumType));
+
+            newLib.SoundNames = new string[enums.Count];
+            for (int i = 0; i < l.Sounds.Count; i++)
+            {
+                newLib.SoundNames[i] = soundType + "." + enums[i];
+                audioFileLookup.Add(newLib.SoundNames[i], l.Sounds[i]);
+                l.Sounds[i].Initialize();
+            }
+
+            enums.Clear();
+            var musicType = l.musicEnumGenerated;
+
+            if (!l.musicNamespaceGenerated.IsNullEmptyOrWhiteSpace())
+            {
+                musicType = l.musicNamespaceGenerated + "." + musicType;
+            }
+            assembly = musicType + ", Assembly-CSharp";
+
+            enumType = Type.GetType(assembly);
+            enums.AddRange(Enum.GetNames(enumType));
+
+            newLib.MusicNames = new string[enums.Count];
+            for (int i = 0; i < l.Music.Count; i++)
+            {
+                newLib.MusicNames[i] = musicType + "." + enums[i];
+                audioFileLookup.Add(newLib.MusicNames[i], l.Music[i]);
+            }
+
+            loadedLibraries.Add(l, newLib);
+        }
+
+        public void UnloadAudioLibrary(AudioLibrary l)
+        {
+            var lib = loadedLibraries[l];
+
+            foreach (var s in lib.SoundNames)
+            {
+                audioFileLookup.Remove(s);
+            }
+            foreach (var m in lib.MusicNames)
+            {
+                audioFileLookup.Remove(m);
+            }
+
+            loadedLibraries.Remove(l);
+        }
     }
 }

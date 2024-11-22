@@ -151,7 +151,7 @@ namespace JSAM
     }
     #endregion
 
-    public abstract class BaseAudioFileObject : ScriptableObject
+    public abstract partial class BaseAudioFileObject : ScriptableObject
     {
         [SerializeField, HideInInspector] protected string safeName = "";
         public string SafeName
@@ -237,6 +237,8 @@ namespace JSAM
         [Tooltip("If true, this audio file will ignore reverb effects created when the Audio Listener enters a reverb zone")]
         [SerializeField, HideInInspector]
         public bool bypassReverbZones;
+        //
+        //[SerializeReference] SpatialSoundSettings spatialSoundSettings;
 
         [SerializeField, HideInInspector] public AudioChorusObj chorusFilter;
         [SerializeField, HideInInspector] public AudioDistortionObj distortionFilter;

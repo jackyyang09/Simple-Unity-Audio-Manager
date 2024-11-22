@@ -27,17 +27,14 @@ namespace JSAM.JSAMEditor
         protected static int loopPointInputMode = 0;
 
         protected AudioClip activeClip;
-        protected bool IsClipPlaying
-        {
-            get
-            {
-                return helper.Source.isPlaying;
-            }
-        }
+        protected bool SourcePlaying => helper.Source.isPlaying;
+        protected bool clipPlaying;
         protected bool clipPaused;
 
         protected JSAMEditorFader editorFader;
         protected EditorAudioHelper helper;
+        protected abstract void PlayDebug(BaseAudioFileObject asset, bool dontReset);
+        protected abstract void AssignHelperToFader(AudioClip clip);
 
         protected bool mouseDragging;
         protected bool mouseScrubbed;
@@ -51,10 +48,16 @@ namespace JSAM.JSAMEditor
 
         Color COLOR_BUTTONPRESSED => new Color(0.475f, 0.475f, 0.475f);
 
+        /// <summary>
+        /// True when switching to a new track, is set false once starting looping behaviour
+        /// </summary>
         public static bool FreePlay = false;
+        /// <summary>
+        /// True so long as the inspector music player hasn't looped
+        /// </summary>
+        public static bool FirstPlayback = true;
 
         protected Texture2D cachedTex;
-        protected AudioClip cachedClip;
         protected virtual string SHOW_FADETOOL { get; }
         protected bool showFadeTool
         {
@@ -138,7 +141,10 @@ namespace JSAM.JSAMEditor
 
             SetupIcons();
 
+            editorFader = new JSAMEditorFader(asset);
+
             EditorApplication.update += Update;
+            Undo.undoRedoPerformed += OnUndoRedo;
             Undo.postprocessModifications += PostProcessModifications;
         }
 
@@ -147,6 +153,7 @@ namespace JSAM.JSAMEditor
             helper.Dispose();
 
             EditorApplication.update -= Update;
+            Undo.undoRedoPerformed -= OnUndoRedo;
             Undo.postprocessModifications -= PostProcessModifications;
         }
 
@@ -242,7 +249,81 @@ namespace JSAM.JSAMEditor
             openIcon = EditorGUIUtility.TrIconContent("d_ScaleTool", "Click to open Playback Preview in a standalone window");
         }
 
-        protected abstract void Update();
+        protected virtual void Update()
+        {
+            if (asset == null) return; // This can happen on the same frame it's deleted
+            if (asset.Files.Count == 0) return;
+
+            AudioClip clip = asset.Files[0];
+
+            if (clip != activeClip)
+            {
+                activeClip = clip;
+                helper.Source.clip = activeClip;
+            }
+
+            if ((clipPlaying && !clipPaused) || (mouseDragging && SourcePlaying))
+            {
+                float clipPos = helper.Source.timeSamples / (float)activeClip.frequency;
+
+                if (loopClip)
+                {
+                    EditorApplication.QueuePlayerLoopUpdate();
+                    if (asset.loopMode == LoopMode.LoopWithLoopPoints)
+                    {
+                        // We've probably reached the end of the track before officially hitting the loop point marker
+                        if (!helper.Source.isPlaying && clipPlaying && !clipPaused)
+                        {
+                            helper.Source.Play();
+                            helper.Source.timeSamples = Mathf.CeilToInt(asset.loopStart * activeClip.frequency);
+                        }
+                        else if (clipPos >= asset.loopEnd)
+                        {
+                            helper.Source.timeSamples = Mathf.CeilToInt(asset.loopStart * activeClip.frequency);
+                            FirstPlayback = false;
+                        }
+                    }
+                    else if (asset.loopMode == LoopMode.ClampedLoopPoints)
+                    {
+                        if (clipPos < asset.loopStart || clipPos > asset.loopEnd)
+                        {
+                            // CeilToInt to guarantee clip position stays within loop bounds
+                            helper.Source.timeSamples = Mathf.CeilToInt(asset.loopStart * activeClip.frequency);
+                            FirstPlayback = false;
+                        }
+                    }
+                }
+                else if (!loopClip)
+                {
+                    if (asset.loopMode == LoopMode.LoopWithLoopPoints)
+                    {
+                        if ((!helper.Source.isPlaying && !clipPaused) || clipPos > asset.loopEnd)
+                        {
+                            helper.Source.Stop();
+                        }
+                    }
+                    else if (asset.loopMode == LoopMode.ClampedLoopPoints && clipPos < asset.loopStart)
+                    {
+                        helper.Source.timeSamples = Mathf.CeilToInt(asset.loopStart * activeClip.frequency);
+                    }
+                    else if (!SourcePlaying) clipPlaying = false;
+                }
+            }
+
+            if (asset.loopMode != LoopMode.LoopWithLoopPoints)
+            {
+                if (!helper.Source.isPlaying && !clipPaused && clipPlaying)
+                {
+                    helper.Source.time = 0;
+                    if (loopClip)
+                    {
+                        helper.Source.Play();
+                    }
+                }
+            }
+        }
+
+        public override bool RequiresConstantRepaint() => clipPlaying || mouseDragging;
 
         protected void RenderPresetDescription()
         {
@@ -285,6 +366,15 @@ namespace JSAM.JSAMEditor
         {
             CheckFiles();
             return modifications;
+        }
+
+        void OnUndoRedo()
+        {
+            if (AudioPlaybackToolEditor.WindowOpen)
+            {
+                AudioPlaybackToolEditor.DoForceRepaint(true);
+            }
+            Repaint();
         }
 
         protected void RenderFileList()
@@ -446,7 +536,170 @@ namespace JSAM.JSAMEditor
         /// Should support having multiple active playback tools in the inspector, 
         /// even of the same editor window type (except the dedicated playback tool). 
         /// </summary>
-        protected abstract void DrawPlaybackTool();
+        protected virtual void DrawPlaybackTool()
+        {
+            GUIContent blontent = new GUIContent("Audio Playback Preview",
+                "Allows you to preview how your AudioFileMusicObject will sound during runtime right here in the inspector. " +
+                "Some effects, like spatialization, will not be available to preview");
+            showPlaybackTool = EditorCompatability.SpecialFoldouts(showPlaybackTool, blontent);
+
+            if (showPlaybackTool)
+            {
+                Rect progressRect;
+                if (ProgressBar(out progressRect))
+                {
+                    AudioClip music = files.GetArrayElementAtIndex(0).objectReferenceValue as AudioClip;
+
+                    EditorGUILayout.BeginHorizontal();
+
+                    Event evt = Event.current;
+
+                    if (evt.isMouse)
+                    {
+                        switch (evt.type)
+                        {
+                            case EventType.MouseUp:
+                                mouseDragging = false;
+                                break;
+                            case EventType.MouseDown:
+                            case EventType.MouseDrag:
+                                if (evt.type == EventType.MouseDown)
+                                {
+                                    if (evt.mousePosition.y > progressRect.yMin && evt.mousePosition.y < progressRect.yMax)
+                                    {
+                                        mouseDragging = true;
+                                        mouseScrubbed = true;
+                                    }
+                                    else mouseDragging = false;
+                                }
+                                if (!mouseDragging) break;
+                                if (!music) break;
+                                float newProgress = Mathf.InverseLerp(progressRect.xMin, progressRect.xMax, evt.mousePosition.x);
+                                helper.Source.time = Mathf.Clamp((newProgress * music.length), 0, music.length - AudioManagerInternal.EPSILON);
+                                if (asset.loopMode == LoopMode.ClampedLoopPoints)
+                                {
+                                    float start = asset.loopStart * asset.Files[0].frequency;
+                                    float end = asset.loopEnd * asset.Files[0].frequency;
+                                    helper.Source.timeSamples = (int)Mathf.Clamp(helper.Source.timeSamples, start, end - AudioManagerInternal.EPSILON);
+                                }
+                                break;
+                        }
+                    }
+
+                    if (GUILayout.Button(backIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
+                    {
+                        if (asset.loopMode == LoopMode.ClampedLoopPoints)
+                        {
+                            helper.Source.timeSamples = Mathf.CeilToInt((asset.loopStart * music.frequency));
+                        }
+                        else
+                        {
+                            helper.Source.timeSamples = 0;
+                        }
+                        helper.Source.Stop();
+                        mouseScrubbed = false;
+                        clipPaused = false;
+                    }
+
+                    Color colorbackup = GUI.backgroundColor;
+                    GUIContent buttonIcon = SourcePlaying ? playIcons[1] : playIcons[0];
+                    if (clipPlaying) GUI.backgroundColor = COLOR_BUTTONPRESSED;
+                    if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
+                    {
+                        clipPlaying = !clipPlaying;
+                        if (clipPlaying)
+                        {
+                            // Note: For some reason, reading from helper.Source.time returns 0 even if timeSamples is not 0
+                            // However, writing a value to helper.Source.time changes timeSamples to the appropriate value just fine
+                            PlayDebug(asset, mouseScrubbed);
+                            editorFader.StartFading(activeClip, asset);
+                            AssignHelperToFader(activeClip);
+                            if (clipPaused) helper.Source.Pause();
+                            FirstPlayback = true;
+                            FreePlay = true;
+                        }
+                        else
+                        {
+                            helper.Source.Stop();
+                            if (!mouseScrubbed)
+                            {
+                                helper.Source.time = 0;
+                            }
+                            clipPaused = false;
+                        }
+                    }
+
+                    GUI.backgroundColor = colorbackup;
+                    GUIContent theText = clipPaused ? pauseIcons[1] : pauseIcons[0];
+                    if (clipPaused) GUI.backgroundColor = COLOR_BUTTONPRESSED;
+                    if (GUILayout.Button(theText, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
+                    {
+                        clipPaused = !clipPaused;
+                        if (clipPaused)
+                        {
+                            helper.Source.Pause();
+                        }
+                        else
+                        {
+                            helper.Source.UnPause();
+                        }
+                    }
+
+                    GUI.backgroundColor = colorbackup;
+                    buttonIcon = loopClip ? loopIcons[1] : loopIcons[0];
+                    if (loopClip) GUI.backgroundColor = COLOR_BUTTONPRESSED;
+                    if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
+                    {
+                        loopClip = !loopClip;
+                        // helper.Source.loop = true;
+                    }
+                    GUI.backgroundColor = colorbackup;
+
+                    if (GUILayout.Button(openIcon, new GUILayoutOption[] { GUILayout.MaxHeight(19) }))
+                    {
+                        AudioPlaybackToolEditor.Init();
+                    }
+
+                    // Reset loop point input mode if not using loop points so the duration shows up as time by default
+                    if (asset.loopMode != LoopMode.LoopWithLoopPoints && asset.loopMode != LoopMode.ClampedLoopPoints) loopPointInputMode = 0;
+
+                    blontent = new GUIContent("-", "The playback time");
+                    if (music)
+                    {
+                        switch ((LoopPointTool)loopPointInputMode)
+                        {
+                            case LoopPointTool.Slider:
+                            case LoopPointTool.TimeInput:
+                                var time = (float)helper.Source.timeSamples / music.frequency;
+                                blontent = new GUIContent(time.TimeToString() + " / " + (music.length.TimeToString()),
+                                    "The playback time in seconds");
+                                break;
+                            case LoopPointTool.TimeSamplesInput:
+                                blontent = new GUIContent(helper.Source.timeSamples + " / " + music.samples, "The playback time in samples");
+                                break;
+                            case LoopPointTool.BPMInput:
+                                blontent = new GUIContent(string.Format("{0:0}", helper.Source.time / (60f / asset.bpm)) + " / " + music.length / (60f / asset.bpm),
+                                    "The playback time in beats");
+                                break;
+                        }
+                    }
+
+                    GUIStyle rightJustified = new GUIStyle(EditorStyles.label);
+                    rightJustified.alignment = TextAnchor.UpperRight;
+                    EditorGUILayout.LabelField(blontent, rightJustified);
+                    EditorGUILayout.EndHorizontal();
+
+                    EditorGUILayout.Space();
+                }
+
+                if (EditorUtility.audioMasterMute)
+                {
+                    JSAMEditorHelper.RenderHelpbox("Audio is muted in the game view, which also mutes audio " +
+                         "playback here. Please un-mute it to hear your audio.");
+                }
+            }
+            EditorCompatability.EndSpecialFoldoutGroup();
+        }
 
         /// <summary>
         /// Embeds a playback preview in the inspector
@@ -521,25 +774,23 @@ namespace JSAM.JSAMEditor
                     }
 
                     Color colorbackup = GUI.backgroundColor;
-                    GUIContent buttonIcon = IsClipPlaying ? playIcons[1] : playIcons[0];
-                    if (IsClipPlaying) GUI.backgroundColor = COLOR_BUTTONPRESSED;
+                    GUIContent buttonIcon = clipPlaying ? playIcons[1] : playIcons[0];
+                    if (clipPlaying) GUI.backgroundColor = COLOR_BUTTONPRESSED;
                     if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                     {
-                        if (!IsClipPlaying)
+                        clipPlaying = !clipPlaying;
+                        if (!clipPlaying)
                         {
                             // Note: For some reason, reading from helper.Source.time returns 0 even if timeSamples is not 0
                             // However, writing a value to helper.Source.time changes timeSamples to the appropriate value just fine
-                            if (asset as MusicFileObject)
-                            {
-                                helper.MusicHelper.PlayDebug(asset as MusicFileObject, mouseScrubbed);
-                            }
-                            else
-                            {
-                                helper.SoundHelper.PlayDebug(asset as SoundFileObject, mouseScrubbed);
-                                editorFader.StartFading(activeClip, asset as SoundFileObject);
-                            }
+
+                            PlayDebug(asset, mouseScrubbed);
+
+                            editorFader.StartFading(activeClip, asset);
+                            AssignHelperToFader(activeClip);
+
                             if (clipPaused) helper.Source.Pause();
-                            MusicFileObjectEditor.firstPlayback = true;
+                            FirstPlayback = true;
                             FreePlay = false;
                         }
                         else
@@ -621,25 +872,27 @@ namespace JSAM.JSAMEditor
             EditorCompatability.EndSpecialFoldoutGroup();
         }
 
-        protected void DrawFadeTools()
+        protected void DrawFadeTools(AudioClip focusedClip)
         {
             EditorGUILayout.PropertyField(fadeInOut);
 
+            showFadeTool = EditorCompatability.SpecialFoldouts(showFadeTool, new GUIContent("Fade Tools", "Show/Hide the Audio Fade previewer"));
             using (new EditorGUI.DisabledScope(!fadeInOut.boolValue))
             {
-                showFadeTool = EditorCompatability.SpecialFoldouts(showFadeTool, new GUIContent("Fade Tools", "Show/Hide the Audio Fade previewer"));
                 if (showFadeTool)
                 {
+                    float duration = focusedClip ? focusedClip.length : 0;
+
                     GUIContent fContent = new GUIContent();
                     GUIStyle rightJustified = new GUIStyle(EditorStyles.label);
                     rightJustified.alignment = TextAnchor.UpperRight;
                     rightJustified.padding = new RectOffset(0, 15, 0, 0);
 
                     EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.LabelField(new GUIContent("Fade In Time:    " + (fadeInDuration.floatValue * activeClip.length).TimeToString(), "Fade in time for this AudioClip in seconds"));
-                    EditorGUILayout.LabelField(new GUIContent("Sound Length: " + (activeClip.length).TimeToString(), "Length of the preview clip in seconds"), rightJustified);
+                    EditorGUILayout.LabelField(new GUIContent("Fade In Time:    " + (fadeInDuration.floatValue * duration).TimeToString(), "Fade in time for this AudioClip in seconds"));
+                    EditorGUILayout.LabelField(new GUIContent("Sound Length: " + (duration).TimeToString(), "Length of the preview clip in seconds"), rightJustified);
                     EditorGUILayout.EndHorizontal();
-                    EditorGUILayout.LabelField(new GUIContent("Fade Out Time: " + (fadeOutDuration.floatValue * activeClip.length).TimeToString(), "Fade out time for this AudioClip in seconds"));
+                    EditorGUILayout.LabelField(new GUIContent("Fade Out Time: " + (fadeOutDuration.floatValue * duration).TimeToString(), "Fade out time for this AudioClip in seconds"));
                     float fid = fadeInDuration.floatValue;
                     float fod = fadeOutDuration.floatValue;
                     fContent = new GUIContent("Fade In Percentage", "The percentage of time the sound takes to fade-in relative to it's total length.");
@@ -649,10 +902,9 @@ namespace JSAM.JSAMEditor
                     fadeInDuration.floatValue = fid;
                     fadeOutDuration.floatValue = fod;
                     EditorGUILayout.HelpBox("Note: The sum of your Fade-In and Fade-Out durations cannot exceed 1 (the length of the sound).", MessageType.None);
-
                 }
-                EditorCompatability.EndSpecialFoldoutGroup();
             }
+            EditorCompatability.EndSpecialFoldoutGroup();
         }
 
         protected void DrawLoopPointTools(BaseAudioFileObject asset)
@@ -866,6 +1118,21 @@ namespace JSAM.JSAMEditor
                 }
             }
             EditorCompatability.EndSpecialFoldoutGroup();
+        }
+
+        static AudioSource reference;
+        protected void DrawSpatialSoundSettingProperty()
+        {
+            EditorGUILayout.BeginHorizontal();
+
+            EditorGUILayout.ObjectField("Reference", reference, typeof(AudioSource), true);
+
+            if (GUILayout.Button("Copy"))
+            {
+
+            }
+
+            EditorGUILayout.EndHorizontal();
         }
 
         #region Audio Effect Rendering
