@@ -64,6 +64,8 @@ namespace JSAM
             musicEnum = defaultMusicEnum;
         }
 
+        public bool IsLoaded() => AudioManagerInternal.Instance.IsLibraryLoaded(this);
+
         /// <summary>
         /// Returns an enum type given it's name as a string
         /// https://stackoverflow.com/questions/25404237/how-to-get-enum-type-by-specifying-its-name-in-string
