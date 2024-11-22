@@ -19,6 +19,7 @@ namespace JSAM
         readonly Dictionary<AudioLibrary, LoadedLibrary> loadedLibraries = new Dictionary<AudioLibrary, LoadedLibrary>();
         readonly Dictionary<string, BaseAudioFileObject> audioFileLookup = new Dictionary<string, BaseAudioFileObject>();
         public Dictionary<AudioLibrary, LoadedLibrary> LoadedLibraries => loadedLibraries;
+        public bool IsLibraryLoaded(AudioLibrary library) => loadedLibraries.ContainsKey(library);
 
         /// <summary>
         /// Sources dedicated to playing sound
@@ -785,6 +786,12 @@ namespace JSAM
 
         public void LoadAudioLibrary(AudioLibrary l)
         {
+            if (IsLibraryLoaded(l))
+            {
+                AudioManager.DebugWarning("Tried loading AudioLibrary " + l + " when it was already loaded!");
+                return;
+            }
+
             var newLib = new LoadedLibrary { Library = l, Users = 1 };
 
             List<string> enums = new List<string>();
@@ -831,6 +838,12 @@ namespace JSAM
 
         public void UnloadAudioLibrary(AudioLibrary l)
         {
+            if (!IsLibraryLoaded(l))
+            {
+                AudioManager.DebugWarning("Tried unloading AudioLibrary " + l + " when it wasn't loaded!");
+                return;
+            }
+
             var lib = loadedLibraries[l];
 
             foreach (var s in lib.SoundNames)
