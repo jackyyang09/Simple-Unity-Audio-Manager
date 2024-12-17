@@ -11,7 +11,7 @@ namespace JSAM
     /// </summary>
     [DefaultExecutionOrder(1)]
     [DisallowMultipleComponent]
-    public class AudioManager : MonoBehaviour
+    public partial class AudioManager : MonoBehaviour
     {
         [Header("General Settings")]
 
@@ -187,15 +187,15 @@ namespace JSAM
         }
 
         #region PlaySound
-            /// <summary>
-            /// Plays the specified sound using the settings provided in the Sound File Object
-            /// </summary>
-            /// <typeparam name="T"></typeparam>
-            /// <param name="sound">The enum correlating with the audio file you wish to play</param>
-            /// <param name="transform">Optional: The transform of the sound's source</param>
-            /// <param name="helper">Optional: The specific channel you want to play the sound from. 
-            /// <para>Good if you want an entity to only emit one sound at any time</para></param>
-            /// <returns>The Sound Channel Helper playing the sound</returns>
+        /// <summary>
+        /// Plays the specified sound using the settings provided in the Sound File Object
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sound">The enum correlating with the audio file you wish to play</param>
+        /// <param name="transform">Optional: The transform of the sound's source</param>
+        /// <param name="helper">Optional: The specific channel you want to play the sound from. 
+        /// <para>Good if you want an entity to only emit one sound at any time</para></param>
+        /// <returns>The Sound Channel Helper playing the sound</returns>
         public static SoundChannelHelper PlaySound<T>(T sound, Transform transform = null, SoundChannelHelper helper = null) where T : Enum
         {
             return InternalInstance.PlaySoundInternal(SoundFileFromEnum(sound), transform, helper);

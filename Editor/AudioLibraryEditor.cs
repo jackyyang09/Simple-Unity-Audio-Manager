@@ -1245,8 +1245,9 @@ namespace JSAM.JSAMEditor
             int categorySize = categoryToStruct[categoryName].FindPropertyRelative("files").arraySize;
             if (categorySize > 0)
             {
-                bool cancel = EditorUtility.DisplayDialog("Delete Category?", "This category holds " + categorySize + " Audio File object(s). " +
-                    "Are you sure you want to remove the category as well all its Audio Files from this library?/n" +
+                bool cancel = EditorUtility.DisplayDialog("Delete Category?", 
+                    "This category holds " + categorySize + " Audio File Object(s). " +
+                    "Are you sure you want to remove the category as well all its Audio Files from this library?\n" +
                     "(Note: This process can be undone with Edit -> Undo)", "Yes", "No");
                 if (!cancel)
                 {
