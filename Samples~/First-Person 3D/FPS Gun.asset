@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2204bf128383ced4f8a374a536984a4c, type: 3}
+  m_Name: FPS Gun
+  m_EditorClassIdentifier: 
+  soundCategories:
+  - 
+  musicCategories:
+  - 
+  Sounds:
+  - {fileID: 11400000, guid: 6c801ee681c34444e88308ac2d32cb30, type: 2}
+  - {fileID: 11400000, guid: 9ff50a64d0492694ab13119cd8afd75a, type: 2}
+  - {fileID: 11400000, guid: ec7f24a6693535441b1aab719e6c65d9, type: 2}
+  - {fileID: 11400000, guid: 4c3c4b167d2c8b343b75a9fc8f65d110, type: 2}
+  - {fileID: 11400000, guid: 5efb77fdb105d624ea52f06673135762, type: 2}
+  - {fileID: 11400000, guid: 710a6cb5046c91947a846ebe06cde67d, type: 2}
+  - {fileID: 11400000, guid: 96398ed6e06769044b2d992828fa51d8, type: 2}
+  - {fileID: 11400000, guid: 64df0c54db9ea73419da5e47fa52bb0f, type: 2}
+  Music: []
+  useCustomNames: 0
+  generatedName: FPSGun
+  musicEnum: 
+  musicEnumGenerated: FPSGunMusic
+  musicNamespace: 
+  musicNamespaceGenerated: 
+  soundEnum: 
+  soundEnumGenerated: FPSGunSounds
+  soundNamespace: 
+  soundNamespaceGenerated: 
+  soundCategoriesToList:
+  - name: 
+    files:
+    - {fileID: 11400000, guid: 6c801ee681c34444e88308ac2d32cb30, type: 2}
+    - {fileID: 11400000, guid: 9ff50a64d0492694ab13119cd8afd75a, type: 2}
+    - {fileID: 11400000, guid: ec7f24a6693535441b1aab719e6c65d9, type: 2}
+    - {fileID: 11400000, guid: 4c3c4b167d2c8b343b75a9fc8f65d110, type: 2}
+    - {fileID: 11400000, guid: 5efb77fdb105d624ea52f06673135762, type: 2}
+    - {fileID: 11400000, guid: 710a6cb5046c91947a846ebe06cde67d, type: 2}
+    - {fileID: 11400000, guid: 96398ed6e06769044b2d992828fa51d8, type: 2}
+    - {fileID: 11400000, guid: 64df0c54db9ea73419da5e47fa52bb0f, type: 2}
+    foldout: 1
+  musicCategoriesToList:
+  - name: 
+    files: []
+    foldout: 1

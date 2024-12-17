@@ -7,7 +7,7 @@ AnimationClip:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Reload - Full
-  serializedVersion: 6
+  serializedVersion: 7
   m_Legacy: 0
   m_Compressed: 0
   m_UseHighQualityCurve: 1
@@ -529,7 +529,8 @@ AnimationClip:
     path: Arm
   m_ScaleCurves: []
   m_FloatCurves:
-  - curve:
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
@@ -566,6 +567,7 @@ AnimationClip:
     path: Arm/Weapon/machinegunLauncher/Mesh1_Group2_Group1_Model
     classID: 23
     script: {fileID: 0}
+    flags: 16
   m_PPtrCurves: []
   m_SampleRate: 60
   m_WrapMode: 0
@@ -581,6 +583,8 @@ AnimationClip:
       typeID: 4
       customType: 0
       isPPtrCurve: 0
+      isIntCurve: 0
+      isSerializeReferenceCurve: 0
     - serializedVersion: 2
       path: 1617613604
       attribute: 1
@@ -588,6 +592,8 @@ AnimationClip:
       typeID: 4
       customType: 0
       isPPtrCurve: 0
+      isIntCurve: 0
+      isSerializeReferenceCurve: 0
     - serializedVersion: 2
       path: 3789623511
       attribute: 4
@@ -595,6 +601,8 @@ AnimationClip:
       typeID: 4
       customType: 4
       isPPtrCurve: 0
+      isIntCurve: 0
+      isSerializeReferenceCurve: 0
     - serializedVersion: 2
       path: 1617613604
       attribute: 4
@@ -602,6 +610,8 @@ AnimationClip:
       typeID: 4
       customType: 4
       isPPtrCurve: 0
+      isIntCurve: 0
+      isSerializeReferenceCurve: 0
     - serializedVersion: 2
       path: 1617613604
       attribute: 3305885265
@@ -609,6 +619,8 @@ AnimationClip:
       typeID: 23
       customType: 0
       isPPtrCurve: 0
+      isIntCurve: 0
+      isSerializeReferenceCurve: 0
     - serializedVersion: 2
       path: 2685614196
       attribute: 1
@@ -616,6 +628,8 @@ AnimationClip:
       typeID: 4
       customType: 0
       isPPtrCurve: 0
+      isIntCurve: 0
+      isSerializeReferenceCurve: 0
     pptrCurveMapping: []
   m_AnimationClipSettings:
     serializedVersion: 2
@@ -638,7 +652,8 @@ AnimationClip:
     m_HeightFromFeet: 0
     m_Mirror: 0
   m_EditorCurves:
-  - curve:
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
@@ -837,7 +852,9 @@ AnimationClip:
     path: Arm/Weapon
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
@@ -1036,7 +1053,9 @@ AnimationClip:
     path: Arm/Weapon
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
@@ -1235,7 +1254,9 @@ AnimationClip:
     path: Arm/Weapon
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
@@ -1398,7 +1419,9 @@ AnimationClip:
     path: Arm/Weapon
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
@@ -1561,7 +1584,9 @@ AnimationClip:
     path: Arm/Weapon
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
@@ -1724,7 +1749,9 @@ AnimationClip:
     path: Arm/Weapon
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
@@ -1797,7 +1824,9 @@ AnimationClip:
     path: Arm/Weapon/machinegunLauncher/Mesh1_Group2_Group1_Model
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
@@ -1870,7 +1899,9 @@ AnimationClip:
     path: Arm/Weapon/machinegunLauncher/Mesh1_Group2_Group1_Model
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
@@ -1943,7 +1974,9 @@ AnimationClip:
     path: Arm/Weapon/machinegunLauncher/Mesh1_Group2_Group1_Model
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
@@ -2016,7 +2049,9 @@ AnimationClip:
     path: Arm/Weapon/machinegunLauncher/Mesh1_Group2_Group1_Model
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
@@ -2089,7 +2124,9 @@ AnimationClip:
     path: Arm/Weapon/machinegunLauncher/Mesh1_Group2_Group1_Model
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
@@ -2162,7 +2199,9 @@ AnimationClip:
     path: Arm/Weapon/machinegunLauncher/Mesh1_Group2_Group1_Model
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
@@ -2199,7 +2238,9 @@ AnimationClip:
     path: Arm/Weapon/machinegunLauncher/Mesh1_Group2_Group1_Model
     classID: 23
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
@@ -2218,7 +2259,9 @@ AnimationClip:
     path: Arm
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
@@ -2237,7 +2280,9 @@ AnimationClip:
     path: Arm
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
@@ -2256,8 +2301,10 @@ AnimationClip:
     path: Arm
     classID: 4
     script: {fileID: 0}
+    flags: 16
   m_EulerEditorCurves:
-  - curve:
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve: []
       m_PreInfinity: 2
@@ -2267,7 +2314,9 @@ AnimationClip:
     path: Arm/Weapon
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve: []
       m_PreInfinity: 2
@@ -2277,7 +2326,9 @@ AnimationClip:
     path: Arm/Weapon
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve: []
       m_PreInfinity: 2
@@ -2287,7 +2338,9 @@ AnimationClip:
     path: Arm/Weapon
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve: []
       m_PreInfinity: 2
@@ -2297,7 +2350,9 @@ AnimationClip:
     path: Arm/Weapon/machinegunLauncher/Mesh1_Group2_Group1_Model
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve: []
       m_PreInfinity: 2
@@ -2307,7 +2362,9 @@ AnimationClip:
     path: Arm/Weapon/machinegunLauncher/Mesh1_Group2_Group1_Model
     classID: 4
     script: {fileID: 0}
-  - curve:
+    flags: 16
+  - serializedVersion: 2
+    curve:
       serializedVersion: 2
       m_Curve: []
       m_PreInfinity: 2
@@ -2317,40 +2374,41 @@ AnimationClip:
     path: Arm/Weapon/machinegunLauncher/Mesh1_Group2_Group1_Model
     classID: 4
     script: {fileID: 0}
+    flags: 16
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
   m_Events:
   - time: 0.25
     functionName: PlaySoundByEnum
-    data: FPS3DSounds.AKMagGrab
+    data: FPSGunSounds.AKMagGrab
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
   - time: 0.51666665
     functionName: PlaySoundByEnum
-    data: FPS3DSounds.AKMagRemove
+    data: FPSGunSounds.AKMagRemove
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
   - time: 1.8333334
     functionName: PlaySoundByEnum
-    data: FPS3DSounds.AKMagInsert
+    data: FPSGunSounds.AKMagInsert
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
   - time: 2.5
     functionName: PlaySoundByEnum
-    data: FPS3DSounds.AKChamber
+    data: FPSGunSounds.AKChamber
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
   - time: 3.4166667
     functionName: PlaySoundByEnum
-    data: FPS3DSounds.AKEquip
+    data: FPSGunSounds.AKEquip
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
