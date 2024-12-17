@@ -5,7 +5,7 @@ using UnityEngine.Audio;
 
 namespace JSAM
 {
-    public abstract class BaseAudioChannelHelper<T> : MonoBehaviour where T : BaseAudioFileObject
+    public abstract class BaseAudioChannelHelper<T> : MonoBehaviour, IAudioHelperEvents where T : BaseAudioFileObject
     {
         /// <summary>
         /// Set this to true to make AudioManager ignore this AudioChannel for Audio Playback. 
@@ -106,7 +106,7 @@ namespace JSAM
         {
             if (JSAMSettings.Settings.TimeScaledSounds)
             {
-                AudioManagerInternal.OnTimeScaleChanged += OnTimeScaleChanged;
+                AudioManagerInternal.OnTimeScaleChanged.Add(this);
             }
 
             if (audioFile)
@@ -116,13 +116,13 @@ namespace JSAM
                     switch (JSAMSettings.Settings.SpatializationMode)
                     {
                         case JSAMSettings.SpatializeUpdateMode.Default:
-                            AudioManagerInternal.OnSpatializeUpdate += OnSpatializeUpdate;
+                            AudioManagerInternal.OnSpatializeUpdate.Add(this);
                             break;
                         case JSAMSettings.SpatializeUpdateMode.FixedUpdate:
-                            AudioManagerInternal.OnSpatializeFixedUpdate += OnSpatializeFixedUpdate;
+                            AudioManagerInternal.OnSpatializeFixedUpdate.Add(this);
                             break;
                         case JSAMSettings.SpatializeUpdateMode.LateUpdate:
-                            AudioManagerInternal.OnSpatializeLateUpdate += OnSpatializeLateUpdate;
+                            AudioManagerInternal.OnSpatializeLateUpdate.Add(this);
                             break;
                         case JSAMSettings.SpatializeUpdateMode.Parented:
                             break;
@@ -135,7 +135,7 @@ namespace JSAM
         {
             if (JSAMSettings.Settings.TimeScaledSounds)
             {
-                AudioManagerInternal.OnTimeScaleChanged -= OnTimeScaleChanged;
+                AudioManagerInternal.OnTimeScaleChanged.Remove(this);
             }
 
             if (audioFile)
@@ -145,13 +145,13 @@ namespace JSAM
                     switch (JSAMSettings.Settings.SpatializationMode)
                     {
                         case JSAMSettings.SpatializeUpdateMode.Default:
-                            AudioManagerInternal.OnSpatializeUpdate -= OnSpatializeUpdate;
+                            AudioManagerInternal.OnSpatializeUpdate.Remove(this);
                             break;
                         case JSAMSettings.SpatializeUpdateMode.FixedUpdate:
-                            AudioManagerInternal.OnSpatializeFixedUpdate -= OnSpatializeFixedUpdate;
+                            AudioManagerInternal.OnSpatializeFixedUpdate.Remove(this);
                             break;
                         case JSAMSettings.SpatializeUpdateMode.LateUpdate:
-                            AudioManagerInternal.OnSpatializeLateUpdate -= OnSpatializeLateUpdate;
+                            AudioManagerInternal.OnSpatializeLateUpdate.Remove(this);
                             break;
                         case JSAMSettings.SpatializeUpdateMode.Parented:
                             break;
@@ -213,13 +213,13 @@ namespace JSAM
             switch (Channel)
             {
                 case VolumeChannel.Music:
-                    AudioManager.OnMusicVolumeChanged += OnUpdateVolume;
+                    AudioManagerInternal.OnMusicVolumeChanged.Add(this);
                     break;
                 case VolumeChannel.Sound:
-                    AudioManager.OnSoundVolumeChanged += OnUpdateVolume;
+                    AudioManagerInternal.OnSoundVolumeChanged.Add(this);
                     break;
                 case VolumeChannel.Voice:
-                    AudioManager.OnVoiceVolumeChanged += OnUpdateVolume;
+                    AudioManagerInternal.OnVoiceVolumeChanged.Add(this);
                     break;
             }
             subscribedToEvents = true;
@@ -230,13 +230,13 @@ namespace JSAM
             switch (Channel)
             {
                 case VolumeChannel.Music:
-                    AudioManager.OnMusicVolumeChanged -= OnUpdateVolume;
+                    AudioManagerInternal.OnMusicVolumeChanged.Remove(this);
                     break;
                 case VolumeChannel.Sound:
-                    AudioManager.OnSoundVolumeChanged -= OnUpdateVolume;
+                    AudioManagerInternal.OnSoundVolumeChanged.Remove(this);
                     break;
                 case VolumeChannel.Voice:
-                    AudioManager.OnVoiceVolumeChanged -= OnUpdateVolume;
+                    AudioManagerInternal.OnVoiceVolumeChanged.Remove(this);
                     break;
             }
             subscribedToEvents = false;
@@ -318,7 +318,7 @@ namespace JSAM
             AudioSource.loop = false;
         }
 
-        protected virtual void OnTimeScaleChanged(float previousTimeScale)
+        public virtual void TimeScaleChanged(float previousTimeScale)
         {
             if (audioFile.ignoreTimeScale) return;
             float offset = AudioSource.pitch - previousTimeScale;
@@ -326,20 +326,6 @@ namespace JSAM
             AudioSource.pitch += offset;
         }
 
-        private void OnSpatializeUpdate()
-        {
-            Spatialize();
-        }
-
-        private void OnSpatializeFixedUpdate()
-        {
-            Spatialize();
-        }
-
-        private void OnSpatializeLateUpdate()
-        {
-            Spatialize();
-        }
 
         /// <summary>
         /// Returns false if no AudioClips exists
@@ -374,7 +360,7 @@ namespace JSAM
             return false;
         }
 
-        void Spatialize()
+        public void Spatialize()
         {
             if (SpatializationTarget != null)
             {
@@ -415,7 +401,7 @@ namespace JSAM
             transform.position = position;
         }
 
-        protected void OnUpdateVolume(float channelVolume, float realVolume)
+        public void VolumeChanged(float channelVolume, float realVolume)
         {
             AudioSource.volume = realVolume * audioFile.relativeVolume;
         }

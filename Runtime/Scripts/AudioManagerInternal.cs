@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Collections.LowLevel.Unsafe;
 
 namespace JSAM
 {
@@ -11,13 +12,14 @@ namespace JSAM
         public class LoadedLibrary
         {
             public AudioLibrary Library;
-            public string[] SoundNames;
-            public string[] MusicNames;
+            public long[] SoundKeys;
+            public long[] MusicKeys;
             public int Users;
         }
 
         readonly Dictionary<AudioLibrary, LoadedLibrary> loadedLibraries = new Dictionary<AudioLibrary, LoadedLibrary>();
         readonly Dictionary<string, BaseAudioFileObject> audioFileLookup = new Dictionary<string, BaseAudioFileObject>();
+        readonly Dictionary<long, string> enumNameLookup = new Dictionary<long, string>();
         public Dictionary<AudioLibrary, LoadedLibrary> LoadedLibraries => loadedLibraries;
         public bool IsLibraryLoaded(AudioLibrary library) => loadedLibraries.ContainsKey(library);
 
@@ -82,6 +84,19 @@ namespace JSAM
             SoundMuted = Convert.ToBoolean(PlayerPrefs.GetInt(Settings.SoundMutedKey, 0));
             VoiceMuted = Convert.ToBoolean(PlayerPrefs.GetInt(Settings.VoiceMutedKey, 0));
         }
+
+        void MusicVolumeChanged(float channelVolume, float realVolume)
+        {
+            foreach (var helper in OnMusicVolumeChanged) helper.VolumeChanged(channelVolume, realVolume);
+        }
+        void SoundVolumeChanged(float channelVolume, float realVolume)
+        {
+            foreach (var helper in OnSoundVolumeChanged) helper.VolumeChanged(channelVolume, realVolume);
+        }
+        void VoiceVolumeChanged(float channelVolume, float realVolume)
+        {
+            foreach (var helper in OnVoiceVolumeChanged) helper.VolumeChanged(channelVolume, realVolume);
+        }
         #endregion
 
         /// <summary>
@@ -115,24 +130,31 @@ namespace JSAM
         /// Notifies Audio Channels to follow their target. 
         /// Only invoked when Spatialize is set to true
         /// </summary>
-        public static Action OnSpatializeUpdate;
+        public static List<IAudioHelperEvents> OnSpatializeUpdate = new List<IAudioHelperEvents>();
         /// <summary>
         /// Notifies Audio Channels to follow their target on LateUpdate 
         /// Only invoked when Spatialize is set to true
         /// </summary>
-        public static Action OnSpatializeLateUpdate;
+        public static List<IAudioHelperEvents> OnSpatializeLateUpdate = new List<IAudioHelperEvents>();
         /// <summary>
         /// Notifies Audio Channels to follow their target on FixedUpdate
         /// Only invoked when Spatialize is set to true
         /// </summary>
-        public static Action OnSpatializeFixedUpdate;
-
+        public static List<IAudioHelperEvents> OnSpatializeFixedUpdate = new List<IAudioHelperEvents>();
         /// <summary>
         /// <para>float previousTimeScale</para>
         /// Invoked when the user changes the TimeScale
         /// Notifies Audio Channels to adjust pitch accordingly. 
         /// </summary>
-        public static Action<float> OnTimeScaleChanged;
+        public static List<IAudioHelperEvents> OnTimeScaleChanged = new List<IAudioHelperEvents>();
+        /// <summary>
+        /// Notifies Audio Helpers of a specific channel to adjust their Volume
+        /// </summary>
+        public static List<IAudioHelperEvents> OnMusicVolumeChanged = new List<IAudioHelperEvents>();
+        /// <summary> <inheritdoc cref="OnMusicVolumeChanged"/> </summary>
+        public static List<IAudioHelperEvents> OnSoundVolumeChanged = new List<IAudioHelperEvents>();
+        /// <summary> <inheritdoc cref="OnMusicVolumeChanged"/> </summary>
+        public static List<IAudioHelperEvents> OnVoiceVolumeChanged = new List<IAudioHelperEvents>();
 
         public static AudioManagerInternal Instance => AudioManager.InternalInstance;
 
@@ -151,6 +173,10 @@ namespace JSAM
                 musicHelpers.Add(CreateMusicChannel());
             }
             if (musicHelpers.Count > 0) MainMusic = musicHelpers[0];
+
+            AudioManager.OnMusicVolumeChanged += MusicVolumeChanged;
+            AudioManager.OnSoundVolumeChanged += SoundVolumeChanged;
+            AudioManager.OnVoiceVolumeChanged += VoiceVolumeChanged;
         }
 
         private void Start()
@@ -163,12 +189,18 @@ namespace JSAM
         {
             if (Settings.SpatializationMode == JSAMSettings.SpatializeUpdateMode.Default)
             {
-                OnSpatializeUpdate?.Invoke();
+                foreach (var item in OnSpatializeUpdate)
+                {
+                    item.Spatialize();
+                }
             }
 
             if (Mathf.Abs(Time.timeScale - prevTimeScale) > 0)
             {
-                OnTimeScaleChanged?.Invoke(prevTimeScale);
+                foreach (var item in OnSpatializeUpdate)
+                {
+                    item.TimeScaleChanged(prevTimeScale);
+                }
             }
             prevTimeScale = Time.timeScale;
         }
@@ -177,7 +209,10 @@ namespace JSAM
         {
             if (Settings.SpatializationMode == JSAMSettings.SpatializeUpdateMode.FixedUpdate)
             {
-                OnSpatializeFixedUpdate?.Invoke();
+                foreach (var item in OnSpatializeFixedUpdate)
+                {
+                    item.Spatialize();
+                }
             }
         }
 
@@ -185,13 +220,20 @@ namespace JSAM
         {
             if (Settings.SpatializationMode == JSAMSettings.SpatializeUpdateMode.LateUpdate)
             {
-                OnSpatializeLateUpdate?.Invoke();
+                foreach (var item in OnSpatializeLateUpdate)
+                {
+                    item.Spatialize();
+                }
             }
         }
 
         private void OnDestroy()
         {
             SaveVolumeSettings();
+
+            AudioManager.OnMusicVolumeChanged -= MusicVolumeChanged;
+            AudioManager.OnSoundVolumeChanged -= SoundVolumeChanged;
+            AudioManager.OnVoiceVolumeChanged -= VoiceVolumeChanged;
         }
 
         MusicChannelHelper HandleLimitedInstances(MusicFileObject music, MusicChannelHelper helper)
@@ -732,7 +774,7 @@ namespace JSAM
                 newChannel.AddComponent<AudioSource>();
                 newHelper = newChannel.AddComponent<MusicChannelHelper>();
             }
-            
+
             newHelper.Init(Settings.MusicGroup);
             return newHelper;
         }
@@ -760,7 +802,7 @@ namespace JSAM
                 newChannel.AddComponent<AudioSource>();
                 newHelper = newChannel.AddComponent<SoundChannelHelper>();
             }
-            
+
             newHelper.Init(Settings.SoundGroup);
             return newHelper;
         }
@@ -768,14 +810,18 @@ namespace JSAM
 
         public BaseAudioFileObject AudioFileFromEnum<T>(T e) where T : Enum
         {
-            var t = e.GetType();
-            var enumName = e.GetType() + "." + e.ToString();
-            return AudioFileFromString(enumName);
+            long key = ComputeEnumHash(e);
+            if (enumNameLookup.TryGetValue(key, out string name))
+            {
+                return AudioFileFromString(name);
+            }
+
+            throw new KeyNotFoundException($"Enum {e} of type {typeof(T).Name} not found in lookup!");
         }
 
         public BaseAudioFileObject AudioFileFromString(string s)
         {
-            if (audioFileLookup.ContainsKey(s))
+            if (audioFileLookup.TryGetValue(s, out BaseAudioFileObject o))
             {
                 return audioFileLookup[s];
             }
@@ -800,18 +846,21 @@ namespace JSAM
             if (!l.soundNamespaceGenerated.IsNullEmptyOrWhiteSpace())
             {
                 soundType = l.soundNamespaceGenerated + "." + soundType;
-            }            
+            }
             var assembly = soundType + ", Assembly-CSharp";
 
             Type enumType = Type.GetType(assembly);
             enums.AddRange(Enum.GetNames(enumType));
 
-            newLib.SoundNames = new string[enums.Count];
+            newLib.SoundKeys = new long[enums.Count];
             for (int i = 0; i < l.Sounds.Count; i++)
             {
-                newLib.SoundNames[i] = soundType + "." + enums[i];
-                audioFileLookup.Add(newLib.SoundNames[i], l.Sounds[i]);
                 l.Sounds[i].Initialize();
+                var soundName = soundType + "." + enums[i];
+                long key = ComputeEnumHash(enumType, i);
+                newLib.SoundKeys[i] = key;
+                audioFileLookup.Add(soundName, l.Sounds[i]);
+                enumNameLookup[key] = soundName;
             }
 
             enums.Clear();
@@ -826,11 +875,14 @@ namespace JSAM
             enumType = Type.GetType(assembly);
             enums.AddRange(Enum.GetNames(enumType));
 
-            newLib.MusicNames = new string[enums.Count];
+            newLib.MusicKeys = new long[enums.Count];
             for (int i = 0; i < l.Music.Count; i++)
             {
-                newLib.MusicNames[i] = musicType + "." + enums[i];
-                audioFileLookup.Add(newLib.MusicNames[i], l.Music[i]);
+                var musicName = musicType + "." + enums[i];
+                long key = ComputeEnumHash(enumType, i);
+                newLib.MusicKeys[i] = key;
+                audioFileLookup.Add(musicName, l.Sounds[i]);
+                enumNameLookup[key] = musicName;
             }
 
             loadedLibraries.Add(l, newLib);
@@ -846,16 +898,39 @@ namespace JSAM
 
             var lib = loadedLibraries[l];
 
-            foreach (var s in lib.SoundNames)
+            foreach (var s in lib.SoundKeys)
             {
-                audioFileLookup.Remove(s);
+                audioFileLookup.Remove(enumNameLookup[s]);
+                enumNameLookup.Remove(s);
             }
-            foreach (var m in lib.MusicNames)
+            foreach (var m in lib.MusicKeys)
             {
-                audioFileLookup.Remove(m);
+                audioFileLookup.Remove(enumNameLookup[m]);
+                enumNameLookup.Remove(m);
             }
 
             loadedLibraries.Remove(l);
+        }
+
+        private long ComputeEnumHash(Type enumType, int value)
+        {
+            int typeMetadataToken = enumType.MetadataToken;
+            return ((long)typeMetadataToken << 32) | (uint)value; // Combine type hash and enum value into a long
+        }
+
+        // Computes a unique hash for an enum value of any type
+        private long ComputeEnumHash<T>(T e) where T : Enum
+        {
+            // Cast the enum to its underlying int representation
+            int enumValue = GetEnumUnderlyingValue(e);
+            int typeMetadataToken = typeof(T).MetadataToken;
+            return ((long)typeMetadataToken << 32) | (uint)enumValue; // Combine type hash and enum value into a long
+        }
+
+        // Extract the numeric value of an enum based on its underlying type
+        private static int GetEnumUnderlyingValue<T>(T e) where T : Enum
+        {
+            return unchecked(UnsafeUtility.As<T, int>(ref e));
         }
     }
 }
