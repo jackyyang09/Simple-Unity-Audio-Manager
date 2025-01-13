@@ -197,7 +197,7 @@ namespace JSAM
 
             if (Mathf.Abs(Time.timeScale - prevTimeScale) > 0)
             {
-                foreach (var item in OnSpatializeUpdate)
+                foreach (var item in OnTimeScaleChanged)
                 {
                     item.TimeScaleChanged(prevTimeScale);
                 }
