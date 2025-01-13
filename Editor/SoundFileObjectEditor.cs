@@ -188,77 +188,20 @@ namespace JSAM.JSAMEditor
             #endregion
         }
 
-        protected override void DrawPlaybackTool()
+        protected override void RenderAuxiliaryPlaybackControls()
         {
-            blontent = new GUIContent("Audio Playback Preview",
-                "Allows you to preview how your AudioFileObject will sound during runtime right here in the inspector. " +
-                "Some effects, like spatialization, will not be available to preview");
-            showPlaybackTool = EditorCompatability.SpecialFoldouts(showPlaybackTool, blontent);
-
-            if (showPlaybackTool)
+            using (new EditorGUI.DisabledScope(files.arraySize < 2))
             {
-                if (ProgressBar())
+                if (GUILayout.Button(new GUIContent("R", "Preview settings with a random track from your library. Only usable if this Audio File has \"Use Library\" enabled.")))
                 {
-                    EditorGUILayout.BeginHorizontal();
-                    Color colorbackup = GUI.backgroundColor;
-                    if (SourcePlaying)
-                    {
-                        GUI.backgroundColor = buttonPressedColor;
-                        blontent = new GUIContent("Stop", "Stop playback");
-                    }
-                    else
-                    {
-                        blontent = new GUIContent("Play", "Play a preview of the sound with it's current sound settings.");
-                    }
-                    if (GUILayout.Button(blontent))
-                    {
-                        clipPlaying = !clipPlaying;
-                        if (!clipPlaying)
-                        {
-                            helper.Source.Stop();
-                            if (playingRandom)
-                            {
-                                playingRandom = false;
-                            }
-                        }
-                        else
-                        {
-                            if (activeClip != null)
-                            {
-                                editorFader.StartFading(activeClip, asset as SoundFileObject);
-                            }
-                        }
-                        helper.Source.time = 0;
-                        AudioPlaybackToolEditor.DoForceRepaint(true);
-                    }
-                    GUI.backgroundColor = colorbackup;
-                    using (new EditorGUI.DisabledScope(files.arraySize < 2))
-                    {
-                        if (GUILayout.Button(new GUIContent("Play Random", "Preview settings with a random track from your library. Only usable if this Audio File has \"Use Library\" enabled.")))
-                        {
-                            DesignateRandomAudioClip();
-                            helper.Source.Stop();
-                            editorFader.StartFading(activeClip, asset as SoundFileObject);
-                        }
-                    }
-
-                    if (GUILayout.Button(openIcon, new GUILayoutOption[] { GUILayout.MaxHeight(19) }))
-                    {
-                        AudioPlaybackToolEditor.Init();
-                    }
-                    GUILayout.FlexibleSpace();
-                    EditorGUILayout.EndHorizontal();
-
-                    EditorGUILayout.Space();
-                }
-
-                if (EditorUtility.audioMasterMute)
-                {
-                    JSAMEditorHelper.RenderHelpbox("Audio is muted in the game view, which also mutes audio " +
-                        "playback here. Please un-mute it to hear your audio.");
+                    activeClip = GetRandomAudioClip(asset as SoundFileObject, activeClip);
+                    helper.Clip = activeClip;
+                    editorFader.StartFading(activeClip, asset);
+                    PlayDebug(asset, mouseScrubbed);
+                    clipPlaying = true;
+                    playingRandom = true;
                 }
             }
-            EditorCompatability.EndSpecialFoldoutGroup();
         }
 
         /// <summary>
@@ -278,18 +221,13 @@ namespace JSAM.JSAMEditor
             }
         }
 
-        public AudioClip DesignateRandomAudioClip()
+        public static AudioClip GetRandomAudioClip(SoundFileObject file, AudioClip currentClip)
         {
-            AudioClip theClip = activeClip;
-            if (files.arraySize > 1)
-            {
-                var nonNull = asset.Files.FindAll(e => e);
-                theClip = nonNull[Random.Range(0, nonNull.Count)];
-                AudioPlaybackToolEditor.DoForceRepaint(theClip != activeClip);
-                activeClip = theClip;
-            }
-            playingRandom = true;
-            return activeClip;
+            AudioClip theClip = currentClip;
+            if (file.Files.Count == 1) return currentClip;
+            var nonNull = file.Files.FindAll(e => e);
+            theClip = nonNull[Random.Range(0, nonNull.Count)];
+            return theClip;
         }
 
         protected override void Update()

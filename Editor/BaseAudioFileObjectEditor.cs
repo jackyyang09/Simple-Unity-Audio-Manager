@@ -256,11 +256,12 @@ namespace JSAM.JSAMEditor
 
             AudioClip clip = asset.Files[0];
 
-            if (clip != activeClip)
-            {
-                activeClip = clip;
-                helper.Source.clip = activeClip;
-            }
+            // Why did we enforce the activeClip being the first clip again?
+            //if (clip != activeClip)
+            //{
+            //    activeClip = clip;
+            //    helper.Source.clip = activeClip;
+            //}
 
             if ((clipPlaying && !clipPaused) || (mouseDragging && SourcePlaying))
             {
@@ -506,7 +507,7 @@ namespace JSAM.JSAMEditor
                 return false;
             }
 
-            AudioClip music = files.GetArrayElementAtIndex(0).objectReferenceValue as AudioClip;
+            AudioClip music = activeClip;
             var value = (float)helper.Source.timeSamples / (float)music.samples;
 
             if (cachedTex == null || AudioPlaybackToolEditor.forceRepaint)
@@ -655,6 +656,8 @@ namespace JSAM.JSAMEditor
                     }
                     GUI.backgroundColor = colorbackup;
 
+                    RenderAuxiliaryPlaybackControls();
+
                     if (GUILayout.Button(openIcon, new GUILayoutOption[] { GUILayout.MaxHeight(19) }))
                     {
                         AudioPlaybackToolEditor.Init();
@@ -664,21 +667,21 @@ namespace JSAM.JSAMEditor
                     if (asset.loopMode != LoopMode.LoopWithLoopPoints && asset.loopMode != LoopMode.ClampedLoopPoints) loopPointInputMode = 0;
 
                     blontent = new GUIContent("-", "The playback time");
-                    if (music)
+                    if (activeClip)
                     {
                         switch ((LoopPointTool)loopPointInputMode)
                         {
                             case LoopPointTool.Slider:
                             case LoopPointTool.TimeInput:
-                                var time = (float)helper.Source.timeSamples / music.frequency;
-                                blontent = new GUIContent(time.TimeToString() + " / " + (music.length.TimeToString()),
+                                var time = (float)helper.Source.timeSamples / activeClip.frequency;
+                                blontent = new GUIContent(time.TimeToString() + " / " + (activeClip.length.TimeToString()),
                                     "The playback time in seconds");
                                 break;
                             case LoopPointTool.TimeSamplesInput:
-                                blontent = new GUIContent(helper.Source.timeSamples + " / " + music.samples, "The playback time in samples");
+                                blontent = new GUIContent(helper.Source.timeSamples + " / " + activeClip.samples, "The playback time in samples");
                                 break;
                             case LoopPointTool.BPMInput:
-                                blontent = new GUIContent(string.Format("{0:0}", helper.Source.time / (60f / asset.bpm)) + " / " + music.length / (60f / asset.bpm),
+                                blontent = new GUIContent(string.Format("{0:0}", helper.Source.time / (60f / asset.bpm)) + " / " + activeClip.length / (60f / asset.bpm),
                                     "The playback time in beats");
                                 break;
                         }
@@ -699,6 +702,11 @@ namespace JSAM.JSAMEditor
                 }
             }
             EditorCompatability.EndSpecialFoldoutGroup();
+        }
+
+        protected virtual void RenderAuxiliaryPlaybackControls()
+        {
+
         }
 
         /// <summary>
