@@ -120,10 +120,13 @@ namespace JSAM
             }
 
             float time = 0;
-            while (oldHelper.AudioSource.isPlaying)
+            if (oldHelper)
             {
-                time = oldHelper.AudioSource.time;
-                yield return null;
+                while (oldHelper.AudioSource.isPlaying)
+                {
+                    time = oldHelper.AudioSource.time;
+                    yield return null;
+                }
             }
 
             PlayInvokation();
