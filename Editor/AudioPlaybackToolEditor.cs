@@ -274,9 +274,13 @@ namespace JSAM.JSAMEditor
                         GUIContent bContent = new GUIContent(buttonName, "Click to change AudioClip being played back to " + sound.name);
                         if (GUILayout.Button(bContent))
                         {
+                            cachedTex = null;
+
                             // Play the sound
                             Helper.Clip = sound;
                             EditorFader.StartFading(Helper.Clip, selectedSound);
+                            Helper.SoundHelper.PlayDebug(ActiveSound);
+                            clipPlaying = true;
                         }
                         //EditorGUILayout.EndHorizontal();
                         GUI.backgroundColor = colorbackup;
@@ -359,10 +363,6 @@ namespace JSAM.JSAMEditor
             }
         }
 
-        /// <summary>
-        /// Draws a playback 
-        /// </summary>
-        /// <param name="music"></param>
         public void DrawPlaybackTool()
         {
             float progress = 0;
@@ -406,7 +406,14 @@ namespace JSAM.JSAMEditor
                                 break;
                             case SelectedAssetType.Sound:
                             case SelectedAssetType.Music:
-                                Helper.MusicHelper.PlayDebug(ActiveMusic, mouseScrubbed);
+                                if (activeAssetType == SelectedAssetType.Sound)
+                                {
+                                    Helper.SoundHelper.PlayDebug(ActiveSound, mouseScrubbed);
+                                }
+                                else
+                                {
+                                    Helper.MusicHelper.PlayDebug(ActiveMusic, mouseScrubbed);
+                                }
                                 EditorFader.StartFading(Helper.Clip, ActiveSound);
                                 firstPlayback = true;
                                 freePlay = false;
@@ -464,14 +471,13 @@ namespace JSAM.JSAMEditor
                     {
                         if (GUILayout.Button(randomButton))
                         {
-                            var instance = BaseAudioFileObjectEditor.Instance as SoundFileObjectEditor;
-                            if (instance != null)
-                            {
-                                Helper.Clip = instance.DesignateRandomAudioClip();
-                                DoForceRepaint(true);
-                                Helper.Source.Stop();
-                                EditorFader.StartFading(Helper.Clip, selectedSound);
-                            }
+                            Helper.Clip = SoundFileObjectEditor.GetRandomAudioClip(selectedSound, Helper.Clip);
+                            DoForceRepaint(true);
+                            Helper.Source.Stop();
+                            Helper.SoundHelper.PlayDebug(ActiveSound, mouseScrubbed);
+                            EditorFader.StartFading(Helper.Clip, selectedSound);
+                            firstPlayback = true;
+                            clipPlaying = true;
                         }
                     }
                 }
@@ -630,6 +636,16 @@ namespace JSAM.JSAMEditor
                 {
                     GUI.DrawTexture(rect, cachedTex);
                 }
+
+                if (activeAssetType == SelectedAssetType.Sound)
+                {
+                    SoundFileObjectEditor.DrawPropertyOverlay(ActiveSound, (int)rect.width, (int)rect.height);
+                }
+
+                if (ActiveAudio.loopMode >= LoopMode.LoopWithLoopPoints)
+                {
+                    MusicFileObjectEditor.DrawLoopPointOverlay(ActiveAudio, (int)rect.width, (int)rect.height);
+                }
             }
             else
             {
@@ -641,16 +657,6 @@ namespace JSAM.JSAMEditor
             }
 
             forceRepaint = false;
-
-            if (activeAssetType == SelectedAssetType.Sound)
-            {
-                SoundFileObjectEditor.DrawPropertyOverlay(ActiveSound, (int)rect.width, (int)rect.height);
-            }
-
-            if (ActiveAudio.loopMode >= LoopMode.LoopWithLoopPoints)
-            {
-                MusicFileObjectEditor.DrawLoopPointOverlay(ActiveAudio, (int)rect.width, (int)rect.height);
-            }
 
             Rect progressRect = new Rect(rect);
             progressRect.width = value * rect.width;
