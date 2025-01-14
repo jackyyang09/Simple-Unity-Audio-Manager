@@ -95,22 +95,23 @@ namespace JSAM.JSAMEditor
         [System.Serializable]
         public struct AgnosticGUID<T> where T : UnityEngine.Object
         {
-#if UNITY_2020_3_OR_NEWER
-            public GUID guid;
-#else
-            public string guid;
-#endif
-            [SerializeField] T savedObject;
+            [SerializeField] public string guid;
+
             public T SavedObject
             {
                 get
                 {
+#if UNITY_2020_3_OR_NEWER
+                    if (!GUID.TryParse(guid, out GUID result)) return null;
+                    return AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(result));
+#else
                     return AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(guid));
+#endif
                 }
                 set
                 {
 #if UNITY_2020_3_OR_NEWER
-                    guid = AssetDatabase.GUIDFromAssetPath(AssetDatabase.GetAssetPath(value));
+                    guid = AssetDatabase.GUIDFromAssetPath(AssetDatabase.GetAssetPath(value)).ToString();
 #else
                     guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(value));
 #endif

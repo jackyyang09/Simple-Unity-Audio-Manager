@@ -180,13 +180,18 @@ namespace JSAM.JSAMEditor
             }
         }
 
+        static void SetSelectedLibrary(AudioLibrary l)
+        {
+            JSAMPaths.Instance.SelectedLibrary = asset;
+            JSAMPaths.TrySave();
+        }
+
         void AssignAsset(AudioLibrary newAsset = null)
         {
             if (newAsset != null) // Handle a basic reassign
             {
                 asset = newAsset;
-                JSAMPaths.Instance.SelectedLibrary = asset;
-                JSAMPaths.TrySave();
+                SetSelectedLibrary(asset);
             }
             else // Fallback
             {
@@ -412,6 +417,7 @@ namespace JSAM.JSAMEditor
             if (EditorGUI.EndChangeCheck())
             {
                 ReinitializeSerializedObject();
+                SetSelectedLibrary(asset);
             }
 
             blontent = new GUIContent("  Create  ", "Click to create a new Audio Library asset");
