@@ -245,7 +245,7 @@ namespace JSAM
         /// <param name="transform">Optional: If the sound was initially passed a reference to 
         /// a transform in PlaySound, passing the same Transform reference will stop that specific playing instance</param>
         /// <param name="stopInstantly">Optional: If true, stop the sound immediately, you may want to leave this false for looping sounds</param>
-        public static void StopSound<T>(T sound, Transform transform = null, bool stopInstantly = true) where T : Enum =>
+        public static SoundChannelHelper StopSound<T>(T sound, Transform transform = null, bool stopInstantly = true) where T : Enum =>
             InternalInstance.StopSoundInternal(SoundFileFromEnum(sound), transform, stopInstantly);
 
         /// <summary>
@@ -257,7 +257,7 @@ namespace JSAM
         /// Passing this property will limit playback stopping 
         /// to only the sound playing at this specific position</param>
         /// <param name="stopInstantly">Optional: If true, stop the sound immediately, you may want to leave this false for looping sounds</param>
-        public static void StopSound<T>(T sound, Vector3 position, bool stopInstantly = true) where T : Enum => 
+        public static SoundChannelHelper StopSound<T>(T sound, Vector3 position, bool stopInstantly = true) where T : Enum => 
             InternalInstance.StopSoundInternal(SoundFileFromEnum(sound), position, stopInstantly);
 
         /// <summary>
@@ -266,7 +266,7 @@ namespace JSAM
         /// <param name="transform">Optional: If the sound was initially passed a reference to 
         /// a transform in PlaySound, passing the same Transform reference will stop that specific playing instance</param>
         /// <param name="stopInstantly">Optional: If true, stop the sound immediately, you may want to leave this false for looping sounds</param>
-        public static void StopSound(SoundFileObject sound, Transform transform = null, bool stopInstantly = true) =>
+        public static SoundChannelHelper StopSound(SoundFileObject sound, Transform transform = null, bool stopInstantly = true) =>
             InternalInstance.StopSoundInternal(sound, transform, stopInstantly);
 
         /// <summary>
@@ -277,7 +277,7 @@ namespace JSAM
         /// Passing this property will limit playback stopping 
         /// to only the sound playing at this specific position</param>
         /// <param name="stopInstantly">Optional: If true, stop the sound immediately, you may want to leave this false for looping sounds</param>
-        public static void StopSound(SoundFileObject sound, Vector3 position, bool stopInstantly = true) => 
+        public static SoundChannelHelper StopSound(SoundFileObject sound, Vector3 position, bool stopInstantly = true) => 
             InternalInstance.StopSoundInternal(sound, position, stopInstantly);
 
         /// <summary>
