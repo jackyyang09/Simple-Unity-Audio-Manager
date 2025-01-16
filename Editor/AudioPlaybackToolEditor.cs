@@ -637,14 +637,17 @@ namespace JSAM.JSAMEditor
                     GUI.DrawTexture(rect, cachedTex);
                 }
 
-                if (activeAssetType == SelectedAssetType.Sound)
+                if (activeAssetType != SelectedAssetType.AudioClip)
                 {
-                    SoundFileObjectEditor.DrawPropertyOverlay(ActiveSound, (int)rect.width, (int)rect.height);
-                }
+                    if (activeAssetType == SelectedAssetType.Sound)
+                    {
+                        SoundFileObjectEditor.DrawPropertyOverlay(ActiveSound, (int)rect.width, (int)rect.height);
+                    }
 
-                if (ActiveAudio.loopMode >= LoopMode.LoopWithLoopPoints)
-                {
-                    MusicFileObjectEditor.DrawLoopPointOverlay(ActiveAudio, (int)rect.width, (int)rect.height);
+                    if (ActiveAudio.loopMode >= LoopMode.LoopWithLoopPoints)
+                    {
+                        MusicFileObjectEditor.DrawLoopPointOverlay(ActiveAudio, (int)rect.width, (int)rect.height);
+                    }
                 }
             }
             else
