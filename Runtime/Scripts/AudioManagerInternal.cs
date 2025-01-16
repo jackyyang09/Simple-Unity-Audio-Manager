@@ -881,7 +881,7 @@ namespace JSAM
                 var musicName = musicType + "." + enums[i];
                 long key = ComputeEnumHash(enumType, i);
                 newLib.MusicKeys[i] = key;
-                audioFileLookup.Add(musicName, l.Sounds[i]);
+                audioFileLookup.Add(musicName, l.Music[i]);
                 enumNameLookup[key] = musicName;
             }
 
