@@ -680,7 +680,7 @@ namespace JSAM.JSAMEditor
                 DoForceRepaint(resized);
             }
 
-            #region Sound Update
+            #region AudioClip Update
             switch (activeAssetType)
             {
                 case SelectedAssetType.AudioClip:
@@ -767,6 +767,14 @@ namespace JSAM.JSAMEditor
                             else if (selectedAudio.loopMode == LoopMode.ClampedLoopPoints && clipPos < selectedAudio.loopStart)
                             {
                                 Helper.Source.timeSamples = Mathf.CeilToInt(selectedAudio.loopStart * Helper.Clip.frequency);
+                            }
+                            else
+                            {
+                                if (!Helper.Source.isPlaying)
+                                {
+                                    Helper.Source.Stop();
+                                    clipPlaying = false;
+                                }
                             }
                         }
                     }
