@@ -409,6 +409,7 @@ namespace JSAM
         #region Fade Logic
         public void BeginFadeIn(float fadeTime)
         {
+            if (fadeInRoutine != null) StopCoroutine(fadeInRoutine);
             fadeInRoutine = StartCoroutine(FadeIn(fadeTime));
         }
 
@@ -453,13 +454,10 @@ namespace JSAM
                 float timer = 0;
                 while (timer < fadeTime)
                 {
-                    if (AudioSource.time >= AudioSource.clip.length - fadeTime)
-                    {
-                        if (audioFile.ignoreTimeScale) timer += Time.unscaledDeltaTime;
-                        else timer += Time.deltaTime;
+                    if (audioFile.ignoreTimeScale) timer += Time.unscaledDeltaTime;
+                    else timer += Time.deltaTime;
 
-                        AudioSource.volume = Mathf.Lerp(0, startingVolume, (AudioSource.clip.length - AudioSource.time) / fadeTime);
-                    }
+                    AudioSource.volume = Mathf.Lerp(startingVolume, 0, timer / fadeTime);
                     yield return null;
                 }
                 AudioSource.Stop();
