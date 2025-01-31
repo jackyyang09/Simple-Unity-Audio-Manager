@@ -31,8 +31,7 @@ namespace JSAM.JSAMEditor
             list.onRemoveCallback += OnRemoveElement;
             list.drawElementCallback += DrawElement;
 
-            list.headerHeight = 1;
-            list.footerHeight = 0;
+            list.footerHeight = 20;
             serializedObject = obj;
             property = prop;
         }

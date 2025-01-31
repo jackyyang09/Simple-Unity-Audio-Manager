@@ -398,6 +398,8 @@ namespace JSAM.JSAMEditor
             }
             else
             {
+                int magicNumber = 5; // Maybe this should be set in JSAMSettings?
+
                 #region Library Region
                 Rect overlay = new Rect();
                 EditorGUILayout.BeginHorizontal();
@@ -406,12 +408,12 @@ namespace JSAM.JSAMEditor
                 if (showLibrary)
                 {
                     GUILayoutOption[] layoutOptions;
-                    layoutOptions = expandLibrary && files.arraySize > 5 ? new GUILayoutOption[0] : new GUILayoutOption[] { GUILayout.MinHeight(150) };
+                    layoutOptions = expandLibrary && files.arraySize > magicNumber ? new GUILayoutOption[0] : new GUILayoutOption[] { GUILayout.MinHeight(150) };
                     overlay = EditorGUILayout.BeginVertical(GUI.skin.box, layoutOptions);
 
                     scroll = EditorGUILayout.BeginScrollView(scroll);
 
-                    if (files.arraySize > 5) // Magic number haha
+                    if (files.arraySize > magicNumber)
                     {
                         string label = expandLibrary ? "Retract Library" : "Expand Library";
                         if (JSAMEditorHelper.CondensedButton(label))
