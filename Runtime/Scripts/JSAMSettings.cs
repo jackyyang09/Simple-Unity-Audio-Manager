@@ -32,8 +32,13 @@ namespace JSAM
         public float DefaultSoundMaxDistance => defaultSoundMaxDistance;
 
         [Tooltip("Affects how AudioClip lists are displayed in FileObject inspectors. " +
-            "Enable this option if you're experiencing issues manipulating Audio Clips in the editor")]
-        [SerializeField] bool useBuiltInAudioListRenderer = false;
+            "Toggle this option if you're experiencing issues manipulating Audio Clips in the inspector")]
+        [SerializeField] bool useBuiltInAudioListRenderer = 
+#if UNITY_2020_3_OR_NEWER
+            true;
+#else
+            false;
+#endif
         public bool UseBuiltInAudioListRenderer => useBuiltInAudioListRenderer;
 
         /// <summary>
@@ -227,6 +232,12 @@ namespace JSAM
         {
             SerializedObject.FindProperty(nameof(disableConsoleLogs)).boolValue = false;
             SerializedObject.FindProperty(nameof(quickReferenceFontSize)).intValue = 10;
+            SerializedObject.FindProperty(nameof(useBuiltInAudioListRenderer)).boolValue = 
+#if UNITY_2020_3_OR_NEWER
+                true;
+#else
+                false;
+#endif
             SerializedObject.ApplyModifiedProperties();
         }
 
