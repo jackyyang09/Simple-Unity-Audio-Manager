@@ -360,6 +360,7 @@ namespace JSAM.JSAMEditor
             {
                 var f = files.GetArrayElementAtIndex(i);
                 if (f.objectReferenceValue == null) missingFiles++;
+                else if (!helper.Clip) helper.Clip = f.objectReferenceValue as AudioClip;
             }
         }
 
