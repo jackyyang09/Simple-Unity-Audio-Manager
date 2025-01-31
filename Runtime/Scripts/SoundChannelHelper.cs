@@ -11,8 +11,6 @@ namespace JSAM
     {
         protected override VolumeChannel DefaultChannel => VolumeChannel.Sound;
 
-        float prevPlaybackTime;
-
         protected override void OnDisable()
         {
             base.OnDisable();
@@ -26,26 +24,6 @@ namespace JSAM
             }
         }
 
-        protected override void Update()
-        {
-            if (audioFile.loopMode <= LoopMode.Looping)
-            {
-                if (AudioSource.loop)
-                {
-                    // Check if the AudioSource is beginning to loop
-                    if (prevPlaybackTime > AudioSource.time)
-                    {
-                        AssignNewAudioClip();
-                        AudioSource.pitch = audioFile.GetRandomPitch();
-                        AudioSource.Play();
-                    }
-                    prevPlaybackTime = AudioSource.time;
-                }
-            }
-
-            base.Update();
-        }
-
         public override AudioSource Play()
         {
             if (audioFile == null)
@@ -54,25 +32,7 @@ namespace JSAM
                 return AudioSource;
             }
 
-            switch (audioFile.loopMode)
-            {
-                case LoopMode.NoLooping:
-                    AudioSource.loop = false;
-                    break;
-                case LoopMode.Looping:
-                case LoopMode.LoopWithLoopPoints:
-                case LoopMode.ClampedLoopPoints:
-                    AudioSource.loop = true;
-                    break;
-            }
-
             return base.Play();
-        }
-
-        public override void Stop(bool stopInstantly = true)
-        {
-            base.Stop(stopInstantly);
-            prevPlaybackTime = -1;
         }
     }
 }

@@ -300,7 +300,17 @@ namespace JSAM
 
             AudioSource.pitch = audioFile.GetRandomPitch();
 
-            AudioSource.loop = audioFile.loopMode == LoopMode.Looping;
+            switch (audioFile.loopMode)
+            {
+                case LoopMode.NoLooping:
+                    AudioSource.loop = false;
+                    break;
+                case LoopMode.Looping:
+                case LoopMode.LoopWithLoopPoints:
+                case LoopMode.ClampedLoopPoints:
+                    AudioSource.loop = true;
+                    break;
+            }
 
             ApplyEffects();
 
