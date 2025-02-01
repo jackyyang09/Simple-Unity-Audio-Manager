@@ -65,13 +65,9 @@ namespace JSAM.JSAMEditor
         {
             base.DesignateSerializedProperties();
 
-            neverRepeat = FindProp("neverRepeat");
+            list = new AudioClipList(serializedObject, files);
 
-            fadeInOut = FindProp(nameof(fadeInOut));
-            excludedProperties.Add(nameof(fadeInOut));
-
-            fadeInDuration = FindProp("fadeInDuration");
-            fadeOutDuration = FindProp("fadeOutDuration");
+            neverRepeat = FindProp(nameof(neverRepeat));
         }
 
         protected override void OnCreatePreset(string[] input)
@@ -108,71 +104,16 @@ namespace JSAM.JSAMEditor
             EditorGUILayout.Space();
 
             RenderFileList();
-
-            bool noFiles = files.arraySize == 0;
-
-            if (!isPreset)
-            {
-                if (noFiles)
-                {
-                    EditorGUILayout.HelpBox("Add an audio file before running!", MessageType.Error);
-                }
-                else if (missingFiles > 0)
-                {
-                    EditorGUILayout.HelpBox(missingFiles + " AudioClip(s) are missing! " +
-                        "This can lead to issues during runtime, such as with randomized playback", MessageType.Warning);
-                }
-            }
             
             EditorGUILayout.Space();
 
-            blontent = new GUIContent("Never Repeat", "Sometimes, AudioManager will allow the same sound from the Audio " +
-            "library to play twice in a row, enabling this option will ensure that this audio file never plays the same " +
-            "sound until after it plays a different sound.");
-            EditorGUILayout.PropertyField(neverRepeat, blontent);
+            EditorGUILayout.PropertyField(neverRepeat);
 
-            EditorGUILayout.PropertyField(relativeVolume);
-            EditorGUILayout.PropertyField(spatialize);
-            using (new EditorGUI.DisabledScope(!spatialize.boolValue))
-            {
-                EditorGUI.BeginChangeCheck();
-                EditorGUILayout.PropertyField(maxDistance);
-                if (EditorGUI.EndChangeCheck())
-                {
-                    if (maxDistance.floatValue < 0)
-                    {
-                        maxDistance.floatValue = 0;
-                    }
-                }
-            }
+            RenderBasicProperties();
 
-            DrawPropertiesExcluding(serializedObject, excludedProperties.ToArray());
+            RenderSpecialProperties();
 
-            if (activeClip == null)
-            {
-                RedesignateActiveAudioClip();
-            }
-
-            if (!isPreset) DrawPlaybackTool();
-
-            DrawLoopPointTools(target as SoundFileObject);
-
-            DrawFadeTools(activeClip);
-
-            DrawAudioEffectTools();
-
-            if (serializedObject.hasModifiedProperties)
-            {
-                AudioPlaybackToolEditor.DoForceRepaint(true);
-                serializedObject.ApplyModifiedProperties();
-
-                // Manually fix variables
-                if (asset.delay < 0)
-                {
-                    asset.delay = 0;
-                    Undo.RecordObject(asset, "Fixed negative delay");
-                }
-            }
+            PostFixAndSave();
 
             #region Quick Reference Guide
             string[] howToText = new string[]
@@ -201,23 +142,6 @@ namespace JSAM.JSAMEditor
                     clipPlaying = true;
                     playingRandom = true;
                 }
-            }
-        }
-
-        /// <summary>
-        /// Assigns an AudioClip to the activeClip variable. 
-        /// Will fail if AudioClip as marked as missing
-        /// </summary>
-        public void RedesignateActiveAudioClip()
-        {
-            AudioClip theClip = null;
-            if (files.arraySize != 0)
-            {
-                theClip = files.GetArrayElementAtIndex(0).objectReferenceValue as AudioClip;
-            }
-            if (theClip != null)
-            {
-                activeClip = theClip;
             }
         }
 

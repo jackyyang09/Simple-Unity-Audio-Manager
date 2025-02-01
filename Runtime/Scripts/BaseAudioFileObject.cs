@@ -153,7 +153,7 @@ namespace JSAM
 
     public abstract partial class BaseAudioFileObject : ScriptableObject
     {
-        [SerializeField, HideInInspector] protected string safeName = "";
+        [SerializeField] protected string safeName = "";
         public string SafeName
         {
             get
@@ -161,21 +161,28 @@ namespace JSAM
                 return name.ConvertToAlphanumeric();
             }
         }
-        [SerializeField, HideInInspector] string presetDescription;
+        [SerializeField] string presetDescription;
 
         [SerializeField] protected List<AudioClip> files = new List<AudioClip>();
         public List<AudioClip> Files { get { return files; } }
 
         /// <summary>
+        /// Only applies to SoundFileObject, after playing this sound, 
+        /// the next time it's played, it will play a different AudioClip in its file list
+        /// </summary>
+        [Tooltip("Only applies to SoundFileObject, after playing this sound, the next time it's played, it will play a different AudioClip in its file list")]
+        public bool neverRepeat;
+
+        /// <summary>
         /// Starting loop point, stored as time for accuracy sake, converted to samples in back-end
         /// </summary>
-        [HideInInspector] public float loopStart;
+        public float loopStart;
         /// <summary>
         /// Ending loop point, stored as time for accuracy sake, converted to samples in back-end
         /// </summary>
-        [HideInInspector] public float loopEnd;
+        public float loopEnd;
 
-        [HideInInspector] public int bpm = 120;
+        public int bpm = 120;
 
         [Range(0, 1)]
         [Tooltip("The volume of this Audio File relative to the volume levels defined in the main AudioManager. Leave at 1 to keep unchanged. The lower the value, the quieter it will be during playback.")]
@@ -219,36 +226,30 @@ namespace JSAM
         [Tooltip("Add fade to your sound. Set the details of this fade using the FadeMode tools.")]
         public bool fadeInOut;
         [Tooltip("The percentage of time the sound takes to fade-in relative to it's total length.")]
-        [SerializeField, HideInInspector]
         public float fadeInDuration;
 
         [Tooltip("The percentage of time the sound takes to fade-out relative to it's total length.")]
-        [SerializeField, HideInInspector]
         public float fadeOutDuration;
 
         [Tooltip("If true, this audio file ignore effects applied in the Audio Effects stack and any effects applied to the Audio Listener.")]
-        [SerializeField, HideInInspector]
         public bool bypassEffects;
 
         [Tooltip("If true, this audio file will ignore any effects applied to the Audio Listener.")]
-        [SerializeField, HideInInspector]
         public bool bypassListenerEffects;
 
         [Tooltip("If true, this audio file will ignore reverb effects created when the Audio Listener enters a reverb zone")]
-        [SerializeField, HideInInspector]
         public bool bypassReverbZones;
         //
         //[SerializeReference] SpatialSoundSettings spatialSoundSettings;
 
-        [SerializeField, HideInInspector] public AudioChorusObj chorusFilter;
-        [SerializeField, HideInInspector] public AudioDistortionObj distortionFilter;
-        [SerializeField, HideInInspector] public AudioEchoObj echoFilter;
-        [SerializeField, HideInInspector] public AudioLowPassObj lowPassFilter;
-        [SerializeField, HideInInspector] public AudioHighPassObj highPassFilter;
-        [SerializeField, HideInInspector] public AudioReverbObj reverbFilter;
+        public AudioChorusObj chorusFilter;
+        public AudioDistortionObj distortionFilter;
+        public AudioEchoObj echoFilter;
+        public AudioLowPassObj lowPassFilter;
+        public AudioHighPassObj highPassFilter;
+        public AudioReverbObj reverbFilter;
 
-        [HideInInspector] public bool neverRepeat;
-        [HideInInspector] public int lastClipIndex = -1;
+        [System.NonSerialized] public int lastClipIndex = -1;
 
         public void Initialize()
         {

@@ -103,8 +103,6 @@ namespace JSAM.JSAMEditor
             set { EditorPrefs.SetBool(EXPAND_LIBRARY, value); }
         }
 
-        protected List<string> excludedProperties = new List<string>() { "m_Script" };
-
         Color COLOR_BUTTONPRESSED_2 = new Color(0.75f, 0.75f, 0.75f);
 
 #if !UNITY_2020_3_OR_NEWER
@@ -115,7 +113,9 @@ namespace JSAM.JSAMEditor
 
         protected Vector2 scroll;
 
-        AudioClipList list;
+        protected AudioClipList list;
+
+        protected bool NoFiles => files.arraySize == 0;
 
         static BaseAudioFileObjectEditor instance;
         /// <summary>
@@ -163,12 +163,21 @@ namespace JSAM.JSAMEditor
         protected SerializedProperty relativeVolume;
         protected SerializedProperty spatialize;
         protected SerializedProperty maxDistance;
+        protected SerializedProperty priority;
+        protected SerializedProperty startingPitch;
+        protected SerializedProperty pitchShift;
+        protected SerializedProperty delay;
+        protected SerializedProperty ignoreTimeScale;
+        protected SerializedProperty maxPlayingInstances;
+        protected SerializedProperty channelOverride;
+        protected SerializedProperty mixerGroupOverride;
+
         protected SerializedProperty fadeInOut;
         protected SerializedProperty fadeInDuration;
         protected SerializedProperty fadeOutDuration;
         protected SerializedProperty loopMode;
-        protected SerializedProperty loopStartProperty;
-        protected SerializedProperty loopEndProperty;
+        protected SerializedProperty loopStart;
+        protected SerializedProperty loopEnd;
 
         protected SerializedProperty bypassEffects;
         protected SerializedProperty bypassListenerEffects;
@@ -176,44 +185,34 @@ namespace JSAM.JSAMEditor
 
         protected virtual void DesignateSerializedProperties()
         {
-            presetDescription = FindProp("presetDescription");
+            safeName = FindProp(nameof(safeName));
+            presetDescription = FindProp(nameof(presetDescription));
+            files = FindProp(nameof(files));
 
-            files = FindProp("files");
-            excludedProperties.Add("files");
-
-            relativeVolume = FindProp(nameof(asset.relativeVolume));
-            excludedProperties.Add(nameof(asset.relativeVolume));
-
-            spatialize = FindProp(nameof(asset.spatialize));
-            excludedProperties.Add(nameof(asset.spatialize));
-
-            maxDistance = FindProp(nameof(asset.maxDistance));
-            excludedProperties.Add(nameof(asset.maxDistance));
+            relativeVolume = FindProp(nameof(relativeVolume));
+            spatialize = FindProp(nameof(spatialize));
+            maxDistance = FindProp(nameof(maxDistance));
+            priority = FindProp(nameof(priority));
+            startingPitch = FindProp(nameof(startingPitch));
+            pitchShift = FindProp(nameof(pitchShift));
+            delay = FindProp(nameof(delay));
+            ignoreTimeScale = FindProp(nameof(ignoreTimeScale));
+            maxPlayingInstances = FindProp(nameof(maxPlayingInstances));
+            channelOverride = FindProp(nameof(channelOverride));
+            mixerGroupOverride = FindProp(nameof(mixerGroupOverride));
 
             fadeInOut = FindProp(nameof(fadeInOut));
-            excludedProperties.Add(nameof(fadeInOut));
-
-            fadeInDuration = FindProp("fadeInDuration");
-            fadeOutDuration = FindProp("fadeOutDuration");
-
-            loopMode = FindProp("loopMode");
-            excludedProperties.Add("loopMode");
-
-            loopStartProperty = FindProp("loopStart");
-            excludedProperties.Add("loopStart");
-
-            loopEndProperty = FindProp("loopEnd");
-            excludedProperties.Add("loopEnd");
+            fadeInDuration = FindProp(nameof(fadeInDuration));
+            fadeOutDuration = FindProp(nameof(fadeOutDuration));
+            loopMode = FindProp(nameof(loopMode));
+            loopStart = FindProp(nameof(loopStart));
+            loopEnd = FindProp(nameof(loopEnd));
 
             bypassEffects = FindProp(nameof(asset.bypassEffects));
-            excludedProperties.Add(nameof(asset.bypassEffects));
             bypassListenerEffects = serializedObject.FindProperty(nameof(asset.bypassListenerEffects));
-            excludedProperties.Add(nameof(asset.bypassListenerEffects));
             bypassReverbZones = serializedObject.FindProperty(nameof(asset.bypassReverbZones));
-            excludedProperties.Add(nameof(asset.bypassReverbZones));
 
-            list = new AudioClipList(serializedObject, files);
-
+            RedesignateActiveAudioClip();
             CheckFiles();
         }
 
@@ -247,6 +246,59 @@ namespace JSAM.JSAMEditor
             loopIcons[1] = EditorGUIUtility.TrIconContent("playLoopOn", "Click to disable looping");
 #endif
             openIcon = EditorGUIUtility.TrIconContent("d_ScaleTool", "Click to open Playback Preview in a standalone window");
+        }
+
+        protected void RenderBasicProperties()
+        {
+            EditorGUILayout.PropertyField(relativeVolume);
+            EditorGUILayout.PropertyField(spatialize);
+            using (new EditorGUI.DisabledScope(!spatialize.boolValue))
+            {
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.PropertyField(maxDistance);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    if (maxDistance.floatValue < 0)
+                    {
+                        maxDistance.floatValue = 0;
+                    }
+                }
+            }
+            EditorGUILayout.PropertyField(priority);
+            EditorGUILayout.PropertyField(startingPitch);
+            EditorGUILayout.PropertyField(pitchShift);
+            EditorGUILayout.PropertyField(delay);
+            EditorGUILayout.PropertyField(ignoreTimeScale);
+            EditorGUILayout.PropertyField(maxPlayingInstances);
+            EditorGUILayout.PropertyField(channelOverride);
+            EditorGUILayout.PropertyField(mixerGroupOverride);
+        }
+
+        protected void RenderSpecialProperties()
+        {
+            if (!isPreset) DrawPlaybackTool();
+
+            DrawLoopPointTools(asset);
+
+            DrawFadeTools(activeClip);
+
+            DrawAudioEffectTools();
+        }
+
+        protected void PostFixAndSave()
+        {
+            if (serializedObject.hasModifiedProperties)
+            {
+                AudioPlaybackToolEditor.DoForceRepaint(true);
+                serializedObject.ApplyModifiedProperties();
+
+                // Manually fix variables
+                if (asset.delay < 0)
+                {
+                    asset.delay = 0;
+                    Undo.RecordObject(asset, "Fixed negative delay");
+                }
+            }
         }
 
         protected virtual void Update()
@@ -360,12 +412,38 @@ namespace JSAM.JSAMEditor
             {
                 var f = files.GetArrayElementAtIndex(i);
                 if (f.objectReferenceValue == null) missingFiles++;
-                else if (!helper.Clip) helper.Clip = f.objectReferenceValue as AudioClip;
+            }
+        }
+
+        /// <summary>
+        /// Assigns an AudioClip to the activeClip variable. 
+        /// Will fail if AudioClip as marked as missing
+        /// </summary>
+        protected void RedesignateActiveAudioClip()
+        {
+            AudioClip theClip = null;
+            if (files.arraySize != 0)
+            {
+                for (int i = 0; i < files.arraySize; i++)
+                {
+                    theClip = files.GetArrayElementAtIndex(i).objectReferenceValue as AudioClip;
+                    if (theClip) break;
+                }
+            }
+            if (theClip != null)
+            {
+                activeClip = theClip;
+                helper.Clip = activeClip;
             }
         }
 
         protected UndoPropertyModification[] PostProcessModifications(UndoPropertyModification[] modifications)
         {
+            if (activeClip == null)
+            {
+                RedesignateActiveAudioClip();
+            }
+
             CheckFiles();
             return modifications;
         }
@@ -460,6 +538,23 @@ namespace JSAM.JSAMEditor
             string fileLabel = "File Count: " + files.arraySize;
             if (missingFiles > 0) fileLabel += " | Missing Files: " + missingFiles;
             EditorGUILayout.LabelField(fileLabel);
+
+            RenderNoClipWarning();
+        }
+
+        protected void RenderNoClipWarning()
+        {
+            if (!isPreset)
+            {
+                if (NoFiles)
+                {
+                    EditorGUILayout.HelpBox("Add an audio file before running!", MessageType.Error);
+                }
+                else if (missingFiles > 0)
+                {
+                    EditorGUILayout.HelpBox(missingFiles + " AudioClip(s) are missing!", MessageType.Warning);
+                }
+            }
         }
 
         protected abstract void OnCreatePreset(string[] input);
@@ -482,7 +577,7 @@ namespace JSAM.JSAMEditor
             bool hide = false;
             GUIContent content = new GUIContent();
 
-            if (files.arraySize == 0)
+            if (files.arraySize == 0 || !activeClip)
             {
                 content.text = "Add some AudioClips above to preview them";
                 hide = true;
@@ -922,22 +1017,21 @@ namespace JSAM.JSAMEditor
         {
             if (asset.Files.Count == 0) return;
 
-            float loopStart = asset.loopStart;
-            float loopEnd = asset.loopEnd;
+            float start = asset.loopStart;
+            float end = asset.loopEnd;
 
-            AudioClip music = asset.Files[0];
             float duration = 0;
             int frequency = 0;
             int samples = 0;
 
-            if (music)
+            if (activeClip)
             {
-                duration = music.length;
-                frequency = music.frequency;
-                samples = music.samples;
+                duration = activeClip.length;
+                frequency = activeClip.frequency;
+                samples = activeClip.samples;
             }
 
-            EditorGUI.BeginDisabledGroup(music == null);
+            EditorGUI.BeginDisabledGroup(activeClip == null);
 
             EditorGUI.BeginChangeCheck();
             EditorGUILayout.PropertyField(loopMode);
@@ -946,10 +1040,10 @@ namespace JSAM.JSAMEditor
                 // This won't do, reset loop point positions
                 if (asset.loopStart >= asset.loopEnd)
                 {
-                    loopStartProperty.floatValue = 0;
-                    loopEndProperty.floatValue = duration;
-                    loopStart = asset.loopStart;
-                    loopEnd = asset.loopEnd;
+                    loopStart.floatValue = 0;
+                    loopEnd.floatValue = duration;
+                    start = asset.loopStart;
+                    end = asset.loopEnd;
                     serializedObject.ApplyModifiedProperties();
                 }
             }
@@ -976,16 +1070,16 @@ namespace JSAM.JSAMEditor
                     {
                         case LoopPointTool.Slider:
                             GUILayout.Label("Song Duration Samples: " + samples);
-                            EditorGUILayout.MinMaxSlider(ref loopStart, ref loopEnd, 0, duration);
+                            EditorGUILayout.MinMaxSlider(ref start, ref end, 0, duration);
 
                             GUILayout.BeginHorizontal();
-                            GUILayout.Label("Loop Point Start: " + loopStart.TimeToString(), new GUILayoutOption[] { GUILayout.Width(180) });
+                            GUILayout.Label("Loop Point Start: " + start.TimeToString(), new GUILayoutOption[] { GUILayout.Width(180) });
                             GUILayout.FlexibleSpace();
                             GUILayout.Label("Loop Point Start (Samples): " + asset.loopStart * frequency);
                             GUILayout.EndHorizontal();
 
                             GUILayout.BeginHorizontal();
-                            GUILayout.Label("Loop Point End:   " + loopEnd.TimeToString(), new GUILayoutOption[] { GUILayout.Width(180) });
+                            GUILayout.Label("Loop Point End:   " + end.TimeToString(), new GUILayoutOption[] { GUILayout.Width(180) });
                             GUILayout.FlexibleSpace();
                             GUILayout.Label("Loop Point End (Samples): " + asset.loopEnd * frequency);
                             GUILayout.EndHorizontal();
@@ -995,7 +1089,7 @@ namespace JSAM.JSAMEditor
 
                             // int casts are used instead of Mathf.RoundToInt so that we truncate the floats instead of rounding up
                             GUILayout.BeginHorizontal();
-                            float theTime = loopStart * 1000f;
+                            float theTime = start * 1000f;
                             GUILayout.Label("Loop Point Start:");
                             int minutes = EditorGUILayout.IntField((int)(theTime / 60000f));
                             GUILayout.Label(":");
@@ -1003,11 +1097,11 @@ namespace JSAM.JSAMEditor
                             GUILayout.Label(":");
                             float milliseconds = Mathf.Clamp(EditorGUILayout.IntField(Mathf.RoundToInt(theTime % 1000f)), 0, 999.0f);
                             milliseconds /= 1000.0f; // Ensures that our milliseconds never leave their decimal place
-                            loopStart = (float)minutes * 60f + (float)seconds + milliseconds;
+                            start = (float)minutes * 60f + (float)seconds + milliseconds;
                             GUILayout.EndHorizontal();
 
                             GUILayout.BeginHorizontal();
-                            theTime = loopEnd * 1000f;
+                            theTime = end * 1000f;
                             GUILayout.Label("Loop Point End:  ");
                             minutes = EditorGUILayout.IntField((int)(theTime / 60000f));
                             GUILayout.Label(":");
@@ -1015,7 +1109,7 @@ namespace JSAM.JSAMEditor
                             GUILayout.Label(":");
                             milliseconds = Mathf.Clamp(EditorGUILayout.IntField(Mathf.RoundToInt(theTime % 1000f)), 0, 999.0f);
                             milliseconds /= 1000.0f; // Ensures that our milliseconds never leave their decimal place
-                            loopEnd = (float)minutes * 60f + (float)seconds + milliseconds;
+                            end = (float)minutes * 60f + (float)seconds + milliseconds;
                             GUILayout.EndHorizontal();
                             break;
                         case LoopPointTool.TimeSamplesInput:
@@ -1025,12 +1119,12 @@ namespace JSAM.JSAMEditor
                             GUILayout.BeginHorizontal();
                             float samplesStart = EditorGUILayout.FloatField("Loop Point Start:", asset.loopStart * frequency);
                             GUILayout.EndHorizontal();
-                            loopStart = samplesStart / frequency;
+                            start = samplesStart / frequency;
 
                             GUILayout.BeginHorizontal();
                             float samplesEnd = JSAMExtensions.Clamp(EditorGUILayout.FloatField("Loop Point End:", asset.loopEnd * frequency), 0, samples);
                             GUILayout.EndHorizontal();
-                            loopEnd = samplesEnd / frequency;
+                            end = samplesEnd / frequency;
                             break;
                         case LoopPointTool.BPMInput/*WithBeats*/:
                             Undo.RecordObject(asset, "Modified song BPM");
@@ -1038,22 +1132,22 @@ namespace JSAM.JSAMEditor
 
                             EditorGUILayout.Space();
 
-                            float startBeat = loopStart / (60f / (float)asset.bpm);
+                            float startBeat = start / (60f / (float)asset.bpm);
                             startBeat = EditorGUILayout.FloatField("Starting Beat:", startBeat);
 
-                            float endBeat = loopEnd / (60f / (float)asset.bpm);
+                            float endBeat = end / (60f / (float)asset.bpm);
                             endBeat = Mathf.Clamp(EditorGUILayout.FloatField("Ending Beat:", endBeat), 0, duration / (60f / asset.bpm));
 
-                            loopStart = (float)startBeat * 60f / (float)asset.bpm;
-                            loopEnd = (float)endBeat * 60f / (float)asset.bpm;
+                            start = (float)startBeat * 60f / (float)asset.bpm;
+                            end = (float)endBeat * 60f / (float)asset.bpm;
                             break;
                     }
 
                     GUIContent buttonText = new GUIContent("Reset Loop Points", "Click to set loop points to the start and end of the track.");
                     if (GUILayout.Button(buttonText))
                     {
-                        loopStart = 0;
-                        loopEnd = duration;
+                        start = 0;
+                        end = duration;
                     }
                     using (new EditorGUI.DisabledScope(!asset.Files[0].IsWavFile()))
                     {
@@ -1077,8 +1171,8 @@ namespace JSAM.JSAMEditor
 
                             if (theTrack.AdditionalFields.ContainsKey("sample.SampleLoop[0].Start") && theTrack.AdditionalFields.ContainsKey("sample.SampleLoop[0].End"))
                             {
-                                loopStart = float.Parse(theTrack.AdditionalFields["sample.SampleLoop[0].Start"]) / frequency;
-                                loopEnd = float.Parse(theTrack.AdditionalFields["sample.SampleLoop[0].End"]) / frequency;
+                                start = float.Parse(theTrack.AdditionalFields["sample.SampleLoop[0].Start"]) / frequency;
+                                end = float.Parse(theTrack.AdditionalFields["sample.SampleLoop[0].End"]) / frequency;
                             }
                             else
                             {
@@ -1115,13 +1209,13 @@ namespace JSAM.JSAMEditor
                         EditorGUILayout.EndHorizontal();
                     }
 
-                    if (music)
+                    if (activeClip)
                     {
-                        if (asset.loopStart != loopStart || asset.loopEnd != loopEnd)
+                        if (asset.loopStart != start || asset.loopEnd != end)
                         {
                             Undo.RecordObject(asset, "Modified loop point properties");
-                            loopStartProperty.floatValue = Mathf.Clamp(loopStart, 0, duration);
-                            loopEndProperty.floatValue = Mathf.Clamp(loopEnd, 0, Mathf.Ceil(duration));
+                            loopStart.floatValue = Mathf.Clamp(start, 0, duration);
+                            loopEnd.floatValue = Mathf.Clamp(end, 0, Mathf.Ceil(duration));
                             EditorUtility.SetDirty(asset);
                             AudioPlaybackToolEditor.DoForceRepaint(true);
                         }

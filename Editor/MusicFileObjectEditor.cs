@@ -89,33 +89,16 @@ namespace JSAM.JSAMEditor
             }
             else
             {
-                activeClip = files.GetArrayElementAtIndex(0).objectReferenceValue as AudioClip;
                 EditorGUILayout.PropertyField(files.GetArrayElementAtIndex(0), clipContent);
             }
-            EditorGUILayout.PropertyField(relativeVolume);
 
-            DrawPropertiesExcluding(serializedObject, excludedProperties.ToArray());
+            RenderNoClipWarning();
 
-            if (!isPreset) DrawPlaybackTool();
+            RenderBasicProperties();
 
-            DrawLoopPointTools(myScript);
+            RenderSpecialProperties();
 
-            DrawFadeTools(activeClip);
-
-            DrawAudioEffectTools();
-
-            if (serializedObject.hasModifiedProperties)
-            {
-                AudioPlaybackToolEditor.DoForceRepaint(true);
-                serializedObject.ApplyModifiedProperties();
-
-                // Manually fix variables
-                if (myScript.delay < 0)
-                {
-                    myScript.delay = 0;
-                    Undo.RecordObject(myScript, "Fixed negative delay");
-                }
-            }
+            PostFixAndSave();
 
             #region Quick Reference Guide 
             showHowTo = EditorCompatability.SpecialFoldouts(showHowTo, "Quick Reference Guide");
