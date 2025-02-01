@@ -266,6 +266,7 @@ namespace JSAM.JSAMEditor
                     for (int i = 0; i < selectedSound.Files.Count; i++)
                     {
                         AudioClip sound = selectedSound.Files[i];
+                        if (sound == null) continue;
                         Color colorbackup = GUI.backgroundColor;
                         //EditorGUILayout.BeginHorizontal();
                         if (Helper.Clip == sound) GUI.backgroundColor = buttonPressedColor;
