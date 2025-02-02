@@ -1,7 +1,7 @@
 {
 	"name": "com.brogrammist.jsam",
 	"displayName": "Jacky's Simple Audio Manager",
-	"version": "3.1.0",
+	"version": "3.1.1",
 	"unity": "2021.3",
 	"description": "A decentralized audio playing system for Unity, designed for simplicity and built to scale!",
 	"category": "",
