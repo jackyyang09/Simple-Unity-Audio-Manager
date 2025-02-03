@@ -16,6 +16,7 @@ MonoBehaviour:
   presetDescription: 
   files:
   - {fileID: 8300000, guid: fe06d48e659b1434ba98e89445a43760, type: 3}
+  neverRepeat: 0
   loopStart: 0
   loopEnd: 12.800001
   bpm: 160
@@ -30,6 +31,7 @@ MonoBehaviour:
   ignoreTimeScale: 0
   maxPlayingInstances: 10
   channelOverride: 0
+  volumeTrack: {fileID: 11400000, guid: c5eb30f7a3d7c7b4185caf6a6d65c1c4, type: 2}
   mixerGroupOverride: {fileID: 0}
   fadeInOut: 0
   fadeInDuration: 0
@@ -80,5 +82,3 @@ MonoBehaviour:
     lFReference: 250
     diffusion: 100
     density: 100
-  neverRepeat: 0
-  lastClipIndex: -1

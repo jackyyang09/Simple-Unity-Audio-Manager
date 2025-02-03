@@ -236,7 +236,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   preloadedLibraries: []
-  listener: {fileID: 1605766782}
 --- !u!4 &154180863
 Transform:
   m_ObjectHideFlags: 0
@@ -402,7 +401,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   relativeVolume: 1
-  volumeChannel: 1
+  track: {fileID: 11400000, guid: da6d4ee54254f564c9b3d72fadef4f4a, type: 2}
   audioSource: {fileID: 316973545}
   videoPlayer: {fileID: 316973544}
   videoImage: {fileID: 34153019}

@@ -41,25 +41,5 @@ namespace JSAM
                 AudioManager.StopSound(s as SoundFileObject, transform);
             }
         }
-
-        public void SetMasterVolume(float newVal)
-        {
-            AudioManager.MasterVolume = newVal;
-        }
-
-        public void SetMusicVolume(float newVal)
-        {
-            AudioManager.MusicVolume = newVal;
-        }
-
-        public void SetSoundVolume(float newVal)
-        {
-            AudioManager.SoundVolume = newVal;
-        }
-
-        public void SetVoiceVolume(float newVal)
-        {
-            AudioManager.VoiceVolume = newVal;
-        }
     }
 }

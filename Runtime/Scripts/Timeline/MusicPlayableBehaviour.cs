@@ -23,12 +23,7 @@ namespace JSAM
                 if (!helper)
                 {
                     helper = base.Helper;
-
-                    if (JSAMSettings.Settings)
-                    {
-                        var mg = JSAMSettings.Settings.MusicGroup;
-                        helper.Init(mg);
-                    }
+                    helper.Init();
                 }
 
                 return helper as MusicChannelHelper;

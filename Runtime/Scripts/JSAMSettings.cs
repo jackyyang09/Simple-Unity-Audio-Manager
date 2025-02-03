@@ -11,7 +11,7 @@ namespace JSAM
         [Tooltip("Ensures that the AudioManager you think you're referring to actually exists in this scene")]
         [SerializeField] bool establishSingletonDominance = true;
         public bool EstablishSingletonDominance => establishSingletonDominance;
-        
+
         [Tooltip("If true, enables 3D spatialized audio for all sound effects, does not effect music")]
         [SerializeField] bool spatialSound = true;
         public bool Spatialize => spatialSound;
@@ -33,7 +33,7 @@ namespace JSAM
 
         [Tooltip("Affects how AudioClip lists are displayed in FileObject inspectors. " +
             "Toggle this option if you're experiencing issues manipulating Audio Clips in the inspector")]
-        [SerializeField] bool useBuiltInAudioListRenderer = 
+        [SerializeField] bool useBuiltInAudioListRenderer =
 #if UNITY_2020_3_OR_NEWER
             true;
 #else
@@ -126,41 +126,27 @@ namespace JSAM
         [SerializeField] bool timeScaledSounds = true;
         public bool TimeScaledSounds => timeScaledSounds;
 
-        [SerializeField] AudioMixer mixer;
-        public AudioMixer Mixer => mixer;
+        [Tooltip("The Track that controls the volume of all in-game audio")]
+        [SerializeField] VolumeTrack masterTrack;
+        public VolumeTrack MasterTrack => masterTrack;
 
-        [SerializeField] AudioMixerGroup masterGroup;
-        public AudioMixerGroup MasterGroup => masterGroup;
+        [Tooltip("Tracks that control the volume of audio of different categories. Influenced by the Master Track")]
+        [SerializeField] VolumeTrack[] tracks;
+        public VolumeTrack[] Tracks => tracks;
 
-        [SerializeField] AudioMixerGroup musicGroup;
-        public AudioMixerGroup MusicGroup => musicGroup;
-
-        [SerializeField] AudioMixerGroup soundGroup;
-        public AudioMixerGroup SoundGroup => soundGroup;
-
-        [SerializeField] AudioMixerGroup voiceGroup;
-        public AudioMixerGroup VoiceGroup => voiceGroup;
+        public List<VolumeTrack> AllTracks
+        {
+            get
+            {
+                var t = new List<VolumeTrack>(tracks);
+                t.Insert(0, masterTrack);
+                return t;
+            }
+        }
 
         [Tooltip("If true, will save volume settings into PlayerPrefs and automatically loads previous volume settings on play. ")]
         [SerializeField] bool saveVolumeToPlayerPrefs = true;
         public bool SaveVolumeToPlayerPrefs => saveVolumeToPlayerPrefs;
-
-        [SerializeField] string masterVolumeKey = "JSAM_MASTER_VOL";
-        [SerializeField] string masterMutedKey = "JSAM_MASTER_MUTE";
-        public string MasterVolumeKey => masterVolumeKey;
-        public string MasterMutedKey => masterMutedKey;
-        [SerializeField] string musicVolumeKey = "JSAM_MUSIC_VOL";
-        [SerializeField] string musicMutedKey = "JSAM_MUSIC_MUTE";
-        public string MusicVolumeKey => musicVolumeKey;
-        public string MusicMutedKey => musicMutedKey;
-        [SerializeField] string soundVolumeKey = "JSAM_SOUND_VOL";
-        [SerializeField] string soundMutedKey = "JSAM_SOUND_MUTE";
-        public string SoundVolumeKey => soundVolumeKey;
-        public string SoundMutedKey => soundMutedKey;
-        [SerializeField] string voiceVolumeKey = "JSAM_VOICE_VOL";
-        [SerializeField] string voiceMutedKey = "JSAM_VOICE_MUTE";
-        public string VoiceVolumeKey => voiceVolumeKey;
-        public string VoiceMutedKey => voiceMutedKey;
 
         [Tooltip("The font size used when rendering \"quick reference guides\" in JSAM editor windows")]
         [SerializeField] int quickReferenceFontSize = 10;

@@ -8,8 +8,6 @@ namespace JSAM
     [RequireComponent(typeof(AudioSource))]
     public class MusicChannelHelper : BaseAudioChannelHelper<MusicFileObject>
     {
-        protected override VolumeChannel DefaultChannel => VolumeChannel.Music;
-
         protected override void OnDisable()
         {
             base.OnDisable();

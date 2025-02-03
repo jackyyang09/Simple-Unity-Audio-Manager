@@ -20,39 +20,11 @@ namespace JSAM
         protected T audioFile;
         public T AudioFile { get { return audioFile; } }
 
-        protected abstract VolumeChannel DefaultChannel { get; }
-
-        public VolumeChannel Channel
-        {
-            get
-            {
-                var channel = DefaultChannel;
-                if (!audioFile) return channel;
-                if (audioFile.channelOverride != VolumeChannel.None)
-                {
-                    channel = audioFile.channelOverride;
-                }
-                return channel;
-            }
-        }
-
         public float Volume
         {
             get
             {
-                var vol = 0f;
-                switch (Channel)
-                {
-                    case VolumeChannel.Music:
-                        vol = AudioManager.InternalInstance.ModifiedMusicVolume;
-                        break;
-                    case VolumeChannel.Sound:
-                        vol = AudioManager.InternalInstance.ModifiedSoundVolume;
-                        break;
-                    case VolumeChannel.Voice:
-                        vol = AudioManager.InternalInstance.ModifiedVoiceVolume;
-                        break;
-                }
+                var vol = AudioManager.GetModifiedVolume(subscribedTrack);
                 if (audioFile) vol *= audioFile.relativeVolume;
                 return vol;
             }
@@ -78,12 +50,11 @@ namespace JSAM
         protected AudioReverbFilter reverbFilter;
 
         public AudioSource AudioSource { get; private set; }
-        protected AudioMixerGroup defaultMixerGroup;
 
         protected Transform originalParent;
 
         Coroutine fadeInRoutine, fadeOutRoutine;
-        bool subscribedToEvents;
+        VolumeTrack subscribedTrack;
         bool applicationPaused, applicationFocused = true;
         protected void OnApplicationPause(bool pause)
         {
@@ -94,12 +65,11 @@ namespace JSAM
             applicationFocused = focus;
         }
 
-        public void Init(AudioMixerGroup defaultGroup)
+        public void Init()
         {
             AudioSource = GetComponent<AudioSource>();
             enabled = false;
             originalParent = transform.parent;
-            defaultMixerGroup = defaultGroup;
         }
 
         protected virtual void OnEnable()
@@ -159,7 +129,7 @@ namespace JSAM
                 }
             }
 
-            if (subscribedToEvents) UnsubscribeFromAudioEvents();
+            if (subscribedTrack) UnsubscribeFromAudioEvents();
         }
 
         protected virtual void Update()
@@ -210,36 +180,15 @@ namespace JSAM
 
         protected void SubscribeToVolumeEvents()
         {
-            switch (Channel)
-            {
-                case VolumeChannel.Music:
-                    AudioManagerInternal.OnMusicVolumeChanged.Add(this);
-                    break;
-                case VolumeChannel.Sound:
-                    AudioManagerInternal.OnSoundVolumeChanged.Add(this);
-                    break;
-                case VolumeChannel.Voice:
-                    AudioManagerInternal.OnVoiceVolumeChanged.Add(this);
-                    break;
-            }
-            subscribedToEvents = true;
+            if (!audioFile.volumeTrack) subscribedTrack = JSAMSettings.Settings.MasterTrack;
+            else subscribedTrack = audioFile.volumeTrack;
+            AudioManagerInternal.OnVolumeChanged[subscribedTrack].Add(this);
         }
 
         protected void UnsubscribeFromAudioEvents()
         {
-            switch (Channel)
-            {
-                case VolumeChannel.Music:
-                    AudioManagerInternal.OnMusicVolumeChanged.Remove(this);
-                    break;
-                case VolumeChannel.Sound:
-                    AudioManagerInternal.OnSoundVolumeChanged.Remove(this);
-                    break;
-                case VolumeChannel.Voice:
-                    AudioManagerInternal.OnVoiceVolumeChanged.Remove(this);
-                    break;
-            }
-            subscribedToEvents = false;
+            AudioManagerInternal.OnVolumeChanged[subscribedTrack].Remove(this);
+            subscribedTrack = null;
         }
 
         protected void ClearProperties()
@@ -251,7 +200,7 @@ namespace JSAM
             {
                 AudioSource.timeSamples = 0;
             }
-            if (audioFile) UnsubscribeFromAudioEvents();
+            if (subscribedTrack) UnsubscribeFromAudioEvents();
         }
 
         public void AssignNewFile(T file)
@@ -291,10 +240,10 @@ namespace JSAM
                 AudioSource.spatialBlend = 0;
             }
 
-            if (!subscribedToEvents) SubscribeToVolumeEvents();
+            if (!subscribedTrack) SubscribeToVolumeEvents();
             AudioSource.volume = Volume;
 
-            AudioSource.outputAudioMixerGroup = audioFile.mixerGroupOverride ? audioFile.mixerGroupOverride : defaultMixerGroup;
+            AudioSource.outputAudioMixerGroup = audioFile.mixerGroupOverride ? audioFile.mixerGroupOverride : subscribedTrack.DefaultMixerGroup;
 
             AudioSource.priority = (int)audioFile.priority;
 

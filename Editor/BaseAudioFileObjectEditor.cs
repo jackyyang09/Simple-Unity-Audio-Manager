@@ -160,6 +160,7 @@ namespace JSAM.JSAMEditor
         protected SerializedProperty safeName;
         protected SerializedProperty presetDescription;
         protected SerializedProperty files;
+        protected SerializedProperty volumeTrack;
         protected SerializedProperty relativeVolume;
         protected SerializedProperty spatialize;
         protected SerializedProperty maxDistance;
@@ -189,6 +190,7 @@ namespace JSAM.JSAMEditor
             presetDescription = FindProp(nameof(presetDescription));
             files = FindProp(nameof(files));
 
+            volumeTrack = FindProp(nameof(volumeTrack));
             relativeVolume = FindProp(nameof(relativeVolume));
             spatialize = FindProp(nameof(spatialize));
             maxDistance = FindProp(nameof(maxDistance));
@@ -250,6 +252,7 @@ namespace JSAM.JSAMEditor
 
         protected void RenderBasicProperties()
         {
+            EditorGUILayout.PropertyField(volumeTrack);
             EditorGUILayout.PropertyField(relativeVolume);
             EditorGUILayout.PropertyField(spatialize);
             using (new EditorGUI.DisabledScope(!spatialize.boolValue))

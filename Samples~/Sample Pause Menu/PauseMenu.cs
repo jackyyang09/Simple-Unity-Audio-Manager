@@ -13,13 +13,10 @@ namespace JSAM
         [SerializeField]
         KeyCode toggleButton = KeyCode.Escape;
 
-        Canvas pauseMenu;
+        [SerializeField] VolumeTrack musicTrack;
+        [SerializeField] VolumeTrack soundTrack;
 
-        // Start is called before the first frame update
-        void Awake()
-        {
-            pauseMenu = GetComponent<Canvas>();
-        }
+        [SerializeField] Canvas pauseMenu;
 
         // Update is called once per frame
         void Update()
@@ -44,6 +41,30 @@ namespace JSAM
                     Cursor.visible = true;
                 }
             }
+        }
+
+        // Example API for manipulating volume
+        // Both the below calls do the same thing, it's up to you whether you prefer to call the AudioManager
+        // or make use of Extension methods
+
+        public void SetMusicVolume(float value)
+        {
+            AudioManager.SetVolume(musicTrack, value);
+        }
+
+        public void SetSoundVolume(float value)
+        {
+            soundTrack.SetVolume(value);
+        }
+
+        public void ToggleMusicMute()
+        {
+            AudioManager.SetMute(musicTrack, !AudioManager.IsMuted(musicTrack));
+        }
+
+        public void ToggleSoundMute()
+        {
+            soundTrack.SetMuted(!soundTrack.IsMuted());
         }
     }
 }

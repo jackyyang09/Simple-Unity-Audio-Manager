@@ -47,6 +47,8 @@ namespace JSAM.JSAMEditor
             set => EditorPrefs.SetBool(SHOW_LIBRARIES, value);
         }
 
+        JSAMSettings Settings => JSAMSettings.Settings;
+
         private void OnEnable()
         {
             myScript = (AudioManager)target;
@@ -56,11 +58,26 @@ namespace JSAM.JSAMEditor
             preloadedLibraries = serializedObject.FindProperty(nameof(preloadedLibraries));
 
             Application.logMessageReceived += UnityDebugLog;
+
+            AudioManager.OnAnyVolumeChanged += OnAnyVolumeChanged;
         }
 
         private void OnDisable()
         {
             Application.logMessageReceived -= UnityDebugLog;
+
+            AudioManager.OnAnyVolumeChanged -= OnAnyVolumeChanged;
+        }
+
+        bool queueRepaint;
+        void OnAnyVolumeChanged(VolumeTrack track, float channelVolume, float realVolume)
+        {
+            queueRepaint = true;
+        }
+
+        public override bool RequiresConstantRepaint()
+        {
+            return queueRepaint;
         }
 
         public override void OnInspectorGUI()
@@ -118,6 +135,8 @@ namespace JSAM.JSAMEditor
             {
                 serializedObject.ApplyModifiedProperties();
             }
+
+            queueRepaint = false;
 
             #region Quick Reference Guide
             showHowTo = EditorCompatability.SpecialFoldouts(showHowTo, "Quick Reference Guide");
@@ -212,60 +231,30 @@ namespace JSAM.JSAMEditor
         {
             showVolume = EditorCompatability.SpecialFoldouts(showVolume, new GUIContent("Volume Controls"));
 
-            float master = 1, music = 1, sound = 1, voice = 1;
-            bool masterMuted = false, musicMuted = false, soundMuted = false, voiceMuted = false;
-
             EditorGUILayout.BeginVertical(GUI.skin.box);
             using (new EditorGUI.DisabledGroupScope(!Application.isPlaying))
             {
                 if (showVolume)
                 {
-                    if (Application.isPlaying)
-                    {
-                        master = AudioManager.MasterVolume;
-                        music = AudioManager.MusicVolume;
-                        sound = AudioManager.SoundVolume;
-                        voice = AudioManager.VoiceVolume;
-                        masterMuted = AudioManager.MasterMuted;
-                        musicMuted = AudioManager.MusicMuted;
-                        soundMuted = AudioManager.SoundMuted;
-                        voiceMuted = AudioManager.VoiceMuted;
-                    }
-                    else
+                    if (!Application.isPlaying)
                     {
                         EditorGUILayout.LabelField("Volume can only be changed during runtime!", GUI.skin.label.ApplyWordWrap().ApplyBoldText());
                     }
 
-                    EditorGUI.BeginChangeCheck();
-                    var tuple = RenderVolumeSlider("Master", master, masterMuted);
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        AudioManager.MasterVolume = tuple.Item1;
-                        AudioManager.MasterMuted = tuple.Item2;
-                    }
+                    bool muted = false;
+                    float volume = 1;
+                    AudioManagerInternal.VolumeData data;
 
-                    EditorGUI.BeginChangeCheck();
-                    tuple = RenderVolumeSlider("Music", music, musicMuted);
-                    if (EditorGUI.EndChangeCheck())
+                    foreach (var t in JSAMSettings.Settings.AllTracks)
                     {
-                        AudioManager.MusicVolume = tuple.Item1;
-                        AudioManager.MusicMuted = tuple.Item2;
-                    }
+                        if (Application.isPlaying)
+                        {
+                            data = AudioManagerInternal.Instance.GetVolumeData(t);
+                            muted = data.Muted;
+                            volume = data.Volume;
+                        }
 
-                    EditorGUI.BeginChangeCheck();
-                    tuple = RenderVolumeSlider("Sound", sound, soundMuted);
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        AudioManager.SoundVolume = tuple.Item1;
-                        AudioManager.SoundMuted = tuple.Item2;
-                    }
-
-                    EditorGUI.BeginChangeCheck();
-                    tuple = RenderVolumeSlider("Voice", voice, voiceMuted);
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        AudioManager.VoiceVolume = tuple.Item1;
-                        AudioManager.VoiceMuted = tuple.Item2;
+                        RenderVolumeSlider(t, volume, muted);
                     }
                 }
             }
@@ -273,22 +262,33 @@ namespace JSAM.JSAMEditor
             EditorCompatability.EndSpecialFoldoutGroup();
         }
 
-        (float, bool) RenderVolumeSlider(string channelName, float volume, bool muted)
+        void RenderVolumeSlider(VolumeTrack track, float volume, bool muted)
         {
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(new GUIContent(channelName + " Volume"), new GUILayoutOption[] { GUILayout.MaxWidth(90) });
+            EditorGUILayout.LabelField(new GUIContent(track.name), new GUILayoutOption[] { GUILayout.MaxWidth(90) });
             if (muted) JSAMEditorHelper.BeginColourChange(buttonPressedColor);
+
+            EditorGUI.BeginChangeCheck();
             if (JSAMEditorHelper.CondensedButton(" MUTE "))
             {
                 muted = !muted;
             }
+            if (EditorGUI.EndChangeCheck())
+            {
+                AudioManager.SetMute(track, muted);
+            }
             if (muted) JSAMEditorHelper.EndColourChange();
+
+            EditorGUI.BeginChangeCheck();
             using (new EditorGUI.DisabledGroupScope(muted))
             {
                 volume = EditorGUILayout.Slider(volume, 0, 1);
             }
+            if (EditorGUI.EndChangeCheck())
+            {
+                AudioManager.SetVolume(track, volume);
+            }
             EditorGUILayout.EndHorizontal();
-            return (volume, muted);
         }
     }
 }

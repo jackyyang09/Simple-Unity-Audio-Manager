@@ -37,35 +37,36 @@ namespace JSAM
         JSAMSettings Settings => JSAMSettings.Settings;
 
         #region Volume Logic
-        public bool MasterMuted = false;
-        public float MasterVolume = 1;
-        public float ModifiedMasterVolume => MasterVolume * Convert.ToInt32(!MasterMuted);
+        public struct VolumeData
+        {
+            public float Volume;
+            public bool Muted;
+        }
 
-        public bool MusicMuted = false;
-        public float MusicVolume = 1;
-        public float ModifiedMusicVolume => ModifiedMasterVolume * MusicVolume * Convert.ToInt32(!MusicMuted);
-
-        public bool SoundMuted = false;
-        public float SoundVolume = 1;
-        public float ModifiedSoundVolume => ModifiedMasterVolume * SoundVolume * Convert.ToInt32(!SoundMuted);
-
-        public bool VoiceMuted = false;
-        public float VoiceVolume = 1;
-        public float ModifiedVoiceVolume => ModifiedMasterVolume * VoiceVolume * Convert.ToInt32(!VoiceMuted);
+        Dictionary<VolumeTrack, VolumeData> runtimeVolume = new Dictionary<VolumeTrack, VolumeData>();
+        public VolumeData GetVolumeData(VolumeTrack track) => runtimeVolume[track];
+        public bool SetVolumeData(VolumeTrack track, VolumeData data)
+        {
+            if (!runtimeVolume.ContainsKey(track))
+            {
+                Debug.LogError("Tried to set volume of a track that isn't used by the AudioManager! " +
+                    "Check your Project Settings to see if it's loaded!");
+                return false;
+            }
+            runtimeVolume[track] = data;
+            return true;
+        }
 
         public void SaveVolumeSettings()
         {
-            if (!JSAMSettings.Settings.SaveVolumeToPlayerPrefs) return;
+            if (!Settings.SaveVolumeToPlayerPrefs) return;
 
-            PlayerPrefs.SetFloat(Settings.MasterVolumeKey, MasterVolume);
-            PlayerPrefs.SetFloat(Settings.MusicVolumeKey, MusicVolume);
-            PlayerPrefs.SetFloat(Settings.SoundVolumeKey, SoundVolume);
-            PlayerPrefs.SetFloat(Settings.VoiceVolumeKey, VoiceVolume);
-
-            PlayerPrefs.SetInt(Settings.MasterMutedKey, Convert.ToInt16(MasterMuted));
-            PlayerPrefs.SetInt(Settings.MusicMutedKey, Convert.ToInt16(MusicMuted));
-            PlayerPrefs.SetInt(Settings.SoundMutedKey, Convert.ToInt16(SoundMuted));
-            PlayerPrefs.SetInt(Settings.VoiceMutedKey, Convert.ToInt16(VoiceMuted));
+            foreach (var t in Settings.AllTracks)
+            {
+                var data = runtimeVolume[t];
+                PlayerPrefs.SetFloat(t.VolumeKey, data.Volume);
+                PlayerPrefs.SetInt(t.MutedKey, Convert.ToInt16(data.Muted));
+            }
 
             PlayerPrefs.Save();
         }
@@ -74,28 +75,27 @@ namespace JSAM
         {
             if (!Settings.SaveVolumeToPlayerPrefs) return;
 
-            MasterVolume = PlayerPrefs.GetFloat(Settings.MasterVolumeKey, 1);
-            MusicVolume = PlayerPrefs.GetFloat(Settings.MusicVolumeKey, 1);
-            SoundVolume = PlayerPrefs.GetFloat(Settings.SoundVolumeKey, 1);
-            VoiceVolume = PlayerPrefs.GetFloat(Settings.VoiceVolumeKey, 1);
-
-            MasterMuted = Convert.ToBoolean(PlayerPrefs.GetInt(Settings.MasterMutedKey, 0));
-            MusicMuted = Convert.ToBoolean(PlayerPrefs.GetInt(Settings.MusicMutedKey, 0));
-            SoundMuted = Convert.ToBoolean(PlayerPrefs.GetInt(Settings.SoundMutedKey, 0));
-            VoiceMuted = Convert.ToBoolean(PlayerPrefs.GetInt(Settings.VoiceMutedKey, 0));
+            foreach (var t in Settings.AllTracks)
+            {
+                runtimeVolume[t] = new VolumeData
+                {
+                    Volume = PlayerPrefs.GetFloat(t.VolumeKey, t.DefaultVolume),
+                    Muted = Convert.ToBoolean(PlayerPrefs.GetInt(t.MutedKey, 0))
+                };
+            }
         }
 
-        void MusicVolumeChanged(float channelVolume, float realVolume)
+        public void LoadVolumeSettings(VolumeData[] data)
         {
-            foreach (var helper in OnMusicVolumeChanged) helper.VolumeChanged(channelVolume, realVolume);
+            for (int i = 0; i < Settings.Tracks.Length; i++)
+            {
+                runtimeVolume[Settings.Tracks[i]] = data[i];
+            }
         }
-        void SoundVolumeChanged(float channelVolume, float realVolume)
+
+        void AnyVolumeChanged(VolumeTrack track, float channelVolume, float realVolume)
         {
-            foreach (var helper in OnSoundVolumeChanged) helper.VolumeChanged(channelVolume, realVolume);
-        }
-        void VoiceVolumeChanged(float channelVolume, float realVolume)
-        {
-            foreach (var helper in OnVoiceVolumeChanged) helper.VolumeChanged(channelVolume, realVolume);
+            foreach (var helper in OnVolumeChanged[track]) helper.VolumeChanged(channelVolume, realVolume);
         }
         #endregion
 
@@ -148,19 +148,18 @@ namespace JSAM
         /// </summary>
         public static List<IAudioHelperEvents> OnTimeScaleChanged = new List<IAudioHelperEvents>();
         /// <summary>
-        /// Notifies Audio Helpers of a specific channel to adjust their Volume
+        /// Notifies Audio Helpers of a specific track to adjust their Volume
         /// </summary>
-        public static List<IAudioHelperEvents> OnMusicVolumeChanged = new List<IAudioHelperEvents>();
-        /// <summary> <inheritdoc cref="OnMusicVolumeChanged"/> </summary>
-        public static List<IAudioHelperEvents> OnSoundVolumeChanged = new List<IAudioHelperEvents>();
-        /// <summary> <inheritdoc cref="OnMusicVolumeChanged"/> </summary>
-        public static List<IAudioHelperEvents> OnVoiceVolumeChanged = new List<IAudioHelperEvents>();
+        public static Dictionary<VolumeTrack, List<IAudioHelperEvents>> OnVolumeChanged = new Dictionary<VolumeTrack, List<IAudioHelperEvents>>();
 
         public static AudioManagerInternal Instance => AudioManager.InternalInstance;
 
         void Awake()
         {
-            LoadVolumeSettings();
+            if (Settings.SaveVolumeToPlayerPrefs)
+            {
+                LoadVolumeSettings();
+            }
 
             sourceHolder = new GameObject("Sources").transform;
             for (int i = 0; i < Settings.StartingSoundChannels; i++)
@@ -174,9 +173,12 @@ namespace JSAM
             }
             if (musicHelpers.Count > 0) MainMusic = musicHelpers[0];
 
-            AudioManager.OnMusicVolumeChanged += MusicVolumeChanged;
-            AudioManager.OnSoundVolumeChanged += SoundVolumeChanged;
-            AudioManager.OnVoiceVolumeChanged += VoiceVolumeChanged;
+            foreach (var t in JSAMSettings.Settings.AllTracks)
+            {
+                OnVolumeChanged[t] = new List<IAudioHelperEvents>();
+            }
+
+            AudioManager.OnAnyVolumeChanged += AnyVolumeChanged;
         }
 
         private void Start()
@@ -231,9 +233,14 @@ namespace JSAM
         {
             SaveVolumeSettings();
 
-            AudioManager.OnMusicVolumeChanged -= MusicVolumeChanged;
-            AudioManager.OnSoundVolumeChanged -= SoundVolumeChanged;
-            AudioManager.OnVoiceVolumeChanged -= VoiceVolumeChanged;
+            AudioManager.OnAnyVolumeChanged -= AnyVolumeChanged;
+        }
+
+        static bool isQuitting;
+        public static bool IsQuitting => isQuitting;
+        private void OnApplicationQuit()
+        {
+            isQuitting = true;
         }
 
         MusicChannelHelper HandleLimitedInstances(MusicFileObject music, MusicChannelHelper helper)
@@ -775,7 +782,7 @@ namespace JSAM
                 newHelper = newChannel.AddComponent<MusicChannelHelper>();
             }
 
-            newHelper.Init(Settings.MusicGroup);
+            newHelper.Init();
             return newHelper;
         }
 
@@ -803,7 +810,7 @@ namespace JSAM
                 newHelper = newChannel.AddComponent<SoundChannelHelper>();
             }
 
-            newHelper.Init(Settings.SoundGroup);
+            newHelper.Init();
             return newHelper;
         }
         #endregion

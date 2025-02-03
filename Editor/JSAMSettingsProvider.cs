@@ -5,9 +5,6 @@ namespace JSAM.JSAMEditor
 {
     public class JSAMSettingsProvider : SettingsProvider
     {
-        static bool mixerFoldout = false;
-        static bool prefsFoldout = false;
-
         public JSAMSettingsProvider(string path, SettingsScope scope = SettingsScope.Project) : base(path, scope)
         {
         }
@@ -27,21 +24,9 @@ namespace JSAM.JSAMEditor
             spatializationMode,
             timeScaledSounds,
 
-            mixer,
-            masterGroup,
-            musicGroup,
-            soundGroup,
-            voiceGroup,
-
             saveVolumeToPlayerPrefs,
-            masterVolumeKey,
-            masterMutedKey,
-            musicVolumeKey,
-            musicMutedKey,
-            soundVolumeKey,
-            soundMutedKey,
-            voiceVolumeKey,
-            voiceMutedKey,
+            masterTrack,
+            tracks,
 
             disableConsoleLogs,
             quickReferenceFontSize,
@@ -69,21 +54,9 @@ namespace JSAM.JSAMEditor
             spatializationMode = SettingsSO.FindProperty(nameof(spatializationMode));
             timeScaledSounds = SettingsSO.FindProperty(nameof(timeScaledSounds));
 
-            mixer = SettingsSO.FindProperty(nameof(mixer));
-            masterGroup = SettingsSO.FindProperty(nameof(masterGroup));
-            musicGroup = SettingsSO.FindProperty(nameof(musicGroup));
-            soundGroup = SettingsSO.FindProperty(nameof(soundGroup));
-            voiceGroup = SettingsSO.FindProperty(nameof(voiceGroup));
-
             saveVolumeToPlayerPrefs = SettingsSO.FindProperty(nameof(saveVolumeToPlayerPrefs));
-            masterVolumeKey = SettingsSO.FindProperty(nameof(masterVolumeKey));
-            masterMutedKey = SettingsSO.FindProperty(nameof(masterMutedKey));
-            musicVolumeKey = SettingsSO.FindProperty(nameof(musicVolumeKey));
-            musicMutedKey = SettingsSO.FindProperty(nameof(musicMutedKey));
-            soundVolumeKey = SettingsSO.FindProperty(nameof(soundVolumeKey));
-            soundMutedKey = SettingsSO.FindProperty(nameof(soundMutedKey));
-            voiceVolumeKey = SettingsSO.FindProperty(nameof(voiceVolumeKey));
-            voiceMutedKey = SettingsSO.FindProperty(nameof(voiceMutedKey));
+            masterTrack = SettingsSO.FindProperty(nameof(masterTrack));
+            tracks = SettingsSO.FindProperty(nameof(tracks));
 
             disableConsoleLogs = SettingsSO.FindProperty(nameof(disableConsoleLogs));
             quickReferenceFontSize = SettingsSO.FindProperty(nameof(quickReferenceFontSize));
@@ -101,6 +74,12 @@ namespace JSAM.JSAMEditor
 
         public override void OnGUI(string searchContext)
         {
+            if (Application.isPlaying)
+            {
+                EditorGUILayout.HelpBox("Changes will not take into effect until you stop and re-enter Play Mode!", 
+                    MessageType.Warning);
+            }
+
             // This makes prefix labels larger
             EditorGUIUtility.labelWidth += 50;
 
@@ -190,34 +169,13 @@ namespace JSAM.JSAMEditor
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space();
-            mixerFoldout = EditorCompatability.SpecialFoldouts(mixerFoldout, "Mixer Settings");
-            if (mixerFoldout)
-            {
-                EditorGUILayout.PropertyField(mixer);
-                EditorGUILayout.PropertyField(masterGroup);
-                EditorGUILayout.PropertyField(musicGroup);
-                EditorGUILayout.PropertyField(soundGroup);
-                EditorGUILayout.PropertyField(voiceGroup);
-            }
-            EditorCompatability.EndSpecialFoldoutGroup();
+            EditorGUILayout.LabelField("Volume Tracks", EditorStyles.boldLabel);
 
-            EditorGUILayout.Space();
-            prefsFoldout = EditorCompatability.SpecialFoldouts(prefsFoldout, "Player Prefs Volume");
-            if (prefsFoldout)
-            {
-                EditorGUILayout.PropertyField(saveVolumeToPlayerPrefs);
-                EditorGUI.BeginDisabledGroup(!saveVolumeToPlayerPrefs.boolValue);
-                EditorGUILayout.PropertyField(masterVolumeKey);
-                EditorGUILayout.PropertyField(masterMutedKey);
-                EditorGUILayout.PropertyField(musicVolumeKey);
-                EditorGUILayout.PropertyField(musicMutedKey);
-                EditorGUILayout.PropertyField(soundVolumeKey);
-                EditorGUILayout.PropertyField(soundMutedKey);
-                EditorGUILayout.PropertyField(voiceVolumeKey);
-                EditorGUILayout.PropertyField(voiceMutedKey);
-                EditorGUI.EndDisabledGroup();
-            }
-            EditorCompatability.EndSpecialFoldoutGroup();
+            EditorGUILayout.PropertyField(saveVolumeToPlayerPrefs);
+
+            EditorGUILayout.PropertyField(masterTrack);
+            GUIStyle style = new GUIStyle(EditorStyles.label).ApplyWordWrap().SetTextColor(Color.white);
+            EditorGUILayout.PropertyField(tracks);
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Editor", EditorStyles.boldLabel);

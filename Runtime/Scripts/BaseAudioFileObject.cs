@@ -34,14 +34,6 @@ namespace JSAM
         ClampedLoopPoints
     }
 
-    public enum VolumeChannel
-    {
-        None,
-        Music,
-        Sound,
-        Voice
-    }
-
     #region Effect Structs
     [System.Serializable]
     public struct AudioChorusObj
@@ -217,8 +209,8 @@ namespace JSAM
         [Tooltip("The inclusive maximum number of playing instances this Audio File can take up at once. Helpful for things like gun shots where you can easily fire off 50 of the same Audio File in 1 frame. Leave at 0 if that is what you want.")]
         public uint maxPlayingInstances = 10;
 
-        [Tooltip("Overrides the volume channel this audio will use. Leave at None so Sounds are changed with Sound volume and Music is changed with Music volume.")]
-        public VolumeChannel channelOverride;
+        [Tooltip("The 'track' that this audio will have its volume level manipulated by. Allows the end-user to adjust the volume of specific sound 'types'. Will use the Master track if unset.")]
+        public VolumeTrack volumeTrack;
 
         [Tooltip("If this property is null, audio will play through the mixer group specified in the AudioManager settings.")]
         public UnityEngine.Audio.AudioMixerGroup mixerGroupOverride;

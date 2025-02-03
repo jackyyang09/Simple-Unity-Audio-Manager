@@ -12,7 +12,7 @@ namespace JSAM
         [SerializeField] VideoPlayer videoPlayer;
         [SerializeField] RawImage videoImage;
 
-        private void OnEnable()
+        void OnEnable()
         {
             if (videoPlayer)
             {
@@ -29,7 +29,7 @@ namespace JSAM
         {
             if (videoPlayer) videoPlayer.prepareCompleted -= AttachAudioSource;
         
-            UnsubscribeFromAudioEvents();
+            UnsubscribeFromVolumeEvents();
         }
 
         private void AttachAudioSource(VideoPlayer source)
@@ -37,7 +37,6 @@ namespace JSAM
             Init();
         }
 
-        [ContextMenu(nameof(Init))]
         void Init()
         {
             StartCoroutine(PlayRoutine());
@@ -49,8 +48,6 @@ namespace JSAM
 
             SubscribeToVolumeEvents();
 
-            subscribedChannel = volumeChannel;
-            
             videoPlayer.enabled = true;
             videoPlayer.prepareCompleted -= AttachAudioSource;
             videoPlayer.Prepare();

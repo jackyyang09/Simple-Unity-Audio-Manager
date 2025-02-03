@@ -177,6 +177,7 @@ namespace JSAM
 
         private void OnDisable()
         {
+            if (AudioManagerInternal.IsQuitting) return;
             switch (onDisable)
             {
                 case AudioPlaybackBehaviour.Play:
@@ -190,7 +191,7 @@ namespace JSAM
 
         private void OnDestroy()
         {
-            if (!AudioManager.Instance) return;
+            if (AudioManagerInternal.IsQuitting) return;
             switch (onDestroy)
             {
                 case AudioPlaybackBehaviour.Play:

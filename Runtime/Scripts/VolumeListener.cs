@@ -7,42 +7,27 @@ namespace JSAM
         [SerializeField] [Range(0, 1)] protected float relativeVolume = 1;
         public float RelativeVolume => relativeVolume;
 
-        [SerializeField] protected VolumeChannel volumeChannel = VolumeChannel.Sound;
-        protected VolumeChannel subscribedChannel;
+        [SerializeField] protected VolumeTrack track;
+        protected VolumeTrack subscribedTrack;
 
         [SerializeField] protected AudioSource audioSource;
         public AudioSource AudioSource => audioSource;
 
         protected void SubscribeToVolumeEvents()
         {
-            switch (volumeChannel)
-            {
-                case VolumeChannel.Music:
-                    AudioManager.OnMusicVolumeChanged += OnUpdateVolume;
-                    break;
-                case VolumeChannel.Sound:
-                    AudioManager.OnSoundVolumeChanged += OnUpdateVolume;
-                    break;
-                case VolumeChannel.Voice:
-                    AudioManager.OnVoiceVolumeChanged += OnUpdateVolume;
-                    break;
-            }
+            if (track == null) subscribedTrack = JSAMSettings.Settings.MasterTrack;
+            else subscribedTrack = track;
+
+            AudioManager.OnVolumeChanged[subscribedTrack] += OnUpdateVolume;
         }
 
-        protected void UnsubscribeFromAudioEvents()
+        protected void UnsubscribeFromVolumeEvents()
         {
-            switch (volumeChannel)
-            {
-                case VolumeChannel.Music:
-                    AudioManager.OnMusicVolumeChanged -= OnUpdateVolume;
-                    break;
-                case VolumeChannel.Sound:
-                    AudioManager.OnSoundVolumeChanged -= OnUpdateVolume;
-                    break;
-                case VolumeChannel.Voice:
-                    AudioManager.OnVoiceVolumeChanged -= OnUpdateVolume;
-                    break;
-            }
+            if (!subscribedTrack) return;
+
+            AudioManager.OnVolumeChanged[subscribedTrack] -= OnUpdateVolume;
+
+            subscribedTrack = null;
         }
 
         protected void OnUpdateVolume(float channelVolume, float realVolume)
@@ -52,18 +37,7 @@ namespace JSAM
 
         protected void ForceUpdateVolume()
         {
-            switch (subscribedChannel)
-            {
-                case VolumeChannel.Music:
-                    OnUpdateVolume(AudioManagerInternal.Instance.MusicVolume, AudioManagerInternal.Instance.ModifiedMusicVolume);
-                    break;
-                case VolumeChannel.Sound:
-                    OnUpdateVolume(AudioManagerInternal.Instance.SoundVolume, AudioManagerInternal.Instance.ModifiedSoundVolume);
-                    break;
-                case VolumeChannel.Voice:
-                    OnUpdateVolume(AudioManagerInternal.Instance.VoiceVolume, AudioManagerInternal.Instance.ModifiedVoiceVolume);
-                    break;
-            }
+            OnUpdateVolume(AudioManager.GetVolume(subscribedTrack), AudioManager.GetModifiedVolume(subscribedTrack));
         }
 
 #if UNITY_EDITOR
@@ -86,11 +60,10 @@ namespace JSAM
         {
             UnityEditor.EditorApplication.delayCall -= EditorUpdateVolume;
 
-            if (subscribedChannel != volumeChannel)
+            if (subscribedTrack != track)
             {
-                UnsubscribeFromAudioEvents();
+                UnsubscribeFromVolumeEvents();
                 SubscribeToVolumeEvents();
-                subscribedChannel = volumeChannel;
             }
 
             ForceUpdateVolume();

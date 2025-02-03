@@ -64,7 +64,7 @@ namespace JSAM
         /// <summary>
         /// True if AudioManager finishes setting up
         /// </summary>
-        public bool Initialized { get { return initialized; } }
+        public bool Initialized => initialized;
 
         public static MusicChannelHelper MainMusicHelper { get => InternalInstance.MainMusic; }
         public static MusicFileObject MainMusic { get { return MainMusicHelper.AudioFile; } }
@@ -95,21 +95,23 @@ namespace JSAM
         public static Action<SoundChannelHelper, SoundFileObject> OnSoundPlayed;
         public static Action<SoundChannelHelper, SoundFileObject> OnVoicePlayed;
         public static Action<MusicChannelHelper, MusicFileObject> OnMusicPlayed;
-        
+
         /// <summary>
-        /// Invoked when the volume of the Master channel is changed
-        /// </summary>
-        public static Action<float> OnMasterVolumeChanged;
-        /// <summary>
-        /// <para>Invoked when the volume of this channel or the Master Channel is changed.</para>
+        /// <para>Invoked when the volume of a track is changed. Is also invoked when the volume of the Master Track is changed.</para>
+        /// <para>You can subscribe to OnVolumeChanged events like so:</para>
+        /// <para>public VolumeTrack m_TrackReference;</para>
+        /// <para>OnVolumeChanged[m_TrackReference] += OnVolumeChanged;</para>
         /// <para>float channelVolume - The new volume level of this specific channel, useful for sliders exposed to the User</para>
         /// <para>float realVolume - The new, real volume level of Audio playing in this channel, should be applied to your AudioSource (and optionally multiplied by your AudioClip's specific volume</para>
         /// </summary>
-        public static Action<float, float> OnMusicVolumeChanged;
-        /// <summary> <inheritdoc cref="OnMusicVolumeChanged"/> </summary>
-        public static Action<float, float> OnSoundVolumeChanged;
-        /// <summary> <inheritdoc cref="OnMusicVolumeChanged"/> </summary>
-        public static Action<float, float> OnVoiceVolumeChanged;
+        public static Dictionary<VolumeTrack, Action<float, float>> OnVolumeChanged;
+        /// <summary>
+        /// Invoked when the volume of any track is changed.
+        /// <para>VolumeTrack track - The track whose volume was just changed</para>
+        /// <para>float channelVolume - The new volume level of this specific channel, useful for sliders exposed to the User</para>
+        /// <para>float realVolume - The new, real volume level of Audio playing in this channel, should be applied to your AudioSource (and optionally multiplied by your AudioClip's specific volume</para>
+        /// </summary>
+        public static Action<VolumeTrack, float, float> OnAnyVolumeChanged;
         #endregion
 
         [RuntimeInitializeOnLoadMethod]
@@ -119,10 +121,13 @@ namespace JSAM
             OnSoundPlayed = null;
             OnVoicePlayed = null;
             OnMusicPlayed = null;
-            OnMasterVolumeChanged = null;
-            OnMusicVolumeChanged = null;
-            OnSoundVolumeChanged = null;
-            OnVoiceVolumeChanged = null;
+
+            OnVolumeChanged = new Dictionary<VolumeTrack, Action<float, float>>();
+
+            foreach (var track in JSAMSettings.Settings.AllTracks)
+            {
+                OnVolumeChanged[track] = default;
+            }
         }
 
         // Use this for initialization
@@ -685,103 +690,114 @@ namespace JSAM
         #endregion
 
         #region Volume
+
         /// <summary>
-        /// The current overall volume from 0 to 1
+        /// Returns the volume of the Master Track
         /// </summary>
-        public static float MasterVolume 
-        { 
-            get => InternalInstance.MasterVolume;
-            set
-            {
-                var vol = Mathf.Clamp01(value);
-                if (vol == InternalInstance.MasterVolume) return;
-                InternalInstance.MasterVolume = vol;
-                OnMasterVolumeChanged?.Invoke(vol);
-                OnMusicVolumeChanged?.Invoke(InternalInstance.MusicVolume, InternalInstance.ModifiedMusicVolume);
-                OnSoundVolumeChanged?.Invoke(InternalInstance.SoundVolume, InternalInstance.ModifiedSoundVolume);
-                OnVoiceVolumeChanged?.Invoke(InternalInstance.VoiceVolume, InternalInstance.ModifiedVoiceVolume);
-            }
-        }
-        public static bool MasterMuted 
-        { 
-            get => InternalInstance.MasterMuted; 
-            set 
-            {
-                if (InternalInstance.MasterMuted == value) return;
-                InternalInstance.MasterMuted = value;
-                OnMasterVolumeChanged?.Invoke(InternalInstance.MasterVolume);
-                OnMusicVolumeChanged?.Invoke(InternalInstance.MusicVolume, InternalInstance.ModifiedMusicVolume);
-                OnSoundVolumeChanged?.Invoke(InternalInstance.SoundVolume, InternalInstance.ModifiedSoundVolume);
-                OnVoiceVolumeChanged?.Invoke(InternalInstance.VoiceVolume, InternalInstance.ModifiedVoiceVolume);
-            }
+        /// <returns></returns>
+        public static float GetVolume() => GetVolume(JSAMSettings.Settings.MasterTrack);
+        /// <summary>
+        /// Returns the volume of the provided Track
+        /// </summary>
+        /// <param name="track"></param>
+        /// <returns></returns>
+        public static float GetVolume(VolumeTrack track)
+        {
+            var data = InternalInstance.GetVolumeData(track);
+            return Convert.ToInt16(!data.Muted) * data.Volume;
         }
         /// <summary>
-        /// Get the current volume of Music as a normalized float from 0 to 1
+        /// Returns the real volume of the provided track if it was to be applied to an arbitrary AudioSource
         /// </summary>
-        public static float MusicVolume 
-        {
-            get => InternalInstance.MusicVolume; 
-            set
-            {
-                var vol = Mathf.Clamp01(value);
-                if (InternalInstance.MusicVolume == vol) return; 
-                InternalInstance.MusicVolume = vol;
-                OnMusicVolumeChanged?.Invoke(InternalInstance.MusicVolume, InternalInstance.ModifiedMusicVolume);
-            }
-        }
-        public static bool MusicMuted 
-        {
-            get => InternalInstance.MusicMuted;
-            set 
-            { 
-                InternalInstance.MusicMuted = value;
-                OnMusicVolumeChanged?.Invoke(InternalInstance.MusicVolume, InternalInstance.ModifiedMusicVolume);
-            }
-        }
+        /// <param name="track"></param>
+        /// <returns></returns>
+        public static float GetModifiedVolume(VolumeTrack track) => GetVolume() * GetVolume(track);
+
         /// <summary>
-        /// Get the current volume of Sounds as a normalized float from 0 to 1
+        /// Sets the volume of the "Master" track. 
+        /// Basic way of controlling the game volume 
         /// </summary>
-        public static float SoundVolume
-        { 
-            get => InternalInstance.SoundVolume;
-            set
-            {
-                var vol = Mathf.Clamp01(value);
-                if (InternalInstance.SoundVolume == vol) return;
-                InternalInstance.SoundVolume = vol;
-                OnSoundVolumeChanged?.Invoke(InternalInstance.SoundVolume, InternalInstance.ModifiedSoundVolume);
-            }
-        }
-        public static bool SoundMuted 
+        /// <param name="volume">The game volume from 0 to 1</param>
+        public static void SetVolume(float volume)
         {
-            get => InternalInstance.SoundMuted; 
-            set 
-            { 
-                InternalInstance.SoundMuted = value; 
-                OnSoundVolumeChanged?.Invoke(InternalInstance.SoundVolume, InternalInstance.ModifiedSoundVolume);
-            }
+            SetVolume(JSAMSettings.Settings.MasterTrack, volume);
         }
+
         /// <summary>
-        /// Get the current volume of Voices as a normalized float from 0 to 1
+        /// Changes the volume of a given VolumeTrack
         /// </summary>
-        public static float VoiceVolume 
-        { 
-            get => InternalInstance.VoiceVolume;
-            set
-            {
-                var vol = Mathf.Clamp01(value);
-                if (InternalInstance.VoiceVolume == vol) return;
-                InternalInstance.VoiceVolume = vol;
-                OnVoiceVolumeChanged?.Invoke(InternalInstance.VoiceVolume, InternalInstance.ModifiedVoiceVolume);
-            }
-        }
-        public static bool VoiceMuted
+        /// <param name="track"></param>
+        /// <param name="volume"></param>
+        public static void SetVolume(VolumeTrack track, float volume)
         {
-            get => InternalInstance.VoiceMuted;
-            set
+            volume = Mathf.Clamp01(volume);
+
+            var data = internalInstance.GetVolumeData(track);
+
+            if (data.Volume == volume) return;
+
+            data.Volume = volume;
+            internalInstance.SetVolumeData(track, data);
+
+            InvokeVolumeEvents(track, data);
+        }
+
+        /// <summary>
+        /// Returns true if the Master Track is muted
+        /// </summary>
+        /// <returns></returns>
+        public static bool IsMuted() => IsMuted(JSAMSettings.Settings.MasterTrack);
+        /// <summary>
+        /// Returns true if the provided VolumeTrack is muted
+        /// </summary>
+        /// <param name="track"></param>
+        /// <returns></returns>
+        public static bool IsMuted(VolumeTrack track) => InternalInstance.GetVolumeData(track).Muted;
+
+        /// <summary>
+        /// Sets the mute state of the "Master" track. 
+        /// Basic method of setting the game audio's mute state
+        /// </summary>
+        /// <param name="muted"></param>
+        public static void SetMute(bool muted)
+        {
+            SetMute(JSAMSettings.Settings.MasterTrack, muted);
+        }
+
+        /// <summary>
+        /// Sets the mute state of a given VolumeTrack. 
+        /// </summary>
+        /// <param name="track"></param>
+        /// <param name="muted"></param>
+        public static void SetMute(VolumeTrack track, bool muted)
+        {
+            var data = internalInstance.GetVolumeData(track);
+
+            if (data.Muted == muted) return;
+
+            data.Muted = muted;
+            internalInstance.SetVolumeData(track, data);
+
+            InvokeVolumeEvents(track, data);
+        }
+
+        static void InvokeVolumeEvents(VolumeTrack track, AudioManagerInternal.VolumeData trackData)
+        {
+            var realVolume = GetModifiedVolume(track);
+            OnVolumeChanged[track]?.Invoke(trackData.Volume, realVolume);
+            OnAnyVolumeChanged?.Invoke(track, trackData.Volume, trackData.Volume);
+
+            if (track != JSAMSettings.Settings.MasterTrack) return;
+
+            var masterTrack = JSAMSettings.Settings.MasterTrack;
+            var masterData = internalInstance.GetVolumeData(masterTrack);
+            foreach (var t in JSAMSettings.Settings.Tracks)
             {
-                InternalInstance.VoiceMuted = value;
-                OnVoiceVolumeChanged?.Invoke(InternalInstance.VoiceVolume, InternalInstance.ModifiedVoiceVolume);
+                if (t == track) continue;
+                var data = internalInstance.GetVolumeData(t);
+                realVolume = GetModifiedVolume(t);
+                OnVolumeChanged[t]?.Invoke(data.Volume, realVolume);
+                OnAnyVolumeChanged?.Invoke(t, data.Volume, realVolume);
             }
         }
         #endregion

@@ -23,6 +23,8 @@ namespace JSAM
 
         MusicChannelHelper helper;
 
+        VolumeTrack track;
+
         private void Start()
         {
             if (keepPlayingWhenAway)
@@ -30,6 +32,9 @@ namespace JSAM
                 helper = AudioManager.PlayMusic(audio, null, helper);
                 helper.Reserved = true;
             }
+
+            if (!audio.volumeTrack) track = JSAMSettings.Settings.MasterTrack;
+            else track = audio.volumeTrack;
         }
 
         private void OnDestroy()
@@ -59,13 +64,14 @@ namespace JSAM
                     if (dist <= z.MinDistance)
                     {
                         // Set to the max volume
-                        helper.AudioSource.volume = AudioManager.InternalInstance.ModifiedMusicVolume * audio.relativeVolume;
+                        
+                        helper.AudioSource.volume = AudioManager.GetModifiedVolume(track) * audio.relativeVolume;
                         return; // Can't be beat
                     }
                     else
                     {
                         float distanceFactor = Mathf.InverseLerp(z.MaxDistance, z.MinDistance, dist);
-                        float newVol = AudioManager.InternalInstance.ModifiedMusicVolume * audio.relativeVolume * distanceFactor;
+                        float newVol = AudioManager.GetModifiedVolume(track) * audio.relativeVolume * distanceFactor;
                         if (newVol > loudest) loudest = newVol;
                     }
                 }
