@@ -24,14 +24,14 @@ namespace JSAM.JSAMEditor
         List<string> soundPresetNames;
         List<string> musicPresetNames;
 
-        static string SELECTED_SOUND_PRESET_KEY = nameof(JSAMAudioFileWizardEditor) + nameof(selectedSoundPresetIndex);
-        int selectedSoundPresetIndex
+        static string SELECTED_SOUND_PRESET_KEY = nameof(JSAMAudioFileWizardEditor) + nameof(SelectedSoundPresetIndex);
+        int SelectedSoundPresetIndex
         {
             get => EditorPrefs.GetInt(SELECTED_SOUND_PRESET_KEY, 0);
             set => EditorPrefs.SetInt(SELECTED_SOUND_PRESET_KEY, value);
         }
-        static string SELECTED_MUSIC_PRESET_KEY = nameof(JSAMAudioFileWizardEditor) + nameof(selectedMusicPresetIndex);
-        int selectedMusicPresetIndex
+        static string SELECTED_MUSIC_PRESET_KEY = nameof(JSAMAudioFileWizardEditor) + nameof(SelectedMusicPresetIndex);
+        int SelectedMusicPresetIndex
         {
             get => EditorPrefs.GetInt(SELECTED_MUSIC_PRESET_KEY, 0);
             set => EditorPrefs.SetInt(SELECTED_MUSIC_PRESET_KEY, value);
@@ -40,7 +40,12 @@ namespace JSAM.JSAMEditor
         public static List<AudioClip> files = new List<AudioClip>();
         public static string outputFolder = "";
 
-        public static AudioFileType fileType;
+        public static AudioFileType FileType
+        {
+            get => (AudioFileType)EditorPrefs.GetInt(FILETYPE_KEY, 0);
+            set => EditorPrefs.SetInt(FILETYPE_KEY, (int)value);
+        }
+        static string FILETYPE_KEY = nameof(JSAMAudioFileWizardEditor) + nameof(FileType);
 
         Dictionary<Preset, PropertyModification> presetToProp = new Dictionary<Preset, PropertyModification>();
 
@@ -119,36 +124,36 @@ namespace JSAM.JSAMEditor
 
             blontent = new GUIContent("Audio File Type", "The type of Audio File you want to generate from these Audio Clips");
             EditorGUI.BeginChangeCheck();
-            fileType = (AudioFileType)EditorGUILayout.EnumPopup(blontent, fileType);
+            FileType = (AudioFileType)EditorGUILayout.EnumPopup(blontent, FileType);
             if (EditorGUI.EndChangeCheck())
             {
-                if (fileType == AudioFileType.Music)
+                if (FileType == AudioFileType.Music)
                 {
-                    if (musicPresets.Count > 0) selectedPreset = musicPresets[selectedMusicPresetIndex];
+                    if (musicPresets.Count > 0) selectedPreset = musicPresets[SelectedMusicPresetIndex];
                 }
                 else
                 {
-                    if (soundPresets.Count > 0) selectedPreset = soundPresets[selectedSoundPresetIndex];
+                    if (soundPresets.Count > 0) selectedPreset = soundPresets[SelectedSoundPresetIndex];
                 }
             }
 
             EditorGUILayout.BeginHorizontal();
             blontent = new GUIContent("Preset to Apply", "Audio File objects created through the Audio File Wizard will be created using this preset as a template.");
             // Music
-            if (fileType == AudioFileType.Music)
+            if (FileType == AudioFileType.Music)
             {
                 if (musicPresets.Count == 0)
                 {
                     using (new EditorGUI.DisabledScope(true))
-                        selectedMusicPresetIndex = EditorGUILayout.Popup(blontent, selectedMusicPresetIndex, new string[] { "<None>" });
+                        SelectedMusicPresetIndex = EditorGUILayout.Popup(blontent, SelectedMusicPresetIndex, new string[] { "<None>" });
                 }
                 else
                 {
                     EditorGUI.BeginChangeCheck();
-                    selectedMusicPresetIndex = EditorGUILayout.Popup(blontent, selectedMusicPresetIndex, musicPresetNames.ToArray());
+                    SelectedMusicPresetIndex = EditorGUILayout.Popup(blontent, SelectedMusicPresetIndex, musicPresetNames.ToArray());
                     if (EditorGUI.EndChangeCheck())
                     {
-                        selectedPreset = musicPresets[selectedMusicPresetIndex];
+                        selectedPreset = musicPresets[SelectedMusicPresetIndex];
                     }
                 }
             }
@@ -158,15 +163,15 @@ namespace JSAM.JSAMEditor
                 if (soundPresets.Count == 0)
                 {
                     using (new EditorGUI.DisabledScope(true))
-                        selectedSoundPresetIndex = EditorGUILayout.Popup(blontent, selectedSoundPresetIndex, new string[] { "<None>" });
+                        SelectedSoundPresetIndex = EditorGUILayout.Popup(blontent, SelectedSoundPresetIndex, new string[] { "<None>" });
                 }
                 else
                 {
                     EditorGUI.BeginChangeCheck();
-                    selectedSoundPresetIndex = EditorGUILayout.Popup(blontent, selectedSoundPresetIndex, soundPresetNames.ToArray());
+                    SelectedSoundPresetIndex = EditorGUILayout.Popup(blontent, SelectedSoundPresetIndex, soundPresetNames.ToArray());
                     if (EditorGUI.EndChangeCheck())
                     {
-                        selectedPreset = soundPresets[selectedSoundPresetIndex];
+                        selectedPreset = soundPresets[SelectedSoundPresetIndex];
                     }
                 }
             }
@@ -222,7 +227,7 @@ namespace JSAM.JSAMEditor
             {
                 if (GUILayout.Button(blontent, new GUILayoutOption[] { GUILayout.ExpandWidth(false) }))
                 {
-                    if (fileType == AudioFileType.Music)
+                    if (FileType == AudioFileType.Music)
                     {
                         GenerateAudioFileObjects<MusicFileObject>(selectedPreset);
                     }
@@ -269,13 +274,13 @@ namespace JSAM.JSAMEditor
                 presetToProp[presets[i]] = presets[i].FindProp("presetDescription");
             }
 
-            if (fileType == AudioFileType.Music)
+            if (FileType == AudioFileType.Music)
             {
-                if (musicPresets.Count > 0) selectedPreset = musicPresets[selectedMusicPresetIndex];
+                if (musicPresets.Count > 0) selectedPreset = musicPresets[SelectedMusicPresetIndex];
             }
             else
             {
-                if (soundPresets.Count > 0) selectedPreset = soundPresets[selectedSoundPresetIndex];
+                if (soundPresets.Count > 0) selectedPreset = soundPresets[SelectedSoundPresetIndex];
             }
         }
 
