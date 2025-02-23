@@ -84,14 +84,10 @@ namespace JSAM
 
         Coroutine fadeInRoutine, fadeOutRoutine;
         bool subscribedToEvents;
-        bool applicationPaused, applicationFocused = true;
+        bool applicationPaused;
         protected void OnApplicationPause(bool pause)
         {
-            applicationPaused = pause;
-        }
-        protected void OnApplicationFocus(bool focus)
-        {
-            applicationFocused = focus;
+            applicationPaused = pause && !Application.runInBackground;
         }
 
         public void Init(AudioMixerGroup defaultGroup)
@@ -201,7 +197,7 @@ namespace JSAM
                     }
                 }
             }
-            else if (audioFile.loopMode <= LoopMode.LoopWithLoopPoints && !applicationPaused && applicationFocused)
+            else if (audioFile.loopMode <= LoopMode.LoopWithLoopPoints && !applicationPaused)
             {
                 // Disable self if not playing anymore
                 enabled = AudioSource.isPlaying;
