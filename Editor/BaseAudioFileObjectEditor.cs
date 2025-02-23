@@ -434,12 +434,13 @@ namespace JSAM.JSAMEditor
             {
                 activeClip = theClip;
                 helper.Clip = activeClip;
+                AudioPlaybackToolEditor.forceRepaint = true;
             }
         }
 
         protected UndoPropertyModification[] PostProcessModifications(UndoPropertyModification[] modifications)
         {
-            if (activeClip == null)
+            if (!asset.Files.Contains(activeClip))
             {
                 RedesignateActiveAudioClip();
             }
