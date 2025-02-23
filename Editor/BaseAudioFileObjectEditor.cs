@@ -321,7 +321,7 @@ namespace JSAM.JSAMEditor
 
                 if (loopClip)
                 {
-                    EditorApplication.QueuePlayerLoopUpdate();
+                    //EditorApplication.QueuePlayerLoopUpdate();
                     if (asset.loopMode == LoopMode.LoopWithLoopPoints)
                     {
                         // We've probably reached the end of the track before officially hitting the loop point marker
@@ -353,6 +353,7 @@ namespace JSAM.JSAMEditor
                         if ((!helper.Source.isPlaying && !clipPaused) || clipPos > asset.loopEnd)
                         {
                             helper.Source.Stop();
+                            clipPlaying = false;
                         }
                     }
                     else if (asset.loopMode == LoopMode.ClampedLoopPoints && clipPos < asset.loopStart)
@@ -363,17 +364,17 @@ namespace JSAM.JSAMEditor
                 }
             }
 
-            if (asset.loopMode != LoopMode.LoopWithLoopPoints)
-            {
-                if (!helper.Source.isPlaying && !clipPaused && clipPlaying)
-                {
-                    helper.Source.time = 0;
-                    if (loopClip)
-                    {
-                        helper.Source.Play();
-                    }
-                }
-            }
+            //if (asset.loopMode != LoopMode.LoopWithLoopPoints)
+            //{
+            //    if (!helper.Source.isPlaying && !clipPaused && clipPlaying)
+            //    {
+            //        helper.Source.time = 0;
+            //        if (loopClip)
+            //        {
+            //            helper.Source.Play();
+            //        }
+            //    }
+            //}
         }
 
         public override bool RequiresConstantRepaint() => clipPlaying || mouseDragging;
@@ -631,6 +632,11 @@ namespace JSAM.JSAMEditor
             return true;
         }
 
+        protected void UpdateLoopBehaviour()
+        {
+            helper.Source.loop = loopClip && loopMode.enumValueIndex <= (int)LoopMode.Looping;
+        }
+
         /// <summary>
         /// TODO: Playback drawing should have its own class. 
         /// Should support having multiple active playback tools in the inspector, 
@@ -707,6 +713,7 @@ namespace JSAM.JSAMEditor
                     if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                     {
                         clipPlaying = !clipPlaying;
+                        UpdateLoopBehaviour();
                         if (clipPlaying)
                         {
                             // Note: For some reason, reading from helper.Source.time returns 0 even if timeSamples is not 0
@@ -751,7 +758,7 @@ namespace JSAM.JSAMEditor
                     if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                     {
                         loopClip = !loopClip;
-                        // helper.Source.loop = true;
+                        UpdateLoopBehaviour();
                     }
                     GUI.backgroundColor = colorbackup;
 
@@ -886,6 +893,7 @@ namespace JSAM.JSAMEditor
                     if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                     {
                         clipPlaying = !clipPlaying;
+                        helper.Source.loop = loopClip && asset.loopMode <= LoopMode.Looping;
                         if (!clipPlaying)
                         {
                             // Note: For some reason, reading from helper.Source.time returns 0 even if timeSamples is not 0
@@ -1038,6 +1046,7 @@ namespace JSAM.JSAMEditor
             EditorGUILayout.PropertyField(loopMode);
             if (EditorGUI.EndChangeCheck())
             {
+                UpdateLoopBehaviour();
                 // This won't do, reset loop point positions
                 if (asset.loopStart >= asset.loopEnd)
                 {
