@@ -38,12 +38,12 @@ namespace JSAM.JSAMEditor
         public static bool forceRepaint;
 
         static Vector2 dragStartPos = Vector2.zero;
-        static bool mouseDragging;
-        static bool mouseScrubbed;
-        static bool clipPaused;
-        static bool clipPlaying;
+        bool mouseDragging;
+        bool mouseScrubbed;
+        bool clipPaused;
+        bool clipPlaying;
+        bool firstPlayback;
         static bool SourcePlaying => Helper.Source.isPlaying;
-        static bool firstPlayback;
 
         readonly string LOOP_KEY = nameof(AudioPlaybackToolEditor) + "Loop";
         bool LoopClip
@@ -335,8 +335,6 @@ namespace JSAM.JSAMEditor
                     activeAsset = file;
 
                     activeAssetType = SelectedAssetType.Sound;
-
-                    if (sound.Files.Count > 0) Helper.Clip = sound.Files[0];
                 }
                 else
                 {
@@ -345,8 +343,15 @@ namespace JSAM.JSAMEditor
                     {
                         activeAsset = file;
                         activeAssetType = SelectedAssetType.Music;
+                    }
+                }
 
-                        if (music.Files.Count > 0) Helper.Clip = music.Files[0];
+                foreach (var item in file.Files)
+                {
+                    if (item)
+                    {
+                        Helper.Clip = item;
+                        break;
                     }
                 }
             }
@@ -645,7 +650,7 @@ namespace JSAM.JSAMEditor
 
                     if (ActiveAudio.loopMode >= LoopMode.LoopWithLoopPoints)
                     {
-                        MusicFileObjectEditor.DrawLoopPointOverlay(ActiveAudio, (int)rect.width, (int)rect.height);
+                        MusicFileObjectEditor.DrawLoopPointOverlay(ActiveAudio, Helper.Clip, (int)rect.width, (int)rect.height);
                     }
                 }
             }

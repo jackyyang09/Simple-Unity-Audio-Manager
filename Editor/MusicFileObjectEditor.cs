@@ -236,7 +236,7 @@ namespace JSAM.JSAMEditor
             return modifications;
         }
 
-        public static void DrawLoopPointOverlay(BaseAudioFileObject music, int width, int height)
+        public static void DrawLoopPointOverlay(BaseAudioFileObject music, AudioClip activeClip, int width, int height)
         {
             if (Event.current.type != EventType.Repaint) return;
 
@@ -247,7 +247,7 @@ namespace JSAM.JSAMEditor
 
                 // Draw Loop Start
                 newRect.height = height;
-                newRect.xMax = (music.loopStart / music.Files[0].length) * width;
+                newRect.xMax = (music.loopStart / activeClip.length) * width;
                 float firstLabel = newRect.xMax;
 
                 GUI.Box(newRect, "");
@@ -257,7 +257,7 @@ namespace JSAM.JSAMEditor
 
                 // Draw Loop End
                 newRect.height = height;
-                newRect.xMin = (music.loopEnd / music.Files[0].length) * width;
+                newRect.xMin = (music.loopEnd / activeClip.length) * width;
                 float secondLabel = newRect.xMin;
                 newRect.xMax = width;
                 GUI.Box(newRect, "");
@@ -282,8 +282,8 @@ namespace JSAM.JSAMEditor
 
                 newRect.x = 0;
                 newRect.height = height;
-                newRect.xMin = (music.loopStart / music.Files[0].length) * width;
-                newRect.xMax = (music.loopEnd / music.Files[0].length) * width;
+                newRect.xMin = (music.loopStart / activeClip.length) * width;
+                newRect.xMax = (music.loopEnd / activeClip.length) * width;
                 JSAMEditorHelper.BeginColourChange(Color.green);
                 GUI.Box(newRect, "", "SelectionRect");
                 JSAMEditorHelper.EndColourChange();
