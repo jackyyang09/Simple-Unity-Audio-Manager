@@ -38,13 +38,12 @@ namespace JSAM.JSAMEditor
         public static bool forceRepaint;
 
         static Vector2 dragStartPos = Vector2.zero;
-        static bool mouseDragging;
-        static bool mouseScrubbed;
-        static bool clipPaused;
-        static bool clipPlaying;
+        bool mouseDragging;
+        bool mouseScrubbed;
+        bool clipPaused;
+        bool clipPlaying;
+        bool firstPlayback;
         static bool SourcePlaying => Helper.Source.isPlaying;
-        static bool freePlay;
-        static bool firstPlayback;
 
         readonly string LOOP_KEY = nameof(AudioPlaybackToolEditor) + "Loop";
         bool LoopClip
@@ -336,8 +335,6 @@ namespace JSAM.JSAMEditor
                     activeAsset = file;
 
                     activeAssetType = SelectedAssetType.Sound;
-
-                    if (sound.Files.Count > 0) Helper.Clip = sound.Files[0];
                 }
                 else
                 {
@@ -346,9 +343,15 @@ namespace JSAM.JSAMEditor
                     {
                         activeAsset = file;
                         activeAssetType = SelectedAssetType.Music;
+                    }
+                }
 
-                        if (music.Files.Count > 0) Helper.Clip = music.Files[0];
-                        freePlay = true;
+                foreach (var item in file.Files)
+                {
+                    if (item)
+                    {
+                        Helper.Clip = item;
+                        break;
                     }
                 }
             }
@@ -398,6 +401,7 @@ namespace JSAM.JSAMEditor
                 if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                 {
                     clipPlaying = !clipPlaying;
+                    Helper.Source.loop = LoopClip && ActiveAudio.loopMode <= LoopMode.Looping;
                     if (clipPlaying)
                     {
                         switch (activeAssetType)
@@ -417,7 +421,6 @@ namespace JSAM.JSAMEditor
                                 }
                                 EditorFader.StartFading(Helper.Clip, ActiveSound);
                                 firstPlayback = true;
-                                freePlay = false;
                                 break;
                         }
 
@@ -460,7 +463,7 @@ namespace JSAM.JSAMEditor
                 if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                 {
                     LoopClip = !LoopClip;
-                    helper.Source.loop = LoopClip;
+                    helper.Source.loop = LoopClip && ActiveAudio.loopMode <= LoopMode.Looping;
                 }
                 if (LoopClip) JSAMEditorHelper.EndBackgroundColourChange();
 
@@ -647,7 +650,7 @@ namespace JSAM.JSAMEditor
 
                     if (ActiveAudio.loopMode >= LoopMode.LoopWithLoopPoints)
                     {
-                        MusicFileObjectEditor.DrawLoopPointOverlay(ActiveAudio, (int)rect.width, (int)rect.height);
+                        MusicFileObjectEditor.DrawLoopPointOverlay(ActiveAudio, Helper.Clip, (int)rect.width, (int)rect.height);
                     }
                 }
             }
@@ -724,14 +727,9 @@ namespace JSAM.JSAMEditor
                                 {
                                     if (!SourcePlaying) Helper.Source.Play();
 
-                                    if (!freePlay)
-                                    {
-                                        goto RestartLoop;
-                                    }
-                                    freePlay = false;
+                                    goto RestartLoop;
                                 }
-                                else 
-                                if (selectedAudio.loopMode == LoopMode.ClampedLoopPoints)
+                                else if (selectedAudio.loopMode == LoopMode.ClampedLoopPoints)
                                 {
                                     if (clipPos < selectedAudio.loopStart || clipPos > selectedAudio.loopEnd)
                                     {
@@ -745,14 +743,10 @@ namespace JSAM.JSAMEditor
                                 break;
 
                                 RestartLoop:
-                                // CeilToInt to guarantee clip position stays within loop bounds
-                                if (!freePlay)
-                                {
+                                    // CeilToInt to guarantee clip position stays within loop bounds
                                     Helper.Source.timeSamples = Mathf.CeilToInt(selectedAudio.loopStart * Helper.Clip.frequency);
-                                }
-                                freePlay = false;
-                                firstPlayback = false;
-                                break;
+                                    firstPlayback = false;
+                                    break;
                             }
                         }
                         else if (!LoopClip)

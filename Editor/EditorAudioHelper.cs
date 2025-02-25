@@ -35,8 +35,6 @@ namespace JSAM.JSAMEditor
 
             soundHelper = gameObject.AddComponent<SoundChannelHelper>();
             musicHelper = gameObject.AddComponent<MusicChannelHelper>();
-            UnityEngine.Audio.AudioMixerGroup sg = null;
-            UnityEngine.Audio.AudioMixerGroup mg = null;
             soundHelper.Init();
             musicHelper.Init();
             gameObject.hideFlags = HideFlags.HideAndDontSave;

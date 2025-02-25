@@ -231,8 +231,8 @@ namespace JSAM
 
         [Tooltip("If true, this audio file will ignore reverb effects created when the Audio Listener enters a reverb zone")]
         public bool bypassReverbZones;
-        //
-        //[SerializeReference] SpatialSoundSettings spatialSoundSettings;
+        
+        [SerializeReference] public SpatialSoundSettings SpatialSoundOverride;
 
         public AudioChorusObj chorusFilter;
         public AudioDistortionObj distortionFilter;

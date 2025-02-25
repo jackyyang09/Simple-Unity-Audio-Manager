@@ -11,6 +11,7 @@ namespace JSAM
         /// </summary>
         [Tooltip("Audio File Objects that play through this Track will use this Mixer Group unless overriden")]
         public AudioMixerGroup DefaultMixerGroup;
+        [Header("Optional:")]
         /// <summary>
         /// When no existing preference is found, will set the Audio Track to this value
         /// </summary>

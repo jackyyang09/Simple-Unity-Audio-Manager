@@ -145,6 +145,15 @@ namespace JSAM
             {
                 doneLoading = true;
             }
+
+            InternalInstance.Initialize();
+
+            foreach (var library in preloadedLibraries)
+            {
+                InternalInstance.LoadAudioLibrary(library);
+            }
+
+            initialized = true;
         }
 
         private void OnEnable()
@@ -162,16 +171,6 @@ namespace JSAM
         void Quitting()
         {
             isQuitting = true;
-        }
-
-        void Start()
-        {
-            foreach (var library in preloadedLibraries)
-            {
-                InternalInstance.LoadAudioLibrary(library);
-            }
-
-            initialized = true;
         }
 
         void OnSceneChanged(Scene scene1, Scene scene2)

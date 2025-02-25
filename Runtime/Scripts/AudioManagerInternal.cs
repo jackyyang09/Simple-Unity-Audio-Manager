@@ -154,7 +154,7 @@ namespace JSAM
 
         public static AudioManagerInternal Instance => AudioManager.InternalInstance;
 
-        void Awake()
+        public void Initialize()
         {
             if (Settings.SaveVolumeToPlayerPrefs)
             {
@@ -179,10 +179,7 @@ namespace JSAM
             }
 
             AudioManager.OnAnyVolumeChanged += AnyVolumeChanged;
-        }
 
-        private void Start()
-        {
             sourceHolder.SetParent(transform);
         }
 
@@ -286,11 +283,11 @@ namespace JSAM
             if (isMain) PlayMusicInternal(music, null, MainMusic);
             else PlayMusicInternal(music, null, null);
 
-            AudioManager.OnMusicPlayed?.Invoke(MainMusic, music);
-
             return MainMusic;
         }
-
+        // TODO:
+        // There must be an easier way to handle the different spatialiation setting than to 
+        // duplicate the method like this
         public MusicChannelHelper PlayMusicInternal(MusicFileObject music, Transform newTransform = null, MusicChannelHelper helper = null)
         {
             if (!PlaybackChecks(music)) return null;

@@ -8,6 +8,8 @@ namespace JSAM
     [RequireComponent(typeof(AudioSource))]
     public class MusicChannelHelper : BaseAudioChannelHelper<MusicFileObject>
     {
+        protected override GameObject Prefab => JSAMSettings.Settings.MusicChannelPrefab;
+
         protected override void OnDisable()
         {
             base.OnDisable();

@@ -9,6 +9,8 @@ namespace JSAM
     [RequireComponent(typeof(AudioSource))]
     public class SoundChannelHelper : BaseAudioChannelHelper<SoundFileObject>
     {
+        protected override GameObject Prefab => JSAMSettings.Settings.SoundChannelPrefab;
+
         protected override void OnDisable()
         {
             base.OnDisable();

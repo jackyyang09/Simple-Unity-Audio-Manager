@@ -42,6 +42,8 @@ namespace JSAM
         protected int LoopStart { get { return (int)(audioFile.loopStart * AudioSource.clip.frequency); } }
         protected int LoopEnd { get { return (int)(audioFile.loopEnd * AudioSource.clip.frequency); } }
 
+        protected SpatialSoundSettings default3DSettings = new();
+
         protected AudioChorusFilter chorusFilter;
         protected AudioDistortionFilter distortionFilter;
         protected AudioEchoFilter echoFilter;
@@ -55,21 +57,41 @@ namespace JSAM
 
         Coroutine fadeInRoutine, fadeOutRoutine;
         VolumeTrack subscribedTrack;
-        bool applicationPaused, applicationFocused = true;
+        bool applicationPaused;
         protected void OnApplicationPause(bool pause)
         {
             applicationPaused = pause;
         }
-        protected void OnApplicationFocus(bool focus)
-        {
-            applicationFocused = focus;
-        }
+
+        protected abstract GameObject Prefab { get; }
 
         public void Init()
         {
             AudioSource = GetComponent<AudioSource>();
             enabled = false;
             originalParent = transform.parent;
+
+            if (Prefab)
+            {
+                var a = Prefab.GetComponent<AudioSource>();
+                default3DSettings.DopplerLevel = a.dopplerLevel;
+                default3DSettings.Spread = a.spread;
+                default3DSettings.Spread = a.spread;
+                default3DSettings.VolumeRolloff = a.rolloffMode;
+                default3DSettings.MinDistance = a.minDistance;
+                default3DSettings.MaxDistance = a.maxDistance;
+                default3DSettings.RolloffCustomCurve = a.GetCustomCurve(AudioSourceCurveType.CustomRolloff);
+                default3DSettings.PanLevelCustomCurve = a.GetCustomCurve(AudioSourceCurveType.SpatialBlend);
+                default3DSettings.SpreadCustomCurve = a.GetCustomCurve(AudioSourceCurveType.Spread);
+                default3DSettings.ReverbZoneMixCustomCurve = a.GetCustomCurve(AudioSourceCurveType.ReverbZoneMix);
+            }
+            else
+            {
+                default3DSettings.RolloffCustomCurve = AudioSource.GetCustomCurve(AudioSourceCurveType.CustomRolloff);
+                default3DSettings.PanLevelCustomCurve = AudioSource.GetCustomCurve(AudioSourceCurveType.SpatialBlend);
+                default3DSettings.SpreadCustomCurve = AudioSource.GetCustomCurve(AudioSourceCurveType.Spread);
+                default3DSettings.ReverbZoneMixCustomCurve = AudioSource.GetCustomCurve(AudioSourceCurveType.ReverbZoneMix);
+            }
         }
 
         protected virtual void OnEnable()
@@ -171,7 +193,7 @@ namespace JSAM
                     }
                 }
             }
-            else if (audioFile.loopMode <= LoopMode.LoopWithLoopPoints && !applicationPaused && applicationFocused)
+            else if (audioFile.loopMode <= LoopMode.LoopWithLoopPoints && !applicationPaused)
             {
                 // Disable self if not playing anymore
                 enabled = AudioSource.isPlaying;
@@ -259,6 +281,15 @@ namespace JSAM
                 case LoopMode.ClampedLoopPoints:
                     AudioSource.loop = true;
                     break;
+            }
+
+            if (audioFile.SpatialSoundOverride != null)
+            {
+                Set3DSettings(audioFile.SpatialSoundOverride);
+            }
+            else
+            {
+                Set3DSettings(default3DSettings);
             }
 
             ApplyEffects();
@@ -358,6 +389,19 @@ namespace JSAM
             SpatializationTarget = null;
             SpatializationPosition = position;
             transform.position = position;
+        }
+
+        void Set3DSettings(SpatialSoundSettings s)
+        {
+            AudioSource.dopplerLevel = s.DopplerLevel;
+            AudioSource.spread = s.Spread;
+            AudioSource.rolloffMode = s.VolumeRolloff;
+            AudioSource.minDistance = s.MinDistance;
+            AudioSource.maxDistance = s.MaxDistance;
+            AudioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, s.RolloffCustomCurve);
+            AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, s.PanLevelCustomCurve);
+            AudioSource.SetCustomCurve(AudioSourceCurveType.Spread, s.SpreadCustomCurve);
+            AudioSource.SetCustomCurve(AudioSourceCurveType.ReverbZoneMix, s.ReverbZoneMixCustomCurve);
         }
 
         public void VolumeChanged(float channelVolume, float realVolume)

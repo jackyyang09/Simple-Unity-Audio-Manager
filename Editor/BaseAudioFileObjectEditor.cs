@@ -117,6 +117,8 @@ namespace JSAM.JSAMEditor
 
         protected bool NoFiles => files.arraySize == 0;
 
+        protected static AudioSource referenceSource;
+
         static BaseAudioFileObjectEditor instance;
         /// <summary>
         /// Multiple inspector windows are a thing. 
@@ -170,7 +172,6 @@ namespace JSAM.JSAMEditor
         protected SerializedProperty delay;
         protected SerializedProperty ignoreTimeScale;
         protected SerializedProperty maxPlayingInstances;
-        protected SerializedProperty channelOverride;
         protected SerializedProperty mixerGroupOverride;
 
         protected SerializedProperty fadeInOut;
@@ -179,6 +180,8 @@ namespace JSAM.JSAMEditor
         protected SerializedProperty loopMode;
         protected SerializedProperty loopStart;
         protected SerializedProperty loopEnd;
+
+        protected SerializedProperty SpatialSoundOverride;
 
         protected SerializedProperty bypassEffects;
         protected SerializedProperty bypassListenerEffects;
@@ -200,7 +203,6 @@ namespace JSAM.JSAMEditor
             delay = FindProp(nameof(delay));
             ignoreTimeScale = FindProp(nameof(ignoreTimeScale));
             maxPlayingInstances = FindProp(nameof(maxPlayingInstances));
-            channelOverride = FindProp(nameof(channelOverride));
             mixerGroupOverride = FindProp(nameof(mixerGroupOverride));
 
             fadeInOut = FindProp(nameof(fadeInOut));
@@ -210,6 +212,12 @@ namespace JSAM.JSAMEditor
             loopStart = FindProp(nameof(loopStart));
             loopEnd = FindProp(nameof(loopEnd));
 
+            SpatialSoundOverride = FindProp(nameof(SpatialSoundOverride));
+            if (SpatialSoundOverride.managedReferenceValue != null)
+            {
+                FindSpatialSoundOverrideProps();
+            }
+            
             bypassEffects = FindProp(nameof(asset.bypassEffects));
             bypassListenerEffects = serializedObject.FindProperty(nameof(asset.bypassListenerEffects));
             bypassReverbZones = serializedObject.FindProperty(nameof(asset.bypassReverbZones));
@@ -253,7 +261,15 @@ namespace JSAM.JSAMEditor
         protected void RenderBasicProperties()
         {
             EditorGUILayout.PropertyField(volumeTrack);
+            EditorGUI.BeginChangeCheck();
             EditorGUILayout.PropertyField(relativeVolume);
+            if (EditorGUI.EndChangeCheck())
+            {
+                if (SourcePlaying)
+                {
+                    helper.Source.volume = relativeVolume.floatValue;
+                }
+            }
             EditorGUILayout.PropertyField(spatialize);
             using (new EditorGUI.DisabledScope(!spatialize.boolValue))
             {
@@ -273,7 +289,6 @@ namespace JSAM.JSAMEditor
             EditorGUILayout.PropertyField(delay);
             EditorGUILayout.PropertyField(ignoreTimeScale);
             EditorGUILayout.PropertyField(maxPlayingInstances);
-            EditorGUILayout.PropertyField(channelOverride);
             EditorGUILayout.PropertyField(mixerGroupOverride);
         }
 
@@ -284,6 +299,8 @@ namespace JSAM.JSAMEditor
             DrawLoopPointTools(asset);
 
             DrawFadeTools(activeClip);
+
+            DrawSpatialSoundSettings();
 
             DrawAudioEffectTools();
         }
@@ -324,7 +341,6 @@ namespace JSAM.JSAMEditor
 
                 if (loopClip)
                 {
-                    EditorApplication.QueuePlayerLoopUpdate();
                     if (asset.loopMode == LoopMode.LoopWithLoopPoints)
                     {
                         // We've probably reached the end of the track before officially hitting the loop point marker
@@ -356,6 +372,7 @@ namespace JSAM.JSAMEditor
                         if ((!helper.Source.isPlaying && !clipPaused) || clipPos > asset.loopEnd)
                         {
                             helper.Source.Stop();
+                            clipPlaying = false;
                         }
                     }
                     else if (asset.loopMode == LoopMode.ClampedLoopPoints && clipPos < asset.loopStart)
@@ -366,17 +383,17 @@ namespace JSAM.JSAMEditor
                 }
             }
 
-            if (asset.loopMode != LoopMode.LoopWithLoopPoints)
-            {
-                if (!helper.Source.isPlaying && !clipPaused && clipPlaying)
-                {
-                    helper.Source.time = 0;
-                    if (loopClip)
-                    {
-                        helper.Source.Play();
-                    }
-                }
-            }
+            //if (asset.loopMode != LoopMode.LoopWithLoopPoints)
+            //{
+            //    if (!helper.Source.isPlaying && !clipPaused && clipPlaying)
+            //    {
+            //        helper.Source.time = 0;
+            //        if (loopClip)
+            //        {
+            //            helper.Source.Play();
+            //        }
+            //    }
+            //}
         }
 
         public override bool RequiresConstantRepaint() => clipPlaying || mouseDragging;
@@ -437,12 +454,13 @@ namespace JSAM.JSAMEditor
             {
                 activeClip = theClip;
                 helper.Clip = activeClip;
+                AudioPlaybackToolEditor.forceRepaint = true;
             }
         }
 
         protected UndoPropertyModification[] PostProcessModifications(UndoPropertyModification[] modifications)
         {
-            if (activeClip == null)
+            if (!asset.Files.Contains(activeClip))
             {
                 RedesignateActiveAudioClip();
             }
@@ -633,6 +651,11 @@ namespace JSAM.JSAMEditor
             return true;
         }
 
+        protected void UpdateLoopBehaviour()
+        {
+            helper.Source.loop = loopClip && loopMode.enumValueIndex <= (int)LoopMode.Looping;
+        }
+
         /// <summary>
         /// TODO: Playback drawing should have its own class. 
         /// Should support having multiple active playback tools in the inspector, 
@@ -709,6 +732,7 @@ namespace JSAM.JSAMEditor
                     if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                     {
                         clipPlaying = !clipPlaying;
+                        UpdateLoopBehaviour();
                         if (clipPlaying)
                         {
                             // Note: For some reason, reading from helper.Source.time returns 0 even if timeSamples is not 0
@@ -753,7 +777,7 @@ namespace JSAM.JSAMEditor
                     if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                     {
                         loopClip = !loopClip;
-                        // helper.Source.loop = true;
+                        UpdateLoopBehaviour();
                     }
                     GUI.backgroundColor = colorbackup;
 
@@ -888,6 +912,7 @@ namespace JSAM.JSAMEditor
                     if (GUILayout.Button(buttonIcon, new GUILayoutOption[] { GUILayout.MaxHeight(20) }))
                     {
                         clipPlaying = !clipPlaying;
+                        helper.Source.loop = loopClip && asset.loopMode <= LoopMode.Looping;
                         if (!clipPlaying)
                         {
                             // Note: For some reason, reading from helper.Source.time returns 0 even if timeSamples is not 0
@@ -1040,6 +1065,7 @@ namespace JSAM.JSAMEditor
             EditorGUILayout.PropertyField(loopMode);
             if (EditorGUI.EndChangeCheck())
             {
+                UpdateLoopBehaviour();
                 // This won't do, reset loop point positions
                 if (asset.loopStart >= asset.loopEnd)
                 {
@@ -1228,19 +1254,98 @@ namespace JSAM.JSAMEditor
             EditorCompatability.EndSpecialFoldoutGroup();
         }
 
-        static AudioSource reference;
-        protected void DrawSpatialSoundSettingProperty()
+        protected SerializedProperty DopplerLevel;
+        protected SerializedProperty Spread;
+        protected SerializedProperty VolumeRolloff;
+        protected SerializedProperty MinDistance;
+        protected SerializedProperty MaxDistance;
+        protected SerializedProperty RolloffCustomCurve;
+        protected SerializedProperty PanLevelCustomCurve;
+        protected SerializedProperty SpreadCustomCurve;
+        protected SerializedProperty ReverbZoneMixCustomCurve;
+
+        void FindSpatialSoundOverrideProps()
         {
-            EditorGUILayout.BeginHorizontal();
+            DopplerLevel = SpatialSoundOverride.FindPropertyRelative(nameof(DopplerLevel));
+            Spread = SpatialSoundOverride.FindPropertyRelative(nameof(Spread));
+            VolumeRolloff = SpatialSoundOverride.FindPropertyRelative(nameof(VolumeRolloff));
+            MinDistance = SpatialSoundOverride.FindPropertyRelative(nameof(MinDistance));
+            MaxDistance = SpatialSoundOverride.FindPropertyRelative(nameof(MaxDistance));
+            RolloffCustomCurve = SpatialSoundOverride.FindPropertyRelative(nameof(RolloffCustomCurve));
+            PanLevelCustomCurve = SpatialSoundOverride.FindPropertyRelative(nameof(PanLevelCustomCurve));
+            SpreadCustomCurve = SpatialSoundOverride.FindPropertyRelative(nameof(SpreadCustomCurve));
+            ReverbZoneMixCustomCurve = SpatialSoundOverride.FindPropertyRelative(nameof(ReverbZoneMixCustomCurve));
+        }
 
-            EditorGUILayout.ObjectField("Reference", reference, typeof(AudioSource), true);
+        static bool spatialSoundFoldout;
+        protected void DrawSpatialSoundSettings()
+        {
+            spatialSoundFoldout = EditorCompatability.SpecialFoldouts(spatialSoundFoldout, "3D Sounds Settings");
 
-            if (GUILayout.Button("Copy"))
+            if (spatialSoundFoldout)
             {
+                EditorGUI.BeginChangeCheck();
+                blontent = new GUIContent("Override 3D Sound Settings", 
+                    "If disabled, will default to the Override Prefabs set in the JSAM Project Settings.");
+                var b = EditorGUILayout.Toggle(blontent, SpatialSoundOverride.managedReferenceValue != null);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    if (b)
+                    {
+                        SpatialSoundOverride.managedReferenceValue = new SpatialSoundSettings();
+                        FindSpatialSoundOverrideProps();
+                    }
+                    else SpatialSoundOverride.managedReferenceValue = null;
+                }
 
+                if (SpatialSoundOverride.managedReferenceValue != null)
+                {
+                    EditorGUILayout.LabelField("Copy From AudioSource", new GUIStyle(EditorStyles.boldLabel));
+                    EditorGUILayout.BeginHorizontal();
+
+                    referenceSource = (AudioSource)EditorGUILayout.ObjectField(referenceSource, typeof(AudioSource), true);
+
+                    using (new EditorGUI.DisabledScope(!referenceSource))
+                    {
+                        blontent = new GUIContent(" Data ",
+                            "Copies all 3D Sound Settings excluding curves.");
+                        if (GUILayout.Button(blontent, GUILayout.ExpandWidth(false)))
+                        {
+                            DopplerLevel.floatValue = referenceSource.dopplerLevel;
+                            Spread.floatValue = referenceSource.spread;
+                            VolumeRolloff.enumValueIndex = (int)referenceSource.rolloffMode;
+                            MinDistance.floatValue = referenceSource.minDistance;
+                            MaxDistance.floatValue = referenceSource.maxDistance;
+                        }
+                        blontent = new GUIContent(" Curves ",
+                            "Rather than manipulating a curve editor, you can copy all curve data from an AudioSource " +
+                            "component. This field is not serialized.");
+                        if (GUILayout.Button(blontent, GUILayout.ExpandWidth(false)))
+                        {
+                            RolloffCustomCurve.animationCurveValue = referenceSource.GetCustomCurve(AudioSourceCurveType.CustomRolloff);
+                            PanLevelCustomCurve.animationCurveValue = referenceSource.GetCustomCurve(AudioSourceCurveType.SpatialBlend);
+                            SpreadCustomCurve.animationCurveValue = referenceSource.GetCustomCurve(AudioSourceCurveType.Spread);
+                            ReverbZoneMixCustomCurve.animationCurveValue = referenceSource.GetCustomCurve(AudioSourceCurveType.ReverbZoneMix);
+                        }
+                    }
+                    EditorGUILayout.EndHorizontal();
+
+                    EditorGUILayout.Space();
+
+                    EditorGUILayout.Slider(DopplerLevel, 0, 5);
+                    EditorGUILayout.Slider(Spread, 0, 360);
+                    EditorGUILayout.PropertyField(VolumeRolloff);
+                    EditorGUILayout.PropertyField(MinDistance);
+                    EditorGUILayout.PropertyField(MaxDistance);
+
+                    EditorGUILayout.PropertyField(RolloffCustomCurve);
+                    EditorGUILayout.PropertyField(PanLevelCustomCurve);
+                    EditorGUILayout.PropertyField(SpreadCustomCurve);
+                    EditorGUILayout.PropertyField(ReverbZoneMixCustomCurve);
+                }
             }
 
-            EditorGUILayout.EndHorizontal();
+            EditorCompatability.EndSpecialFoldoutGroup();
         }
 
         #region Audio Effect Rendering
