@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace JSAM
 {
@@ -30,7 +28,7 @@ namespace JSAM
                     {
                         if (!isQuitting && Application.isPlaying)
                         {
-                            DebugError("No AudioManager found in scene " + SceneManager.GetActiveScene().name);
+                            DebugError("No AudioManager found in scene " + UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
                         }
                     }
                 }
@@ -154,35 +152,6 @@ namespace JSAM
             }
 
             initialized = true;
-        }
-
-        private void OnEnable()
-        {
-            SceneManager.activeSceneChanged += OnSceneChanged;
-            Application.quitting += Quitting;
-        }
-
-        private void OnDisable()
-        {
-            SceneManager.activeSceneChanged -= OnSceneChanged;
-            Application.quitting -= Quitting;
-        }
-
-        void Quitting()
-        {
-            isQuitting = true;
-        }
-
-        void OnSceneChanged(Scene scene1, Scene scene2)
-        {
-            if (JSAMSettings.Settings.StopSoundsOnSceneChanged)
-            {
-                StopAllSounds();
-            }
-            if (JSAMSettings.Settings.StopMusicOnSceneChanged)
-            {
-                StopAllMusic();
-            }
         }
 
         static SoundFileObject SoundFileFromEnum<T>(T e) where T : Enum

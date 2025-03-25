@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Unity.Collections.LowLevel.Unsafe;
 
 namespace JSAM
@@ -126,6 +126,7 @@ namespace JSAM
         /// </summary>
         public const float EPSILON = 0.000001f;
 
+        public static List<IAudioHelperEvents> OnSceneUnloaded = new List<IAudioHelperEvents>();
         /// <summary>
         /// Notifies Audio Channels to follow their target. 
         /// Only invoked when Spatialize is set to true
@@ -153,6 +154,18 @@ namespace JSAM
         public static Dictionary<VolumeTrack, List<IAudioHelperEvents>> OnVolumeChanged = new Dictionary<VolumeTrack, List<IAudioHelperEvents>>();
 
         public static AudioManagerInternal Instance => AudioManager.InternalInstance;
+
+        private void OnEnable()
+        {
+            SceneManager.sceneUnloaded += SceneUnloaded;
+            SceneManager.activeSceneChanged += ActiveSceneChanged;
+        }
+
+        private void OnDisable()
+        {
+            SceneManager.sceneUnloaded -= SceneUnloaded;
+            SceneManager.activeSceneChanged -= ActiveSceneChanged;
+        }
 
         public void Initialize()
         {
@@ -231,6 +244,26 @@ namespace JSAM
             SaveVolumeSettings();
 
             AudioManager.OnAnyVolumeChanged -= AnyVolumeChanged;
+        }
+
+        void SceneUnloaded(Scene scene)
+        {
+            for (int i = OnSceneUnloaded.Count - 1; i > -1; i--)
+            {
+                OnSceneUnloaded[i].SceneUnloaded(scene);
+            }
+        }
+
+        void ActiveSceneChanged(Scene scene1, Scene scene2)
+        {
+            if (JSAMSettings.Settings.StopSoundsOnSceneChanged)
+            {
+                StopAllSoundsInternal();
+            }
+            if (JSAMSettings.Settings.StopMusicOnSceneChanged)
+            {
+                StopAllMusicInternal(true);
+            }
         }
 
         static bool isQuitting;

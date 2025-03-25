@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 
 namespace JSAM
 {
@@ -29,11 +30,23 @@ namespace JSAM
                 return vol;
             }
         }
+        public void ResetVolume() => AudioSource.volume = Volume;
 
         /// <summary>
-        /// This property will only be assigned to if both the AudioFileObject and the AudioManager have spatialization enabled
+        /// SpatializationTarget only changes if both the AudioFileObject and the AudioManager have spatialization enabled
         /// </summary>
-        public Transform SpatializationTarget { get; private set; }
+        public Transform SpatializationTarget
+        {
+            get => spatializationTarget;
+            set
+            {
+                spatializationTarget = value;
+                targetScene = spatializationTarget ? spatializationTarget.gameObject.scene.name : "";
+            }
+        }
+        protected Transform spatializationTarget;
+        string targetScene;
+
         /// <summary>
         /// This property will only be assigned to if both the AudioFileObject and the AudioManager have spatialization enabled
         /// </summary>
@@ -121,10 +134,14 @@ namespace JSAM
                     }
                 }
             }
+
+            AudioManagerInternal.OnSceneUnloaded.Add(this);
         }
 
         protected virtual void OnDisable()
         {
+            AudioManagerInternal.OnSceneUnloaded.Remove(this);
+
             if (JSAMSettings.Settings.TimeScaledSounds)
             {
                 AudioManagerInternal.OnTimeScaleChanged.Remove(this);
@@ -248,22 +265,8 @@ namespace JSAM
                 return AudioSource;
             }
 
-            if (JSAMSettings.Settings.Spatialize && audioFile.spatialize)
-            {
-                AudioSource.spatialBlend = 1;
-                if (audioFile.maxDistance != 0)
-                {
-                    AudioSource.maxDistance = audioFile.maxDistance;
-                }
-                else AudioSource.maxDistance = JSAMSettings.Settings.DefaultSoundMaxDistance;
-            }
-            else
-            {
-                AudioSource.spatialBlend = 0;
-            }
-
             if (!subscribedTrack) SubscribeToVolumeEvents();
-            AudioSource.volume = Volume;
+            ResetVolume();
 
             AudioSource.outputAudioMixerGroup = audioFile.mixerGroupOverride ? audioFile.mixerGroupOverride : subscribedTrack.DefaultMixerGroup;
 
@@ -290,6 +293,20 @@ namespace JSAM
             else
             {
                 Set3DSettings(default3DSettings);
+
+                if (JSAMSettings.Settings.Spatialize && audioFile.spatialize)
+                {
+                    AudioSource.spatialBlend = 1;
+                    if (audioFile.maxDistance != 0)
+                    {
+                        AudioSource.maxDistance = audioFile.maxDistance;
+                    }
+                    else AudioSource.maxDistance = JSAMSettings.Settings.DefaultSoundMaxDistance;
+                }
+                else
+                {
+                    AudioSource.spatialBlend = 0;
+                }
             }
 
             ApplyEffects();
@@ -306,6 +323,7 @@ namespace JSAM
             StopAllCoroutines();
             enabled = false;
             AudioSource.loop = false;
+            SpatializationTarget = null;
         }
 
         public virtual void TimeScaleChanged(float previousTimeScale)
@@ -316,6 +334,16 @@ namespace JSAM
             AudioSource.pitch += offset;
         }
 
+        public virtual void SceneUnloaded(Scene scene)
+        {
+            if (targetScene != "")
+            {
+                if (targetScene == scene.name)
+                {
+                    Stop();
+                }
+            }
+        }
 
         /// <summary>
         /// Returns false if no AudioClips exists
