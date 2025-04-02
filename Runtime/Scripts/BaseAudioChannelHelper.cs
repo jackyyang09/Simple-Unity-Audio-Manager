@@ -36,23 +36,28 @@ namespace JSAM
             }
         }
 
+        public float ChannelVolume
+        {
+            get
+            {
+                switch (Channel)
+                {
+                    case VolumeChannel.Music:
+                        return AudioManager.InternalInstance.ModifiedMusicVolume;
+                    case VolumeChannel.Sound:
+                        return AudioManager.InternalInstance.ModifiedSoundVolume;
+                    case VolumeChannel.Voice:
+                        return AudioManager.InternalInstance.ModifiedVoiceVolume;
+                }
+                return 0;
+            }
+        }
+
         public float Volume
         {
             get
             {
-                var vol = 0f;
-                switch (Channel)
-                {
-                    case VolumeChannel.Music:
-                        vol = AudioManager.InternalInstance.ModifiedMusicVolume;
-                        break;
-                    case VolumeChannel.Sound:
-                        vol = AudioManager.InternalInstance.ModifiedSoundVolume;
-                        break;
-                    case VolumeChannel.Voice:
-                        vol = AudioManager.InternalInstance.ModifiedVoiceVolume;
-                        break;
-                }
+                var vol = ChannelVolume;
                 if (audioFile) vol *= audioFile.relativeVolume;
                 return vol;
             }
@@ -169,14 +174,14 @@ namespace JSAM
                 {
                     if (fadeInTime > 0)
                     {
-                        AudioSource.volume = Mathf.Lerp(0, audioFile.relativeVolume, AudioSource.time / fadeInTime);
+                        AudioSource.volume = Mathf.Lerp(0, Volume, AudioSource.time / fadeInTime);
                     }
                 }
                 else
                 {
                     if (fadeOutTime > 0)
                     {
-                        AudioSource.volume = Mathf.Lerp(0, audioFile.relativeVolume, (AudioSource.clip.length - AudioSource.time) / fadeOutTime);
+                        AudioSource.volume = Mathf.Lerp(0, Volume, (AudioSource.clip.length - AudioSource.time) / fadeOutTime);
                     }
                 }
             }
@@ -463,7 +468,7 @@ namespace JSAM
                     if (audioFile.ignoreTimeScale) timer += Time.unscaledDeltaTime;
                     else timer += Time.deltaTime;
 
-                    AudioSource.volume = Mathf.Lerp(startingVolume, 0, timer / fadeTime);
+                    AudioSource.volume = Mathf.Lerp(startingVolume * ChannelVolume, 0, timer / fadeTime);
                     yield return null;
                 }
                 AudioSource.Stop();

@@ -31,27 +31,5 @@ namespace JSAM
                 AudioSource.Stop();
             }
         }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="fadeTime">Fade-out time in seconds</param>
-        /// <returns></returns>
-        protected override IEnumerator FadeOut(float fadeTime)
-        {
-            if (fadeTime != 0)
-            {
-                float startingVolume = AudioSource.volume;
-                float timer = 0;
-                while (timer < fadeTime)
-                {
-                    if (audioFile.ignoreTimeScale) timer += Time.unscaledDeltaTime;
-                    else timer += Time.deltaTime;
-
-                    AudioSource.volume = Mathf.Lerp(startingVolume, 0, timer / fadeTime);
-                    yield return null;
-                }
-                AudioSource.Stop();
-            }
-        }
     }
 }
