@@ -21,11 +21,13 @@ namespace JSAM
         protected T audioFile;
         public T AudioFile { get { return audioFile; } }
 
+        public float ChannelVolume => AudioManager.GetModifiedVolume(subscribedTrack);
+        
         public float Volume
         {
             get
             {
-                var vol = AudioManager.GetModifiedVolume(subscribedTrack);
+                var vol = ChannelVolume;
                 if (audioFile) vol *= audioFile.relativeVolume;
                 return vol;
             }
@@ -182,14 +184,14 @@ namespace JSAM
                 {
                     if (fadeInTime > 0)
                     {
-                        AudioSource.volume = Mathf.Lerp(0, audioFile.relativeVolume, AudioSource.time / fadeInTime);
+                        AudioSource.volume = Mathf.Lerp(0, Volume, AudioSource.time / fadeInTime);
                     }
                 }
                 else
                 {
                     if (fadeOutTime > 0)
                     {
-                        AudioSource.volume = Mathf.Lerp(0, audioFile.relativeVolume, (AudioSource.clip.length - AudioSource.time) / fadeOutTime);
+                        AudioSource.volume = Mathf.Lerp(0, Volume, (AudioSource.clip.length - AudioSource.time) / fadeOutTime);
                     }
                 }
             }
@@ -488,7 +490,7 @@ namespace JSAM
                     if (audioFile.ignoreTimeScale) timer += Time.unscaledDeltaTime;
                     else timer += Time.deltaTime;
 
-                    AudioSource.volume = Mathf.Lerp(startingVolume, 0, timer / fadeTime);
+                    AudioSource.volume = Mathf.Lerp(startingVolume * ChannelVolume, 0, timer / fadeTime);
                     yield return null;
                 }
                 AudioSource.Stop();
