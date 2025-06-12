@@ -38,6 +38,10 @@ Preset:
     value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
+    propertyPath: neverRepeat
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
     propertyPath: loopStart
     value: 0
     objectReference: {fileID: 0}
@@ -90,9 +94,9 @@ Preset:
     value: 10
     objectReference: {fileID: 0}
   - target: {fileID: 0}
-    propertyPath: channelOverride
-    value: 0
-    objectReference: {fileID: 0}
+    propertyPath: volumeTrack
+    value: 
+    objectReference: {fileID: 11400000, guid: 87aa70e26394ad04f8b7e671da2168bc, type: 2}
   - target: {fileID: 0}
     propertyPath: mixerGroupOverride
     value: 
@@ -120,6 +124,10 @@ Preset:
   - target: {fileID: 0}
     propertyPath: bypassReverbZones
     value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: SpatialSoundOverride
+    value: -2
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: chorusFilter.enabled
@@ -270,12 +278,8 @@ Preset:
     value: 100
     objectReference: {fileID: 0}
   - target: {fileID: 0}
-    propertyPath: neverRepeat
-    value: 0
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: lastClipIndex
-    value: -1
+    propertyPath: 'managedReferences[-2]'
+    value: 
     objectReference: {fileID: 0}
   m_ExcludedProperties:
   - files

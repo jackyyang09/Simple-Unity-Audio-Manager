@@ -41,24 +41,28 @@ Preset:
       - Minor pitch shift is applied'
     objectReference: {fileID: 0}
   - target: {fileID: 0}
-    propertyPath: category
-    value: 
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: file
-    value: 
-    objectReference: {fileID: 8300000, guid: fd102914e9315024e993441b636b1aab, type: 3}
-  - target: {fileID: 0}
     propertyPath: files.Array.size
     value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
-    propertyPath: files.Array.data[0]
+    propertyPath: 'files.Array.data[0]'
     value: 
     objectReference: {fileID: 8300000, guid: fd102914e9315024e993441b636b1aab, type: 3}
   - target: {fileID: 0}
-    propertyPath: useLibrary
+    propertyPath: neverRepeat
     value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: loopStart
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: loopEnd
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: bpm
+    value: 120
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: relativeVolume
@@ -85,7 +89,7 @@ Preset:
     value: 0.05
     objectReference: {fileID: 0}
   - target: {fileID: 0}
-    propertyPath: playReversed
+    propertyPath: loopMode
     value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
@@ -97,7 +101,19 @@ Preset:
     value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
-    propertyPath: fadeMode
+    propertyPath: maxPlayingInstances
+    value: 10
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: volumeTrack
+    value: 
+    objectReference: {fileID: 11400000, guid: da6d4ee54254f564c9b3d72fadef4f4a, type: 2}
+  - target: {fileID: 0}
+    propertyPath: mixerGroupOverride
+    value: 
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: fadeInOut
     value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
@@ -119,6 +135,10 @@ Preset:
   - target: {fileID: 0}
     propertyPath: bypassReverbZones
     value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: SpatialSoundOverride
+    value: -2
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: chorusFilter.enabled
@@ -269,14 +289,15 @@ Preset:
     value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
-    propertyPath: neverRepeat
-    value: 1
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: lastClipIndex
-    value: -1
+    propertyPath: 'managedReferences[-2]'
+    value: 
     objectReference: {fileID: 0}
   m_ExcludedProperties:
   - files
   - neverRepeat
   - category
+  m_CoupledType:
+    m_NativeTypeID: 0
+    m_ManagedTypePPtr: {fileID: 0}
+    m_ManagedTypeFallback: 
+  m_CoupledProperties: []
