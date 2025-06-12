@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace JSAM
 {
+    [AddComponentMenu("AudioManager/Audio Library Loader")]
     public class AudioLibraryLoader : MonoBehaviour
     {
         [SerializeField] AudioLibrary library;
