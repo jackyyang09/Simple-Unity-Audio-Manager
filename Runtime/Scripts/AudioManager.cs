@@ -137,7 +137,11 @@ namespace JSAM
                 DontDestroyOnLoad(gameObject);
             }
 
-            EstablishSingletonDominance();
+            if (!TryDesignateSingleton())
+            {
+                Destroy(gameObject);
+                return;
+            }
 
             if (!initialized)
             {
@@ -771,15 +775,13 @@ namespace JSAM
         #endregion
 
         /// <summary>
-        /// TODO: Make this more stable
         /// Ensures that the AudioManager you think you're referring to actually exists in this scene
         /// </summary>
-        [RuntimeInitializeOnLoadMethod]
-        public void EstablishSingletonDominance()
+        public bool TryDesignateSingleton()
         {
             if (!JSAMSettings.Settings.EstablishSingletonDominance)
             {
-                return;
+                return true;
             }
             
             if (Instance != this && Instance != null)
@@ -789,22 +791,17 @@ namespace JSAM
                 {
                     if (Instance.gameObject.scene.name == "DontDestroyOnLoad" || gameObject.scene == null) // Previous is still here and active
                     {
-                        enabled = false;
-                    }
-                    else
-                    {
-                        instance = this;
+                        return false;
                     }
                 }
                 else if (!Instance.gameObject.activeInHierarchy)
                 {
-                    instance = this;
+                    return true;
                 }
-                else if (Application.isPlaying)
-                {
-                    Destroy(gameObject);
-                }
+                return false;
             }
+
+            return true;
         }
 
         private void OnDestroy()
@@ -847,7 +844,7 @@ namespace JSAM
                 return;
             }
 
-            EstablishSingletonDominance();
+            //TryDesignateSingleton();
             //ValidateSourcePrefab();
 
             if (!doneLoading) return;

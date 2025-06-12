@@ -19,25 +19,22 @@ MonoBehaviour:
   - {fileID: 8300000, guid: cb8f1be3ace675147b700ed30513d01d, type: 3}
   - {fileID: 8300000, guid: 397095441c4f1c64aaefd9a4ab72b146, type: 3}
   - {fileID: 8300000, guid: a2f331ceaeebb254aa600162e217214e, type: 3}
-  neverRepeat: 1
   loopStart: 0
   loopEnd: 0
   bpm: 120
   relativeVolume: 0.2
   spatialize: 0
   maxDistance: 0
-  priority: 128
+  priority: 256
   startingPitch: 1
   pitchShift: 0.05
   loopMode: 0
   delay: 0
   ignoreTimeScale: 0
   maxPlayingInstances: 10
-  channelOverride: 0
-  volumeTrack: {fileID: 11400000, guid: da6d4ee54254f564c9b3d72fadef4f4a, type: 2}
   mixerGroupOverride: {fileID: 0}
   fadeInOut: 0
-  fadeInDuration: 0
+  fadeInDuration: 0.15999997
   fadeOutDuration: 1
   bypassEffects: 0
   bypassListenerEffects: 0
@@ -85,3 +82,5 @@ MonoBehaviour:
     lFReference: 250
     diffusion: 100
     density: 100
+  neverRepeat: 1
+  lastClipIndex: 2

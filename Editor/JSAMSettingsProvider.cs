@@ -3,6 +3,45 @@ using UnityEditor;
 
 namespace JSAM.JSAMEditor
 {
+    [InitializeOnLoad]
+    class SettingsHook
+    {
+        static SettingsHook()
+        {
+            EditorApplication.playModeStateChanged += PlayModeStateChanged;
+        }
+
+        static void PlayModeStateChanged(PlayModeStateChange change)
+        {
+            if (change != PlayModeStateChange.ExitingEditMode) return;
+
+            if (JSAMSettings.Settings.MasterTrack == null)
+            {
+                if (EditorUtility.DisplayDialog("JSAM Warning",
+                "The Master Volume track is unset in the JSAM Settings!\n" +
+                "Starting in version 3.1.2, JSAM requires the use of Volume Track assets to control volume.\n" +
+                "These fields should have been populated with default assets automatically, but may be nulled " +
+                "if you're upgrading from an older version of JSAM.\n" +
+                "You can choose to set them to default values are continue into Play Mode or return to Edit Mode " +
+                "and set them yourself.", "Populate and Play", "Return to Edit Mode"))
+                {
+                    JSAMSettings.Settings.AssignDefaultTracks();
+
+                    EditorUtility.DisplayDialog("Track Settings Updated",
+                        "Track settings have been set to their defaults! Now continuing to Play Mode", "OK");
+                }
+                else
+                {
+                    EditorUtility.DisplayDialog("Returning to Edit Mode",
+                        "JSAM will not function properly unless the Master track field has been set.", "Understood.");
+
+                    EditorApplication.isPlaying = false;
+                    JSAMSettingsProvider.OpenSettingsWindow();
+                }
+            }
+        }
+    }
+
     public class JSAMSettingsProvider : SettingsProvider
     {
         public JSAMSettingsProvider(string path, SettingsScope scope = SettingsScope.Project) : base(path, scope)
@@ -37,6 +76,9 @@ namespace JSAM.JSAMEditor
         JSAMSettings Settings => JSAMSettings.Settings;
         SerializedObject SettingsSO => JSAMSettings.SerializedObject;
         SerializedObject PathSO => JSAMPaths.SerializedObject;
+
+        const string SettingsPath = "Project/Audio - JSAM";
+        public static void OpenSettingsWindow() => SettingsService.OpenProjectSettings(SettingsPath);
 
         protected SerializedProperty FindProp(string prop) => SettingsSO.FindProperty(prop);
         void FindSerializedProperties()
@@ -173,9 +215,20 @@ namespace JSAM.JSAMEditor
 
             EditorGUILayout.PropertyField(saveVolumeToPlayerPrefs);
 
+            var backup = GUI.color;
+            if (masterTrack.objectReferenceValue == null)
+            {
+                GUI.color = Color.red;
+            }
             EditorGUILayout.PropertyField(masterTrack);
-            GUIStyle style = new GUIStyle(EditorStyles.label).ApplyWordWrap().SetTextColor(Color.white);
+            GUI.color = backup;
+
             EditorGUILayout.PropertyField(tracks);
+
+            if (GUILayout.Button("Reset Tracks to Default", GUILayout.ExpandWidth(false)))
+            {
+                JSAMSettings.Settings.AssignDefaultTracks();
+            }
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Editor", EditorStyles.boldLabel);
@@ -229,7 +282,7 @@ namespace JSAM.JSAMEditor
         {
             // First parameter is the path in the Settings window.
             // Second parameter is the scope of this setting: it only appears in the Project Settings window.
-            var provider = new JSAMSettingsProvider("Project/Audio - JSAM", SettingsScope.Project);
+            var provider = new JSAMSettingsProvider(SettingsPath, SettingsScope.Project);
             provider.keywords = GetSearchKeywordsFromSerializedObject(JSAMSettings.SerializedObject);
 
             return provider;

@@ -86,8 +86,6 @@ namespace JSAM.Example.FirstPerson3D
             PlayMovementSound();
         }
 
-        SoundChannelHelper breatheHelper;
-
         public void PlayMovementSound()
         {
             switch (moveState)
@@ -120,15 +118,14 @@ namespace JSAM.Example.FirstPerson3D
 
             if (breathTime >= sprintTimeToBreathe)
             {
-                if (!breatheHelper)
+                if (!AudioManager.IsSoundPlaying(FPS3DSounds.Breathing, transform))
                 {
-                    breatheHelper = AudioManager.PlaySound(FPS3DSounds.Breathing, transform);
+                    AudioManager.PlaySound(FPS3DSounds.Breathing, transform);
                 }
             }
-            else if (breathTime <= 0 && breatheHelper)
+            else if (breathTime <= 0)
             {
-                breatheHelper.BeginFadeOut(2);
-                breatheHelper = null;
+                AudioManager.StopSoundIfPlaying(FPS3DSounds.Breathing);
             }
         }
 

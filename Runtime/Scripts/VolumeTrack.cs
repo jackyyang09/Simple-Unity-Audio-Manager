@@ -7,10 +7,13 @@ namespace JSAM
     public partial class VolumeTrack : ScriptableObject
     {
         /// <summary>
-        /// Audio File Objects that play through this Track will use this Mixer Group unless overriden
+        /// Audio File Objects that play through this Track will use this Mixer Group by default, 
+        /// unless said Audio File Object has a Mixer override set
         /// </summary>
-        [Tooltip("Audio File Objects that play through this Track will use this Mixer Group unless overriden")]
+        [Tooltip("Audio File Objects that play through this Track will use this Mixer Group by default, " +
+            "unless said Audio File Object has a Mixer override set")]
         public AudioMixerGroup DefaultMixerGroup;
+
         [Header("Optional:")]
         /// <summary>
         /// When no existing preference is found, will set the Audio Track to this value

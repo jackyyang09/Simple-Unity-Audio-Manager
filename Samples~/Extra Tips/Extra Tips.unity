@@ -1071,7 +1071,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   relativeVolume: 1
-  volumeChannel: 2
+  track: {fileID: 11400000, guid: da6d4ee54254f564c9b3d72fadef4f4a, type: 2}
   audioSource: {fileID: 1376987067}
 --- !u!4 &1376987069
 Transform:
@@ -1364,7 +1364,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Bonus 2: If you need in-depth control of specific AudioSources but still
+  m_Text: 'Bonus 2: If you need complete control of specific AudioSources but still
     want to benefit from JSAM''s Volume Management, you can use the <b>VolumeListener</b>
     component'
 --- !u!222 &2128588703

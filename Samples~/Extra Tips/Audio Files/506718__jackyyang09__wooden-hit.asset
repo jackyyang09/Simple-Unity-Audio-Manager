@@ -39,8 +39,7 @@ MonoBehaviour:
   loopMode: 0
   delay: 0
   ignoreTimeScale: 1
-  maxPlayingInstances: 1
-  channelOverride: 0
+  maxPlayingInstances: 3
   volumeTrack: {fileID: 11400000, guid: da6d4ee54254f564c9b3d72fadef4f4a, type: 2}
   mixerGroupOverride: {fileID: 0}
   fadeInOut: 0
@@ -49,6 +48,8 @@ MonoBehaviour:
   bypassEffects: 0
   bypassListenerEffects: 0
   bypassReverbZones: 0
+  SpatialSoundOverride:
+    rid: -2
   chorusFilter:
     enabled: 0
     dryMix: 0
@@ -92,3 +93,8 @@ MonoBehaviour:
     lFReference: 0
     diffusion: 0
     density: 0
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }

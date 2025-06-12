@@ -53,7 +53,7 @@ namespace JSAM.JSAMEditor
         {
             myScript = (AudioManager)target;
 
-            myScript.EstablishSingletonDominance();
+            myScript.TryDesignateSingleton();
 
             preloadedLibraries = serializedObject.FindProperty(nameof(preloadedLibraries));
 
@@ -229,7 +229,13 @@ namespace JSAM.JSAMEditor
 
         void RenderVolumeControls()
         {
+            EditorGUILayout.BeginHorizontal();
             showVolume = EditorCompatability.SpecialFoldouts(showVolume, new GUIContent("Volume Controls"));
+            if (GUILayout.Button(" Modify Tracks ", GUILayout.ExpandWidth(false)))
+            {
+                JSAMSettingsProvider.OpenSettingsWindow();
+            }
+            EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginVertical(GUI.skin.box);
             using (new EditorGUI.DisabledGroupScope(!Application.isPlaying))

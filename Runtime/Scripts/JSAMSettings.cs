@@ -229,6 +229,50 @@ namespace JSAM
 
         public void Reset()
         {
+            AssignDefaultTracks();
+        }
+
+        public void AssignDefaultTracks()
+        {
+            Undo.RecordObject(Settings, "Apply Default Volume Tracks");
+
+            var guids = AssetDatabase.FindAssets("Master t:VolumeTrack");
+            foreach (var item in guids)
+            {
+                var a = AssetDatabase.LoadAssetAtPath<VolumeTrack>(AssetDatabase.GUIDToAssetPath(item));
+                if (a)
+                {
+                    masterTrack = a;
+                    break;
+                }
+            }
+
+            var t = new List<VolumeTrack>();
+
+            var newA = FindVolumeTrack("Ambient");
+            if (newA) t.Add(newA);
+            newA = FindVolumeTrack("Music");
+            if (newA) t.Add(newA);
+            newA = FindVolumeTrack("Sound");
+            if (newA) t.Add(newA);
+            newA = FindVolumeTrack("Voice");
+            if (newA) t.Add(newA);
+
+            tracks = t.ToArray();
+        }
+
+        VolumeTrack FindVolumeTrack(string assetName)
+        {
+            var guids = AssetDatabase.FindAssets(assetName + " t:VolumeTrack");
+            foreach (var item in guids)
+            {
+                var a = AssetDatabase.LoadAssetAtPath<VolumeTrack>(AssetDatabase.GUIDToAssetPath(item));
+                if (a)
+                {
+                    return a;
+                }
+            }
+            return null;
         }
 #endif
     }
