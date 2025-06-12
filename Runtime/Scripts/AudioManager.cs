@@ -775,6 +775,25 @@ namespace JSAM
         #endregion
 
         /// <summary>
+        /// Loads an AudioLibrary, making it possible to refer to your Audio File Objects via strings/enums in JSAM's 
+        /// playback calls
+        /// </summary>
+        /// <param name="library"></param>
+        public static void LoadAudioLibrary(AudioLibrary library)
+        {
+            InternalInstance.LoadAudioLibrary(library);
+        }
+
+        /// <summary>
+        /// Unloads an AudioLibrary, freeing it from memory
+        /// </summary>
+        /// <param name="library"></param>
+        public static void UnloadAudioLibrary(AudioLibrary library)
+        {
+            InternalInstance.UnloadAudioLibrary(library);
+        }
+
+        /// <summary>
         /// Ensures that the AudioManager you think you're referring to actually exists in this scene
         /// </summary>
         public bool TryDesignateSingleton()

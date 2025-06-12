@@ -89,4 +89,17 @@ namespace JSAM
             return null;
         }
     }
+
+    static class AudioLibraryExtensions
+    {
+        public static void Load(this AudioLibrary library)
+        {
+            AudioManager.LoadAudioLibrary(library);
+        }
+
+        public static void Unload(this AudioLibrary library)
+        {
+            AudioManager.UnloadAudioLibrary(library);
+        }
+    }
 }
