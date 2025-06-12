@@ -14,7 +14,20 @@ namespace JSAM.JSAMEditor
 
         protected abstract GUIContent audioDesc { get; }
 
-        protected AudioLibrary[] Libraries => AudioManager.Instance.PreloadedLibraries;
+        protected AudioLibrary[] Libraries
+        {
+            get
+            {
+                var guids = AssetDatabase.FindAssets($"t:{nameof(AudioLibrary)}");
+                var libraries = new List<AudioLibrary>();
+                foreach (var id in guids)
+                {
+                    var l = AssetDatabase.LoadAssetAtPath<AudioLibrary>(AssetDatabase.GUIDToAssetPath(id));
+                    if (l) libraries.Add(l);
+                }
+                return libraries.ToArray();
+            }
+        }
 
         protected abstract List<T> GetListFromLibrary(AudioLibrary l);
         protected abstract List<AudioLibrary.CategoryToList> GetCTLFromLibrary(AudioLibrary l);
