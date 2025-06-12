@@ -234,36 +234,31 @@ namespace JSAM
 
         public void AssignDefaultTracks()
         {
-            Undo.RecordObject(Settings, "Apply Default Volume Tracks");
+            var m = SerializedObject.FindProperty(nameof(masterTrack));
+            var t = SerializedObject.FindProperty(nameof(tracks));
 
-            var guids = AssetDatabase.FindAssets("Master t:VolumeTrack");
-            foreach (var item in guids)
-            {
-                var a = AssetDatabase.LoadAssetAtPath<VolumeTrack>(AssetDatabase.GUIDToAssetPath(item));
-                if (a)
-                {
-                    masterTrack = a;
-                    break;
-                }
-            }
+            m.objectReferenceValue = FindVolumeTrack("Master");
 
-            var t = new List<VolumeTrack>();
+            t.ClearArray();
 
-            var newA = FindVolumeTrack("Ambient");
-            if (newA) t.Add(newA);
-            newA = FindVolumeTrack("Music");
-            if (newA) t.Add(newA);
-            newA = FindVolumeTrack("Sound");
-            if (newA) t.Add(newA);
-            newA = FindVolumeTrack("Voice");
-            if (newA) t.Add(newA);
+            t.InsertArrayElementAtIndex(t.arraySize);
+            t.GetArrayElementAtIndex(t.arraySize - 1).objectReferenceValue = FindVolumeTrack("Ambient");
 
-            tracks = t.ToArray();
+            t.InsertArrayElementAtIndex(t.arraySize);
+            t.GetArrayElementAtIndex(t.arraySize - 1).objectReferenceValue = FindVolumeTrack("Music");
+
+            t.InsertArrayElementAtIndex(t.arraySize);
+            t.GetArrayElementAtIndex(t.arraySize - 1).objectReferenceValue = FindVolumeTrack("Sound");
+
+            t.InsertArrayElementAtIndex(t.arraySize);
+            t.GetArrayElementAtIndex(t.arraySize - 1).objectReferenceValue = FindVolumeTrack("Voice");
+
+            serializedObject.ApplyModifiedProperties();
         }
 
         VolumeTrack FindVolumeTrack(string assetName)
         {
-            var guids = AssetDatabase.FindAssets(assetName + " t:VolumeTrack");
+            var guids = AssetDatabase.FindAssets(assetName + $" t:{nameof(VolumeTrack)}");
             foreach (var item in guids)
             {
                 var a = AssetDatabase.LoadAssetAtPath<VolumeTrack>(AssetDatabase.GUIDToAssetPath(item));
