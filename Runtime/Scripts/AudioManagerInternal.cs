@@ -884,9 +884,12 @@ namespace JSAM
             {
                 soundType = l.soundNamespaceGenerated + "." + soundType;
             }
-            var assembly = soundType + ", Assembly-CSharp";
 
-            Type enumType = Type.GetType(assembly);
+            var assembly = l.AssemblyName.IsNullEmptyOrWhiteSpace() || !l.useCustomNames ? "Assembly-CSharp" : l.AssemblyName;
+
+            var soundAssembly = soundType + ", " + assembly;
+
+            Type enumType = Type.GetType(soundAssembly);
             enums.AddRange(Enum.GetNames(enumType));
 
             newLib.SoundKeys = new long[enums.Count];
@@ -907,9 +910,9 @@ namespace JSAM
             {
                 musicType = l.musicNamespaceGenerated + "." + musicType;
             }
-            assembly = musicType + ", Assembly-CSharp";
+            var musicAssembly = musicType + ", " + assembly;
 
-            enumType = Type.GetType(assembly);
+            enumType = Type.GetType(musicAssembly);
             enums.AddRange(Enum.GetNames(enumType));
 
             newLib.MusicKeys = new long[enums.Count];
@@ -924,6 +927,7 @@ namespace JSAM
 
             loadedLibraries.Add(l, newLib);
         }
+
 
         public void UnloadAudioLibrary(AudioLibrary l)
         {

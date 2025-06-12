@@ -33,6 +33,8 @@ namespace JSAM
         public string musicNamespace;
         public string musicNamespaceGenerated;
 
+        public string AssemblyName;
+
         public string soundEnum;
         public string defaultSoundEnum { get { return name.ConvertToAlphanumeric() + "Sounds"; } }
         public string soundEnumGenerated;

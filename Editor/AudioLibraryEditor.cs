@@ -244,15 +244,17 @@ namespace JSAM.JSAMEditor
         SerializedProperty useCustomNames;
         SerializedProperty generatedName;
 
-        SerializedProperty musicEnum;
-        SerializedProperty musicEnumGenerated;
-        SerializedProperty musicNamespace;
-        SerializedProperty musicNamespaceGenerated;
+        SerializedProperty AssemblyName;
 
         SerializedProperty soundEnum;
         SerializedProperty soundEnumGenerated;
         SerializedProperty soundNamespace;
         SerializedProperty soundNamespaceGenerated;
+
+        SerializedProperty musicEnum;
+        SerializedProperty musicEnumGenerated;
+        SerializedProperty musicNamespace;
+        SerializedProperty musicNamespaceGenerated;
 
         SerializedProperty sounds;
         SerializedProperty soundCategories;
@@ -265,6 +267,8 @@ namespace JSAM.JSAMEditor
         protected override void DesignateSerializedProperties()
         {
             useCustomNames = FindProp(nameof(asset.useCustomNames));
+
+            AssemblyName = FindProp(nameof(asset.AssemblyName));
 
             soundEnum = FindProp(nameof(asset.soundEnum));
             soundNamespace = FindProp(nameof(asset.soundNamespace));
@@ -659,11 +663,14 @@ namespace JSAM.JSAMEditor
                 EditorGUILayout.Space();
 
                 EditorGUILayout.PropertyField(useCustomNames);
-                showCustomNames = EditorCompatability.SpecialFoldouts(showCustomNames, "Custom Names");
+                showCustomNames = EditorCompatability.SpecialFoldouts(showCustomNames, "Override Names");
                 if (showCustomNames)
                 {
                     using (new EditorGUI.DisabledScope(!useCustomNames.boolValue))
                     {
+                        blontent = new GUIContent("Assembly Name", "Overrides the Assembly name used to search for your enum script. If left empty, AudioManager looks for your enum scripts in Assembly-CSharp.");
+                        RenderCodeField(AssemblyName, blontent, false, "Change Assembly name", "");
+
                         blontent = new GUIContent("Sound Enum", "Change the name enum name used to refer to your sounds. Generated enums will appear as <Sound Namespace>.<Sound Enum>.<Sound Name>.");
                         RenderCodeField(soundEnum, blontent, false, "Change Sound Enum Name", asset.defaultSoundEnum);
 
@@ -1553,6 +1560,9 @@ namespace JSAM.JSAMEditor
                 {
                     if (GUILayout.Button("Open Audio Library"))
                     {
+                        JSAMPaths.Instance.SelectedLibrary = Selection.activeObject as AudioLibrary;
+                        JSAMPaths.TrySave();
+
                         AudioLibraryEditor.Init();
                     }
                 }
