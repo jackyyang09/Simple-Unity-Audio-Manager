@@ -282,11 +282,11 @@ namespace JSAM
             switch (audioFile.loopMode)
             {
                 case LoopMode.NoLooping:
+                case LoopMode.LoopWithLoopPoints:
+                case LoopMode.ClampedLoopPoints:
                     AudioSource.loop = false;
                     break;
                 case LoopMode.Looping:
-                case LoopMode.LoopWithLoopPoints:
-                case LoopMode.ClampedLoopPoints:
                     AudioSource.loop = true;
                     break;
             }
