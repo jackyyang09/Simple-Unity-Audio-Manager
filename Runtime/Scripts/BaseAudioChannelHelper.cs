@@ -16,14 +16,14 @@ namespace JSAM
         /// <summary>
         /// Returns true if this Audio Channel is not playing any sounds and is not marked as "Reserved"
         /// </summary>
-        public bool IsFree { get { return !Reserved && !enabled; } }
+        public virtual bool IsFree => !Reserved && !enabled;
 
         protected T audioFile;
-        public T AudioFile { get { return audioFile; } }
+        public T AudioFile => audioFile;
 
         public float ChannelVolume => AudioManager.GetModifiedVolume(subscribedTrack);
         
-        public float Volume
+        public virtual float Volume
         {
             get
             {
@@ -53,6 +53,9 @@ namespace JSAM
         /// This property will only be assigned to if both the AudioFileObject and the AudioManager have spatialization enabled
         /// </summary>
         public Vector3 SpatializationPosition { get; private set; }
+
+        public virtual AudioMixerGroup MixerGroup => 
+            audioFile.mixerGroupOverride ? audioFile.mixerGroupOverride : subscribedTrack.DefaultMixerGroup;
 
         protected int LoopStart { get { return (int)(audioFile.loopStart * AudioSource.clip.frequency); } }
         protected int LoopEnd { get { return (int)(audioFile.loopEnd * AudioSource.clip.frequency); } }
@@ -270,7 +273,7 @@ namespace JSAM
             if (!subscribedTrack) SubscribeToVolumeEvents();
             ResetVolume();
 
-            AudioSource.outputAudioMixerGroup = audioFile.mixerGroupOverride ? audioFile.mixerGroupOverride : subscribedTrack.DefaultMixerGroup;
+            AudioSource.outputAudioMixerGroup = MixerGroup;
 
             AudioSource.priority = (int)audioFile.priority;
 
