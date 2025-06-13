@@ -20,8 +20,6 @@ namespace JSAM.JSAMEditor
 
         protected override string SHOW_FADETOOL => "JSAM_SFO_SHOWFADETOOL";
 
-        SerializedProperty neverRepeat;
-
         protected override void PlayDebug(BaseAudioFileObject asset, bool dontReset)
         {
             helper.SoundHelper.PlayDebug(asset, dontReset);
@@ -66,8 +64,6 @@ namespace JSAM.JSAMEditor
             base.DesignateSerializedProperties();
 
             list = new AudioClipList(serializedObject, files);
-
-            neverRepeat = FindProp(nameof(neverRepeat));
         }
 
         protected override void OnCreatePreset(string[] input)
@@ -114,6 +110,8 @@ namespace JSAM.JSAMEditor
             RenderSpecialProperties();
 
             PostFixAndSave();
+
+            DrawPropertiesExcluding(serializedObject, ignoredProps.ToArray());
 
             #region Quick Reference Guide
             string[] howToText = new string[]

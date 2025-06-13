@@ -162,6 +162,7 @@ namespace JSAM.JSAMEditor
         protected SerializedProperty safeName;
         protected SerializedProperty presetDescription;
         protected SerializedProperty files;
+        protected SerializedProperty neverRepeat;
         protected SerializedProperty volumeTrack;
         protected SerializedProperty relativeVolume;
         protected SerializedProperty spatialize;
@@ -177,6 +178,7 @@ namespace JSAM.JSAMEditor
         protected SerializedProperty fadeInOut;
         protected SerializedProperty fadeInDuration;
         protected SerializedProperty fadeOutDuration;
+        protected SerializedProperty bpm;
         protected SerializedProperty loopMode;
         protected SerializedProperty loopStart;
         protected SerializedProperty loopEnd;
@@ -187,12 +189,50 @@ namespace JSAM.JSAMEditor
         protected SerializedProperty bypassListenerEffects;
         protected SerializedProperty bypassReverbZones;
 
+        protected List<string> ignoredProps = new() 
+        { 
+            "m_Script",
+            "neverRepeat",
+            nameof(safeName),
+            nameof(presetDescription), 
+            nameof(files),
+            nameof(volumeTrack),
+            nameof(relativeVolume),
+            nameof(spatialize),
+            nameof(maxDistance),
+            nameof(priority),
+            nameof(startingPitch),
+            nameof(pitchShift),
+            nameof(delay),
+            nameof(ignoreTimeScale),
+            nameof(maxPlayingInstances),
+            nameof(mixerGroupOverride),
+            nameof(fadeInOut),
+            nameof(fadeInDuration),
+            nameof(fadeOutDuration),
+            nameof(bpm),
+            nameof(loopMode),
+            nameof(loopStart),
+            nameof(loopEnd),
+            nameof(SpatialSoundOverride),
+            nameof(bypassEffects),
+            nameof(bypassListenerEffects),
+            nameof(bypassReverbZones),
+            "chorusFilter",
+            "distortionFilter",
+            "echoFilter",
+            "lowPassFilter",
+            "highPassFilter",
+            "reverbFilter",
+        };
+
         protected virtual void DesignateSerializedProperties()
         {
             safeName = FindProp(nameof(safeName));
             presetDescription = FindProp(nameof(presetDescription));
             files = FindProp(nameof(files));
 
+            neverRepeat = FindProp(nameof(neverRepeat));
             volumeTrack = FindProp(nameof(volumeTrack));
             relativeVolume = FindProp(nameof(relativeVolume));
             spatialize = FindProp(nameof(spatialize));
@@ -208,6 +248,7 @@ namespace JSAM.JSAMEditor
             fadeInOut = FindProp(nameof(fadeInOut));
             fadeInDuration = FindProp(nameof(fadeInDuration));
             fadeOutDuration = FindProp(nameof(fadeOutDuration));
+            bpm = FindProp(nameof(bpm));
             loopMode = FindProp(nameof(loopMode));
             loopStart = FindProp(nameof(loopStart));
             loopEnd = FindProp(nameof(loopEnd));
@@ -806,7 +847,7 @@ namespace JSAM.JSAMEditor
                                 blontent = new GUIContent(helper.Source.timeSamples + " / " + activeClip.samples, "The playback time in samples");
                                 break;
                             case LoopPointTool.BPMInput:
-                                blontent = new GUIContent(string.Format("{0:0}", helper.Source.time / (60f / asset.bpm)) + " / " + activeClip.length / (60f / asset.bpm),
+                                blontent = new GUIContent(string.Format("{0:0}", helper.Source.time / (60f / bpm.intValue)) + " / " + activeClip.length / (60f / bpm.intValue),
                                     "The playback time in beats");
                                 break;
                         }
@@ -987,7 +1028,7 @@ namespace JSAM.JSAMEditor
                             blontent = new GUIContent(helper.Source.timeSamples + " / " + audio.samples, "The playback time in samples");
                             break;
                         case LoopPointTool.BPMInput:
-                            blontent = new GUIContent(string.Format("{0:0}", helper.Source.time / (60f / asset.bpm)) + " / " + audio.length / (60f / asset.bpm),
+                            blontent = new GUIContent(string.Format("{0:0}", helper.Source.time / (60f / bpm.intValue)) + " / " + audio.length / (60f / bpm.intValue),
                                 "The playback time in beats");
                             break;
                     }
@@ -1156,19 +1197,18 @@ namespace JSAM.JSAMEditor
                             end = samplesEnd / frequency;
                             break;
                         case LoopPointTool.BPMInput/*WithBeats*/:
-                            Undo.RecordObject(asset, "Modified song BPM");
-                            asset.bpm = EditorGUILayout.IntField("Song BPM: ", asset.bpm/*, new GUILayoutOption[] { GUILayout.MaxWidth(30)}*/);
+                            EditorGUILayout.PropertyField(bpm, new GUIContent("Song BPM")/*, new GUILayoutOption[] { GUILayout.MaxWidth(30)}*/);
 
                             EditorGUILayout.Space();
 
-                            float startBeat = start / (60f / (float)asset.bpm);
+                            float startBeat = start / (60f / (float)bpm.intValue);
                             startBeat = EditorGUILayout.FloatField("Starting Beat:", startBeat);
 
-                            float endBeat = end / (60f / (float)asset.bpm);
-                            endBeat = Mathf.Clamp(EditorGUILayout.FloatField("Ending Beat:", endBeat), 0, duration / (60f / asset.bpm));
+                            float endBeat = end / (60f / (float)bpm.intValue);
+                            endBeat = Mathf.Clamp(EditorGUILayout.FloatField("Ending Beat:", endBeat), 0, duration / (60f / bpm.intValue));
 
-                            start = (float)startBeat * 60f / (float)asset.bpm;
-                            end = (float)endBeat * 60f / (float)asset.bpm;
+                            start = (float)startBeat * 60f / (float)bpm.intValue;
+                            end = (float)endBeat * 60f / (float)bpm.intValue;
                             break;
                     }
 

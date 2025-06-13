@@ -100,6 +100,8 @@ namespace JSAM.JSAMEditor
 
             PostFixAndSave();
 
+            DrawPropertiesExcluding(serializedObject, ignoredProps.ToArray());
+
             #region Quick Reference Guide 
             showHowTo = EditorCompatability.SpecialFoldouts(showHowTo, "Quick Reference Guide");
             if (showHowTo)
