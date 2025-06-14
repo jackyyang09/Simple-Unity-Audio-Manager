@@ -1132,7 +1132,7 @@ namespace JSAM.JSAMEditor
                     {
                         if (i == loopPointInputMode) JSAMEditorHelper.BeginColourChange(COLOR_BUTTONPRESSED_2);
                         if (GUILayout.Button(contents[i], EditorStyles.miniButtonMid)) loopPointInputMode = i;
-                        JSAMEditorHelper.EndColourChange();
+                        if (i == loopPointInputMode) JSAMEditorHelper.EndColourChange();
                     }
                     EditorGUILayout.EndHorizontal();
 
