@@ -56,8 +56,6 @@ namespace JSAM
             }
         }
 
-        bool doneLoading;
-
         bool initialized = false;
         /// <summary>
         /// True if AudioManager finishes setting up
@@ -137,15 +135,10 @@ namespace JSAM
                 DontDestroyOnLoad(gameObject);
             }
 
-            if (!TryDesignateSingleton())
+            if (!ValidateSingleton())
             {
                 Destroy(gameObject);
                 return;
-            }
-
-            if (!initialized)
-            {
-                doneLoading = true;
             }
 
             InternalInstance.Initialize();
@@ -796,13 +789,8 @@ namespace JSAM
         /// <summary>
         /// Ensures that the AudioManager you think you're referring to actually exists in this scene
         /// </summary>
-        public bool TryDesignateSingleton()
+        public bool ValidateSingleton()
         {
-            if (!JSAMSettings.Settings.EstablishSingletonDominance)
-            {
-                return true;
-            }
-            
             if (Instance != this && Instance != null)
             {
                 // A unique case where the Singleton exists but not in this scene
@@ -852,22 +840,5 @@ namespace JSAM
             Debug.LogError("JSAM ERROR: " +
                 consoleOutput);
         }
-
-#if UNITY_EDITOR
-        private void OnValidate()
-        {
-            // Don't go any further if you're in a prefab
-            UnityEditor.SceneManagement.PrefabStage currentStage = UnityEditor.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage();
-            if (currentStage != null)
-            {
-                return;
-            }
-
-            //TryDesignateSingleton();
-            //ValidateSourcePrefab();
-
-            if (!doneLoading) return;
-        }
-#endif
     }
 }

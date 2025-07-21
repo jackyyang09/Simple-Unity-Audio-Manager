@@ -49,17 +49,19 @@ namespace JSAM.JSAMEditor
 
         JSAMSettings Settings => JSAMSettings.Settings;
 
+        bool isInstance;
+
         private void OnEnable()
         {
             myScript = (AudioManager)target;
-
-            myScript.TryDesignateSingleton();
 
             preloadedLibraries = serializedObject.FindProperty(nameof(preloadedLibraries));
 
             Application.logMessageReceived += UnityDebugLog;
 
             AudioManager.OnAnyVolumeChanged += OnAnyVolumeChanged;
+
+            isInstance = AudioManager.Instance == myScript;
         }
 
         private void OnDisable()
@@ -84,20 +86,23 @@ namespace JSAM.JSAMEditor
         {
             serializedObject.Update();
                     
-            EditorGUILayout.BeginVertical(GUI.skin.box);
-            if (AudioManager.Instance == myScript)
+            if (Application.isPlaying)
             {
-                JSAMEditorHelper.BeginColourChange(Color.green);
-                EditorGUILayout.LabelField("Looks good! This is the active AudioManager!", EditorStyles.boldLabel.ApplyTextAnchor(TextAnchor.MiddleCenter));
-                JSAMEditorHelper.EndColourChange();
+                EditorGUILayout.BeginVertical(GUI.skin.box);
+                if (isInstance)
+                {
+                    JSAMEditorHelper.BeginColourChange(Color.green);
+                    EditorGUILayout.LabelField("This is the active AudioManager instance!", EditorStyles.boldLabel.ApplyTextAnchor(TextAnchor.MiddleCenter));
+                    JSAMEditorHelper.EndColourChange();
+                }
+                else
+                {
+                    JSAMEditorHelper.BeginColourChange(Color.red);
+                    EditorGUILayout.LabelField("This is NOT the active AudioManager instance!", EditorStyles.boldLabel.ApplyTextAnchor(TextAnchor.MiddleCenter));
+                    JSAMEditorHelper.EndColourChange();
+                }
+                EditorGUILayout.EndVertical();
             }
-            else
-            {
-                JSAMEditorHelper.BeginColourChange(Color.red);
-                EditorGUILayout.LabelField("This is NOT the active AudioManager!", EditorStyles.boldLabel.ApplyTextAnchor(TextAnchor.MiddleCenter));
-                JSAMEditorHelper.EndColourChange();
-            }
-            EditorGUILayout.EndVertical();
 
             RenderVolumeControls();
 

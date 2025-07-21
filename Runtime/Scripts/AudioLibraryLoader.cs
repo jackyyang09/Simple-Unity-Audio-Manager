@@ -30,6 +30,7 @@ namespace JSAM
 
         private void OnDisable()
         {
+            if (AudioManagerInternal.IsQuitting) return;
             if (loadTiming == LoadBehaviour.OnEnableAndDisable)
             {
                 Unload();
@@ -46,6 +47,7 @@ namespace JSAM
 
         private void OnDestroy()
         {
+            if (AudioManagerInternal.IsQuitting) return;
             if (loadTiming == LoadBehaviour.OnStartAndDestroy)
             {
                 Unload();
