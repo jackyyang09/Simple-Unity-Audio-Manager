@@ -496,7 +496,7 @@ namespace JSAM
                     AudioSource.volume = Mathf.Lerp(startingVolume * ChannelVolume, 0, timer / fadeTime);
                     yield return null;
                 }
-                AudioSource.Stop();
+                Stop(true);
             }
 
             fadeOutRoutine = null;
