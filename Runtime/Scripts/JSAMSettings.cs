@@ -171,12 +171,18 @@ namespace JSAM
             }
         }
 
+        public static bool Exists => settings != null;
+
 #if UNITY_EDITOR
+        public static bool CreationAttempted;
+
         static readonly string SETTINGS_PATH = "Assets/Settings/Resources/" + nameof(JSAMSettings) + ".asset";
 
         public static void TryCreateNewSettingsAsset()
         {
             if (EditorApplication.isCompiling || EditorApplication.isUpdating) return;
+
+            CreationAttempted = true;
 
             if (!EditorUtility.DisplayDialog(
                 "JSAM First Time Setup",
@@ -190,10 +196,12 @@ namespace JSAM
             if (!AssetDatabase.IsValidFolder("Assets/Settings")) AssetDatabase.CreateFolder("Assets", "Settings");
             if (!AssetDatabase.IsValidFolder("Assets/Settings/Resources")) AssetDatabase.CreateFolder("Assets/Settings", "Resources");
             AssetDatabase.CreateAsset(asset, SETTINGS_PATH);
+            settings = asset;
             asset.Reset();
 
-            settings = asset;
             EditorUtility.DisplayDialog("JSAM Settings", "Settings asset created successfully!", "Cool.");
+
+            serializedObject = null;
         }
 
         static SerializedObject serializedObject;
@@ -225,6 +233,7 @@ namespace JSAM
 
         public void Reset()
         {
+            if (settings == null) return;
             AssignDefaultTracks();
         }
 
