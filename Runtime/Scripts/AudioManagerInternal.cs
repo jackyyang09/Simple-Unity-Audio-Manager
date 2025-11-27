@@ -841,22 +841,22 @@ namespace JSAM
             var newLib = new LoadedLibrary { Library = l, Users = 1 };
 
             List<string> enums = new List<string>();
-            var soundType = l.soundEnumGenerated;
+            var soundTypeName = l.soundEnumGenerated;
 
             if (!l.soundNamespaceGenerated.IsNullEmptyOrWhiteSpace())
             {
-                soundType = l.soundNamespaceGenerated + "." + soundType;
+                soundTypeName = l.soundNamespaceGenerated + "." + soundTypeName;
             }
-            var assembly = soundType + ", Assembly-CSharp";
 
-            Type enumType = Type.GetType(assembly);
+            Type enumType = FindEnumType(soundTypeName);
+
             enums.AddRange(Enum.GetNames(enumType));
 
             newLib.SoundKeys = new long[enums.Count];
             for (int i = 0; i < l.Sounds.Count; i++)
             {
                 l.Sounds[i].Initialize();
-                var soundName = soundType + "." + enums[i];
+                var soundName = soundTypeName + "." + enums[i];
                 long key = ComputeEnumHash(enumType, i);
                 newLib.SoundKeys[i] = key;
                 audioFileLookup.Add(soundName, l.Sounds[i]);
@@ -864,21 +864,21 @@ namespace JSAM
             }
 
             enums.Clear();
-            var musicType = l.musicEnumGenerated;
+            var musicTypeName = l.musicEnumGenerated;
 
             if (!l.musicNamespaceGenerated.IsNullEmptyOrWhiteSpace())
             {
-                musicType = l.musicNamespaceGenerated + "." + musicType;
+                musicTypeName = l.musicNamespaceGenerated + "." + musicTypeName;
             }
-            assembly = musicType + ", Assembly-CSharp";
-
-            enumType = Type.GetType(assembly);
+            
+            enumType = FindEnumType(musicTypeName);
+            
             enums.AddRange(Enum.GetNames(enumType));
 
             newLib.MusicKeys = new long[enums.Count];
             for (int i = 0; i < l.Music.Count; i++)
             {
-                var musicName = musicType + "." + enums[i];
+                var musicName = musicTypeName + "." + enums[i];
                 long key = ComputeEnumHash(enumType, i);
                 newLib.MusicKeys[i] = key;
                 audioFileLookup.Add(musicName, l.Music[i]);
@@ -931,6 +931,20 @@ namespace JSAM
         private static int GetEnumUnderlyingValue<T>(T e) where T : Enum
         {
             return unchecked(UnsafeUtility.As<T, int>(ref e));
+        }
+        
+        private Type FindEnumType(string soundType)
+        {
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                var type = assembly.GetType(soundType);
+                if (type != null && type.IsEnum)
+                {
+                    return type;
+                }
+            }
+            
+            throw new InvalidOperationException($"Enum type '{soundType}' was not found in loaded assemblies.");
         }
     }
 }
