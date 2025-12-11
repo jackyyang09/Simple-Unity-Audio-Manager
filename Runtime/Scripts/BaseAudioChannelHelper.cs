@@ -431,10 +431,41 @@ namespace JSAM
             AudioSource.rolloffMode = s.VolumeRolloff;
             AudioSource.minDistance = s.MinDistance;
             AudioSource.maxDistance = s.MaxDistance;
-            AudioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, s.RolloffCustomCurve);
-            AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, s.PanLevelCustomCurve);
-            AudioSource.SetCustomCurve(AudioSourceCurveType.Spread, s.SpreadCustomCurve);
-            AudioSource.SetCustomCurve(AudioSourceCurveType.ReverbZoneMix, s.ReverbZoneMixCustomCurve);
+            if (s.RolloffCustomCurve.length > 0)
+            {
+                AudioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, s.RolloffCustomCurve);
+            }
+            else
+            {
+                AudioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, default3DSettings.RolloffCustomCurve);
+            }
+
+            if (s.PanLevelCustomCurve.length > 0)
+            {
+                AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, s.PanLevelCustomCurve);
+            }
+            else
+            {
+                AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, default3DSettings.PanLevelCustomCurve);
+            }
+
+            if (s.SpreadCustomCurve.length > 0)
+            {
+                AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, s.SpreadCustomCurve);
+            }
+            else
+            {
+                AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, default3DSettings.SpreadCustomCurve);
+            }
+
+            if (s.ReverbZoneMixCustomCurve.length > 0)
+            {
+                AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, s.ReverbZoneMixCustomCurve);
+            }
+            else
+            {
+                AudioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, default3DSettings.ReverbZoneMixCustomCurve);
+            }
         }
 
         public void VolumeChanged(float channelVolume, float realVolume)
