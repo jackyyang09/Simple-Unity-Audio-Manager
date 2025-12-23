@@ -275,12 +275,24 @@ namespace JSAM
 
             if (JSAMSettings.Settings.Spatialize && audioFile.spatialize)
             {
+                if (JSAMSettings.Settings.globalRolloffCurveOverride)
+                {
+                    AudioSource.rolloffMode = AudioRolloffMode.Custom;
+                    AudioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, JSAMSettings.Settings.rolloffCurveOverride);
+                }
+                else
+                {
+                    AudioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+                }
+                
                 AudioSource.spatialBlend = 1;
                 if (audioFile.maxDistance != 0)
                 {
                     AudioSource.maxDistance = audioFile.maxDistance;
                 }
                 else AudioSource.maxDistance = JSAMSettings.Settings.DefaultSoundMaxDistance;
+                
+                AudioSource.spread = JSAMSettings.Settings.DefaultSpread;
             }
             else
             {

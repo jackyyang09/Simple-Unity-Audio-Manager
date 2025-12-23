@@ -31,6 +31,11 @@ namespace JSAM
         [SerializeField] float defaultSoundMaxDistance = 7;
         public float DefaultSoundMaxDistance => defaultSoundMaxDistance;
 
+        [Tooltip("Spread for 3D spatialized audio")]
+        [SerializeField] float defaultSpread = 0f;
+        
+        public float DefaultSpread => defaultSpread;
+        
         [Tooltip("Affects how AudioClip lists are displayed in FileObject inspectors. " +
             "Toggle this option if you're experiencing issues manipulating Audio Clips in the inspector")]
         [SerializeField] bool useBuiltInAudioListRenderer = 
@@ -161,7 +166,12 @@ namespace JSAM
         [SerializeField] string voiceMutedKey = "JSAM_VOICE_MUTE";
         public string VoiceVolumeKey => voiceVolumeKey;
         public string VoiceMutedKey => voiceMutedKey;
-
+        
+        [SerializeField]
+        public bool globalRolloffCurveOverride = false;
+        [SerializeField]
+        public AnimationCurve rolloffCurveOverride = new AnimationCurve(new Keyframe(0, 1), new Keyframe(1, 0));
+        
         [Tooltip("The font size used when rendering \"quick reference guides\" in JSAM editor windows")]
         [SerializeField] int quickReferenceFontSize = 10;
         public int QuickReferenceFontSize
