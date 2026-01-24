@@ -24,7 +24,7 @@ namespace JSAM
             }
         }
 
-        public override AudioSource Play()
+        public override AudioSource Play(Transform t = null, Vector3 pos = default)
         {
             if (audioFile == null)
             {

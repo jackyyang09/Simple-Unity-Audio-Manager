@@ -184,7 +184,11 @@ namespace JSAM
             {
                 musicHelpers.Add(CreateMusicChannel());
             }
-            if (musicHelpers.Count > 0) MainMusic = musicHelpers[0];
+            if (musicHelpers.Count > 0)
+            {
+                MainMusic = musicHelpers[0];
+                musicHelpers.RemoveAt(0);
+            }
 
             foreach (var t in JSAMSettings.Settings.AllTracks)
             {
@@ -273,6 +277,12 @@ namespace JSAM
             isQuitting = true;
         }
 
+        [RuntimeInitializeOnLoadMethod]
+        static void Init()
+        {
+            isQuitting = false;
+        }
+
         MusicChannelHelper HandleLimitedInstances(MusicFileObject music, MusicChannelHelper helper)
         {
             if (music.maxPlayingInstances > 0)
@@ -333,8 +343,7 @@ namespace JSAM
                 helper = HandleLimitedInstances(music, helper);
             }
             helper.AssignNewFile(music);
-            helper.SetSpatializationTarget(newTransform);
-            helper.Play();
+            helper.Play(newTransform);
             AudioManager.OnMusicPlayed?.Invoke(helper, music);
 
             return helper;
@@ -352,8 +361,7 @@ namespace JSAM
                 helper = HandleLimitedInstances(music, helper);
             }
             helper.AssignNewFile(music);
-            helper.SetSpatializationTarget(position);
-            helper.Play();
+            helper.Play(position);
             AudioManager.OnMusicPlayed?.Invoke(helper, music);
 
             return helper;
@@ -391,12 +399,12 @@ namespace JSAM
         {
             if (!Application.isPlaying) return null;
 
-            var helper = MainMusic;
             if (!MainMusic)
             {
                 // As long as Awake as called before then, this line shouldn't be reached
                 AudioManager.DebugWarning("Tried to fade out Main Music when no music was marked as Main! Marking now.");
                 MainMusic = musicHelpers[0];
+                musicHelpers.RemoveAt(0);
             }
 
             var newHelper = musicHelpers[GetFreeMusicChannel()];
@@ -550,8 +558,7 @@ namespace JSAM
                 helper = HandleLimitedInstances(sound, helper);
             }
             helper.AssignNewFile(sound);
-            helper.SetSpatializationTarget(newTransform);
-            helper.Play();
+            helper.Play(newTransform);
             AudioManager.OnSoundPlayed?.Invoke(helper, sound);
 
             return helper;
@@ -569,8 +576,7 @@ namespace JSAM
                 helper = HandleLimitedInstances(sound, helper);
             }
             helper.AssignNewFile(sound);
-            helper.SetSpatializationTarget(position);
-            helper.Play();
+            helper.Play(position);
             AudioManager.OnSoundPlayed?.Invoke(helper, sound);
 
             return helper;
@@ -641,10 +647,14 @@ namespace JSAM
         }
         #endregion
 
+        /// <summary>
+        /// Will not return the MainMusicHelper
+        /// </summary>
+        /// <returns></returns>
         public MusicChannelHelper GetFreeMusicHelper() => musicHelpers[GetFreeMusicChannel()];
 
         /// <returns>The index of the next free music channel</returns>
-        int GetFreeMusicChannel()
+        int GetFreeMusicChannel(bool allowMain = true)
         {
             for (int i = 0; i < musicHelpers.Count; i++)
             {

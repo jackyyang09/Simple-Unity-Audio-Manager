@@ -13,6 +13,7 @@ namespace JSAM.JSAMEditor
 
         SerializedProperty keepPlaybackPosition;
         SerializedProperty restartOnReplay;
+        SerializedProperty isMainMusic;
 
         SerializedProperty onStart;
         SerializedProperty onEnable;
@@ -30,13 +31,14 @@ namespace JSAM.JSAMEditor
 
             myScript = (MusicPlayer)target;
 
-            keepPlaybackPosition = serializedObject.FindProperty("keepPlaybackPosition");
-            restartOnReplay = serializedObject.FindProperty("restartOnReplay");
+            keepPlaybackPosition = serializedObject.FindProperty(nameof(keepPlaybackPosition));
+            restartOnReplay = serializedObject.FindProperty(nameof(restartOnReplay));
+            isMainMusic = serializedObject.FindProperty(nameof(isMainMusic));
 
-            onStart = serializedObject.FindProperty("onStart");
-            onEnable = serializedObject.FindProperty("onEnable");
-            onDisable = serializedObject.FindProperty("onDisable");
-            onDestroy = serializedObject.FindProperty("onDestroy");
+            onStart = serializedObject.FindProperty(nameof(onStart));
+            onEnable = serializedObject.FindProperty(nameof(onEnable));
+            onDisable = serializedObject.FindProperty(nameof(onDisable));
+            onDestroy = serializedObject.FindProperty(nameof(onDestroy));
 
             fadeBehaviour = serializedObject.FindProperty(nameof(fadeBehaviour));
             fadeTime = serializedObject.FindProperty(nameof(fadeTime));
@@ -51,11 +53,12 @@ namespace JSAM.JSAMEditor
             DrawAudioProperty();
 
             EditorGUILayout.Space();
-            
+
             GUIContent lontent = new GUIContent("Music Player Settings", "Modify settings specific to Audio Player Music");
             EditorGUILayout.LabelField(lontent, EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(keepPlaybackPosition);
             EditorGUILayout.PropertyField(restartOnReplay);
+            EditorGUILayout.PropertyField(isMainMusic);
             EditorGUILayout.PropertyField(onStart);
             EditorGUILayout.PropertyField(onEnable);
             EditorGUILayout.PropertyField(onDisable);

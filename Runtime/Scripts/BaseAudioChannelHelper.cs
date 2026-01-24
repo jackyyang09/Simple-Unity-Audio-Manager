@@ -22,7 +22,7 @@ namespace JSAM
         public T AudioFile => audioFile;
 
         public float ChannelVolume => AudioManager.GetModifiedVolume(subscribedTrack);
-        
+
         public virtual float Volume
         {
             get
@@ -54,7 +54,7 @@ namespace JSAM
         /// </summary>
         public Vector3 SpatializationPosition { get; private set; }
 
-        public virtual AudioMixerGroup MixerGroup => 
+        public virtual AudioMixerGroup MixerGroup =>
             audioFile.mixerGroupOverride ? audioFile.mixerGroupOverride : subscribedTrack.DefaultMixerGroup;
 
         protected int LoopStart { get { return (int)(audioFile.loopStart * AudioSource.clip.frequency); } }
@@ -254,16 +254,25 @@ namespace JSAM
             audioFile = file;
         }
 
+        public AudioSource Play(Transform t)
+        {
+            return Play(t, default);
+        }
+
+        public AudioSource Play(Vector3 pos)
+        {
+            return Play(null, pos);
+        }
+
         /// <summary>
         /// To play new sounds one after another using the same Helper, 
         /// call the following methods in order; 
         /// helper.AssignNewFile(file),
-        /// helper.SetSpatializationTarget(targetTransform),
-        /// helper.Play()
+        /// helper.Play(params)
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        public virtual AudioSource Play()
+        public virtual AudioSource Play(Transform t = null, Vector3 pos = default)
         {
             if (!AssignNewAudioClip())
             {
@@ -299,7 +308,19 @@ namespace JSAM
             {
                 Set3DSettings(default3DSettings);
 
-                if (JSAMSettings.Settings.Spatialize && audioFile.spatialize)
+                bool validTarget = false;
+                if (t)
+                {
+                    SetSpatializationTarget(t);
+                    validTarget = true;
+                }
+                else if (pos != default)
+                {
+                    SetSpatializationTarget(pos);
+                    validTarget = true;
+                }
+
+                if (JSAMSettings.Settings.Spatialize && audioFile.spatialize && validTarget)
                 {
                     AudioSource.spatialBlend = 1;
                     if (audioFile.maxDistance != 0)

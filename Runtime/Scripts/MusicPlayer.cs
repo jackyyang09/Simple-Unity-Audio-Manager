@@ -35,8 +35,7 @@ namespace JSAM
             "FadeOutAndFadeIn - Fades out current Main Music, and only after it's done fading, fade in this music")]
         [SerializeField] protected FadeBehaviour fadeBehaviour = FadeBehaviour.None;
 
-        // TODO: Implement this
-        //[SerializeField] bool isMainMusic;
+        [SerializeField] bool isMainMusic;
 
         [Tooltip("Total time of the fade process")]
         [SerializeField] float fadeTime;
@@ -70,7 +69,14 @@ namespace JSAM
             }
             else
             {
-                helper = AudioManager.PlayMusic(audio, transform);
+                if (isMainMusic)
+                {
+                    helper = AudioManager.PlayMusic(audio, true);
+                }
+                else
+                {
+                    helper = AudioManager.PlayMusic(audio, transform);
+                }
             }
         }
 
@@ -148,7 +154,14 @@ namespace JSAM
 
         public void Stop()
         {
-            AudioManager.StopMusic(audio, transform, true);
+            if (isMainMusic)
+            {
+                AudioManager.StopMusic(audio, null, true);
+            }
+            else
+            {
+                AudioManager.StopMusic(audio, transform, true);
+            }
             helper = null;
         }
 
