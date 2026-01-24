@@ -1,7 +1,9 @@
-﻿using System.Collections;
+﻿using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEditorInternal;
 
 /// <summary>
 /// A good portion referenced from the official Unity source
@@ -14,9 +16,14 @@ namespace JSAM.JSAMEditor
     public class AudioMusicZoneEditor : BaseMusicEditor
     {
         AudioMusicZone myScript;
+        Transform Transform => myScript.transform;
 
+        SerializedProperty MinDistance;
+        SerializedProperty MaxDistance;
         SerializedProperty keepPlayingWhenAway;
-        SerializedProperty musicZones;
+        SerializedProperty MusicZones;
+
+        PositionList list;
 
         protected virtual string HIDE_TRANSFORMHANDLE => "JSAM_AMZ_HIDETRANSFORMHANDLE";
         protected bool hideTransformHandle
@@ -32,6 +39,11 @@ namespace JSAM.JSAMEditor
             set { EditorPrefs.SetBool(HIDE_TRANSFORMHANDLE, value); }
         }
 
+        protected virtual string FOLDOUTSTATE => "JSAM_AMZ_FOLDOUTSTATE";
+
+        List<bool> foldouts = new List<bool>();
+        List<int> markedForDeletion = new();
+
         protected override void Setup()
         {
             base.Setup();
@@ -39,15 +51,73 @@ namespace JSAM.JSAMEditor
             myScript = (AudioMusicZone)target;
 
             keepPlayingWhenAway = serializedObject.FindProperty(nameof(keepPlayingWhenAway));
-            musicZones = serializedObject.FindProperty("MusicZones");
+            MinDistance = serializedObject.FindProperty(nameof(MinDistance));
+            MaxDistance = serializedObject.FindProperty(nameof(MaxDistance));
+            MusicZones = serializedObject.FindProperty(nameof(MusicZones));
 
-            Tools.hidden = hideTransformHandle;
+            LoadFoldoutState();
+
+            RebuildList();
+
+            TryHideTools();
+        }
+
+        /// <summary>
+        /// Only works up to 32 foldouts, though I don't forsee a use case where you need more than 32
+        /// Otherwise, consider switching to string-hex encoding
+        /// </summary>
+        void LoadFoldoutState()
+        {
+            int number = EditorPrefs.GetInt(FOLDOUTSTATE, 0);
+            var bits = new BitArray(new int[] { number }).Cast<bool>();
+
+            foldouts = new List<bool>(bits);
+            if (foldouts.Count > MusicZones.arraySize)
+            {
+                var diff = foldouts.Count - MusicZones.arraySize;
+                foldouts.RemoveRange(MusicZones.arraySize, diff);
+            }
+            else if (foldouts.Count < MusicZones.arraySize)
+            {
+                var diff = MusicZones.arraySize - foldouts.Count;
+                foldouts.AddRange(new bool[diff]);
+            }
+        }
+
+        public void SaveFoldoutState()
+        {
+            var bits = new BitArray(foldouts.ToArray());
+
+            int result = 0;
+            for (int i = 0; i < bits.Length; i++)
+            {
+                if (bits[i])
+                {
+                    result |= (1 << i);
+                }
+            }
+
+            EditorPrefs.SetInt(FOLDOUTSTATE, result);
+        }
+
+        /// <summary>
+        /// This hack circumvents ReorderableList's element height caching behaviour. 
+        /// The height of all elements get saved and it takes 8 frames before it can get repainted, 
+        /// at which point the delay created becomes visible and ugly to the player. 
+        /// Rebuilding the list object is a bit heavy, but at least it feels good to use.
+        /// </summary>
+        public void RebuildList()
+        {
+            list = new(serializedObject, MusicZones, this);
+            RepaintSceneView();
         }
 
         private void OnDisable()
         {
             Tools.hidden = false;
         }
+
+        void TryHideTools() => Tools.hidden = positionsFoldout || (positionsFoldout && hideTransformHandle);
 
         public override void OnInspectorGUI()
         {
@@ -57,14 +127,25 @@ namespace JSAM.JSAMEditor
 
             DrawAudioProperty();
 
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(MinDistance);
+            if (EditorGUI.EndChangeCheck())
+            {
+                MinDistance.floatValue = Mathf.Clamp(MinDistance.floatValue, 0, MaxDistance.floatValue);
+            }
+
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(MaxDistance);
+            if (EditorGUI.EndChangeCheck())
+            {
+                MaxDistance.floatValue = Mathf.Max(MinDistance.floatValue, MaxDistance.floatValue);
+            }
+
             EditorGUILayout.PropertyField(keepPlayingWhenAway);
 
             DrawPositionsEditor();
 
-            if (serializedObject.hasModifiedProperties)
-            {
-                serializedObject.ApplyModifiedProperties();
-            }
+            serializedObject.ApplyModifiedProperties();
 
             DrawQuickReferenceGuide();
         }
@@ -80,8 +161,7 @@ namespace JSAM.JSAMEditor
             EditorGUILayout.HelpBox("Audio Music Zones are like AudioPlayerMusic components in that they playback music in the scene. " +
                 "However, music is only played when the scene's AudioListener enters a \"Music Zone.\""
                 , MessageType.None);
-            EditorGUILayout.HelpBox("\"Music Zones\" are defined by a position, a min distance, and a max distance. You can " +
-                "create a new \"Music Zone\" by clicking either \"Add New Zone at World Center\" or \"Add New Zone at This Position\"."
+            EditorGUILayout.HelpBox("\"Music Zones\" are defined by a position, a min distance, and a max distance."
                 , MessageType.None);
             EditorGUILayout.HelpBox("The max distance indicates the distance the AudioListener has to be from the Zone's position to hear the music " +
                 "at minimal volume."
@@ -120,128 +200,95 @@ namespace JSAM.JSAMEditor
 
             for (int i = 0; i < myScript.MusicZones.Count; i++)
             {
-                Undo.RecordObject(myScript, "Modified Zone properties");
-                myScript.MusicZones[i].Position = Handles.PositionHandle(myScript.MusicZones[i].Position, Quaternion.identity);
+                if (!foldouts[i]) continue;
 
-                myScript.MusicZones[i].MinDistance = Handles.RadiusHandle(Quaternion.identity, myScript.MusicZones[i].Position, myScript.MusicZones[i].MinDistance, false);
-                if (myScript.MusicZones[i].MinDistance < 0) myScript.MusicZones[i].MinDistance = 0;
-                else if (myScript.MusicZones[i].MinDistance > myScript.MusicZones[i].MaxDistance) myScript.MusicZones[i].MinDistance = myScript.MusicZones[i].MaxDistance;
-                myScript.MusicZones[i].MaxDistance = Handles.RadiusHandle(Quaternion.identity, myScript.MusicZones[i].Position, myScript.MusicZones[i].MaxDistance, false);
-                if (myScript.MusicZones[i].MaxDistance < 0) myScript.MusicZones[i].MaxDistance = 0;
-                else if (myScript.MusicZones[i].MaxDistance < myScript.MusicZones[i].MinDistance) myScript.MusicZones[i].MaxDistance = myScript.MusicZones[i].MinDistance;
+                Undo.RecordObject(myScript, "Modified Zone properties");
+                var e = myScript.MusicZones[i];
+
+                EditorGUI.BeginChangeCheck();
+                e.Position = Handles.PositionHandle(e.Position, Quaternion.identity);
+
+                var cam = SceneView.currentDrawingSceneView.camera;
+                Vector3 normal = (cam.transform.position - e.Position).normalized;
+
+                var temp2 = Handles.color;
+
+                if (e.OverrideDistance)
+                {
+                    var vec = e.Distance;
+
+                    vec.x = Handles.RadiusHandle(Quaternion.identity, e.Position, vec.x, true);
+                    vec.x = Mathf.Clamp(vec.x, 0, vec.y);
+
+                    vec.y = Handles.RadiusHandle(Quaternion.identity, e.Position, vec.y, true);
+                    vec.y = Mathf.Max(vec.x, vec.y);
+
+                    e.Distance = vec;
+
+                    Handles.color = new Color(Handles.color.r, Handles.color.g, Handles.color.b, 0.1f);
+                    Handles.DrawSolidDisc(e.Position, normal, e.Distance.x);
+                    Handles.color = temp2;
+                    Handles.DrawWireDisc(e.Position, normal, e.Distance.y);
+                }
+                else
+                {
+                    Handles.color = new Color(Handles.color.r, Handles.color.g, Handles.color.b, 0.1f);
+                    Handles.DrawSolidDisc(e.Position, normal, MinDistance.floatValue);
+                    Handles.color = temp2;
+                    Handles.DrawWireDisc(e.Position, normal, MaxDistance.floatValue);
+                }
+
+                if (EditorGUI.EndChangeCheck())
+                {
+                    myScript.MusicZones[i] = e;
+                }
             }
 
             Handles.color = tempColor;
         }
 
+        public void RepaintSceneView()
+        {
+            if (SceneView.sceneViews.Count > 0) SceneView.lastActiveSceneView.Repaint();
+        }
+
         static bool positionsFoldout = false;
-        static List<bool> foldouts = new List<bool>();
 
         public void DrawPositionsEditor()
         {
-            List<int> markedForDeletion = new List<int>();
             GUIContent blontent;
 
-#if !UNITY_2020_3_OR_NEWER
             bool previousFoldout = positionsFoldout;
             EditorGUILayout.BeginHorizontal();
             positionsFoldout = EditorCompatability.SpecialFoldouts(positionsFoldout, "Music Zones");
-            musicZones.arraySize = EditorGUILayout.DelayedIntField(musicZones.arraySize, new GUILayoutOption[] { GUILayout.MaxWidth(48) });
             EditorGUILayout.EndHorizontal();
             if (previousFoldout != positionsFoldout) // Toggle handles in scene view
             {
-                if (SceneView.sceneViews.Count > 0) SceneView.lastActiveSceneView.Repaint();
+                RepaintSceneView();
+                TryHideTools();
             }
+
             if (positionsFoldout)
-#endif
             {
                 blontent = new GUIContent("Hide Transform Tool",
                     "If true, hides the transform handle of this gameObject in the scene view so you can " +
                     "better work with the handles of Music Zones.");
                 EditorGUI.BeginChangeCheck();
-                bool hideTool = EditorGUILayout.Toggle(blontent, hideTransformHandle);
+                hideTransformHandle = EditorGUILayout.Toggle(blontent, hideTransformHandle);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    hideTransformHandle = hideTool;
-                    Tools.hidden = hideTransformHandle;
-                    if (SceneView.sceneViews.Count > 0) SceneView.lastActiveSceneView.Repaint();
+                    TryHideTools();
+                    RepaintSceneView();
                 }
 
-#if UNITY_2020_3_OR_NEWER
-                EditorGUILayout.PropertyField(musicZones);
-#else
-                for (int i = 0; i < musicZones.arraySize; i++)
+                list.Draw();
+
+                for (int i = markedForDeletion.Count - 1; i > -1; i--)
                 {
-                    var element = musicZones.GetArrayElementAtIndex(i);
-                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-                    if (foldouts.Count < i + 1)
-                    {
-                        foldouts.Add(false);
-                    }
-                    string arrow = (foldouts[i]) ? "▼" : "▶";
-                    EditorGUILayout.BeginHorizontal();
-                    foldouts[i] = EditorGUILayout.Foldout(foldouts[i], new GUIContent("    " + arrow + " Zone " + i), true, EditorStyles.boldLabel);
-                    if (GUILayout.Button(new GUIContent("x", "Remove this transform"), new GUILayoutOption[] { GUILayout.MaxWidth(20) }))
-                    {
-                        markedForDeletion.Add(i);
-                    }
-                    EditorGUILayout.EndHorizontal();
-                    if (foldouts[i])
-                    {
-                        SerializedProperty position = element.FindPropertyRelative("Position");
-                        EditorGUILayout.PropertyField(position);
-                        SerializedProperty minDistance = element.FindPropertyRelative("MinDistance");
-                        SerializedProperty maxDistance = element.FindPropertyRelative("MaxDistance");
-
-                        blontent = new GUIContent("Min Distance", "The minimum distance the listener can be at to hear the music " +
-                            "in this music zone. The music will be at it's loudest when the listener is equal to or below this distance to this zone.");
-                        EditorGUI.BeginChangeCheck();
-                        EditorGUILayout.PropertyField(minDistance, blontent);
-                        //minDistance.floatValue = EditorGUILayout.FloatField(blontent, minDistance.floatValue);
-                        if (EditorGUI.EndChangeCheck())
-                        {
-                            if (minDistance.floatValue > maxDistance.floatValue) minDistance.floatValue = maxDistance.floatValue;
-                            else if (minDistance.floatValue < 0) minDistance.floatValue = 0;
-                        }
-
-                        blontent = new GUIContent("Max Distance", "The maximum distance the listener can be at to hear the music " +
-                            "in this music zone. Volume of the music will increase as listener approaches the minimum distance.");
-                        maxDistance.floatValue = EditorGUILayout.FloatField(blontent, maxDistance.floatValue);
-                        if (maxDistance.floatValue < minDistance.floatValue) maxDistance.floatValue = minDistance.floatValue;
-                        else if (maxDistance.floatValue < 0) maxDistance.floatValue = 0;
-                    }
-                    EditorGUILayout.EndVertical();
+                    MusicZones.DeleteArrayElementAtIndex(markedForDeletion[i]);
+                    markedForDeletion.RemoveAt(i);
+                    SaveFoldoutState();
                 }
-#endif
-                foreach (int item in markedForDeletion)
-                {
-                    foldouts.RemoveAt(item);
-                    musicZones.DeleteArrayElementAtIndex(item);
-                }
-
-                EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button("Add New Zone At World Center"))
-                {
-                    var e = musicZones.AddAndReturnNewArrayElement();
-                    e.FindPropertyRelative("Position").vector3Value = Vector3.zero;
-                    e.FindPropertyRelative("MaxDistance").floatValue = 15;
-                    e.FindPropertyRelative("MinDistance").floatValue = 10;
-
-                    positionsFoldout = true;
-                    foldouts.Add(true);
-                }
-
-                if (GUILayout.Button("Add New Zone At This Position"))
-                {
-                    var e = musicZones.AddAndReturnNewArrayElement();
-                    e.FindPropertyRelative("Position").vector3Value = myScript.transform.position;
-                    e.FindPropertyRelative("MaxDistance").floatValue = 15;
-                    e.FindPropertyRelative("MinDistance").floatValue = 10;
-
-                    positionsFoldout = true;
-                    foldouts.Add(true);
-                }
-                EditorGUILayout.EndHorizontal();
             }
             EditorCompatability.EndSpecialFoldoutGroup();
         }
@@ -259,6 +306,172 @@ namespace JSAM.JSAMEditor
             EditorGUIUtility.PingObject(newPlayer);
             Selection.activeGameObject = newPlayer;
             Undo.RegisterCreatedObjectUndo(newPlayer, "Added new Audio Music Zone");
+        }
+
+        public class PositionList
+        {
+            ReorderableList list;
+            AudioMusicZoneEditor amze;
+
+            public PositionList(SerializedObject obj, SerializedProperty prop, AudioMusicZoneEditor _amze)
+            {
+                list = new(obj, prop, true, false, true, true);
+                list.onAddCallback += OnAdd;
+                list.drawElementCallback += OnDrawElement;
+                list.elementHeightCallback += GetElementHeight;
+
+                amze = _amze;
+            }
+
+            public SerializedProperty AddZone()
+            {
+                amze.foldouts.Add(true);
+                amze.SaveFoldoutState();
+                return list.serializedProperty.AddAndReturnNewArrayElement();
+            }
+
+            private void OnAdd(ReorderableList list)
+            {
+                GenericMenu menu = new();
+
+                menu.AddItem(new GUIContent("Add Duplicate"), false, AddDuplicate);
+                menu.AddItem(new GUIContent("Add at World Origin"), false, AddAtWorldOrigin);
+                menu.AddItem(new GUIContent("Add at Local Position"), false, AddAtLocalPosition);
+
+                menu.ShowAsContext();
+            }
+
+            void AddDuplicate()
+            {
+                AddZone();
+                amze.serializedObject.ApplyModifiedProperties();
+            }
+
+            void AddAtWorldOrigin()
+            {
+                var e = AddZone();
+                e.FindPropertyRelative("Position").vector3Value = Vector3.zero;
+                e.FindPropertyRelative("Distance").vector2Value = new Vector2(amze.myScript.MinDistance, amze.myScript.MaxDistance);
+                e.serializedObject.ApplyModifiedProperties();
+            }
+
+            void AddAtLocalPosition()
+            {
+                var e = AddZone();
+                e.FindPropertyRelative("Position").vector3Value = amze.Transform.position;
+                e.FindPropertyRelative("Distance").vector2Value = new Vector2(amze.myScript.MinDistance, amze.myScript.MaxDistance);
+                e.serializedObject.ApplyModifiedProperties();
+            }
+
+            float GetElementHeight(int index)
+            {
+                return amze.foldouts[index] ? 80 : 20;
+            }
+
+            void OnDrawElement(Rect rect, int i, bool isActive, bool isFocused)
+            {
+                var element = list.serializedProperty.GetArrayElementAtIndex(i);
+
+                rect.height = 20;
+                Rect prevRect = new Rect(rect);
+                Rect currentRect = new Rect(prevRect);
+
+                string arrow = amze.foldouts[i] ? "▼" : "▶";
+
+                EditorGUI.BeginChangeCheck();
+
+                currentRect.xMax -= 120;
+
+                amze.foldouts[i] = EditorGUI.Foldout(currentRect, amze.foldouts[i], new GUIContent("    " + arrow + " Zone " + i), true, EditorStyles.boldLabel);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    amze.RepaintSceneView();
+                    amze.SaveFoldoutState();
+                }
+
+                currentRect.xMax = rect.xMax - 30;
+                currentRect.xMin = currentRect.xMax - 80;
+                currentRect.y += 2;
+                currentRect.height -= 4;
+
+                if (GUI.Button(currentRect, new GUIContent("Duplicate")))
+                {
+                    amze.foldouts.Insert(i + 1, true);
+                    amze.SaveFoldoutState();
+                    list.serializedProperty.InsertArrayElementAtIndex(i);
+                }
+
+                currentRect.x += currentRect.width;
+                currentRect.width = 30;
+
+                JSAMEditorHelper.BeginColourChange(Color.red);
+                if (GUI.Button(currentRect, new GUIContent("X")))
+                {
+                    amze.markedForDeletion.Add(i);
+                }
+                JSAMEditorHelper.EndColourChange();
+
+                currentRect.xMax = rect.xMax;
+                currentRect.xMin = rect.xMin;
+                currentRect.height = rect.height - 2;
+                currentRect.y = rect.y;
+
+                if (amze.foldouts[i])
+                {
+                    currentRect.y += rect.height;
+
+                    EditorGUI.PropertyField(currentRect, element.FindPropertyRelative("Position"));
+
+                    currentRect.y += rect.height;
+
+                    SerializedProperty OverrideDistance = element.FindPropertyRelative("OverrideDistance");
+                    EditorGUI.PropertyField(currentRect, OverrideDistance);
+
+                    using (new EditorGUI.DisabledGroupScope(!OverrideDistance.boolValue))
+                    {
+                        SerializedProperty Distance = element.FindPropertyRelative(nameof(Distance));
+
+                        currentRect.y += rect.height;
+
+                        EditorGUI.BeginChangeCheck();
+                        EditorGUI.PropertyField(currentRect, Distance, new GUIContent("Min/Max Distance"));
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            var vec = Distance.vector2Value;
+                            vec.x = Mathf.Clamp(vec.x, 0, vec.y);
+                            vec.y = Mathf.Max(vec.x, vec.y);
+                            Distance.vector2Value = vec;
+                        }
+                    }
+                }
+            }
+
+            public void Draw()
+            {
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                EditorGUILayout.BeginHorizontal();
+                if (GUILayout.Button("Expand All"))
+                {
+                    for (int i = 0; i < amze.foldouts.Count; i++)
+                    {
+                        amze.foldouts[i] = true;
+                    }
+                    amze.RebuildList();
+                    GUIUtility.ExitGUI();
+                }
+                if (GUILayout.Button("Collapse All"))
+                {
+                    for (int i = 0; i < amze.foldouts.Count; i++)
+                    {
+                        amze.foldouts[i] = false;
+                    }
+                    amze.RebuildList();
+                    GUIUtility.ExitGUI();
+                }
+                EditorGUILayout.EndHorizontal();
+                list.DoLayoutList();
+                EditorGUILayout.EndVertical();
+            }
         }
     }
 }
