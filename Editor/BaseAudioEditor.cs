@@ -121,7 +121,7 @@ namespace JSAM.JSAMEditor
 
             if (!AudioManager.Instance) return;
 
-            if (Libraries.Length > 0)
+            if (Libraries.Length > 0 && audioObject)
             {
                 var n = audioObject.SafeName;
                 EditorGUILayout.BeginHorizontal();
@@ -150,7 +150,7 @@ namespace JSAM.JSAMEditor
             {
                 using (new EditorGUI.DisabledScope(true))
                 {
-                    EditorGUILayout.Popup(audioDesc, 0, new string[] {"<None>"});
+                    EditorGUILayout.Popup(audioDesc, 0, new string[] { "<None>" });
                 }
             }
         }

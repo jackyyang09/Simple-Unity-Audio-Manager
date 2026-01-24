@@ -58,8 +58,6 @@ namespace JSAM
 
         protected void EditorUpdateVolume()
         {
-            UnityEditor.EditorApplication.delayCall -= EditorUpdateVolume;
-
             if (subscribedTrack != track)
             {
                 UnsubscribeFromVolumeEvents();
