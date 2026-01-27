@@ -32,7 +32,7 @@ namespace JSAM
                 return AudioSource;
             }
 
-            return base.Play();
+            return base.Play(t, pos);
         }
     }
 }
