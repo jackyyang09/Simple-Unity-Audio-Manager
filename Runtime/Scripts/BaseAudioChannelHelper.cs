@@ -364,7 +364,6 @@ namespace JSAM
         {
             if (targetScene != "")
             {
-                Debug.Log(targetScene + " " + audioFile.name + " " + scene.name);
                 if (targetScene == scene.name)
                 {
                     Stop();
