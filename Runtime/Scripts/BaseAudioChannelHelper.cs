@@ -215,7 +215,7 @@ namespace JSAM
                     }
                 }
             }
-            else if (audioFile.loopMode <= LoopMode.LoopWithLoopPoints && !applicationPaused)
+            else if (audioFile.loopMode <= LoopMode.LoopWithLoopPoints && !applicationPaused && !AudioListener.pause)
             {
                 // Disable self if not playing anymore
                 enabled = AudioSource.isPlaying;
@@ -300,6 +300,18 @@ namespace JSAM
                     break;
             }
 
+            bool validTarget = false;
+            if (t)
+            {
+                SetSpatializationTarget(t);
+                validTarget = true;
+            }
+            else if (pos != default)
+            {
+                SetSpatializationTarget(pos);
+                validTarget = true;
+            }
+
             if (audioFile.SpatialSoundOverride != null)
             {
                 Set3DSettings(audioFile.SpatialSoundOverride);
@@ -307,18 +319,6 @@ namespace JSAM
             else
             {
                 Set3DSettings(default3DSettings);
-
-                bool validTarget = false;
-                if (t)
-                {
-                    SetSpatializationTarget(t);
-                    validTarget = true;
-                }
-                else if (pos != default)
-                {
-                    SetSpatializationTarget(pos);
-                    validTarget = true;
-                }
 
                 if (JSAMSettings.Settings.Spatialize && audioFile.spatialize && validTarget)
                 {
@@ -364,6 +364,7 @@ namespace JSAM
         {
             if (targetScene != "")
             {
+                Debug.Log(targetScene + " " + audioFile.name + " " + scene.name);
                 if (targetScene == scene.name)
                 {
                     Stop();
